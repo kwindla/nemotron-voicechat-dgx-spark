@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -10,6 +11,8 @@ import signal
 import socket
 import subprocess
 import sys
+import tarfile
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -313,6 +316,197 @@ def _build_image(config: dict[str, Any], layout: Layout, *, offline: bool, no_ca
     _run([str(REPO_ROOT / "container/build-public-runtime.sh")], cwd=REPO_ROOT, env=environment)
 
 
+def _source_conversion_asr_model(value: str | None) -> Path:
+    if value is None:
+        raise RuntimeError("--convert-from-source requires --asr-model PATH for the EarTTS gate")
+    path = Path(value).expanduser().resolve()
+    if not path.is_file():
+        raise RuntimeError(f"ASR checkpoint is not a regular file: {path}")
+    return path
+
+
+def _link_or_copy(source: str, destination: str) -> str:
+    """Hardlink cache-local release files, with a cross-device fallback."""
+
+    try:
+        os.link(source, destination)
+    except OSError:
+        shutil.copy2(source, destination)
+    return destination
+
+
+def _remove_stale_conversion_activations(layout: Layout) -> None:
+    """Remove interrupted swap state after the active release is verified."""
+
+    for path in layout.artifacts.glob(".source-converted-release-*"):
+        if not path.is_dir() or path.is_symlink():
+            raise RuntimeError(f"unexpected source-conversion activation path: {path}")
+        shutil.rmtree(path)
+
+
+def _tree_copy_gib(roots: tuple[Path, ...]) -> int:
+    """Return the whole-GiB disk reservation for independent component copies."""
+
+    total = sum(
+        path.stat().st_size
+        for root in roots
+        for path in root.rglob("*")
+        if path.is_file()
+    )
+    gib = 1024**3
+    return (total + gib - 1) // gib
+
+
+def _canonical_json_sha256(payload: Any) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _activate_converted_release(
+    layout: Layout, converted: Path, expected_release_sha: str
+) -> dict[str, Any]:
+    """Atomically activate reproduced files after full signed-release verification."""
+
+    from .bootstrap_download import verify_release
+
+    report_path = converted / "reproduction.json"
+    if not report_path.is_file():
+        raise RuntimeError(f"source conversion report is missing: {report_path}")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    recorded_report_sha = report.get("sha256")
+    if report.get("kind") != "voicechat_release_artifact_reproduction" or not isinstance(
+        recorded_report_sha, str
+    ):
+        raise RuntimeError("source conversion report has an invalid identity")
+    unsigned_report = dict(report)
+    unsigned_report.pop("sha256")
+    if _canonical_json_sha256(unsigned_report) != recorded_report_sha:
+        raise RuntimeError("source conversion report failed its self-hash")
+    for component in ("nano", "eartts"):
+        if not (converted / component).is_dir():
+            raise RuntimeError(f"source conversion output is missing {component}")
+
+    temporary = Path(
+        tempfile.mkdtemp(prefix=".source-converted-release-", dir=layout.artifacts)
+    )
+    candidate = temporary / "release"
+    backup = temporary / "downloaded-release"
+    try:
+        shutil.copytree(layout.release, candidate, copy_function=_link_or_copy)
+        for component in ("nano", "eartts"):
+            shutil.rmtree(candidate / component)
+            shutil.copytree(
+                converted / component,
+                candidate / component,
+                # Keep the active release independent from the resumable
+                # conversion work tree. In-place diagnostic edits there must
+                # never alias into serving artifacts through hardlinks.
+                copy_function=shutil.copy2,
+            )
+        verify_release(candidate, expected_release_sha)
+
+        os.replace(layout.release, backup)
+        try:
+            os.replace(candidate, layout.release)
+            verify_release(layout.release, expected_release_sha)
+        except BaseException:
+            if layout.release.exists():
+                shutil.rmtree(layout.release)
+            os.replace(backup, layout.release)
+            raise
+    finally:
+        shutil.rmtree(temporary, ignore_errors=True)
+
+    print(
+        "[conversion] activated reproduced Nano and EarTTS after full signed-release "
+        "verification",
+        flush=True,
+    )
+    return {
+        "artifact_materialization": "source-converted",
+        "reproduction_sha256": report["sha256"],
+    }
+
+
+def _convert_from_source(
+    args: argparse.Namespace, config: dict[str, Any], layout: Layout
+) -> dict[str, Any]:
+    asr_model = _source_conversion_asr_model(args.asr_model)
+    remaining = config["deployment"]["minimum_conversion_remaining_gib"]
+    output_estimate = config["deployment"]["conversion_output_estimate_gib"]
+    activation_copy = _tree_copy_gib(
+        (layout.release / "nano", layout.release / "eartts")
+    )
+    require_free_space(
+        layout.cache,
+        remaining + output_estimate + activation_copy,
+        "source conversion and independent activation copy",
+    )
+
+    corpus = layout.cache / "conversion-corpus"
+    corpus.parent.mkdir(parents=True, exist_ok=True)
+    if not corpus.exists():
+        temporary = Path(tempfile.mkdtemp(prefix=f".{corpus.name}.tmp-", dir=corpus.parent))
+        try:
+            with tarfile.open(layout.release / "calibration/replay.tar") as archive:
+                archive.extractall(temporary, filter="data")
+            os.replace(temporary, corpus)
+        except Exception:
+            shutil.rmtree(temporary, ignore_errors=True)
+            raise
+    work = layout.cache / "conversion"
+    work.mkdir(parents=True, exist_ok=True)
+    image = config["image"]["runtime"]
+    command = [
+        "docker",
+        "run",
+        "--rm",
+        "--gpus",
+        "all",
+        "--ipc",
+        "host",
+        "--shm-size",
+        "16g",
+        "-v",
+        f"{REPO_ROOT}:/workspace/project:ro",
+        "-v",
+        f"{layout.parent}:/models/parent:ro",
+        "-v",
+        f"{layout.nano_skeleton}:/models/NVIDIA-Nemotron-Nano-9B-v2:ro",
+        "-v",
+        f"{corpus}:/corpus:ro",
+        "-v",
+        f"{work}:/work",
+        "-v",
+        f"{asr_model}:/models/asr:ro",
+        image,
+        "python3",
+        "/workspace/project/tools/conversion/reproduce_release_artifacts.py",
+        "--speech-root",
+        "/opt/Speech",
+        "--checkpoint-root",
+        "/models/parent",
+        "--nano-skeleton",
+        "/models/NVIDIA-Nemotron-Nano-9B-v2",
+        "--calibration-root",
+        "/corpus/calibration/0",
+        "--calibration-root",
+        "/corpus/calibration/1",
+        "--evaluation-root",
+        "/corpus/evaluation/0",
+        "--work-root",
+        "/work",
+        "--asr-model",
+        "/models/asr",
+    ]
+    _run(command)
+    return _activate_converted_release(
+        layout,
+        work / "release",
+        config["artifacts"]["release"]["release_sha256"],
+    )
+
+
 def command_bootstrap(args: argparse.Namespace) -> int:
     config = load_config(args.config)
     layout = default_layout(args.cache_root, args.trace_root)
@@ -326,8 +520,15 @@ def command_bootstrap(args: argparse.Namespace) -> int:
     _executable("docker")
     _sync_host(layout, args.offline)
     _download_artifacts(args, layout)
+    # Artifact download/verification above guarantees that the active release
+    # exists and is valid. It is now safe to discard any hidden backup left by
+    # a process or machine failure during an earlier two-directory swap.
+    _remove_stale_conversion_activations(layout)
     require_free_space(layout.cache, deployment["minimum_build_free_gib"], "runtime build")
     _build_image(config, layout, offline=args.offline, no_cache=args.no_cache)
+    conversion_state: dict[str, Any] = {"artifact_materialization": "downloaded"}
+    if args.convert_from_source:
+        conversion_state = _convert_from_source(args, config, layout)
     image_id = subprocess.run(
         ["docker", "image", "inspect", "--format", "{{.Id}}", config["image"]["runtime"]],
         check=True,
@@ -341,6 +542,7 @@ def command_bootstrap(args: argparse.Namespace) -> int:
         "release_revision": config["artifacts"]["release"]["revision"],
         "runtime_image": config["image"]["runtime"],
         "runtime_image_id": image_id,
+        **conversion_state,
     }
     atomic_json(layout.state_file, state)
     print("Bootstrap complete. Run `./voicechat up`.")
@@ -917,6 +1119,25 @@ def command_test(args: argparse.Namespace) -> int:
     ).returncode
 
 
+def command_release(args: argparse.Namespace) -> int:
+    arguments = list(args.arguments)
+    if arguments[:1] == ["--"]:
+        arguments = arguments[1:]
+    if not arguments:
+        raise RuntimeError(
+            "release is maintainer-only; pass arguments for tools/release/upload_hf.py"
+        )
+    layout = default_layout(args.cache_root, args.trace_root)
+    return _run(
+        [
+            str(layout.cache / "venv/bin/python"),
+            str(REPO_ROOT / "tools/release/upload_hf.py"),
+            *arguments,
+        ],
+        cwd=REPO_ROOT,
+    ).returncode
+
+
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
@@ -925,6 +1146,8 @@ def parser() -> argparse.ArgumentParser:
     subparsers = result.add_subparsers(dest="command", required=True)
     bootstrap = subparsers.add_parser("bootstrap")
     bootstrap.add_argument("--offline", action="store_true")
+    bootstrap.add_argument("--convert-from-source", action="store_true")
+    bootstrap.add_argument("--asr-model")
     bootstrap.add_argument("--no-cache", action="store_true", help="force the final release build")
     bootstrap.set_defaults(handler=command_bootstrap)
     subparsers.add_parser("doctor").set_defaults(handler=command_doctor)
@@ -957,6 +1180,9 @@ def parser() -> argparse.ArgumentParser:
     test.add_argument("--output", type=Path)
     test.add_argument("--expect-session-limit", action=argparse.BooleanOptionalAction, default=True)
     test.set_defaults(handler=command_test)
+    release = subparsers.add_parser("release")
+    release.add_argument("arguments", nargs=argparse.REMAINDER)
+    release.set_defaults(handler=command_release)
     return result
 
 

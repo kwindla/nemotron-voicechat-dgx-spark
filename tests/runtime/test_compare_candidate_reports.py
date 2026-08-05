@@ -93,3 +93,34 @@ def test_component_difference_fails_even_when_live_verdicts_match(tmp_path: Path
     report = module.compare(left, right)
     assert report["passed"] is False
     assert report["components"]["nano"]["passed"] is False
+
+
+def test_explicit_staged_sustained_report_is_transparent_and_fail_closed(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    left, right = tmp_path / "downloaded", tmp_path / "converted"
+    write_reports(left)
+    write_reports(right)
+    (right / "report.json").write_text(
+        json.dumps({"passed": False, "error": "integrated sustained failed"}),
+        encoding="utf-8",
+    )
+    (right / "browser-attempts.json").write_text(
+        json.dumps({"passed": True}), encoding="utf-8"
+    )
+    (right / "multiturn").mkdir(exist_ok=True)
+    (right / "multiturn/report.json").write_text(
+        json.dumps({"passed": True}), encoding="utf-8"
+    )
+    sustained = tmp_path / "staged-sustained.json"
+    sustained.write_text(json.dumps({"passed": True}), encoding="utf-8")
+
+    report = module.compare(left, right, converted_sustained_report=sustained)
+    assert report["passed"] is True
+    assert report["live_verdicts"]["evidence"]["converted"]["sustained"] == str(
+        sustained.resolve()
+    )
+
+    sustained.write_text(json.dumps({"passed": False}), encoding="utf-8")
+    assert module.compare(left, right, converted_sustained_report=sustained)["passed"] is False

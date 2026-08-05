@@ -42,16 +42,23 @@ the retained diff.
 
 - NVIDIA public Voicechat fork reference:
   `vklimkov-nvidia/vllm@237ba3cafc14d514551539ad980f17d40d273dfa`
-- Qualified local image tag:
+- Historical comparison-oracle image tag:
   `nemotron-local/voicechat-vllm:public-candidate1-hotfix5-20260803`
-- Qualified image ID:
+- Historical comparison-oracle image ID:
   `sha256:fa11b6ef4ea2a8d6c1cc89f7c26ea5af2b98bb9421dd9867caa8ae95227b5c09`
+- Qualified public-build image tag:
+  `pipecat-ai/nemotron-voicechat-dgx-spark:production-candidate-1`
+- Qualified public-build image ID:
+  `sha256:6294053537329500a17a1684421cd3909224babd7423d677c6c5d6bceead0482`
+- Qualified public-build SBOM SHA-256:
+  `a065741de28dfddb10c57c9fc30fd206c4edb2931c8fc7e2f4691c93cd6197b2`
 - Driver: 580.142
 - Kernel: 6.17.0-1014-nvidia
 
-The historical qualified image is comparison evidence only. The public release
-image is rebuilt from the pinned public NVIDIA PyTorch base and public source
-graph; no historical EA/NGC layer may enter the public build.
+The historical image is comparison evidence only. The qualified release image
+was rebuilt with `--no-cache` from the pinned public NVIDIA PyTorch base and
+public source graph. Its complete history contains no historical EA/NGC layer,
+and the no-cache build reproduced the cached build's SBOM byte-for-byte.
 
 The calibration replay metadata preserves the capture-time label
 `nemotron-local/voicechat-vllm:public-runtime`. It is an informational record,
@@ -92,11 +99,13 @@ qualification re-measures prewarm and real-time factor inside the container;
 the former host-side 1.95x result is retained only as retired-architecture
 evidence.
 
-## Extraction source
+## Initial extraction source
 
-- Source worktree branch: `codex/pipecat-voicechat-service`
-- Source commit at extraction start:
+- Private source worktree branch at extraction start:
+  `codex/pipecat-voicechat-service`
+- Private source commit at extraction start:
   `addb8b2` (`docs: record Pipecat qualification phase status`)
 - Fable reviewed the extraction plan before implementation. The full review
   history is retained in the private development repository; this public tree
-  carries the resulting signed provenance and operational evidence.
+  carries the resulting signed provenance and operational evidence. These
+  names describe the initial extraction only and are not runtime inputs.

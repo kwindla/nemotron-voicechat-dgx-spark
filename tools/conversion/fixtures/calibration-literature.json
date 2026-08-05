@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Why do stories use conflict?", "expected_response_any": ["tension", "plot", "character", "story"]},
+  {"id": "turn-2", "text": "How can conflict change a character?", "expected_response_any": ["grow", "change", "learn", "character"]},
+  {"id": "turn-3", "text": "Summarize both ideas.", "expected_response_any": ["conflict", "story", "character", "growth"]}
+]

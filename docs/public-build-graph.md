@@ -1,7 +1,7 @@
 # Public runtime build graph
 
-This document is the Phase 1 boundary for reconstructing Production Candidate
-1 without its opaque local image lineage. The machine-readable identity is
+This document records how Production Candidate 1 was reconstructed without its
+opaque local image lineage. The machine-readable identity is
 [`config/qualified-candidate-1.json`](../config/qualified-candidate-1.json).
 
 ## What is qualified today
@@ -11,7 +11,7 @@ The derived Nano and EarTTS artifacts are exact-public: they originate from
 payloads are hashed, and each conversion was byte-identical across two runs.
 The application and retained Speech patch are checked into this repository.
 
-The qualified image is **not** a permissible release input. Docker reports one
+The historical oracle image is **not** a permissible release input. Docker reports one
 35.1 GB `Imported from -` layer beneath four reviewed patch layers. Historical
 records show that layer passed through EA/NGC-derived intermediates. The image
 and its final file hashes are retained solely as a behavioral and binary
@@ -29,7 +29,7 @@ comparison oracle.
 | Typed input | Pocket TTS snapshots pinned in the BOM | Isolated CPU-only worker environment inside the model container | `strict-v3` typed-input PCM injection |
 | Application | This repository | Install runtime server in the image; install Pipecat on the host from the locked environment | Foreground clone-to-Playground stack |
 
-Phase 4 must construct every row directly. It must not use the qualified image,
+The public build constructs every row directly. It does not use the oracle image,
 any `nemotron-local/voicechat-vllm:ea-*` tag, the retired EA checkpoint, or an
 NGC Voicechat image as a base or copy source.
 
@@ -112,7 +112,7 @@ port and test only the necessary behavior against the new public image.
 
 ## Build-time refusal rules
 
-The public Docker build added in Phase 4 must fail if any of these are true:
+The public Docker build fails if any of these are true:
 
 - the base image is not the pinned public digest;
 - a source checkout is not at its pinned full commit;
@@ -124,10 +124,12 @@ The public Docker build added in Phase 4 must fail if any of these are true:
 - a runtime dependency is fetched from an unpinned branch, tag, or package
   version.
 
-## Remaining parity work
+## Completed parity qualification
 
 The public Voicechat fork and the qualified local oracle do not share identical
-ancestry. Phase 4 therefore treats the public image as a new runtime candidate:
-patches are ported against the public sources, final file deltas are reviewed,
-and all component and live qualification gates run before promotion. Matching a
-historical file hash is useful evidence but is not a substitute for those gates.
+ancestry. The public image was therefore treated as a new runtime candidate:
+patches were ported against the public sources, final file deltas were reviewed,
+and all component and live qualification gates ran before promotion. The final
+no-cache image identity and SBOM digest are recorded in `docs/provenance.md`.
+Matching a historical file hash remained supporting evidence, not a substitute
+for those gates.

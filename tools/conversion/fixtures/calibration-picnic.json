@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Plan a vegetarian picnic for six.", "expected_response_any": ["vegetarian", "salad", "sandwich", "menu"]},
+  {"id": "turn-2", "text": "Make it nut-free and dairy-free.", "expected_response_any": ["dairy", "nut", "vegan", "free"]},
+  {"id": "turn-3", "text": "Give me the grouped shopping list.", "expected_response_any": ["produce", "pantry", "list", "shopping"]}
+]

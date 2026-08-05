@@ -104,7 +104,7 @@ def _verify_files(root: Path, expected: dict[str, dict[str, Any] | str]) -> None
             raise RuntimeError(f"artifact SHA-256 mismatch: {path}")
 
 
-def _verify_release(root: Path, expected_release_sha: str) -> dict[str, Any]:
+def verify_release(root: Path, expected_release_sha: str) -> dict[str, Any]:
     manifest_path = root / "manifests/release.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     actual_release_sha = manifest.pop("release_sha256", None)
@@ -195,7 +195,7 @@ def download_all(config: dict[str, Any], layout: Layout, *, offline: bool) -> di
             allow_patterns=patterns,
             offline=offline,
         )
-        release = _verify_release(layout.release, release_cfg["release_sha256"])
+        release = verify_release(layout.release, release_cfg["release_sha256"])
 
     bom = json.loads(
         (Path(__file__).resolve().parents[2] / "config/qualified-candidate-1.json").read_text()

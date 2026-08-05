@@ -31,7 +31,7 @@ No speech fixture is required. The command uses the in-container CPU-only
 Pocket worker to create a three-turn 16 kHz conversation plus a browser
 microphone fixture. It then runs, in order:
 
-1. torch-dependent component-gate contracts inside the public image;
+1. torch-dependent conversion tensor contracts inside the public image;
 2. Nano's complete 1,172-call held-out component replay;
 3. EarTTS eager and CUDA-graph decode with independent ASR;
 4. Pocket prewarm, CPU affinity, and faster-than-realtime synthesis;
@@ -70,10 +70,9 @@ disable the session-limit expectation:
 
 ## Downloaded versus converted artifacts
 
-The initial public release qualifies the downloaded, signed artifact. The
-production conversion pipeline will be published in a follow-up commit. After
-that stage-2 pipeline recreates `artifacts/release/`, run this same full suite
-against the converted cache and compare component outputs and live verdicts:
+Run the full suite once with the published release cache and once with a cache
+whose `artifacts/release/` is populated by `bootstrap --convert-from-source`.
+Then compare the component outputs and live verdicts:
 
 ```bash
 uv run python tools/qualification/compare_candidate_reports.py \
@@ -82,9 +81,32 @@ uv run python tools/qualification/compare_candidate_reports.py \
   --output /path/to/source-agreement.json
 ```
 
-The shipped comparator ignores timing and machine-specific paths. It requires exact
+The gates may be resumed on fresh stacks after a retained stochastic model
+failure. When the converted sustained gate is retained separately, make that
+staging explicit rather than copying or rewriting evidence:
+
+```bash
+uv run python tools/qualification/compare_candidate_reports.py \
+  --downloaded /path/to/downloaded-suite \
+  --converted /path/to/converted-component-browser-voice-suite \
+  --converted-sustained-report /path/to/sustained/report.json \
+  --output /path/to/source-agreement.json
+```
+
+The comparator ignores timing and machine-specific paths. It requires exact
 Nano component outputs, exact EarTTS component structure/transcription, and
 matching browser, multi-turn, sustained, and overall verdicts.
+
+On 2026-08-05, this comparison passed between the published HF artifact and a
+public-source reproduction. The source-agreement report SHA-256 is
+`1bf4ea21391865f293b5dca755088e4f9fe904ba1811744ade6aa9517df578b8`.
+The locally reproduced sustained report SHA-256 is
+`ee62c4547da3efa7f53a1e545d5acc7ad5c1ca440da1d91a437163236cca4608`.
+The latter answered 18/18 typed turns, passed independent ASR with zero
+near-silent responses, closed at exactly 12,000 model frames, measured a
+0.375 ms/minute late-block queue slope, and peaked at 399.69 ms implied debt.
+A separate failed source-runtime run that accumulated 2.98 seconds of debt
+after malformed late function-call recovery is retained as negative evidence.
 
 ## Release evidence
 

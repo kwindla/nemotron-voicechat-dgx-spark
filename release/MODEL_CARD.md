@@ -35,12 +35,10 @@ github.com/pipecat-ai/nemotron-voicechat-dgx-spark.
 - manifests/release.json: SHA-256 and byte count for every release file.
 - reports/: portable conversion evidence.
 
-The ordinary setup path downloads this release. The initial source release
-contains signed-artifact verification and the Nano/EarTTS component gates. The
-deterministic production conversion pipeline, corpus selection, dual
-clean-process conversion check, and exact reproduction command will be
-published in a follow-up commit after the long-running reproduction gate
-finishes.
+The ordinary setup path downloads this release. The source repository also
+contains the deterministic production conversion code, corpus selection,
+100 GiB disk guard, dual clean-process conversion check, component gates, and
+exact reproduction command.
 
 ## Qualification
 
@@ -51,11 +49,13 @@ the 80 ms cadence target and its two-frame p95 was a documented near miss near
 82 ms. Browser playback uses a small adaptive jitter buffer because delivery
 jitter can exceed one 80 ms audio slice.
 
-A sustained paced campaign exposed linear EarTTS step-time drift and growing
-playback queue lag in long sessions. The weights are therefore published as a
-qualified component/browser candidate, not as proof that sustained realtime
-operation has passed its release gate. Sustained no-queue-growth qualification
-remains a runtime release blocker.
+The current public runtime passed paced 12,000-frame qualification on both the
+downloaded artifact and a byte-identical public-source reproduction. Late-block
+queue slopes were 0.289 and 0.375 ms/minute, with peak implied playback debt of
+382 and 400 ms respectively; the earlier linear EarTTS drift did not recur.
+All 18 typed turns in each successful sustained run produced non-silent audio
+that passed independent ASR. Sessions close gracefully at the declared model
+frame limit.
 
 The qualified platform identity is:
 
@@ -71,11 +71,11 @@ Other hardware and software combinations are not qualified by this release.
 The upstream model can self-talk, repeat canned replies, choose or skip the
 wrong tool, mis-speak tool results, drop transcript words, or occasionally
 produce a silent response. The deployment adds bounded watchdog and recovery
-behavior but cannot eliminate model-level errors. Typed input is synthesized
-to audio and is half-duplex with microphone input. Session length and unified
-memory headroom are explicit runtime limits. Long sessions are not yet
-production-qualified because EarTTS latency and the playback queue grow over
-time in the current runtime.
+behavior but cannot eliminate model-level errors. One retained source-runtime
+campaign also encountered a malformed late function-call recovery that disabled
+two-frame drafting and failed the queue-debt gate; a fresh-stack repeat passed.
+Typed input is synthesized to audio and is half-duplex with microphone input.
+Session length and unified-memory headroom are explicit runtime limits.
 
 The replay metadata field `runtime.image` records the local image label used
 when the exact calibration/evaluation tensors were captured. The label is
@@ -85,6 +85,11 @@ and the tensor/file hashes in the release manifest.
 
 See the source repository's known-limitations and provenance documents for the
 complete operational record.
+
+This source copy includes qualification completed after immutable weight
+revision `a20c68547d27421c1e66bd501bf295569a0cc309` was published. It supersedes
+the model-card prose frozen at that revision; the qualified weight bytes and
+their signed manifest are unchanged.
 
 ## License and attribution
 

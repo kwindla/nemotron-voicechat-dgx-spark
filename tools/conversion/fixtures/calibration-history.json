@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Why did printing help early science?", "expected_response_any": ["books", "ideas", "knowledge", "print"]},
+  {"id": "turn-2", "text": "What other institution helped ideas spread?", "expected_response_any": ["university", "academy", "society", "school"]},
+  {"id": "turn-3", "text": "Give a balanced conclusion.", "expected_response_any": ["printing", "ideas", "knowledge", "science"]}
+]

@@ -44,11 +44,11 @@ def make_release(root: Path) -> dict:
 
 def test_signed_release_verifier_rejects_any_payload_change(tmp_path: Path) -> None:
     manifest = make_release(tmp_path)
-    result = bootstrap_download._verify_release(tmp_path, manifest["release_sha256"])
+    result = bootstrap_download.verify_release(tmp_path, manifest["release_sha256"])
     assert result["release_sha256"] == manifest["release_sha256"]
     (tmp_path / "nano/config.json").write_text('{"changed":true}', encoding="utf-8")
     with pytest.raises(RuntimeError, match="byte count mismatch"):
-        bootstrap_download._verify_release(tmp_path, manifest["release_sha256"])
+        bootstrap_download.verify_release(tmp_path, manifest["release_sha256"])
 
 
 def test_lfs_pointer_is_never_accepted_as_a_model(tmp_path: Path) -> None:

@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Wi-Fi works but websites fail. What first?", "expected_response_any": ["router", "network", "dns", "connection"]},
+  {"id": "turn-2", "text": "Other devices work. What does that rule out?", "expected_response_any": ["laptop", "device", "router", "network"]},
+  {"id": "turn-3", "text": "IP works but domain names fail. Diagnose it.", "expected_response_any": ["dns", "name"]}
+]

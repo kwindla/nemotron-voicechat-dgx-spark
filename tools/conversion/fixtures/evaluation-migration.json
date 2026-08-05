@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Name one reason birds migrate.", "expected_response_any": ["food", "weather", "breed", "winter"]},
+  {"id": "turn-2", "text": "Name one cue they use to navigate.", "expected_response_any": ["sun", "stars", "magnetic", "landmark"]},
+  {"id": "turn-3", "text": "Connect those answers in one sentence.", "expected_response_any": ["migrate", "navigate", "food", "weather"]}
+]

@@ -1,0 +1,123 @@
+{
+  "architectures": [
+    "EarTTSForCausalLM"
+  ],
+  "model_type": "eartts",
+  "vocab_size": 1,
+  "backbone_type": "gemma3_text",
+  "hidden_size": 1152,
+  "intermediate_size": 4608,
+  "num_hidden_layers": 28,
+  "num_attention_heads": 16,
+  "num_key_value_heads": 16,
+  "head_dim": 72,
+  "max_position_embeddings": 131072,
+  "rope_theta": 1000000.0,
+  "rope_local_base_freq": 10000.0,
+  "sliding_window": 7500,
+  "layer_types": [
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "full_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "full_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "full_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "full_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention"
+  ],
+  "latent_size": 512,
+  "codebook_size": 1024,
+  "num_quantizers": 31,
+  "exponent": 3.0,
+  "mog_num_layers": 3,
+  "mog_low_rank": 64,
+  "mog_num_predictions": 1024,
+  "mog_min_log_std": -4.0,
+  "mog_eps": 1e-06,
+  "num_iter": 8,
+  "noise_scale": 0.001,
+  "top_p_or_k": 0.95,
+  "guidance_scale": 0.2,
+  "emb_backbone_config": {
+    "encoder": {
+      "attention_dropout": 0.1,
+      "head_dim": 72,
+      "hidden_size": 1152,
+      "intermediate_size": 4608,
+      "num_attention_heads": 16,
+      "num_hidden_layers": 1,
+      "num_key_value_heads": 16,
+      "use_cache": false
+    },
+    "is_encoder_decoder": false
+  },
+  "emb_backbone_type": "t5gemma",
+  "emb_vocab_size": 131073,
+  "emb_char_vocab_size": 256,
+  "max_char_len": 76,
+  "pretrained_tokenizer_name": "/models/NVIDIA-Nemotron-Nano-9B-v2",
+  "use_subword_flag_emb": true,
+  "use_bos_eos_emb": true,
+  "use_gated_fusion_for_text_audio": true,
+  "use_audio_prompt_frozen_projection": true,
+  "enable_guidance": true,
+  "custom_input_specs": [
+    {
+      "name": "acoustic_tokens",
+      "dim": 31,
+      "dtype": "int32"
+    },
+    {
+      "name": "text_tokens",
+      "dtype": "int32"
+    },
+    {
+      "name": "text_mask"
+    },
+    {
+      "name": "bos_mask"
+    },
+    {
+      "name": "speaker_latent",
+      "dim": 1152
+    }
+  ],
+  "custom_outputs": [
+    "acoustic_tokens"
+  ],
+  "voicechat_checkpoint_repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+  "voicechat_checkpoint_revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+  "voicechat_checkpoint_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+  "voicechat_derived_from_ea": false,
+  "voicechat_converter_seed": 0,
+  "voicechat_tokenizer_source": {
+    "repository": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+    "revision": "6533e8de2c68e4536bf7c411d7a3ce5734111476",
+    "path": "/models/NVIDIA-Nemotron-Nano-9B-v2"
+  },
+  "quantization_config": {
+    "quant_method": "ea_w8a32"
+  },
+  "ea_w8a32_backbone": true,
+  "ea_w8a32_sampler_mlp": true
+}

@@ -6,6 +6,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
 
 def load_module():
     path = Path("tools/qualification/run_live_suite.py")
@@ -14,6 +16,26 @@ def load_module():
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
+
+
+def test_live_suite_fails_fast_when_playwright_chromium_is_missing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    module = load_module()
+
+    class FakePlaywright:
+        chromium = type("Chromium", (), {"executable_path": str(tmp_path / "missing")})()
+
+    class FakeContext:
+        def __enter__(self):
+            return FakePlaywright()
+
+        def __exit__(self, *_args):
+            return False
+
+    monkeypatch.setattr("playwright.sync_api.sync_playwright", lambda: FakeContext())
+    with pytest.raises(RuntimeError, match="playwright install chromium"):
+        module.require_browser_executable()
 
 
 def test_up_command_is_foreground_and_loopback(tmp_path: Path) -> None:
@@ -48,7 +70,7 @@ def test_asr_command_is_offline_and_mounts_model_read_only(tmp_path: Path) -> No
     assert f"{(tmp_path / 'asr.nemo').resolve()}:/models/asr.nemo:ro" in command
 
 
-def test_component_contract_tests_run_offline_in_runtime_image(
+def test_conversion_tensor_tests_run_offline_in_runtime_image(
     tmp_path: Path, monkeypatch
 ) -> None:
     module = load_module()
@@ -59,16 +81,18 @@ def test_component_contract_tests_run_offline_in_runtime_image(
         commands.append((command, kwargs))
 
     monkeypatch.setattr(module, "run_checked", capture)
-    module.run_component_contract_tests(args)
+    module.run_conversion_tensor_tests(args)
     command, kwargs = commands[0]
     assert command[:6] == ["docker", "run", "--rm", "--network", "none", "--workdir"]
     assert "--gpus" not in command
-    assert command[-3:] == [
+    assert command[-5:] == [
         "tests/conversion/test_nano_attribution.py",
+        "tests/conversion/test_nano_gptq_calibration.py",
+        "tests/conversion/test_package_replay_corpus.py",
         "tests/conversion/test_nano_replay.py",
         "tests/conversion/test_eartts_component_gate.py",
     ]
-    assert kwargs["log"] == tmp_path / "component-contract-tests.log"
+    assert kwargs["log"] == tmp_path / "conversion-tensor-tests.log"
 
 
 def test_gpu_component_prefix_uses_production_tokenizer_mount(tmp_path: Path) -> None:

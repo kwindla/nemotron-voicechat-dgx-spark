@@ -34,10 +34,11 @@ NUMBER_EQUIVALENTS = {
 
 
 def normalize(text: str) -> list[str]:
-    return [
-        NUMBER_EQUIVALENTS.get(token, token)
-        for token in re.findall(r"[a-z0-9]+", (text or "").lower())
-    ]
+    normalized = []
+    for token in re.findall(r"[a-z0-9]+", (text or "").lower()):
+        token = NUMBER_EQUIVALENTS.get(token, token)
+        normalized.append(str(int(token)) if token.isdigit() else token)
+    return normalized
 
 
 def contains_token_sequence(text: str, candidate: str) -> bool:
@@ -46,6 +47,24 @@ def contains_token_sequence(text: str, candidate: str) -> bool:
     return bool(needle) and any(
         haystack[offset : offset + len(needle)] == needle
         for offset in range(len(haystack) - len(needle) + 1)
+    )
+
+
+def semantic_candidate_match(text: str, candidate: str) -> bool:
+    """Match literal candidates plus the spoken form of an exact UTC time."""
+
+    if contains_token_sequence(text, candidate):
+        return True
+    expected_time = re.fullmatch(r"\s*(\d{1,2}):(\d{2})\s+UTC\s*", candidate, re.IGNORECASE)
+    if expected_time is None:
+        return False
+    hour, minute = (str(int(value)) for value in expected_time.groups())
+    spoken = " ".join(normalize(text))
+    return bool(
+        re.search(
+            rf"\b{re.escape(hour)} hours? (?:and )?{re.escape(minute)} minutes? utc\b",
+            spoken,
+        )
     )
 
 
@@ -119,6 +138,45 @@ def resolve_audio_path(run_dir: Path, recorded: str) -> Path:
     return source if source.is_file() else run_dir / source.name
 
 
+def runtime_gate_passed(report: dict[str, Any]) -> bool:
+    """Recompute the pre-ASR verdict so evaluator reruns are idempotent."""
+
+    limit_expected = bool(report.get("expected_session_position_limit"))
+    close_reason = (report.get("session_closed") or {}).get("reason")
+    sent_frames = report.get("sent_frames")
+    source_frames = report.get("source_frames")
+    if not isinstance(sent_frames, int) or not isinstance(source_frames, int):
+        return False
+    source_completion_ok = (
+        sent_frames < source_frames and close_reason == "session_position_limit"
+        if limit_expected
+        else sent_frames == source_frames and close_reason == "client_stop"
+    )
+    typed_jobs = report.get("typed_jobs") or {}
+    typed_completed = report.get("typed_completed")
+    typed_answered = report.get("typed_answered")
+    typed_unanswered = report.get("typed_unanswered")
+    allowed_unanswered = report.get("allowed_unanswered_at_fp32_base_rate")
+    responses = report.get("responses") or []
+    return bool(
+        not report.get("unexpected_errors")
+        and source_completion_ok
+        and (
+            not limit_expected or report.get("expected_session_limit_error_count") == 1
+        )
+        and isinstance(typed_completed, int)
+        and typed_completed >= max(1, len(typed_jobs) - 1)
+        and isinstance(typed_unanswered, int)
+        and isinstance(allowed_unanswered, int)
+        and typed_unanswered <= allowed_unanswered
+        and isinstance(typed_answered, int)
+        and len(responses) >= typed_answered
+        and (report.get("queue") or {}).get("passed") is True
+        and report.get("metric_sequence_complete") is True
+        and report.get("session_closed") is not None
+    )
+
+
 def configure_decoding(model: Any) -> None:
     from omegaconf import OmegaConf
 
@@ -188,7 +246,7 @@ def main() -> None:
         wer = word_error_rate(reference, hypothesis)
         expected = response.get("expected_response_any") or []
         semantic_match = not expected or any(
-            contains_token_sequence(hypothesis, candidate) for candidate in expected
+            semantic_candidate_match(hypothesis, candidate) for candidate in expected
         )
         passed = bool(hypothesis) and bool(reference) and wer <= args.max_wer and semantic_match
         response["external_asr"] = {
@@ -220,10 +278,11 @@ def main() -> None:
         ),
     }
     report["external_asr"] = asr_gate
-    report["passed"] = bool(report.get("passed")) and asr_gate["passed"]
+    report["runtime_gate_passed"] = runtime_gate_passed(report)
+    report["passed"] = report["runtime_gate_passed"] and asr_gate["passed"]
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(asr_gate, indent=2, sort_keys=True))
-    raise SystemExit(0 if asr_gate["passed"] else 1)
+    raise SystemExit(0 if report["passed"] else 1)
 
 
 if __name__ == "__main__":

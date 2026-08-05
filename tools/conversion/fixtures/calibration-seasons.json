@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Why does Earth have seasons?", "expected_response_any": ["tilt", "axis", "earth"]},
+  {"id": "turn-2", "text": "What happens in the other hemisphere?", "expected_response_any": ["summer", "winter", "opposite"]},
+  {"id": "turn-3", "text": "Explain it to a child.", "expected_response_any": ["tilt", "earth", "sun"]}
+]

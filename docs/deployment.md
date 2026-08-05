@@ -112,8 +112,7 @@ uv run --frozen ruff check .
 expensive; it generates its own speech fixtures and only requires `--asr-model`.
 Its default run exceeds 15 minutes and verifies graceful session-limit closure.
 See `docs/qualification.md` for its ordered gates and evidence layout.
-The initial public release downloads the signed converted artifacts. The
-maintainer publication tooling and deterministic production conversion
-pipeline will follow in stage 2. The public build graph and current
-reproduction status are documented in `docs/public-build-graph.md` and
+Maintainers use `./voicechat release -- ...` as the narrow wrapper around the
+signed HF publication tool. The full public build graph and exact conversion
+procedure are documented in `docs/public-build-graph.md` and
 `docs/weight-reproduction.md`.

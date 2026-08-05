@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Why do cities build public parks?", "expected_response_any": ["recreation", "nature", "community", "space"]},
+  {"id": "turn-2", "text": "How can parks improve health?", "expected_response_any": ["exercise", "stress", "air", "health"]},
+  {"id": "turn-3", "text": "Give one fair limitation.", "expected_response_any": ["cost", "maintenance", "space", "safety"]}
+]

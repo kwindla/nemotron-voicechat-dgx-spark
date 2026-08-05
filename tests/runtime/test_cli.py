@@ -1,19 +1,26 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import signal
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from nemotron_voicechat_runtime.artifacts import Layout, load_config
 from nemotron_voicechat_runtime.cli import (
+    _activate_converted_release,
     _bot_source_snapshot,
     _owned_launcher_process,
     _owned_pipecat_process,
     _process_start_time,
+    _remove_stale_conversion_activations,
+    _source_conversion_asr_model,
     _stop_stack,
+    _tree_copy_gib,
     _wait_ports_available,
+    command_release,
     command_restart_bot,
     command_up,
     model_container_command,
@@ -54,6 +61,11 @@ def test_model_command_is_loopback_only_and_uses_signed_release(tmp_path: Path) 
 def test_cli_exposes_stable_foreground_commands() -> None:
     cli = parser()
     assert cli.parse_args(["bootstrap", "--offline"]).offline is True
+    conversion = cli.parse_args(
+        ["bootstrap", "--convert-from-source", "--asr-model", "/tmp/parakeet.nemo"]
+    )
+    assert conversion.convert_from_source is True
+    assert conversion.asr_model == "/tmp/parakeet.nemo"
     up = cli.parse_args(["up", "--host", "0.0.0.0", "--port", "9000", "--reload-bot"])
     assert up.port == 9000
     assert up.reload_bot is True
@@ -61,18 +73,136 @@ def test_cli_exposes_stable_foreground_commands() -> None:
     assert cli.parse_args(["test", "--live"]).live is True
     assert cli.parse_args(["down"]).command == "down"
     assert cli.parse_args(["status"]).command == "status"
+    assert cli.parse_args(["release", "stage"]).arguments == ["stage"]
 
 
-def test_stage1_cli_withholds_conversion_and_release_commands(capsys) -> None:
-    cli = parser()
-    for arguments in (
-        ["release", "stage"],
-        ["bootstrap", "--convert-from-source"],
-        ["bootstrap", "--asr-model", "/tmp/parakeet.nemo"],
-    ):
-        with pytest.raises(SystemExit):
-            cli.parse_args(arguments)
-        assert "error:" in capsys.readouterr().err
+def test_source_conversion_requires_a_regular_asr_checkpoint(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="requires --asr-model"):
+        _source_conversion_asr_model(None)
+    with pytest.raises(RuntimeError, match="not a regular file"):
+        _source_conversion_asr_model(str(tmp_path / "missing.nemo"))
+    checkpoint = tmp_path / "parakeet.nemo"
+    checkpoint.write_bytes(b"checkpoint")
+    assert _source_conversion_asr_model(str(checkpoint)) == checkpoint.resolve()
+
+
+def test_source_conversion_transactionally_activates_verified_local_files(
+    tmp_path: Path, monkeypatch
+) -> None:
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+    downloaded = layout.release
+    (downloaded / "nano").mkdir(parents=True)
+    (downloaded / "eartts").mkdir()
+    (downloaded / "nano/model.safetensors").write_bytes(b"downloaded-nano")
+    (downloaded / "eartts/model.safetensors").write_bytes(b"downloaded-eartts")
+    (downloaded / "manifests").mkdir()
+    (downloaded / "manifests/release.json").write_text("signed\n", encoding="utf-8")
+
+    converted = tmp_path / "conversion/release"
+    (converted / "nano").mkdir(parents=True)
+    (converted / "eartts").mkdir()
+    local_nano = converted / "nano/model.safetensors"
+    local_eartts = converted / "eartts/model.safetensors"
+    local_nano.write_bytes(b"source-nano")
+    local_eartts.write_bytes(b"source-eartts")
+    reproduction = {
+        "schema": 1,
+        "kind": "voicechat_release_artifact_reproduction",
+    }
+    reproduction_sha = hashlib.sha256(
+        json.dumps(reproduction, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    reproduction["sha256"] = reproduction_sha
+    (converted / "reproduction.json").write_text(json.dumps(reproduction), encoding="utf-8")
+
+    verified: list[Path] = []
+
+    def verify(root: Path, expected_sha: str):
+        assert expected_sha == "signed-release-sha"
+        assert (root / "nano/model.safetensors").read_bytes() == b"source-nano"
+        assert (root / "eartts/model.safetensors").read_bytes() == b"source-eartts"
+        assert (root / "manifests/release.json").read_text() == "signed\n"
+        verified.append(root)
+        return {"release_sha256": expected_sha}
+
+    monkeypatch.setattr("nemotron_voicechat_runtime.bootstrap_download.verify_release", verify)
+    result = _activate_converted_release(layout, converted, "signed-release-sha")
+
+    assert result == {
+        "artifact_materialization": "source-converted",
+        "reproduction_sha256": reproduction_sha,
+    }
+    assert len(verified) == 2
+    assert (layout.release / "nano/model.safetensors").read_bytes() == local_nano.read_bytes()
+    assert (layout.release / "eartts/model.safetensors").read_bytes() == local_eartts.read_bytes()
+    assert not (layout.release / "nano/model.safetensors").samefile(local_nano)
+    assert not (layout.release / "eartts/model.safetensors").samefile(local_eartts)
+    assert not list(layout.artifacts.glob(".source-converted-release-*"))
+
+
+def test_source_conversion_refuses_a_corrupt_reproduction_report(tmp_path: Path) -> None:
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+    converted = tmp_path / "conversion/release"
+    (converted / "nano").mkdir(parents=True)
+    (converted / "eartts").mkdir()
+    (converted / "reproduction.json").write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "voicechat_release_artifact_reproduction",
+                "sha256": "not-the-report-hash",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="failed its self-hash"):
+        _activate_converted_release(layout, converted, "signed-release-sha")
+
+
+def test_stale_source_conversion_activation_cleanup_is_fail_closed(tmp_path: Path) -> None:
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+    stale = layout.artifacts / ".source-converted-release-interrupted"
+    (stale / "downloaded-release").mkdir(parents=True)
+    (stale / "downloaded-release/marker").write_text("old")
+
+    _remove_stale_conversion_activations(layout)
+    assert not stale.exists()
+
+    unexpected = layout.artifacts / ".source-converted-release-not-a-directory"
+    unexpected.write_text("unexpected")
+    with pytest.raises(RuntimeError, match="unexpected source-conversion activation path"):
+        _remove_stale_conversion_activations(layout)
+
+
+def test_activation_copy_reservation_rounds_up_component_bytes(tmp_path: Path) -> None:
+    nano = tmp_path / "nano"
+    eartts = tmp_path / "eartts"
+    nano.mkdir()
+    eartts.mkdir()
+    (nano / "weights").write_bytes(b"nano")
+    (eartts / "weights").write_bytes(b"eartts")
+
+    assert _tree_copy_gib((nano, eartts)) == 1
+    assert _tree_copy_gib((tmp_path / "missing",)) == 0
+
+
+def test_release_wrapper_strips_optional_argument_separator(
+    tmp_path: Path, monkeypatch
+) -> None:
+    captured: list[list[str]] = []
+
+    def run(command, **_kwargs):
+        captured.append(command)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli._run", run)
+    args = parser().parse_args(
+        ["--cache-root", str(tmp_path), "release", "--", "/tmp/stage", "--dry-run"]
+    )
+    assert command_release(args) == 0
+    assert captured[0][-2:] == ["/tmp/stage", "--dry-run"]
+    assert "--" not in captured[0]
 
 
 def test_no_persisted_auth_or_dotenv_contract_in_config() -> None:

@@ -22,6 +22,44 @@ def test_word_error_rate_normalizes_spoken_numbers() -> None:
     assert module.word_error_rate("one two", "one four") == 0.5
 
 
+def test_semantic_candidate_accepts_literal_and_spoken_utc_time() -> None:
+    module = load_module()
+    assert module.semantic_candidate_match("The result is sapphire.", "sapphire")
+    assert module.semantic_candidate_match(
+        "The current UTC time is 22 hours and 6 minutes UTC.", "22:06 UTC"
+    )
+    assert module.semantic_candidate_match("The time is 22 hours 6 minutes UTC.", "22:06 UTC")
+    assert not module.semantic_candidate_match(
+        "The current UTC time is 22 hours and 7 minutes UTC.", "22:06 UTC"
+    )
+    assert not module.semantic_candidate_match("It is 22:06 local time.", "22:06 UTC")
+
+
+def test_runtime_gate_verdict_is_recomputed_independently_of_prior_asr() -> None:
+    module = load_module()
+    report = {
+        "passed": False,
+        "source_frames": 15_000,
+        "sent_frames": 13_000,
+        "metric_sequence_complete": True,
+        "queue": {"passed": True},
+        "typed_jobs": {str(index): {} for index in range(18)},
+        "typed_completed": 18,
+        "typed_answered": 18,
+        "typed_unanswered": 0,
+        "allowed_unanswered_at_fp32_base_rate": 1,
+        "responses": [{} for _ in range(18)],
+        "unexpected_errors": [],
+        "expected_session_limit_error_count": 1,
+        "expected_session_position_limit": True,
+        "session_closed": {"reason": "session_position_limit"},
+        "external_asr": {"passed": False},
+    }
+    assert module.runtime_gate_passed(report)
+    report["queue"]["passed"] = False
+    assert not module.runtime_gate_passed(report)
+
+
 def test_audio_level_and_resampling(tmp_path: Path) -> None:
     module = load_module()
     source = tmp_path / "source.wav"

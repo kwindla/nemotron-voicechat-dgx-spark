@@ -1,0 +1,5 @@
+[
+  {"id": "turn-1", "text": "Compare a river delta with an estuary.", "expected_response_any": ["sediment", "delta", "estuary"]},
+  {"id": "turn-2", "text": "Which forms where tides remove sediment?", "expected_response_any": ["estuary", "tide"]},
+  {"id": "turn-3", "text": "What field clue distinguishes them?", "expected_response_any": ["sediment", "channel", "tide", "shape"]}
+]

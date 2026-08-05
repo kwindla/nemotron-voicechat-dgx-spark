@@ -307,8 +307,8 @@ def run_component_gates(args: argparse.Namespace) -> None:
     )
 
 
-def run_component_contract_tests(args: argparse.Namespace) -> None:
-    """Run torch-dependent component-gate contracts in the pinned CUDA image.
+def run_conversion_tensor_tests(args: argparse.Namespace) -> None:
+    """Run torch-dependent conversion contracts in the pinned CUDA image.
 
     The Pipecat host environment deliberately has no PyTorch. These tests are
     collected as visible skips there and executed here before any GPU gate.
@@ -335,10 +335,12 @@ def run_component_contract_tests(args: argparse.Namespace) -> None:
             "-p",
             "no:cacheprovider",
             "tests/conversion/test_nano_attribution.py",
+            "tests/conversion/test_nano_gptq_calibration.py",
+            "tests/conversion/test_package_replay_corpus.py",
             "tests/conversion/test_nano_replay.py",
             "tests/conversion/test_eartts_component_gate.py",
         ],
-        log=args.output / "component-contract-tests.log",
+        log=args.output / "conversion-tensor-tests.log",
         timeout=300,
     )
 
@@ -392,9 +394,25 @@ def prepare_fixtures(args: argparse.Namespace) -> None:
         )
 
 
+def require_browser_executable() -> Path:
+    """Fail before GPU work when Playwright's pinned Chromium is absent."""
+
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as playwright:
+        executable = Path(playwright.chromium.executable_path)
+    if not executable.is_file():
+        raise RuntimeError(
+            f"Playwright Chromium is not installed at {executable}; run "
+            "`uv run --frozen playwright install chromium` before the live suite"
+        )
+    return executable
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    chromium = require_browser_executable()
     args.output.mkdir(parents=True, exist_ok=False)
-    run_component_contract_tests(args)
+    run_conversion_tensor_tests(args)
     prepare_fixtures(args)
     run_component_gates(args)
     if args.restart_cycles:
@@ -439,6 +457,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             {
                 "VOICECHAT_LIVE_PLAYGROUND_URL": f"http://127.0.0.1:{args.pipecat_port}/client/",
                 "VOICECHAT_LIVE_MIC_WAV": str(args.browser_mic_wav),
+                "PLAYWRIGHT_CHROMIUM_EXECUTABLE": str(chromium),
             }
         )
         browser_report = run_browser_gate(args, browser_environment)

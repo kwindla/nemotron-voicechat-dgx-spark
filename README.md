@@ -3,9 +3,8 @@
 [NVIDIA NemotronLabs VoiceChat](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-VoiceChat-11B)
 is an end-to-end, speech-to-speech, full-duplex model for conversational AI.
 
-NVIDIA describes VoiceChat as the first open, full-duplex model to support tool
-calling. It released the model as a research-oriented "Labs" checkpoint to
-facilitate community development.
+This is the first open source, full-duplex model to support tool
+calling. NVIDIA released the model as a research-oriented "Labs" checkpoint.
 
 This repository runs VoiceChat 11B on one DGX Spark. To sustain real-time
 inference on Spark, we quantized the Nano and EarTTS weights, patched vLLM, and
@@ -25,16 +24,12 @@ Allow 1–2 hours and at least 90 GiB of free space. You may need to accept the
 [NVIDIA model terms](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-VoiceChat-11B)
 and run `hf auth login`, or provide `HF_TOKEN` only to the bootstrap command.
 No credential is copied into the image or required at runtime.
-Runtime is local and offline: there is no `.env` file, application API key,
-cloud model, or system service.
+Runtime is local and offline, once all the model weights and dependencies are downloaded.
 
 `./voicechat up` takes about seven minutes to start. You will see the
 `PIPECAT DEVELOPMENT RUNNER` banner when the full stack is ready.
 
 Open **http://127.0.0.1:7860/client/**.
-
-Remote browser testing needs an HTTPS origin because browsers do not grant
-microphone access to insecure origins other than localhost or loopback.
 
 The client uses Pipecat's
 [SmallWebRTCTransport](https://docs.pipecat.ai/api-reference/server/services/transport/small-webrtc)
@@ -42,19 +37,18 @@ for a low-latency peer-to-peer connection between the browser and the host
 Pipecat bot. The bot talks to the Docker inference server over a separate,
 loopback-only WebSocket.
 
+Remote browser testing needs an HTTPS origin because browsers do not grant
+microphone access to insecure origins other than localhost or loopback. You can use ngrok for this.
+
 ```bash
 # Run in another terminal.
 ngrok http http://127.0.0.1:7860
 ```
 
-Open the HTTPS URL printed by ngrok. The tunnel exposes the Playground and
-WebRTC signaling endpoint, but media remains WebRTC; restrictive NAT or
-firewalls may require STUN/TURN or another Pipecat transport. The ngrok URL has
-no application authentication and the stack supports one client, so share it
-carefully. Never tunnel the raw model port (`8786`).
+Open the HTTPS URL printed by ngrok. The tunnel exposes the Pipecat Playground UI and a
+WebRTC signaling endpoint. If you are behind a restrictive firewall, you may need to use a different Pipecat transport (WebSocket, or commercial WebRTC cloud).
 
-Stop the foreground stack with Ctrl-C. Bootstrap requires network access, but
-running the stack (`./voicechat up`) can happen entirely offline.
+Stop the foreground stack with Ctrl-C.
 
 ## What's in this repo
 
@@ -63,10 +57,11 @@ verification, component gates, end-to-end qualification suite, Pipecat service,
 and sample bot in
 [`demo.py`](src/nemotron_voicechat_pipecat/demo.py).
 
-The deterministic production conversion pipeline and dual-source verification
-will be published in a follow-up commit after their long-running reproduction
-gate finishes. The converted weights and their content-addressed provenance
-are [public on Hugging Face](https://huggingface.co/pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark).
+The deterministic production conversion pipeline is included for developers
+who want to reproduce or extend the quantization work. The converted weights
+and their content-addressed provenance are
+[public on Hugging Face](https://huggingface.co/pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark),
+so ordinary installations do not run the conversion.
 
 The current release contains:
 
@@ -107,7 +102,7 @@ CPU-only Python worker, so its PyTorch does not conflict with CUDA PyTorch.
   [known limitations](docs/known-limitations.md) for measured runtime behavior
   and upstream model limitations.
 
-## Editing the bot
+## Editing the bot (system instruction, tools list, etc)
 
 The system prompt, tool schemas, and handlers live in
 [`demo.py`](src/nemotron_voicechat_pipecat/demo.py). Keep the loaded model
@@ -135,6 +130,21 @@ Changes apply to new sessions and require neither bootstrap nor an image build.
 ./voicechat down                 # orphan cleanup after an unclean exit
 ./voicechat bootstrap --offline # proven cache-only reinstall/revalidation
 ```
+
+Developers reproducing the conversion can run:
+
+```bash
+./voicechat bootstrap --convert-from-source --asr-model /path/to/parakeet.nemo
+```
+
+That path uses the exact published calibration/evaluation corpus, performs two
+conversions in separate processes, compares every output byte with the other
+run and Production Candidate 1, and runs the Nano and EarTTS component gates.
+After every check passes, bootstrap verifies the complete signed release and
+transactionally activates the locally reproduced Nano and EarTTS files. Subsequent
+`up` and `test --live` commands therefore exercise those local files. The
+conversion refuses to start if projected output would leave less than 100 GiB
+free.
 
 ## Docs and links
 
