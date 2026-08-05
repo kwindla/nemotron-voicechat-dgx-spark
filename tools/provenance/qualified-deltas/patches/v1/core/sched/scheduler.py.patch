@@ -1,0 +1,126 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -62,6 +62,13 @@
+         self.structured_output_manager = structured_output_manager
+         self.is_encoder_decoder = vllm_config.model_config.is_encoder_decoder
+         self.await_inputs = vllm_config.model_config.custom_input_specs is not None
++        # voicechat_public_pad_pair_scheduler: opt-in only; ordinary models and single-row appends retain
++        # byte-for-byte scheduler behavior.
++        self.voicechat_pad_pair_token_id = getattr(
++            vllm_config.model_config.hf_config,
++            "voicechat_pad_pair_token_id",
++            None,
++        )
+         # CFG (Classifier Free Guidance) support - check if model enables it
+         self.enable_guidance = getattr(
+             vllm_config.model_config.hf_config, "enable_guidance", False
+@@ -178,6 +185,10 @@
+             if speculative_config.use_eagle():
+                 self.use_eagle = True
+                 self.num_lookahead_tokens = self.num_spec_tokens
++        elif self.voicechat_pad_pair_token_id is not None:
++            # voicechat_public_pad_pair_scheduler: size speculative acceptance telemetry for one PAD.
++            # No KV lookahead is needed; both slots allocate in this step.
++            self.num_spec_tokens = 1
+ 
+         # Create the KV cache manager.
+         self.kv_cache_manager = KVCacheManager(
+@@ -318,9 +329,6 @@
+                 self.encoder_cache_manager.free(preempted_req)
+                 preempted_req.status = RequestStatus.PREEMPTED
+                 preempted_req.num_computed_tokens = 0
+-                if self.await_inputs and preempted_req.custom_inputs is not None:
+-                    preempted_req.custom_inputs_num_consumed = 0
+-                    preempted_req.custom_inputs_ready = True
+                 preempted_req.num_preemptions += 1
+                 if self.log_stats:
+                     preempted_req.record_event(
+@@ -857,18 +865,6 @@
+             if request.has_encoder_inputs:
+                 self._free_encoder_inputs(request)
+ 
+-        # Move requests whose custom inputs were just consumed to
+-        # waiting_input immediately, so _wait_for_custom_inputs can
+-        # see them before the next schedule() call.
+-        if self.await_inputs:
+-            i = 0
+-            while i < len(self.running):
+-                if not self.running[i].has_custom_inputs():
+-                    req = self.running.pop(i)
+-                    self.waiting_input.add(req.request_id)
+-                else:
+-                    i += 1
+-
+         # Clear the finished request IDs.
+         # NOTE: We shouldn't do self.finished_req_ids.clear() here because
+         # it will also affect the scheduler output.
+@@ -1428,15 +1424,31 @@
+             raise ValueError(f"Request {request_id} not found")
+         if not self.await_inputs:
+             raise ValueError(f"Engine is not awaiting inputs, can't set custom inputs")
+-
+-        # Auto-extend: if custom_inputs cover more tokens than the current
+-        # uncomputed gap, grow the sequence so the scheduler treats the
+-        # extra positions as a prefill chunk (single forward pass).
+-        first_tensor = next(iter(custom_inputs.values()))
+-        num_input_tokens = first_tensor.shape[0]
+-        num_uncomputed = request.num_tokens - request.num_computed_tokens
+-        if num_input_tokens > num_uncomputed:
+-            request.extend_sequence(num_input_tokens - num_uncomputed)
++        # voicechat_public_pad_pair_scheduler: a two-row continuation consists of the ordinary
++        # outstanding decode position plus one explicitly assumed PAD draft.
++        # vLLM's existing speculative rejection path then evaluates both target
++        # logits in one backbone pass and accepts the second only if the first
++        # target token equals this draft.
++        if self.voicechat_pad_pair_token_id is not None:
++            input_lengths = {int(value.shape[0]) for value in custom_inputs.values()}
++            if len(input_lengths) != 1:
++                raise ValueError(
++                    f"PAD-pair custom inputs have inconsistent lengths: {input_lengths}"
++                )
++            input_length = input_lengths.pop()
++            if input_length > 2:
++                raise ValueError(
++                    f"PAD-pair scheduler supports at most two positions, got {input_length}"
++                )
++            if input_length == 2:
++                # The consumed draft remains in this list until an ordinary
++                # proposer replaces it. This opt-in path is itself the
++                # proposer, so each serialized append replaces the stale PAD.
++                request.spec_token_ids = [int(self.voicechat_pad_pair_token_id)]
++            else:
++                # A non-drafted step must also replace the previous proposal;
++                # otherwise the stale PAD makes the scheduler request two rows.
++                request.spec_token_ids = []
+ 
+         request.set_custom_inputs(custom_inputs)
+         if request_id in self.waiting_input:
+@@ -1447,7 +1459,9 @@
+         # CFG pairs are NOT in waiting/running queues - they shadow the conditional
+         cfg_uncond = self.get_cfg_uncond_request(request)
+         if cfg_uncond is not None:
+-            # Share the same custom_inputs reference for CFG pair
++            # Share the same custom_inputs reference for CFG pair.
++            # voicechat_public_pad_pair_scheduler: mirror an explicitly installed PAD draft as well.
++            cfg_uncond.spec_token_ids = request.spec_token_ids.copy()
+             cfg_uncond.set_custom_inputs(custom_inputs)
+ 
+     def finish_requests(
+@@ -1534,16 +1548,7 @@
+         del self.requests[request.request_id]
+ 
+     def get_num_unfinished_requests(self) -> int:
+-        return len(self.waiting) + len(self.running) + len(self.waiting_input)
+-
+-    def has_schedulable_requests(self) -> bool:
+-        """Whether there are requests that can be scheduled right now.
+-
+-        Unlike has_unfinished_requests(), this excludes requests in
+-        waiting_input — those can't make forward progress until their
+-        custom inputs arrive (via ZMQ or SHM).
+-        """
+-        return len(self.waiting) > 0 or len(self.running) > 0
++        return len(self.waiting) + len(self.running)
+ 
+     def has_finished_requests(self) -> bool:
+         return len(self.finished_req_ids) > 0

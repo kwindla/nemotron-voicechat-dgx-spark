@@ -1,0 +1,4 @@
+--- /dev/null
++++ b/vllm/vllm_flash_attn/ops/triton/__init__.py
+@@ -0,0 +1 @@
++

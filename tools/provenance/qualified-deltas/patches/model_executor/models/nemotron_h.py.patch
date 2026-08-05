@@ -1,0 +1,447 @@
+--- a/vllm/model_executor/models/nemotron_h.py
++++ b/vllm/model_executor/models/nemotron_h.py
+@@ -19,11 +19,11 @@
+ """Inference-only NemotronH model."""
+ 
+ from collections.abc import Iterable
++import os
+ from typing import Optional
+ 
+ import torch
+ from torch import nn
+-
+ from vllm.attention.layer import Attention
+ from vllm.compilation.decorators import support_torch_compile
+ from vllm.config import CacheConfig, ModelConfig, VllmConfig
+@@ -31,34 +31,18 @@
+ from vllm.distributed.parallel_state import get_pp_group
+ from vllm.model_executor.layers.activation import ReLUSquaredActivation
+ from vllm.model_executor.layers.layernorm import RMSNorm
+-from vllm.model_executor.layers.linear import (
+-    ColumnParallelLinear,
+-    QKVParallelLinear,
+-    RowParallelLinear,
+-)
++from vllm.model_executor.layers.linear import ColumnParallelLinear, QKVParallelLinear, RowParallelLinear
+ from vllm.model_executor.layers.logits_processor import LogitsProcessor
+ from vllm.model_executor.layers.mamba.mamba_mixer2 import MambaMixer2
+-from vllm.model_executor.layers.mamba.mamba_utils import (
+-    MambaStateDtypeCalculator,
+-    MambaStateShapeCalculator,
+-)
++from vllm.model_executor.layers.mamba.mamba_utils import MambaStateDtypeCalculator, MambaStateShapeCalculator
+ from vllm.model_executor.layers.quantization import QuantizationConfig
+ from vllm.model_executor.layers.vocab_parallel_embedding import (
+     DEFAULT_VOCAB_PADDING_SIZE,
+     ParallelLMHead,
+     VocabParallelEmbedding,
+ )
+-from vllm.model_executor.model_loader.weight_utils import (
+-    default_weight_loader,
+-    maybe_remap_kv_scale_name,
+-)
+-from vllm.model_executor.models.interfaces import (
+-    HasInnerState,
+-    IsHybrid,
+-    SupportsLoRA,
+-    SupportsPP,
+-    SupportsQuant,
+-)
++from vllm.model_executor.model_loader.weight_utils import default_weight_loader, maybe_remap_kv_scale_name
++from vllm.model_executor.models.interfaces import HasInnerState, IsHybrid, SupportsLoRA, SupportsPP, SupportsQuant
+ from vllm.model_executor.models.utils import (
+     AutoWeightsLoader,
+     WeightsMapper,
+@@ -128,20 +112,13 @@
+         self.config = config
+ 
+         self.mixer = NemotronHMLP(
+-            config,
+-            quant_config=quant_config,
+-            bias=config.mlp_bias,
+-            prefix=f"{prefix}.mixer",
+-            layer_idx=layer_idx,
++            config, quant_config=quant_config, bias=config.mlp_bias, prefix=f"{prefix}.mixer", layer_idx=layer_idx,
+         )
+ 
+         self.norm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+ 
+     def forward(
+-        self,
+-        hidden_states: torch.Tensor,
+-        residual: Optional[torch.Tensor],
+-        **kwargs,
++        self, hidden_states: torch.Tensor, residual: Optional[torch.Tensor], **kwargs,
+     ):
+         if residual is None:
+             residual = hidden_states
+@@ -186,10 +163,7 @@
+         self.norm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+ 
+     def forward(
+-        self,
+-        hidden_states: torch.Tensor,
+-        residual: Optional[torch.Tensor],
+-        **kwargs,
++        self, hidden_states: torch.Tensor, residual: Optional[torch.Tensor], **kwargs,
+     ):
+         if residual is None:
+             residual = hidden_states
+@@ -234,7 +208,7 @@
+             self.head_dim = config.hidden_size // self.total_num_heads
+         self.q_size = self.num_heads * self.head_dim
+         self.kv_size = self.num_kv_heads * self.head_dim
+-        self.scaling = self.head_dim**-0.5
++        self.scaling = self.head_dim ** -0.5
+ 
+         self.qkv_proj = QKVParallelLinear(
+             config.hidden_size,
+@@ -262,11 +236,7 @@
+             prefix=f"{prefix}.attn",
+         )
+ 
+-    def forward(
+-        self,
+-        hidden_states: torch.Tensor,
+-        **kwargs,
+-    ) -> torch.Tensor:
++    def forward(self, hidden_states: torch.Tensor, **kwargs,) -> torch.Tensor:
+         qkv, _ = self.qkv_proj(hidden_states)
+         q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+         attn_output = self.attn(q, k, v)
+@@ -287,22 +257,13 @@
+         super().__init__()
+ 
+         self.mixer = NemotronHAttention(
+-            config,
+-            layer_idx,
+-            model_config,
+-            cache_config,
+-            quant_config,
+-            prefix=f"{prefix}.mixer",
++            config, layer_idx, model_config, cache_config, quant_config, prefix=f"{prefix}.mixer",
+         )
+ 
+         self.norm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+ 
+     def forward(
+-        self,
+-        positions: torch.Tensor,
+-        hidden_states: torch.Tensor,
+-        residual: Optional[torch.Tensor],
+-        **kwargs,
++        self, positions: torch.Tensor, hidden_states: torch.Tensor, residual: Optional[torch.Tensor], **kwargs,
+     ):
+         if residual is None:
+             residual = hidden_states
+@@ -333,38 +294,32 @@
+         lora_config = vllm_config.lora_config
+ 
+         self.config = config
+-        lora_vocab = (
+-            (lora_config.lora_extra_vocab_size * (lora_config.max_loras or 1))
+-            if lora_config
+-            else 0
+-        )
++        lora_vocab = (lora_config.lora_extra_vocab_size * (lora_config.max_loras or 1)) if lora_config else 0
+         self.vocab_size = config.vocab_size + lora_vocab
+         self.org_vocab_size = config.vocab_size
+ 
+         self.embed_tokens = VocabParallelEmbedding(
+-            self.vocab_size,
+-            config.hidden_size,
+-            org_num_embeddings=config.vocab_size,
+-        )
+-
+-        self.embed_asr_tokens = VocabParallelEmbedding(
+-            config.vocab_size,
+-            config.hidden_size,
+-            org_num_embeddings=config.vocab_size
++            self.vocab_size, config.hidden_size, org_num_embeddings=config.vocab_size,
++        )
++
++        # voicechat_public_optional_asr_and_function_head: the public checkpoint supplies combined embeddings and
++        # has no EA ASR embedding/head. Construct this 1.17 GB-class table only
++        # for an explicitly ASR-bearing legacy engine config.
++        custom_outputs = list(getattr(config, "custom_outputs", None) or [])
++        self.has_asr_head = "asr_tokens" in custom_outputs or "asr_logits" in custom_outputs
++        self.embed_asr_tokens = (
++            VocabParallelEmbedding(
++                config.vocab_size, config.hidden_size, org_num_embeddings=config.vocab_size
++            )
++            if self.has_asr_head
++            else None
+         )
+ 
+         def get_layer(prefix: str):
+             layer_idx = int(prefix.rsplit(".", 1)[1])
+-            layer_class = ALL_DECODER_LAYER_TYPES[
+-                config.hybrid_override_pattern[layer_idx]
+-            ]
++            layer_class = ALL_DECODER_LAYER_TYPES[config.hybrid_override_pattern[layer_idx]]
+             return layer_class(
+-                config,
+-                layer_idx,
+-                model_config,
+-                cache_config,
+-                quant_config=quant_config,
+-                prefix=prefix,
++                config, layer_idx, model_config, cache_config, quant_config=quant_config, prefix=prefix,
+             )
+ 
+         self.start_layer, self.end_layer, self.layers = make_layers(
+@@ -376,8 +331,15 @@
+ 
+         self.norm_f = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+ 
+-    def get_input_embeddings(self, input_ids: torch.Tensor, input_asr_ids: torch.Tensor) -> torch.Tensor:
+-        return self.embed_tokens(input_ids) + self.embed_asr_tokens(input_asr_ids)
++    def get_input_embeddings(
++        self, input_ids: torch.Tensor, input_asr_ids: Optional[torch.Tensor]
++    ) -> torch.Tensor:
++        embeddings = self.embed_tokens(input_ids)
++        if self.embed_asr_tokens is not None:
++            if input_asr_ids is None:
++                raise ValueError("ASR-bearing Nemotron-H config requires input_asr_ids")
++            embeddings = embeddings + self.embed_asr_tokens(input_asr_ids)
++        return embeddings
+ 
+     def forward(
+         self,
+@@ -400,16 +362,10 @@
+ 
+         residual = None
+         for i, layer in enumerate(self.layers):
+-            hidden_states, residual = layer(
+-                positions=positions,
+-                hidden_states=hidden_states,
+-                residual=residual,
+-            )
++            hidden_states, residual = layer(positions=positions, hidden_states=hidden_states, residual=residual,)
+ 
+         if not get_pp_group().is_last_rank:
+-            return IntermediateTensors(
+-                {"hidden_states": hidden_states, "residual": residual}
+-            )
++            return IntermediateTensors({"hidden_states": hidden_states, "residual": residual})
+         hidden_states, _ = self.norm_f(hidden_states, residual)
+         return hidden_states
+ 
+@@ -454,9 +410,7 @@
+         return loaded_params
+ 
+ 
+-class NemotronHForCausalLM(
+-    nn.Module, HasInnerState, SupportsLoRA, SupportsPP, IsHybrid, SupportsQuant
+-):
++class NemotronHForCausalLM(nn.Module, HasInnerState, SupportsLoRA, SupportsPP, IsHybrid, SupportsQuant):
+     hf_to_vllm_mapper = WeightsMapper(
+         orig_to_new_prefix={
+             "backbone": "model",
+@@ -464,17 +418,14 @@
+             "stt_model.embed_tokens": "model.embed_tokens",
+             "stt_model.embed_asr_tokens": "model.embed_asr_tokens",
+             "stt_model.lm_head": "lm_head",
++            "stt_model.function_head": "function_head",
+             "stt_model.asr_head": "asr_head",
+         },
+         orig_to_new_substr={"A_log": "A", "embeddings": "embed_tokens"},
+     )
+ 
+     packed_modules_mapping = {
+-        "qkv_proj": [
+-            "q_proj",
+-            "k_proj",
+-            "v_proj",
+-        ],
++        "qkv_proj": ["q_proj", "k_proj", "v_proj",],
+     }
+ 
+     # LoRA specific attributes
+@@ -485,10 +436,7 @@
+     embedding_padding_modules = ["lm_head"]
+ 
+     @classmethod
+-    def get_mamba_state_dtype_from_config(
+-        cls,
+-        vllm_config: "VllmConfig",
+-    ) -> tuple[torch.dtype, torch.dtype]:
++    def get_mamba_state_dtype_from_config(cls, vllm_config: "VllmConfig",) -> tuple[torch.dtype, torch.dtype]:
+         return MambaStateDtypeCalculator.mamba2_state_dtype(
+             vllm_config.model_config.dtype,
+             vllm_config.cache_config.mamba_cache_dtype,
+@@ -497,8 +445,7 @@
+ 
+     @classmethod
+     def get_mamba_state_shape_from_config(
+-        cls,
+-        vllm_config: "VllmConfig",
++        cls, vllm_config: "VllmConfig",
+     ) -> tuple[tuple[int, int], tuple[int, int, int]]:
+         """Calculate shapes for Mamba's convolutional and state caches.
+ 
+@@ -536,8 +483,31 @@
+         super().__init__()
+         self.config = config
+         self.scheduler_config = scheduler_config
+-        self.model = NemotronHModel(
+-            vllm_config=vllm_config, prefix=maybe_prefix(prefix, "model")
++        self.model = NemotronHModel(vllm_config=vllm_config, prefix=maybe_prefix(prefix, "model"))
++        # The EA export has independent text and ASR vocabulary heads. Keep
++        # existing checkpoints unchanged, but allow a candidate config to route
++        # both through the same GPTQ/Marlin quantization policy as other linears.
++        # voicechat_public_optional_asr_and_function_head: select packed output heads independently. The
++        # public model has a function head rather than the legacy EA ASR head,
++        # and an unlisted full-precision head must never receive a GPTQ method.
++        configured_quantized_heads = getattr(
++            config, "voicechat_quantized_output_heads", None
++        )
++        if configured_quantized_heads is None:
++            configured_quantized_heads = (
++                ["lm_head", "asr_head"]
++                if getattr(config, "ea_quantized_output_heads", False)
++                else []
++            )
++        configured_quantized_heads = set(configured_quantized_heads)
++        lm_head_quant_config = (
++            self.quant_config if "lm_head" in configured_quantized_heads else None
++        )
++        asr_head_quant_config = (
++            self.quant_config if "asr_head" in configured_quantized_heads else None
++        )
++        function_head_quant_config = (
++            self.quant_config if "function_head" in configured_quantized_heads else None
+         )
+         self.unpadded_vocab_size = config.vocab_size
+         if lora_config:
+@@ -549,20 +519,56 @@
+             padding_size=DEFAULT_VOCAB_PADDING_SIZE
+             # We need bigger padding if using lora for kernel
+             # compatibility
+-            if not lora_config
+-            else lora_config.lora_vocab_padding_size,
++            if not lora_config else lora_config.lora_vocab_padding_size,
++            quant_config=lm_head_quant_config,
+             prefix=maybe_prefix(prefix, "lm_head"),
+         )
+-        self.asr_head = ParallelLMHead(
+-            config.vocab_size,
+-            config.hidden_size,
+-            org_num_embeddings=config.vocab_size,
+-            padding_size=DEFAULT_VOCAB_PADDING_SIZE,
+-            prefix=maybe_prefix(prefix, "asr_head"),
+-        )
+-
+-        self.logits_processor = LogitsProcessor(
+-            self.unpadded_vocab_size, config.vocab_size
++        # voicechat_public_optional_asr_and_function_head: derive optional heads from the converter-declared
++        # custom outputs. Public VoiceChat has a function head and matched RNNT,
++        # while the retired EA export had an ASR head and no function head.
++        self.custom_outputs = list(getattr(config, "custom_outputs", None) or [])
++        self.has_asr_head = (
++            "asr_tokens" in self.custom_outputs or "asr_logits" in self.custom_outputs
++        )
++        self.has_function_head = (
++            "function_tokens" in self.custom_outputs
++            or "function_logits" in self.custom_outputs
++        )
++        self.asr_head = (
++            ParallelLMHead(
++                config.vocab_size,
++                config.hidden_size,
++                org_num_embeddings=config.vocab_size,
++                padding_size=DEFAULT_VOCAB_PADDING_SIZE,
++                quant_config=asr_head_quant_config,
++                prefix=maybe_prefix(prefix, "asr_head"),
++            )
++            if self.has_asr_head
++            else None
++        )
++        self.function_head = (
++            ParallelLMHead(
++                config.vocab_size,
++                config.hidden_size,
++                org_num_embeddings=config.vocab_size,
++                padding_size=DEFAULT_VOCAB_PADDING_SIZE,
++                quant_config=function_head_quant_config,
++                prefix=maybe_prefix(prefix, "function_head"),
++            )
++            if self.has_function_head
++            else None
++        )
++
++        if os.environ.get('EA_BF16_ASR_GEMV', '0') == '1' and self.asr_head is not None:
++            from vllm.model_executor.layers.ea_bf16_head import (
++                EABF16HeadLinearMethod,
++            )
++            self.asr_head.quant_method = EABF16HeadLinearMethod()
++        self.logits_processor = LogitsProcessor(self.unpadded_vocab_size, config.vocab_size)
++        # Extend torch.argmax's deterministic lowest-index exact-tie behavior
++        # to a caller-selected BF16 near-tie margin. Zero preserves upstream.
++        self.ea_asr_lexicographic_tiebreak_margin = float(
++            os.environ.get("EA_ASR_LEXICOGRAPHIC_TIEBREAK_MARGIN", "0")
+         )
+ 
+         self.make_empty_intmd_tensors = self.model.make_empty_intmd_tensors
+@@ -579,18 +585,49 @@
+         **kwargs,
+     ):
+         inputs_embeds = kwargs.get("combined_embeds", None)
+-        #input_asr_ids = kwargs.get("input_asr_ids", None) # currently not used
+-        hidden_states = self.model(
+-            input_ids, positions, intermediate_tensors, inputs_embeds, input_asr_ids=None
+-        )
+-        asr_logits = self.logits_processor(self.asr_head, hidden_states)
+-        asr_tokens = torch.argmax(asr_logits, dim=1) # sampling will be done outside the vllm model engine
+-        return hidden_states, self.compute_logits(hidden_states), asr_tokens, asr_logits
+-
+-    def compute_logits(
+-        self,
+-        hidden_states: torch.Tensor,
+-    ) -> Optional[torch.Tensor]:
++        # input_asr_ids = kwargs.get("input_asr_ids", None) # currently not used
++        hidden_states = self.model(input_ids, positions, intermediate_tensors, inputs_embeds, input_asr_ids=None)
++        # voicechat_public_optional_asr_and_function_head: vLLM maps tuple elements after hidden_states to
++        # config.custom_outputs in order. Compute only the public/legacy heads
++        # explicitly requested by that immutable converted-model config.
++        # voicechat_public_skip_unused_custom_text_logits: vLLM's ordinary sampler already evaluates
++        # lm_head after forward. Deterministic VoiceChat consumes that sampled token,
++        # so a converted config may omit custom text_logits and avoid evaluating the
++        # same 131072 x 4480 head a second time inside the CUDA graph.
++        text_logits = (
++            self.compute_logits(hidden_states)
++            if "text_logits" in self.custom_outputs
++            else None
++        )
++        asr_logits = None
++        asr_tokens = None
++        if self.asr_head is not None:
++            asr_logits = self.logits_processor(self.asr_head, hidden_states)
++            asr_tokens = torch.argmax(asr_logits, dim=1)
++            if self.ea_asr_lexicographic_tiebreak_margin > 0:
++                top_values, top_ids = torch.topk(asr_logits, 2, dim=1)
++                close = (top_values[:, 0] - top_values[:, 1]) <= self.ea_asr_lexicographic_tiebreak_margin
++                asr_tokens = torch.where(close, top_ids.min(dim=1).values, asr_tokens)
++
++        function_logits = None
++        function_tokens = None
++        if self.function_head is not None:
++            function_logits = self.logits_processor(self.function_head, hidden_states)
++            function_tokens = torch.argmax(function_logits, dim=1)
++
++        output_by_name = {
++            "text_logits": text_logits,
++            "asr_tokens": asr_tokens,
++            "asr_logits": asr_logits,
++            "function_tokens": function_tokens,
++            "function_logits": function_logits,
++        }
++        missing = [name for name in self.custom_outputs if output_by_name.get(name) is None]
++        if missing:
++            raise RuntimeError(f"Nemotron-H custom outputs are unavailable: {missing}")
++        return (hidden_states, *(output_by_name[name] for name in self.custom_outputs))
++
++    def compute_logits(self, hidden_states: torch.Tensor,) -> Optional[torch.Tensor]:
+         logits = self.logits_processor(self.lm_head, hidden_states)
+         return logits
+ 

@@ -1,0 +1,24 @@
+--- a/vllm/model_executor/layers/quantization/utils/marlin_utils.py
++++ b/vllm/model_executor/layers/quantization/utils/marlin_utils.py
+@@ -140,8 +140,19 @@
+             "with --quantization gptq."
+         )
+ 
+-    # Validate input_size_per_partition
+-    if input_size_per_partition % GPTQ_MARLIN_MIN_THREAD_K != 0:
++    # The GB10 native kernel has been numerically benchmarked at the exact
++    # VoiceChat down-projection shape. Keep the upstream guard for every other
++    # shape and quantization grouping.
++    ea_voicechat_down_projection = (
++        input_size_per_partition == 15680
++        and output_size_per_partition == 4480
++        and input_size == 15680
++        and group_size == -1
++    )
++    if (
++        input_size_per_partition % GPTQ_MARLIN_MIN_THREAD_K != 0
++        and not ea_voicechat_down_projection
++    ):
+         raise ValueError(
+             f"Weight input_size_per_partition = "
+             f"{input_size_per_partition} is not divisible "

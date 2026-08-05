@@ -1,0 +1,37 @@
+--- a/vllm/model_executor/layers/quantization/gptq_marlin.py
++++ b/vllm/model_executor/layers/quantization/gptq_marlin.py
+@@ -334,6 +334,23 @@
+         params_dtype: torch.dtype,
+         **extra_weight_attrs,
+     ) -> None:
++        # voicechat_marlin_group128_input_padding: K=15680 has a 64-element tail at group 128.
++        # The serialized W8 candidate pads the tail with exact zeros. Allocate
++        # Marlin's parameters/kernel at K=15744 while leaving the model-visible
++        # linear shape unchanged; apply() pads matching zero activations.
++        voicechat_input_padding = 0
++        if (
++            self.quant_config.group_size == 128
++            and self.quant_config.quant_type.size_bits == 8
++            and input_size_per_partition == 15680
++            and input_size == 15680
++            and sum(output_partition_sizes) == 4480
++        ):
++            voicechat_input_padding = 64
++            input_size_per_partition += voicechat_input_padding
++            input_size += voicechat_input_padding
++        layer._voicechat_marlin_input_padding = voicechat_input_padding
++
+         output_size_per_partition = sum(output_partition_sizes)
+         is_row_parallel = input_size != input_size_per_partition
+         weight_loader = extra_weight_attrs.get("weight_loader")
+@@ -461,6 +478,10 @@
+         x: torch.Tensor,
+         bias: Optional[torch.Tensor] = None,
+     ) -> torch.Tensor:
++        # voicechat_marlin_group128_input_padding
++        padding = getattr(layer, "_voicechat_marlin_input_padding", 0)
++        if padding:
++            x = torch.nn.functional.pad(x, (0, padding))
+         return self.kernel.apply_weights(layer, x, bias)
+ 
+ 

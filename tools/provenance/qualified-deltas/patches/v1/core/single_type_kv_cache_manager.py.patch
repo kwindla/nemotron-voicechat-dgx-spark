@@ -1,0 +1,81 @@
+--- a/vllm/v1/core/single_type_kv_cache_manager.py
++++ b/vllm/v1/core/single_type_kv_cache_manager.py
+@@ -15,7 +15,6 @@
+     MambaSpec,
+     MLAAttentionSpec,
+     SlidingWindowSpec,
+-    FastConformerConvSpec,
+ )
+ from vllm.v1.request import Request
+ 
+@@ -684,62 +683,6 @@
+         pass
+ 
+ 
+-class FastConformerConvManager(SingleTypeKVCacheManager):
+-    """Manager for FastConformer conv/mel/stft cache layers.
+-
+-    These layers use a fixed-size ring buffer: each request only ever
+-    accesses a single block (``block_table[:, 0]``), regardless of how
+-    long the sequence grows.  The manager therefore caps allocation at
+-    1 block per request and disables prefix caching.
+-    """
+-
+-    def get_num_blocks_to_allocate(
+-        self, request_id: str, num_tokens: int,
+-        new_computed_blocks: list[KVCacheBlock],
+-    ) -> int:
+-        already = len(self.req_to_blocks[request_id])
+-        return max(1 - already, 0)
+-
+-    def allocate_new_blocks(
+-        self, request_id: str, num_tokens: int,
+-    ) -> list[KVCacheBlock]:
+-        req_blocks = self.req_to_blocks[request_id]
+-        if len(req_blocks) >= 1:
+-            return []
+-        new_blocks = self.block_pool.get_new_blocks(1)
+-        req_blocks.extend(new_blocks)
+-        return new_blocks
+-
+-    def cache_blocks(self, request: Request, num_tokens: int) -> None:
+-        # Fixed-size ring buffer — nothing to promote to prefix cache.
+-        pass
+-
+-    @classmethod
+-    def find_longest_cache_hit(
+-        cls,
+-        block_hashes: list[BlockHash],
+-        max_length: int,
+-        kv_cache_group_ids: list[int],
+-        block_pool: BlockPool,
+-        kv_cache_spec: KVCacheSpec,
+-        use_eagle: bool,
+-        dcp_world_size: int = 1,
+-    ) -> tuple[list[KVCacheBlock], ...]:
+-        # No prefix caching for conv layers — every request starts fresh.
+-        return tuple([] for _ in range(len(kv_cache_group_ids)))
+-
+-    def remove_skipped_blocks(
+-        self, request_id: str, num_computed_tokens: int,
+-    ) -> None:
+-        # Only 1 block per request, nothing to evict.
+-        pass
+-
+-    def get_num_common_prefix_blocks(
+-        self, request_id: str, num_running_requests: int,
+-    ) -> int:
+-        return 0
+-
+-
+ spec_manager_map: dict[type[KVCacheSpec], type[SingleTypeKVCacheManager]] = {
+     FullAttentionSpec: FullAttentionManager,
+     MLAAttentionSpec: FullAttentionManager,
+@@ -747,7 +690,6 @@
+     ChunkedLocalAttentionSpec: ChunkedLocalAttentionManager,
+     MambaSpec: MambaManager,
+     CrossAttentionSpec: CrossAttentionManager,
+-    FastConformerConvSpec: FastConformerConvManager,
+ }
+ 
+ 

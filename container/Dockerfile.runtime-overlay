@@ -1,0 +1,27 @@
+ARG BASE_IMAGE=nemotron-local/voicechat-vllm:public-runtime-flat-f3e41ccc
+FROM ${BASE_IMAGE}
+
+# This consolidates the four qualified runtime-overlay layers. The default base
+# is a local, non-redistributable prerequisite; see docs/provenance.md.
+COPY src/nemotron_voicechat_runtime/ea_w8a32.py \
+     src/nemotron_voicechat_runtime/ea_bf16_head.py \
+     src/nemotron_voicechat_runtime/patch_ea_w8a32.py \
+     src/nemotron_voicechat_runtime/patch_public_skip_custom_text_logits.py \
+     src/nemotron_voicechat_runtime/patch_voicechat_marlin_g128_padding.py \
+     src/nemotron_voicechat_runtime/patch_public_pad_pair_scheduler.py \
+     /tmp/
+
+RUN python3 /tmp/patch_ea_w8a32.py \
+    && python3 /tmp/patch_public_skip_custom_text_logits.py \
+    && python3 /tmp/patch_voicechat_marlin_g128_padding.py \
+    && python3 /tmp/patch_public_pad_pair_scheduler.py \
+    && rm /tmp/ea_w8a32.py /tmp/ea_bf16_head.py \
+          /tmp/patch_ea_w8a32.py \
+          /tmp/patch_public_skip_custom_text_logits.py \
+          /tmp/patch_voicechat_marlin_g128_padding.py \
+          /tmp/patch_public_pad_pair_scheduler.py
+
+LABEL ai.pipecat.voicechat.runtime="public checkpoint production candidate 1" \
+      ai.pipecat.voicechat.nano_quantization="calibrated GPTQ W8 group-128" \
+      ai.pipecat.voicechat.eartts_quantization="W8 weights with FP32 activations" \
+      ai.pipecat.voicechat.pad_pair="conditional PAD draft with control barriers"

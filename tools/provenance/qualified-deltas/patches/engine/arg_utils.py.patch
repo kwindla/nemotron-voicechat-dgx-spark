@@ -1,0 +1,56 @@
+--- a/vllm/engine/arg_utils.py
++++ b/vllm/engine/arg_utils.py
+@@ -426,7 +426,6 @@
+     )
+     mm_encoder_tp_mode: MMEncoderTPMode = MultiModalConfig.mm_encoder_tp_mode
+     io_processor_plugin: Optional[str] = None
+-    shm_decode: bool = ModelConfig.shm_decode
+     skip_mm_profiling: bool = MultiModalConfig.skip_mm_profiling
+     video_pruning_rate: float = MultiModalConfig.video_pruning_rate
+     # LoRA fields
+@@ -515,8 +514,6 @@
+ 
+     async_scheduling: bool = SchedulerConfig.async_scheduling
+ 
+-    input_coalesce_timeout_ms: float = SchedulerConfig.input_coalesce_timeout_ms
+-
+     kv_sharing_fast_prefill: bool = CacheConfig.kv_sharing_fast_prefill
+ 
+     def __post_init__(self):
+@@ -636,9 +633,6 @@
+         )
+         model_group.add_argument(
+             "--io-processor-plugin", **model_kwargs["io_processor_plugin"]
+-        )
+-        model_group.add_argument(
+-            "--shm-decode", **model_kwargs["shm_decode"]
+         )
+ 
+         # Model loading arguments
+@@ -999,10 +993,6 @@
+         )
+         scheduler_group.add_argument(
+             "--async-scheduling", **scheduler_kwargs["async_scheduling"]
+-        )
+-        scheduler_group.add_argument(
+-            "--input-coalesce-timeout-ms",
+-            **scheduler_kwargs["input_coalesce_timeout_ms"],
+         )
+ 
+         # vLLM arguments
+@@ -1143,7 +1133,6 @@
+             logits_processors=self.logits_processors,
+             video_pruning_rate=self.video_pruning_rate,
+             io_processor_plugin=self.io_processor_plugin,
+-            shm_decode=self.shm_decode,
+         )
+ 
+     def validate_tensorizer_args(self):
+@@ -1496,7 +1485,6 @@
+             long_prefill_token_threshold=self.long_prefill_token_threshold,
+             disable_hybrid_kv_cache_manager=self.disable_hybrid_kv_cache_manager,
+             async_scheduling=self.async_scheduling,
+-            input_coalesce_timeout_ms=self.input_coalesce_timeout_ms,
+         )
+ 
+         if not model_config.is_multimodal_model and self.default_mm_loras:

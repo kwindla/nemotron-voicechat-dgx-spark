@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "kind": "nemotron_voicechat_dgx_spark_qualified_candidate",
+  "candidate": "production-candidate-1",
+  "captured_at_utc": "2026-08-04T18:04:05Z",
+  "derived_from_ea": false,
+  "support_profile": {
+    "architecture": "linux/arm64",
+    "gpu": "NVIDIA GB10",
+    "compute_capability": "12.1",
+    "driver_version": "580.142",
+    "kernel_version": "6.17.0-1014-nvidia"
+  },
+  "public_sources": {
+    "checkpoint": {
+      "repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+      "revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+      "model_file": "model.safetensors",
+      "bytes": 44382749892,
+      "sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+      "license": "OpenMDW-1.1",
+      "license_sha256": "c55ed9a3dd7c5df14a2496d8ff0f6b1941f807af1769b09611012c4ec56960a0",
+      "files": {
+        "LICENSE": "c55ed9a3dd7c5df14a2496d8ff0f6b1941f807af1769b09611012c4ec56960a0",
+        "config.json": "2e0b67b56fefeb4815e436d66ad84f2f94be192b1d543054c810ed239a28cff5",
+        "model.safetensors": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+        "rnnt_tokenizer/tokenizer.model": "07d4e5a63840a53ab2d4d106d2874768143fb3fbdd47938b3910d2da05bfb0a9",
+        "rnnt_tokenizer/tokenizer_config.json": "10e393422195708d9d131f66dda09430dc472d3f7d36c3e4fd0a5135bf4809b0",
+        "rnnt_tokenizer/vocab.json": "35051f795cec22352180d3a3d2a1383ffbe0d968cd14049ad6da254492f3678e"
+      },
+      "file_sizes": {
+        "LICENSE": 2704,
+        "config.json": 31984,
+        "model.safetensors": 44382749892,
+        "rnnt_tokenizer/tokenizer.model": 251056,
+        "rnnt_tokenizer/tokenizer_config.json": 268,
+        "rnnt_tokenizer/vocab.json": 9242
+      }
+    },
+    "nano_skeleton": {
+      "repository": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "revision": "6533e8de2c68e4536bf7c411d7a3ce5734111476",
+      "files": {
+        "config.json": "642dc554a725ea216be55c3018d0a6f3dc9963b24779c3cc97f5a0ea21e9dcc3",
+        "configuration_nemotron_h.py": "18186204622431c336a7c2813a80f0d37937dde962b8aebddf24caf5bffa03f7",
+        "generation_config.json": "dc3497ad1a44de1dd3956dc21b5fa527888f4e99d36f8dcebcdeb8b83f5969d9",
+        "modeling_nemotron_h.py": "9c831864760ab5d62787040fbd05039e6dfec4b6239d1fcc96ec635efc114734",
+        "special_tokens_map.json": "2a4d2e7403546286e5d75f5b6b3c197490be67fb1e2118e5c60ad5c26e6668b1",
+        "tokenizer.json": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f",
+        "tokenizer_config.json": "a3e4d48a0f8b4ce6fd746464199299cbdefe6ee202e34048940da2d9838a9aa6"
+      }
+    },
+    "nvidia_speech": {
+      "repository": "https://github.com/NVIDIA-NeMo/Speech.git",
+      "revision": "911ec674ab40f04302ef33672be4179f45a7310f",
+      "retained_patch": "src/nemotron_voicechat_runtime/patches/nemotron-voicechat-rnnt-turn-taking.patch",
+      "retained_patch_sha256": "2c56050e34f7cc62c3a23dfd40589a3bf502df3c5df5b6805452a0f9afa4d1ac"
+    },
+    "voicechat_vllm": {
+      "repository": "https://github.com/vklimkov-nvidia/vllm.git",
+      "revision": "237ba3cafc14d514551539ad980f17d40d273dfa"
+    },
+    "native_vllm": {
+      "repository": "https://github.com/vllm-project/vllm.git",
+      "revision": "b31e9326a7d9394aab8c767f8ebe225c65594b60",
+      "version": "0.17.1.dev0+gb31e9326a.fi065",
+      "build": {
+        "cuda_version": "13.0.1",
+        "flashinfer_version": "0.6.5",
+        "python_version": "3.12",
+        "torch_cuda_arch_list": "12.1",
+        "max_jobs": 8,
+        "nvcc_threads": 2
+      }
+    },
+    "base_image": {
+      "reference": "nvcr.io/nvidia/pytorch:25.12-py3",
+      "digest": "sha256:1dc787f5c6264fcc1c99809f99b84823e73ed4588d5a581b94290fc2a8fecff8",
+      "image_id": "sha256:edda8a492f5b602234cde15ddcc8f1f31562dcbe4eaabfb9433ece2dd21f9780"
+    },
+    "pocket_tts": {
+      "repository": "kyutai/pocket-tts-without-voice-cloning",
+      "model_revision": "d29db7978e464fb90cb3359ee0c69a273b9142cc",
+      "voice_revision": "e041936c75475d350b405bc870bcf7c22da4e9e6",
+      "model_sha256": "be9c6b4876d3f30740a8225dfcaa2e43dc4aeb753c15272735bee16bbb4abb0a",
+      "tokenizer_sha256": "d461765ae179566678c93091c5fa6f2984c31bbe990bf1aa62d92c64d91bc3f6",
+      "alba_sha256": "69c32db63ca56843d994f81f343f62e0bf2d73f7e4c9bc73e44bb1110b1d8845"
+    }
+  },
+  "qualified_artifacts": {
+    "source_manifest_sha256": "62c54185af70fc122f5d9bc14fe108a90e1a71837517ce7d6bd5b02256706ba7",
+    "composite_sha256_algorithm": "SHA-256 over each model shard sorted by name, encoded as name + NUL + decimal byte count + NUL + lowercase file SHA-256 + newline",
+    "conversion_recipe": {
+      "path": "config/conversion-recipe.json",
+      "sha256": "c03e5ac095a587461ef2c7c08797820d3fdc9e83b1feee8c89ea2851225f4822"
+    },
+    "calibration": {
+      "selection_manifest_file_sha256": "a57ac3e4c08b662dba0f79ce6b3c3c0459859a8467755c1612cabca0dc263779",
+      "selection_manifest_canonical_sha256": "e15300f9fa84bff7a46207e15ef69db96778591b146440dc6e5f759ec9cb4b57",
+      "calibration_source_manifest_sha256": "da183d38830f74348a408b0c9adbca62182d34534a3e498db3ad04b3a04fbeb6",
+      "calibration_selected_manifest_sha256": "a3855c6f4b36ff6b6767ab0229fd73d2e592f2b6799f4146f088e4d3baf054e0",
+      "calibration_conversations": 3,
+      "calibration_calls": 3934,
+      "evaluation_source_manifest_sha256": "5905bce5adac46720a671ea4c6020b576512f9537c8f3e14e68f7def0182c7a0",
+      "evaluation_selected_manifest_sha256": "3ca309ae2f551aba20ab28876a062fc8f65de89328b7c02117681706f671bf45",
+      "evaluation_conversations": 1,
+      "evaluation_calls": 1172,
+      "portable_release_manifest": "config/calibration-corpus-production-candidate-1.json",
+      "portable_release_sha256": "ad8ce2fe3a66fae72ce45703216265180066b2745dc32d829ee550b45c487bd5",
+      "contains_raw_user_recordings": false,
+      "redistributable": "yes",
+      "redistribution_basis": "Project-authored text fixtures plus fused-embedding outputs of the OpenMDW-1.1 parent model; no raw user recordings."
+    },
+    "nano": {
+      "method": "calibrated symmetric GPTQ W8A16 group-128",
+      "selected_tensor_count": 105,
+      "full_precision": ["function_head", "embeddings", "attention_projections"],
+      "composite_sha256": "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99",
+      "payload_bytes": 13866160192,
+      "files": {
+        "chat_template.jinja": "b7a3a520a4bc1beae6a25d615f9215580df8eea926f488256c2bef74039433c0",
+        "config.json": "2a0576a8b71aa09a5a6683d5a0d2e3fc099839ea9fe559d69a3458e828530391",
+        "configuration_nemotron_h.py": "18186204622431c336a7c2813a80f0d37937dde962b8aebddf24caf5bffa03f7",
+        "model-00001-of-00004.safetensors": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8",
+        "model-00002-of-00004.safetensors": "38ff5efa8d7de903d0dd45ed5cf22212db3cbc5ab87e99a3f2f010ac4ca63216",
+        "model-00003-of-00004.safetensors": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21",
+        "model-00004-of-00004.safetensors": "6d0f28a5cfa176c82e673e09f113b7e03e3f8ad4cb491f33b30501c7f767fdea",
+        "model.safetensors.index.json": "a83fcd79b1661af926ddf62eac663a269853443c3d03dc690da6928598a9fbad",
+        "quantize_config.json": "7eeba0b4d95e514ec6ba40a4c917bdde900282ce512eee1b509467078b5a58ec",
+        "special_tokens_map.json": "2a4d2e7403546286e5d75f5b6b3c197490be67fb1e2118e5c60ad5c26e6668b1",
+        "tokenizer.json": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f",
+        "tokenizer_config.json": "d05c050a1cffa3b00df7b0d2596425a17a3e5a03159ea04e0457f6cdf8d29cd4"
+      },
+      "reproducibility": {"runs": 2, "byte_identical": true}
+    },
+    "eartts": {
+      "method": "symmetric per-output-channel W8 weights with FP32 activations",
+      "selected_tensor_count": 205,
+      "composite_sha256": "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e",
+      "payload_bytes": 1412005244,
+      "files": {
+        "config.json": "f1b445f141fb7db1acdf2b76d7e9da0939831bac5c2363f40af99968cce385e8",
+        "model-00001-of-00001.safetensors": "aa4c17d2f313d357cf1ef8b7f8f3da05cbb65d4d2a747cdee089ad6bac0b7d56",
+        "model.safetensors.index.json": "e90d07f540b7614480689df6a3a46639b1a3f3e655753732765a85e6a32aeef2",
+        "quantize_config.json": "2bbd43e9c7715806ca2b2d4dbebd58b04dbb74d1c07e29397038e056b4ec409b"
+      },
+      "reproducibility": {"runs": 2, "byte_identical": true}
+    }
+  },
+  "qualified_runtime_reference": {
+    "use": "comparison-only; prohibited as a public-build input",
+    "image": "nemotron-local/voicechat-vllm:public-candidate1-hotfix5-20260803",
+    "image_id": "sha256:fa11b6ef4ea2a8d6c1cc89f7c26ea5af2b98bb9421dd9867caa8ae95227b5c09",
+    "opaque_imported_base_bytes": 35100000000,
+    "python": "3.12.3",
+    "packages": {
+      "torch": "2.10.0a0+b4e4ee81d3.nv25.12",
+      "vllm": "0.17.1.dev0+gb31e9326a.fi065",
+      "transformers": "4.56.0",
+      "safetensors": "0.8.0",
+      "compressed-tensors": "0.13.0",
+      "nvidia-modelopt": "0.37.0",
+      "fastapi": "0.135.2",
+      "uvicorn": "0.42.0"
+    },
+    "vllm_file_hashes": {
+      "vllm/model_executor/layers/cfg_ops.py": "110bc1ab78d9e06da7464d8b8288a969a677906583e315b8d4cddb9dfd1b31c5",
+      "vllm/model_executor/layers/ea_bf16_head.py": "f268151ca53f67bcd92b0f3fdc2692745d3e1658a65c7052e69e2d352f0e49eb",
+      "vllm/model_executor/layers/mamba/mamba_mixer2.py": "3ed6c808f123863b1723250719d808aa693c35283fcb068d4e00f925edaee809",
+      "vllm/model_executor/layers/quantization/__init__.py": "e16db0c57f3892dd1994a74e0473e03344f2c289d5a7740a737c1c59cac7c397",
+      "vllm/model_executor/layers/quantization/ea_w8a32.py": "804f465e7cee1b798a52ba8ecb7c870f92c61de977a7e093402481e722b29eaf",
+      "vllm/model_executor/layers/quantization/gptq_marlin.py": "fdd9b10ca7d79870a33b506e8a026ac2bc854c4b6576e6e93d4fa67631cdfeae",
+      "vllm/model_executor/models/eartts.py": "e86ff2197e5b086ae1c6b3e91c1df778ae6ade8a8386a3e38f84495cfd3e9f3a",
+      "vllm/model_executor/models/nemotron_h.py": "94b60cdb55619ab68bd6c136d6b4d5f0be108c780435c4c7dd9752aa2038eb8f",
+      "vllm/v1/cfg_metadata.py": "375118acbd3af5ee2e8d77da6e4661ff49a81f3cc69e580ce763d0d9065e3f8d",
+      "vllm/v1/core/sched/scheduler.py": "988ecb28f4383e6a9b8ab9595ab6ec5b9d08e267409c014304bb14fabe528ff3",
+      "vllm/v1/worker/gpu_model_runner.py": "2ce42b6fcafa1ff3320b78efe1d9c36462e646982c47ab088eed60d47605925f"
+    },
+    "delta_escrow": {
+      "path": "tools/provenance/qualified-deltas",
+      "index_sha256": "8854e6eb87c7adec5ed0cdba9a9b9d5f16cecf62182c8e928be91058aabc1117",
+      "qualified_python_files": 966,
+      "qualified_tree_sha256": "d66baad763ef5fdd021047391f8b76718f7c97115993bb080a663709c34259e2",
+      "patches": 44,
+      "classification": {
+        "added": 8,
+        "delta": 36,
+        "equal_both": 84,
+        "equal_native": 0,
+        "equal_voicechat": 838
+      }
+    }
+  },
+  "runtime_contract": {
+    "vllm_max_model_len": 12288,
+    "streaming_max_len": 12288,
+    "max_session_model_frames": 12000,
+    "rnnt_eou_frames": 20,
+    "rnnt_bou_frames": 3,
+    "rnnt_function_call_interrupt_ms": 240,
+    "transport_vad_min_rnnt_tokens": 2,
+    "speech_gate_dbfs": -40,
+    "speech_gate_min_frames": 3,
+    "continuous_after_speech": true,
+    "agent_no_text_frames": 30,
+    "agent_no_audio_frames": 30,
+    "agent_silence_eos_dbfs": -90,
+    "agent_silence_eos_frames": 20,
+    "response_tail_dbfs": -60,
+    "response_tail_silence_frames": 3,
+    "response_tail_max_frames": 25,
+    "delivery_silence_frames": 12,
+    "ws_ping_interval": null,
+    "ws_ping_timeout": null,
+    "perception_dtype": "bf16",
+    "perception_cudagraph": true,
+    "nano_pad_pair": true,
+    "nano_pad_pair_conditional": true,
+    "nano_pad_pair_control_barrier": true,
+    "vllm_delta_output_target": "eartts",
+    "eartts_enforce_eager": false,
+    "eartts_decode_pad_silence": true,
+    "eartts_reset_on_bos": true,
+    "cpu_codec_process": true,
+    "cpu_codec_async": true,
+    "cpu_codec_pointwise_linear": true,
+    "cpu_codec_threads": 2,
+    "cpu_codec_persistent": true,
+    "cyclic_gc_disabled": true,
+    "tts_text_token_ratio_cap": 16,
+    "tts_text_token_min": 5,
+    "typed_input": {
+      "language": "english_2026-04",
+      "voice": "alba",
+      "max_text_chars": 1000,
+      "frame_ms": 20,
+      "eou_margin": 1.25,
+      "torch_threads": 4,
+      "dynamic_int8": true,
+      "prewarm": true
+    }
+  },
+  "baseline_application_source": {
+    "commit": "0c1e1cf33146192e3f2011387ae7b840994b096e",
+    "files": {
+      "src/nemotron_voicechat_runtime/audio_compat.py": "140667c55d93d7d771daa3e74985a0104fb8b1d1b6ce0fce426f6beeded0ec15",
+      "src/nemotron_voicechat_runtime/cpu_codec_offload.py": "a6e2db2982677a388daeaff450deb44a2d4c04038477882b86a0d3011bb559c9",
+      "src/nemotron_voicechat_runtime/cpu_codec_worker.py": "23ec9b3eda8de65422f8c79a750cffe28562834cfdb76463fe20b75c0565bf72",
+      "src/nemotron_voicechat_runtime/ea_bf16_head.py": "95b10c5cefc656ad839d224302a76cfda2c2c2a51c8fc23a0f176f4a42a8fb17",
+      "src/nemotron_voicechat_runtime/ea_w8a32.py": "c9fe34c166a5a643005e12cadcf01ae92ee1aa379b102336acabe025aeaf3c82",
+      "src/nemotron_voicechat_runtime/patch_ea_w8a32.py": "2ccd9f5e7835e55ae5b9a09049049ea19c13dcbc96cb4a77f0b6740e3cbbbb39",
+      "src/nemotron_voicechat_runtime/patch_public_pad_pair_scheduler.py": "23fda8afe21ed3297509df177090bde44ed9e1b4d1af4a76eca6582a37426ed9",
+      "src/nemotron_voicechat_runtime/patch_public_skip_custom_text_logits.py": "1973fd81fa6ec08045b96e4c207d114b36991595b912a8277b35b958eb7c379a",
+      "src/nemotron_voicechat_runtime/patch_voicechat_marlin_g128_padding.py": "0154f58b370ca4078231c0b1dd0d65f4b9da88688442a7b0da47b4c1388c4680",
+      "src/nemotron_voicechat_runtime/protocol.py": "df4ab2515dfa677f37f93a37141bde61198798ed01e7010e9c2c3835653f84c7",
+      "src/nemotron_voicechat_runtime/provenance.py": "fc16c80296a947931b6857d7784d4aa734c95e5674f068f9a4632abfad196dd9",
+      "src/nemotron_voicechat_runtime/runtime_optimizations.py": "ca89643197e5facbea1b61698d044ea7b2ad89be94886c14103017ff42509c34",
+      "src/nemotron_voicechat_runtime/server.py": "c2b02cd1c4bd74530302ace62ae0ee86e5a1316b6f9da174172ae4de72668e6c"
+    }
+  }
+}

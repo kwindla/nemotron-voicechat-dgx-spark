@@ -1,0 +1,10 @@
+--- a/vllm/model_executor/models/registry.py
++++ b/vllm/model_executor/models/registry.py
+@@ -91,7 +91,6 @@
+     "Exaone4ForCausalLM": ("exaone4", "Exaone4ForCausalLM"),
+     "FalconForCausalLM": ("falcon", "FalconForCausalLM"),
+     "Fairseq2LlamaForCausalLM": ("fairseq2_llama", "Fairseq2LlamaForCausalLM"),
+-    "FastConformerCTC": ("fastconformer", "FastConformerCTC"),
+     "GemmaForCausalLM": ("gemma", "GemmaForCausalLM"),
+     "Gemma2ForCausalLM": ("gemma2", "Gemma2ForCausalLM"),
+     "Gemma3ForCausalLM": ("gemma3", "Gemma3ForCausalLM"),

@@ -1,0 +1,640 @@
+diff --git a/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py b/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
+index bb28de0c0..75298053e 100644
+--- a/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
++++ b/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
+@@ -542,10 +542,22 @@ class VllmLLMModel(ModelInterface):
+ 
+         is_finished = len(text_token_ids) < decode_steps or (result and result.is_finished)
+ 
+-        text_logits = result.custom_outputs["text_logits"] if result else None
+-
+         predicted_token = text_token_ids[-1]
+-        if self.top_p < 1.0 or self.repetition_penalty != 1.0 or (self.temperature != 1.0 and self.temperature != 0.0):
++        needs_custom_text_logits = (
++            self.top_p < 1.0
++            or self.repetition_penalty != 1.0
++            or (self.temperature != 1.0 and self.temperature != 0.0)
++        )
++        if needs_custom_text_logits:
++            text_logits = (
++                result.custom_outputs.get("text_logits")
++                if result and result.custom_outputs
++                else None
++            )
++            if text_logits is None:
++                raise RuntimeError(
++                    "Non-deterministic vLLM sampling requires custom text_logits"
++                )
+             # Use provided generated_tokens or create empty tensor
+             batch_size = text_logits.shape[0]
+             if generated_tokens is None:
+diff --git a/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py b/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
+index 6085e5562..0c5ab3a90 100755
+--- a/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
++++ b/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
+@@ -29,7 +29,9 @@ import argparse
+ import math
+ import torchaudio
+ import functools
++import hashlib
+ from dataclasses import dataclass
++from pathlib import Path
+ from typing import Optional, Tuple
+ from nemo.utils import logging
+ from jiwer import wer
+@@ -291,6 +293,17 @@ class NemotronVoicechatInferenceWrapper:
+         self._use_perception_cudagraph = use_perception_cudagraph
+         self._pad_and_drop_preencoded = bool(model_cfg.get("pad_and_drop_preencoded", False))
+ 
++        # Opt-in, diagnostic-only capture of the exact acoustic-code boundary.
++        # Leaving S2S_EARTTS_ACOUSTIC_CAPTURE_DIR unset avoids tensor copies,
++        # device-to-host transfers, and filesystem work in the frame loop.
++        self._eartts_capture_dir = None
++        self._eartts_capture_sequence = 0
++        self._eartts_capture_lock = threading.Lock()
++        self._eartts_capture_metadata_sha256 = None
++        capture_dir = os.environ.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip()
++        if capture_dir:
++            self._initialize_eartts_acoustic_capture(Path(capture_dir))
++
+         self._initialize_model()
+ 
+         logging.info("NemotronVoicechatInferenceWrapper initialized successfully.")
+@@ -298,6 +311,129 @@ class NemotronVoicechatInferenceWrapper:
+         logging.info(f"{self.model.stt_model.perception.encoder._cfg = }")
+         logging.info(f"{self.model.stt_model.perception.encoder.streaming_cfg = }")
+ 
++    @staticmethod
++    def _sha256_file(path: Path) -> str:
++        digest = hashlib.sha256()
++        with path.open("rb") as stream:
++            for block in iter(lambda: stream.read(1024 * 1024), b""):
++                digest.update(block)
++        return digest.hexdigest()
++
++    def _initialize_eartts_acoustic_capture(self, capture_dir: Path) -> None:
++        """Create immutable provenance for an opt-in live code capture."""
++        capture_dir = capture_dir.expanduser().resolve()
++        capture_dir.mkdir(parents=True, exist_ok=True)
++        run_id = f"{os.getpid()}-{time.time_ns()}"
++        run_dir = capture_dir / run_id
++        run_dir.mkdir()
++
++        wrapper_path = Path(__file__).resolve()
++        source_paths = {
++            "nemotron_voicechat_inference_wrapper.py": wrapper_path,
++            "model_factory.py": wrapper_path.with_name("model_factory.py"),
++            "streaming_llm_engine.py": wrapper_path.parent.parent
++            / "vllm"
++            / "streaming_llm_engine.py",
++            "nemotron_voicechat.py": wrapper_path.parents[2]
++            / "models"
++            / "nemotron_voicechat.py",
++        }
++        source_hashes = {
++            name: self._sha256_file(path) for name, path in source_paths.items()
++        }
++        config = OmegaConf.to_container(self.model_cfg, resolve=False)
++        config_json = json.dumps(config, sort_keys=True, separators=(",", ":"), default=str)
++        config_sha256 = hashlib.sha256(config_json.encode("utf-8")).hexdigest()
++        metadata = {
++            "schema": "nemotron-live-eartts-acoustic-capture-v1",
++            "run_id": run_id,
++            "pid": os.getpid(),
++            "source_hashes": source_hashes,
++            "model_config_sha256": config_sha256,
++            "model_config": config,
++            "runtime": {
++                "engine_type": str(self.engine_type),
++                "use_vllm_eartts": bool(self.use_vllm_eartts),
++                "use_codec_cache": bool(self.use_codec_cache),
++                "force_speech_silence_on_pad_env": os.environ.get(
++                    "S2S_INFERENCE_FORCE_SPEECH_SILENCE_ON_PAD"
++                ),
++                "force_speech_silence_on_eos": self.model_cfg.get(
++                    "inference_force_speech_silence_on_eos"
++                ),
++            },
++        }
++        metadata_bytes = (json.dumps(metadata, indent=2, sort_keys=True, default=str) + "\n").encode(
++            "utf-8"
++        )
++        metadata_path = run_dir / "metadata.json"
++        temporary_path = run_dir / ".metadata.json.tmp"
++        temporary_path.write_bytes(metadata_bytes)
++        os.replace(temporary_path, metadata_path)
++        self._eartts_capture_dir = run_dir
++        self._eartts_capture_metadata_sha256 = hashlib.sha256(metadata_bytes).hexdigest()
++        logging.warning(
++            "EarTTS acoustic-code capture ENABLED at %s; diagnostic capture adds "
++            "device-to-host synchronization and must not be used for timing",
++            run_dir,
++        )
++
++    def _capture_eartts_acoustic_frame(
++        self,
++        *,
++        stream_id,
++        request_id,
++        frame_index,
++        current_subword_id,
++        previous_subword_id,
++        current_subword_mask,
++        raw_generated_code,
++        recurrent_code,
++        decoder_code,
++        agent_idle_before,
++        agent_idle_after,
++    ) -> None:
++        """Persist one exact live EarTTS sample without changing normal execution."""
++        if self._eartts_capture_dir is None:
++            return
++        with self._eartts_capture_lock:
++            sequence = self._eartts_capture_sequence
++            self._eartts_capture_sequence += 1
++        record = {
++            "schema": "nemotron-live-eartts-acoustic-frame-v1",
++            "capture_metadata_sha256": self._eartts_capture_metadata_sha256,
++            "sequence": sequence,
++            "stream_id": stream_id,
++            "request_id": str(request_id),
++            "frame_index": int(frame_index),
++            "current_subword_id": current_subword_id.detach().cpu(),
++            "previous_subword_id": previous_subword_id.detach().cpu(),
++            "current_subword_mask": current_subword_mask.detach().cpu(),
++            "text_control": {
++                "is_bos": bool(
++                    (current_subword_id == self.model.tts_model.text_bos_id).all().item()
++                ),
++                "is_eos": bool(
++                    (current_subword_id == self.model.tts_model.text_eos_id).all().item()
++                ),
++                "is_pad": bool(
++                    (current_subword_id == self.model.tts_model.text_pad_id).all().item()
++                ),
++            },
++            # These three tensors are intentionally distinct. The raw sample is
++            # EarTTS output, recurrent_code is fed into the next EarTTS step,
++            # and decoder_code is what the live cached codec consumed.
++            "raw_generated_code": raw_generated_code.detach().cpu(),
++            "recurrent_code": recurrent_code.detach().cpu(),
++            "decoder_code": decoder_code.detach().cpu(),
++            "agent_idle_before": bool(agent_idle_before),
++            "agent_idle_after": bool(agent_idle_after),
++        }
++        final_path = self._eartts_capture_dir / f"frame-{sequence:09d}.pt"
++        temporary_path = self._eartts_capture_dir / f".frame-{sequence:09d}.pt.tmp"
++        torch.save(record, temporary_path)
++        os.replace(temporary_path, final_path)
++
+     @staticmethod
+     def _resolve_dtype(compute_dtype):
+         if isinstance(compute_dtype, torch.dtype):
+@@ -645,6 +781,19 @@ class NemotronVoicechatInferenceWrapper:
+             if unexpected_tts:
+                 logging.info(f"  {len(unexpected_tts)} unexpected TTS keys")
+ 
++            # ``load_file`` returns views into every tensor in the combined
++            # public checkpoint.  Only the TTS subset is needed here, and
++            # ``load_state_dict`` has already copied it into the model.  Do not
++            # retain the full 44 GB checkpoint (plus two alias dictionaries)
++            # while vLLM allocates its engines and the perception stack moves
++            # to CUDA; on unified-memory systems that can turn a small
++            # parameter transfer into sustained page thrashing.
++            del tts_sd
++            del eartts_tts_only
++            del eartts_state_dict
++            gc.collect()
++            logging.info("  Released TTS checkpoint state dictionaries")
++
+             if self.use_vllm_eartts:
+                 # gonna convert and load vllm eartts engine
+                 # Use object.__setattr__ to bypass PyTorch's module registration
+@@ -681,7 +830,28 @@ class NemotronVoicechatInferenceWrapper:
+             logging.info("  Native LLM deleted")
+ 
+         # Setup model
+-        self.model.to(self.device)
++        # Move top-level components independently so startup telemetry shows
++        # exactly where unified-memory placement time is spent. This is
++        # semantically equivalent for this container model (the root module has
++        # no direct parameters/buffers), while avoiding an opaque multi-minute
++        # gap in full vLLM LLM + EarTTS startup.
++        root_direct_parameters = list(self.model.parameters(recurse=False))
++        root_direct_buffers = list(self.model.buffers(recurse=False))
++        if root_direct_parameters or root_direct_buffers:
++            raise RuntimeError(
++                "NemotronVoiceChat root unexpectedly owns direct tensors; "
++                "component-wise device placement would be incomplete"
++            )
++        for component_name, component in self.model.named_children():
++            placement_started = time.perf_counter()
++            logging.info("Moving top-level component %s to %s...", component_name, self.device)
++            component.to(self.device)
++            logging.info(
++                "Moved top-level component %s to %s in %.3fs",
++                component_name,
++                self.device,
++                time.perf_counter() - placement_started,
++            )
+         self.model.eval()
+ 
+         # Convert only the S2S components to the configured dtype, not the TTS model
+@@ -905,6 +1075,11 @@ class NemotronVoicechatInferenceWrapper:
+ 
+         # Turn-taking source: "rnnt" (default) or "asr_head"
+         self._turn_taking_source = str(self.model_cfg.get("turn_taking_source", "rnnt")).lower()
++        if self._turn_taking_source not in {"rnnt", "asr_head"}:
++            raise ValueError(
++                "turn_taking_source must be 'rnnt' or 'asr_head'; "
++                f"got {self._turn_taking_source!r}"
++            )
+         # rnnt_eou_frames: number of consecutive 80 ms frames with NO new RNNT
+         # tokens (i.e. silence) before EOU is declared.  On EOU the agent BOS
+         # token is force-inserted so the agent starts speaking.
+@@ -2507,7 +2682,17 @@ class NemotronVoicechatInferenceWrapper:
+                 emb_idx = frame_offset if (self.use_perception_cache and perception_cache is not None and perception_cache.is_initialized()) else current_frame_index
+                 emb_idx = min(emb_idx, rnnt_enc.shape[1] - 1)
+                 rnnt_frame = rnnt_enc[:, emb_idx, :]  # [B, D]
+-                rnnt_partial_hypotheses, _rnnt_is_blank = self._rnnt_step(rnnt_frame, rnnt_partial_hypotheses)
++                # The cache-aware encoder's first S2S chunk is a 10 ms bootstrap
++                # alignment, not a complete 80 ms RNNT frame. Decoding it can
++                # emit a full max-symbol burst unrelated to the input utterance.
++                if current_frame_idx == 0:
++                    _rnnt_is_blank = torch.ones(
++                        rnnt_frame.shape[0], dtype=torch.bool, device=rnnt_frame.device
++                    )
++                else:
++                    rnnt_partial_hypotheses, _rnnt_is_blank = self._rnnt_step(
++                        rnnt_frame, rnnt_partial_hypotheses
++                    )
+                 if not _fc_in_progress:
+                     self._apply_rnnt_turn_taking(current_frame_idx, gen_text, _rnnt_is_blank, rnnt_partial_hypotheses)
+                 predicted_tokens[:, frame_offset] = gen_text[:, current_frame_idx]
+@@ -2546,6 +2731,10 @@ class NemotronVoicechatInferenceWrapper:
+                 code, past_key_values = self.model.tts_model.infer_codes_one_step(
+                         **inputs
+                 )
++                capture_acoustic_codes = self._eartts_capture_dir is not None
++                if capture_acoustic_codes:
++                    raw_generated_code = code.detach().clone()
++                    agent_idle_before = self._get_agent_idle(stream_id)
+ 
+                 torch.cuda.synchronize()
+                 time_tts_model = time.time() - start_tts_model
+@@ -2636,6 +2825,29 @@ class NemotronVoicechatInferenceWrapper:
+                     # worst case is a stale flag for one frame.
+                     pass
+ 
++                if capture_acoustic_codes:
++                    decoder_code_for_capture = new_codes_for_decode[-1]
++                    if hasattr(self.model.tts_model, '_control_codes'):
++                        from nemo.collections.speechlm2.models.duplex_ear_tts import replace_control_speech_codes
++                        decoder_code_for_capture = replace_control_speech_codes(
++                            decoder_code_for_capture,
++                            self.model.tts_model._control_codes,
++                            getattr(self.model.tts_model, 'codec_silence_tokens', None),
++                        )
++                    self._capture_eartts_acoustic_frame(
++                        stream_id=stream_id,
++                        request_id=effective_request_id,
++                        frame_index=current_frame_idx,
++                        current_subword_id=current_subword_id,
++                        previous_subword_id=prev_subword_id,
++                        current_subword_mask=current_subword_mask,
++                        raw_generated_code=raw_generated_code,
++                        recurrent_code=code,
++                        decoder_code=decoder_code_for_capture,
++                        agent_idle_before=agent_idle_before,
++                        agent_idle_after=self._get_agent_idle(stream_id),
++                    )
++
+         # exit for-loop & do audio decoding non-autoregressively (if decode_audio is True)
+         if self.decode_audio:
+             samples_per_audio_output_frame = self._samples_per_audio_output_frame()
+@@ -2793,6 +3005,8 @@ class NemotronVoicechatInferenceWrapper:
+         """
+         if not self.model_cfg.get("force_turn_taking", False):
+             return
++        if self._turn_taking_source != "asr_head":
++            return
+ 
+         threshold        = self.model_cfg.get("force_turn_taking_threshold", 40)
+         pad_window_steps = self.model_cfg.get("force_turn_taking_pad_window", 25)
+@@ -3016,6 +3230,8 @@ class NemotronVoicechatInferenceWrapper:
+         """Apply RNNT blank/non-blank counts to trigger agent BOS (EOU) or EOS (BOU)."""
+         if not self.model_cfg.get("force_turn_taking", False):
+             return
++        if self._turn_taking_source != "rnnt":
++            return
+ 
+         asr_eou         = int(self.model_cfg.get("rnnt_eou_frames",
+                               self.model_cfg.get("asr_eou", 15)))
+@@ -3083,8 +3299,7 @@ class NemotronVoicechatInferenceWrapper:
+             _is_forced_bos = (_forced_bos_flags is not None and _forced_bos_flags[b].item())
+             if _forced_bos_flags is not None:
+                 rnnt_state['forced_bos'][b] = False  # consume flag each frame
+-            if (not agent_speaking and not first_turn and not speech_confirmed
+-                    and current_tok == bos_id and not _is_forced_bos
++            if (not agent_speaking and current_tok == bos_id and not _is_forced_bos
+                     and self.model_cfg.get("rnnt_self_play_suppression", False)):
+                 if self._post_tc_bos_exempt:
+                     self._post_tc_bos_exempt = False
+@@ -3093,9 +3308,24 @@ class NemotronVoicechatInferenceWrapper:
+                 else:
+                     gen_text[b, t] = self.model.stt_model.text_pad_id
+                     logging.debug(f"RNNT self-play suppression t={t}: LLM BOS suppressed (no user speech)")
+-                    return
+-
+-            if (agent_window == bos_id).any() or current_tok == bos_id:
++                    current_tok = self.model.stt_model.text_pad_id
++
++            # A native EOS outside an active agent turn is not a turn boundary.
++            # Treating it as one clears RNNT speech evidence and can prevent the
++            # user's first EOU from ever firing.
++            if not agent_speaking and current_tok == eos_id:
++                gen_text[b, t] = self.model.stt_model.text_pad_id
++                current_tok = self.model.stt_model.text_pad_id
++
++            # BOS is an edge, not a level. Native BOS tokens generated while an
++            # agent turn is already open must not restart turn accounting or be
++            # forwarded into TTS as repeated control tokens.
++            if agent_speaking and current_tok == bos_id:
++                gen_text[b, t] = self.model.stt_model.text_pad_id
++                current_tok = self.model.stt_model.text_pad_id
++                logging.debug(f"RNNT turn-state t={t}: duplicate agent BOS suppressed")
++
++            if current_tok == bos_id:
+                 agent_speaking = True
+                 rnnt_state['agent_speaking'][b] = True
+                 rnnt_state['first_turn'][b] = False
+@@ -3109,7 +3339,14 @@ class NemotronVoicechatInferenceWrapper:
+                     if '_turn_text_tokens' not in rnnt_state:
+                         rnnt_state['_turn_text_tokens'] = {}
+                     rnnt_state['_turn_text_tokens'][b] = 0
+-            if (agent_window == eos_id).any() or current_tok == eos_id:
++                    # Consume transport speech evidence at every accepted turn
++                    # opening, including native post-tool BOS. Otherwise mic
++                    # energy observed before/during the response can be reused
++                    # to open another response after the current one ends.
++                    self._transport_user_speech_seen = False
++                    self._transport_input_silent_frames = 0
++            if current_tok == eos_id:
++                self._external_agent_eos_requested = False
+                 agent_speaking = False
+                 rnnt_state['agent_speaking'][b] = False
+                 rnnt_state['speech_confirmed'][b] = False
+@@ -3117,6 +3354,26 @@ class NemotronVoicechatInferenceWrapper:
+                 speech_confirmed = False
+                 nonblank_total = 0
+ 
++            # The transport can observe decoded PCM, which is the strongest
++            # signal that EarTTS has finished rendering a response. It requests
++            # EOS only after a sustained, post-text silence window. Apply that
++            # request here so recurrent model, RNNT, TTS, and transport state all
++            # cross the same EOS boundary on the next 80 ms step.
++            if (getattr(self, '_external_agent_eos_requested', False)
++                    and agent_speaking and current_tok != eos_id):
++                gen_text[b, t] = eos_id
++                rnnt_state['agent_speaking'][b] = False
++                rnnt_state['speech_confirmed'][b] = False
++                rnnt_state['nonblank_total'][b] = 0
++                if '_agent_talking_frames' in rnnt_state:
++                    rnnt_state['_agent_talking_frames'][b] = 0
++                if '_turn_text_tokens' in rnnt_state:
++                    rnnt_state['_turn_text_tokens'][b] = 0
++                self._external_agent_eos_requested = False
++                self._agent_eos_just_fired = True
++                logging.info("[OutputSilence] External decoded-audio watchdog forced agent EOS at t=%d", t)
++                return
++
+             noise_reset_frames = int(self.model_cfg.get("nonblank_reset_after_silence", 10))
+             if blank_cnt >= noise_reset_frames and not speech_confirmed and not agent_speaking:
+                 rnnt_state['nonblank_total'][b] = 0
+@@ -3126,8 +3383,45 @@ class NemotronVoicechatInferenceWrapper:
+                 rnnt_state['speech_confirmed'][b] = True
+                 speech_confirmed = True
+ 
++            # A live transport has direct PCM activity. Use a full EOU-sized
++            # quiet window as a conservative backstop when RNNT decoded too few
++            # non-blank frames to confirm a short utterance.
++            transport_eou_frames = int(
++                self.model_cfg.get("transport_vad_eou_frames", effective_eou)
++            )
++            transport_min_rnnt_tokens = int(
++                self.model_cfg.get("transport_vad_min_rnnt_tokens", 1)
++            )
++            transport_eou = (
++                getattr(self, '_transport_input_activity_available', False)
++                and getattr(self, '_transport_user_speech_seen', False)
++                and getattr(self, '_transport_input_silent_frames', 0) >= transport_eou_frames
++                # Energy alone is not speech. The browser trace contained
++                # sustained -35 dBFS AGC noise which armed this fallback and
++                # repeatedly opened zero-token turns. Retain the short-speech
++                # backstop, but require at least one RNNT nonblank as evidence.
++                and nonblank_total >= max(1, transport_min_rnnt_tokens)
++            )
++            if transport_eou and blank_cnt >= effective_eou and not agent_speaking:
++                rnnt_state['speech_confirmed'][b] = True
++                speech_confirmed = True
++                logging.info(
++                    "[TransportVAD] Confirmed short user turn at t=%d after %d quiet frames",
++                    t, getattr(self, '_transport_input_silent_frames', 0)
++                )
++
+             first_turn_fallback = int(self.model_cfg.get("first_turn_fallback_frames", 50))
+-            if first_turn and t >= first_turn_fallback and speech_confirmed and not (agent_window == bos_id).any():
++            # The old fallback used elapsed frames alone and could therefore start
++            # the assistant in the middle of a long first utterance.  Keep the
++            # recovery path, but require a real RNNT silence run before treating
++            # the utterance as complete.  The default matches the normal EOU
++            # threshold; deployments may choose a smaller, explicit value.
++            first_turn_fallback_silence = int(
++                self.model_cfg.get("first_turn_fallback_silence_frames", effective_eou)
++            )
++            if (first_turn_fallback > 0 and first_turn and t >= first_turn_fallback
++                    and speech_confirmed and blank_cnt >= first_turn_fallback_silence
++                    and not (agent_window == bos_id).any()):
+                 gen_text[b, t] = bos_id
+                 rnnt_state['speech_confirmed'][b] = False
+                 rnnt_state['nonblank_total'][b] = 0
+@@ -3135,6 +3429,8 @@ class NemotronVoicechatInferenceWrapper:
+                 rnnt_state['first_turn'][b] = False
+                 if 'user_first_turn' in rnnt_state:
+                     rnnt_state['user_first_turn'][b] = False
++                self._transport_user_speech_seen = False
++                self._transport_input_silent_frames = 0
+                 logging.info(f"RNNT first-turn fallback t={t}: agent BOS (no EOU in {first_turn_fallback} frames)")
+                 return
+ 
+@@ -3148,6 +3444,8 @@ class NemotronVoicechatInferenceWrapper:
+                     rnnt_state['first_turn'][b] = False
+                     if 'user_first_turn' in rnnt_state:
+                         rnnt_state['user_first_turn'][b] = False
++                    self._transport_user_speech_seen = False
++                    self._transport_input_silent_frames = 0
+                     logging.info(
+                         f"RNNT EOU t={t}: agent BOS (blank_cnt={blank_cnt}, "
+                         f"nonblank_total={nonblank_total}, density={rolling_density:.3f}, user_first_turn→False)"
+@@ -3158,7 +3456,7 @@ class NemotronVoicechatInferenceWrapper:
+ 
+             force_eos_frames = int(self.model_cfg.get("force_eos_after_frames", 0))
+             if (force_eos_frames > 0 and agent_speaking and not speech_confirmed
+-                    and not first_turn and not (agent_window == eos_id).any()):
++                    and not first_turn):
+                 if blank_cnt >= force_eos_frames:
+                     gen_text[b, t] = eos_id
+                     rnnt_state['agent_speaking'][b] = False
+@@ -3189,19 +3487,29 @@ class NemotronVoicechatInferenceWrapper:
+                     rnnt_state['agent_speaking'][b] = False
+                     return
+ 
+-            # Max agent response duration: force EOS after too many continuous talking frames.
+-            if (self._max_agent_response_frames > 0 and agent_speaking
+-                    and current_tok != eos_id
+-                    and not (agent_window == eos_id).any()):
+-                _talking_key = '_agent_talking_frames'
++            # Count agent-talking frames independently of the absolute response
++            # cap. The production configuration disables that cap, while the TTS
++            # token-ratio guard below still requires this counter.
++            _talking_key = '_agent_talking_frames'
++            if agent_speaking and current_tok != eos_id:
+                 if _talking_key not in rnnt_state:
+                     rnnt_state[_talking_key] = {}
+                 _cnt = rnnt_state[_talking_key].get(b, 0) + 1
+                 rnnt_state[_talking_key][b] = _cnt
++            else:
++                _cnt = rnnt_state.get(_talking_key, {}).get(b, 0)
++                if not agent_speaking and _talking_key in rnnt_state:
++                    rnnt_state[_talking_key][b] = 0
++
++            # Max agent response duration: force EOS after too many continuous talking frames.
++            if (self._max_agent_response_frames > 0 and agent_speaking
++                    and current_tok != eos_id):
+                 if _cnt >= self._max_agent_response_frames:
+                     gen_text[b, t] = eos_id
+                     rnnt_state['agent_speaking'][b] = False
+                     rnnt_state[_talking_key][b] = 0
++                    if '_turn_text_tokens' in rnnt_state:
++                        rnnt_state['_turn_text_tokens'][b] = 0
+                     self._agent_eos_just_fired = True
+                     if self._max_response_redirect_tokens:
+                         self._redirect_tokens_queue = list(self._max_response_redirect_tokens)
+@@ -3210,19 +3518,13 @@ class NemotronVoicechatInferenceWrapper:
+                         _cnt, self._max_agent_response_frames,
+                     )
+                     return
+-            elif not agent_speaking:
+-                _talking_key = '_agent_talking_frames'
+-                if _talking_key in rnnt_state:
+-                    rnnt_state[_talking_key][b] = 0
+-
+             # TTS token-ratio cap (Edresson's fix): force EOS after ratio × text_token_count
+             # frames to prevent TTS hallucination when EOS is missing or delayed.
+             # Ratio and min_tokens are configurable; 0 ratio = disabled.
+             _tts_ratio = float(self.model_cfg.get("tts_text_token_ratio_cap", 6.0))
+             _tts_min_tokens = int(self.model_cfg.get("tts_text_token_min", 5))
+             if (_tts_ratio > 0 and agent_speaking
+-                    and current_tok != eos_id
+-                    and not (agent_window == eos_id).any()):
++                    and current_tok != eos_id):
+                 _pad_id_r = self.model.stt_model.text_pad_id
+                 # Count non-PAD, non-BOS, non-EOS text tokens produced this turn.
+                 if '_turn_text_tokens' not in rnnt_state:
+@@ -3247,7 +3549,7 @@ class NemotronVoicechatInferenceWrapper:
+ 
+             # Barge-in: N consecutive non-blank frames while agent speaking → EOS
+             if nonblank_cnt >= user_bos_frames and agent_speaking:
+-                if not (agent_window == eos_id).any() and current_tok != eos_id:
++                if current_tok != eos_id:
+                     gen_text[b, t] = eos_id
+                     rnnt_state['nonblank_consec'][b] = 0
+                     rnnt_state['nonblank_total'][b] = 0
+@@ -3262,6 +3564,37 @@ class NemotronVoicechatInferenceWrapper:
+         self._agent_eos_just_fired = False
+         self._redirect_tokens_queue = []
+         self._post_tc_bos_exempt = False
++        self._external_agent_eos_requested = False
++        self._transport_input_activity_available = False
++        self._transport_user_speech_seen = False
++        self._transport_input_silent_frames = 0
++
++    def request_agent_eos(self) -> None:
++        """Request an EOS on the next active RNNT turn-taking step."""
++        self._external_agent_eos_requested = True
++
++    def cancel_agent_eos_request(self) -> None:
++        """Discard a transport EOS request when its session ends before use."""
++        self._external_agent_eos_requested = False
++
++    def reset_transport_session_state(self) -> None:
++        """Clear wrapper-global turn state at an external session boundary."""
++        self._reset_rnnt_turn_taking_state()
++
++    def observe_transport_user_activity(self, active: bool, stream_id=None) -> None:
++        """Record PCM activity for the conservative short-utterance EOU backstop."""
++        self._transport_input_activity_available = True
++        # Browser AEC is imperfect and output energy can re-enter the mic. RNNT
++        # remains responsible for real barge-in while an agent turn is open;
++        # the coarse transport-energy fallback must not treat self-play as a
++        # fresh user turn.
++        if not self._get_agent_idle(stream_id):
++            return
++        if active:
++            self._transport_user_speech_seen = True
++            self._transport_input_silent_frames = 0
++        elif self._transport_user_speech_seen:
++            self._transport_input_silent_frames += 1
+ 
+     @torch.no_grad()
+     def inference_realtime_streaming(self, audio_path: str, num_frames_per_chunk: int = None, request_id: Optional[str] = None, pad_audio_to_sec: Optional[float] = None, pad_silence_ratio: Optional[float] = None, pad_audio_by_sec: Optional[float] = None, system_prompt: Optional[str] = None, tool_executor_fn: Optional[callable] = None):
+@@ -4175,4 +4508,3 @@ def main():
+ 
+ if __name__ == "__main__":
+     sys.exit(main())
+-
+diff --git a/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py b/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
+index b7764fbd6..d9b2953ba 100644
+--- a/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
++++ b/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
+@@ -76,6 +76,7 @@ class LLMStreamingEngine:
+         dtype: str = "bfloat16",
+         skip_tokenizer_init: bool = False,
+         device_id: int = None,
++        enforce_eager: bool = False,
+         **sampling_kwargs
+     ):
+         """
+@@ -87,6 +88,7 @@ class LLMStreamingEngine:
+             gpu_memory_utilization: GPU memory utilization ratio (default: 0.8)
+             trust_remote_code: Whether to trust remote code (default: True)
+             dtype: Data type for embeddings (default: "bfloat16")
++            enforce_eager: Disable vLLM CUDA graphs for correctness diagnosis
+             **sampling_kwargs: Additional sampling parameters (max_tokens, temperature, top_p, top_k, seed, stop, stop_token_ids, ignore_eos)
+         """
+         self.model_path = model_path
+@@ -96,6 +98,7 @@ class LLMStreamingEngine:
+         self.dtype = dtype
+         self.skip_tokenizer_init = skip_tokenizer_init
+         self.device_id = device_id
++        self.enforce_eager = enforce_eager
+ 
+         # Engine state
+         self.engine: Optional[AsyncLLM] = None
+@@ -147,7 +150,8 @@ class LLMStreamingEngine:
+             mamba_ssm_cache_dtype="float32",
+             dtype=self.dtype,
+             skip_tokenizer_init=self.skip_tokenizer_init,
+-            enable_prefix_caching=False
++            enable_prefix_caching=False,
++            enforce_eager=self.enforce_eager,
+         )
+ 
+         # please custom input/output specs in model config file
+@@ -488,4 +492,4 @@ def create_engine(engine_type: str = "llm", **kwargs) -> LLMStreamingEngine:
+     elif engine_type == "llm":
+         return LLMStreamingEngine(**kwargs)
+     else:
+-        raise ValueError(f"Unsupported engine_type: {engine_type}")
+\ No newline at end of file
++        raise ValueError(f"Unsupported engine_type: {engine_type}")

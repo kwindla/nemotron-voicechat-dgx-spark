@@ -1,0 +1,207 @@
+--- a/vllm/v1/engine/core.py
++++ b/vllm/v1/engine/core.py
+@@ -55,11 +55,6 @@
+     UtilityOutput,
+     UtilityResult,
+ )
+-from vllm.v1.engine.shm_tensor_channel import (
+-    SharedMemoryTensorChannel,
+-    TensorSpec,
+-    decode_step_tensor_specs,
+-)
+ from vllm.v1.engine.utils import (
+     EngineHandshakeMetadata,
+     EngineZmqAddresses,
+@@ -98,7 +93,6 @@
+         load_general_plugins()
+ 
+         self.vllm_config = vllm_config
+-        self._shm_channels: dict[str, SharedMemoryTensorChannel] = {}
+         logger.info(
+             "Initializing a V1 LLM engine (v%s) with config: %s",
+             VLLM_VERSION,
+@@ -157,8 +151,6 @@
+             include_finished_set=vllm_config.parallel_config.data_parallel_size > 1,
+             log_stats=self.log_stats,
+         )
+-        self._input_coalesce_timeout_s = (
+-            vllm_config.scheduler_config.input_coalesce_timeout_ms / 1000.0)
+         self.use_spec_decode = vllm_config.speculative_config is not None
+         if self.scheduler.connector is not None:  # type: ignore
+             self.model_executor.init_kv_output_aggregator(
+@@ -284,98 +276,9 @@
+ 
+         self.scheduler.add_request(request)
+ 
+-        if self.vllm_config.model_config.shm_decode:
+-            mc = self.vllm_config.model_config
+-            n_out = getattr(mc.hf_config, "num_output_tokens_per_step", 1)
+-            input_specs = decode_step_tensor_specs(
+-                mc.custom_input_specs or [], mc.dtype, n_out
+-            )
+-            output_specs = decode_step_tensor_specs(
+-                mc.custom_output_specs or [], mc.dtype, n_out
+-            )
+-            ch = SharedMemoryTensorChannel(
+-                name=f"vllm_shm_{request.request_id}",
+-                request_id=request.request_id,
+-                input_specs=input_specs,
+-                output_specs=output_specs,
+-                create=False,
+-            )
+-            self._shm_channels[request.request_id] = ch
+-
+     def set_custom_inputs(self, request_id: str, custom_inputs: dict[str, torch.Tensor]):
+         """Set custom inputs for a request."""
+-        first_tensor = next(iter(custom_inputs.values()))
+-        if first_tensor.shape[0] > 1:
+-            ch = self._shm_channels.get(request_id)
+-            if ch is not None:
+-                ch.decode_started = False
+         self.scheduler.set_custom_inputs(request_id, custom_inputs)
+-
+-    # ── Shared-memory decode channels ──────────────────────────────
+-
+-    def unregister_shm_channel(self, request_id: str) -> None:
+-        """Close and remove the shm channel for *request_id*."""
+-        ch = self._shm_channels.pop(request_id, None)
+-        if ch is not None:
+-            ch.close()
+-            logger.debug("Unregistered shm channel for request %s",
+-                          request_id)
+-
+-    def _poll_shm_channels(self) -> None:
+-        """Check all registered shm channels for ready inputs."""
+-        for request_id, ch in self._shm_channels.items():
+-            if ch.check_input_ready():
+-                inputs = ch.consume_input()
+-                self.set_custom_inputs(request_id, inputs)
+-                ch.decode_started = True
+-
+-    def _wait_for_custom_inputs(self) -> None:
+-        """Wait for requests in waiting_input to receive custom inputs.
+-
+-        Blocks up to ``_input_coalesce_timeout_s`` so the next forward pass
+-        can run a full batch instead of a partial one.  Sleeps in <=1 ms
+-        slices to stay responsive to ABORT messages on the ZMQ queue.
+-        """
+-        if self._input_coalesce_timeout_s <= 0:
+-            return
+-        if not self.scheduler.waiting_input:
+-            return
+-
+-        deadline = time.monotonic() + self._input_coalesce_timeout_s
+-
+-        while self.scheduler.waiting_input:
+-            remaining = deadline - time.monotonic()
+-            if remaining <= 0:
+-                break
+-
+-            if self._shm_channels:
+-                self._poll_shm_channels()
+-                if not self.scheduler.waiting_input:
+-                    break
+-                for req_id in self.scheduler.waiting_input:
+-                    ch = self._shm_channels.get(req_id)
+-                    if ch is not None and not ch.check_input_ready():
+-                        ch.wait_input_ready(
+-                            timeout_s=min(remaining, 0.001))
+-                        break
+-            else:
+-                try:
+-                    req = self.input_queue.get(
+-                        timeout=min(remaining, 0.001))
+-                    self._handle_client_request(*req)
+-                except queue.Empty:
+-                    pass
+-
+-            while not self.input_queue.empty():
+-                req = self.input_queue.get_nowait()
+-                self._handle_client_request(*req)
+-
+-        if self.scheduler.waiting_input:
+-            logger.warning(
+-                "Proceeding with forward pass while %d request(s) "
+-                "still waiting for custom inputs: %s",
+-                len(self.scheduler.waiting_input),
+-                list(self.scheduler.waiting_input))
+ 
+     def abort_requests(self, request_ids: list[str]):
+         """Abort requests from the scheduler."""
+@@ -383,8 +286,6 @@
+         # TODO: The scheduler doesn't really need to know the
+         # specific finish reason, TBD whether we propagate that
+         # (i.e. client-aborted vs stop criteria met).
+-        for rid in request_ids:
+-            self.unregister_shm_channel(rid)
+         self.scheduler.finish_requests(request_ids, RequestStatus.FINISHED_ABORTED)
+ 
+     def execute_model_with_error_logging(
+@@ -908,9 +809,8 @@
+         waited = False
+         while (
+             not self.engines_running
+-            and not self.scheduler.has_schedulable_requests()
++            and not self.scheduler.has_requests()
+             and not self.batch_queue
+-            and not self._shm_channels
+         ):
+             if logger.isEnabledFor(DEBUG) and self.input_queue.empty():
+                 logger.debug("EngineCore waiting for work.")
+@@ -926,46 +826,14 @@
+             req = self.input_queue.get_nowait()
+             self._handle_client_request(*req)
+ 
+-        # Poll SHM channels for ready inputs and then wait for any
+-        # remaining requests that still need custom inputs.
+-        if self._shm_channels:
+-            self._poll_shm_channels()
+-
+-        self._wait_for_custom_inputs()
+-
+     def _process_engine_step(self) -> bool:
+         """Called only when there are unfinished local requests."""
+ 
+         # Step the engine core.
+         outputs, model_executed = self.step_fn()
+         # Put EngineCoreOutputs into the output queue.
+-        if outputs:
+-            if self._shm_channels:
+-                for client_idx, engine_outputs in outputs.items():
+-                    remaining = []
+-                    for out in engine_outputs.outputs:
+-                        ch = self._shm_channels.get(out.request_id)
+-                        if (ch is not None
+-                                and ch.decode_started
+-                                and out.new_custom_outputs
+-                                and ch.can_write_outputs(
+-                                    out.new_custom_outputs)):
+-                            ch.write_outputs(out.new_custom_outputs)
+-                            ch.signal_output_ready()
+-                        else:
+-                            remaining.append(out)
+-                        if out.finish_reason is not None:
+-                            # we don't implicitely finish request in case of shm,
+-                            # but adding this for visibility
+-                            self.unregister_shm_channel(out.request_id)
+-                    engine_outputs.outputs = remaining
+-                    if not remaining:
+-                        continue
+-                    self.output_queue.put_nowait(
+-                        (client_idx, engine_outputs))
+-            else:
+-                for output in outputs.items():
+-                    self.output_queue.put_nowait(output)
++        for output in outputs.items() if outputs else ():
++            self.output_queue.put_nowait(output)
+         # Post-step hook.
+         self.post_step(model_executed)
+ 
+@@ -975,6 +843,7 @@
+         self, request_type: EngineCoreRequestType, request: Any
+     ) -> None:
+         """Dispatch request from client."""
++
+         if request_type == EngineCoreRequestType.ADD:
+             req, request_wave = request
+             self.add_request(req, request_wave)

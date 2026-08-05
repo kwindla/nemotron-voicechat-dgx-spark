@@ -1,0 +1,77 @@
+--- a/vllm/model_executor/layers/mamba/ops/causal_conv1d.py
++++ b/vllm/model_executor/layers/mamba/ops/causal_conv1d.py
+@@ -4,12 +4,13 @@
+ # Copyright (c) 2024, Tri Dao.
+ # Adapted from https://github.com/Dao-AILab/causal-conv1d/blob/main/causal_conv1d/causal_conv1d_interface.py
+ 
++from typing import Optional, Union
+ 
+ import numpy as np
+ import torch
+ 
++from vllm.attention.backends.utils import PAD_SLOT_ID
+ from vllm.triton_utils import tl, triton
+-from vllm.v1.attention.backends.utils import PAD_SLOT_ID
+ 
+ 
+ @triton.jit()
+@@ -468,17 +469,17 @@
+ def causal_conv1d_fn(
+     x: torch.Tensor,
+     weight: torch.Tensor,
+-    bias: torch.Tensor | None,
++    bias: Union[torch.Tensor, None],
+     conv_states: torch.Tensor,
+     query_start_loc: torch.Tensor,
+-    cache_indices: torch.Tensor | None = None,
+-    has_initial_state: torch.Tensor | None = None,
+-    activation: str | None = "silu",
++    cache_indices: Optional[torch.Tensor] = None,
++    has_initial_state: Optional[torch.Tensor] = None,
++    activation: Optional[str] = "silu",
+     pad_slot_id: int = PAD_SLOT_ID,
+-    block_idx_first_scheduled_token: torch.Tensor | None = None,
+-    block_idx_last_scheduled_token: torch.Tensor | None = None,
+-    initial_state_idx: torch.Tensor | None = None,
+-    num_computed_tokens: torch.Tensor | None = None,
++    block_idx_first_scheduled_token: Optional[torch.Tensor] = None,
++    block_idx_last_scheduled_token: Optional[torch.Tensor] = None,
++    initial_state_idx: Optional[torch.Tensor] = None,
++    num_computed_tokens: Optional[torch.Tensor] = None,
+     block_size_to_align=0,
+     metadata=None,
+     validate_data=False,
+@@ -1070,15 +1071,15 @@
+     x: torch.Tensor,
+     conv_state: torch.Tensor,
+     weight: torch.Tensor,
+-    bias: torch.Tensor | None = None,
+-    activation: bool | str | None = None,
+-    conv_state_indices: torch.Tensor | None = None,
+-    num_accepted_tokens: torch.Tensor | None = None,
+-    query_start_loc: torch.Tensor | None = None,
++    bias: Optional[torch.Tensor] = None,
++    activation: Union[bool, str, None] = None,
++    conv_state_indices: Optional[torch.Tensor] = None,
++    num_accepted_tokens: Optional[torch.Tensor] = None,
++    query_start_loc: Optional[torch.Tensor] = None,
+     max_query_len: int = -1,
+     pad_slot_id: int = PAD_SLOT_ID,
+-    block_idx_last_scheduled_token: torch.Tensor | None = None,
+-    initial_state_idx: torch.Tensor | None = None,
++    block_idx_last_scheduled_token: Optional[torch.Tensor] = None,
++    initial_state_idx: Optional[torch.Tensor] = None,
+     validate_data=False,
+ ):
+     """
+@@ -1155,9 +1156,7 @@
+         if conv_state_indices is None:
+             assert conv_state.size(0) >= batch
+         else:
+-            assert batch == conv_state_indices.shape[0], (
+-                f"ERROR: conv_state_indices should have shape ({batch},*) but got {conv_state_indices.shape}"
+-            )
++            assert (batch,) == conv_state_indices.shape
+ 
+         assert num_cache_lines >= batch
+         assert weight.stride(1) == 1  # Need this

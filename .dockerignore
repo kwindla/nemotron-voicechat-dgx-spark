@@ -1,0 +1,18 @@
+.git
+.github
+.pytest_cache
+.ruff_cache
+.venv
+.cache
+artifacts
+docs
+tests
+uv.lock
+*.egg-info
+**/__pycache__
+**/*.pyc
+
+# The public runtime reconstruction needs only the checked-in source delta
+# escrow, not any local research output or downloaded checkpoint.
+tools/conversion
+tools/release

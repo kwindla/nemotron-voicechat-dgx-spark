@@ -1,0 +1,70 @@
+ARG BASE_IMAGE=nvcr.io/nvidia/pytorch:25.12-py3@sha256:1dc787f5c6264fcc1c99809f99b84823e73ed4588d5a581b94290fc2a8fecff8
+FROM ${BASE_IMAGE} AS dependencies
+
+ARG CUDA_VERSION=13.0.1
+ARG FLASHINFER_VERSION=0.6.5
+ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
+    UV_BREAK_SYSTEM_PACKAGES=1 \
+    UV_HTTP_TIMEOUT=500 \
+    UV_INDEX_STRATEGY=unsafe-best-match \
+    UV_LINK_MODE=copy \
+    VLLM_ENABLE_CUDA_COMPATIBILITY=0
+
+WORKDIR /workspace
+COPY requirements/common.txt requirements/common.txt
+COPY requirements/cuda.txt requirements/cuda.txt
+COPY requirements/build.txt requirements/build.txt
+COPY pyproject.toml use_existing_torch.py ./
+
+RUN python3 use_existing_torch.py --prefix \
+    && python3 - <<'PY'
+from pathlib import Path
+path = Path("requirements/cuda.txt")
+old = path.read_text()
+lines = old.splitlines()
+new = ["flashinfer-python==0.6.5" if line.startswith("flashinfer-python==") else line for line in lines]
+if new == lines:
+    raise SystemExit("missing flashinfer-python requirement")
+path.write_text("\n".join(new) + "\n")
+PY
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --break-system-packages -r requirements/cuda.txt \
+      --extra-index-url https://download.pytorch.org/whl/cu130 \
+    && uv pip install --system --break-system-packages -r requirements/build.txt \
+      --extra-index-url https://download.pytorch.org/whl/cu130
+
+FROM dependencies AS wheel
+ARG VLLM_VERSION_OVERRIDE=0.17.1.dev0+gb31e9326a.fi065
+ARG MAX_JOBS=8
+ARG NVCC_THREADS=2
+ENV MAX_JOBS=${MAX_JOBS} \
+    NVCC_THREADS=${NVCC_THREADS} \
+    TORCH_CUDA_ARCH_LIST=12.1 \
+    VLLM_TARGET_DEVICE=cuda \
+    VLLM_DOCKER_BUILD_CONTEXT=1 \
+    CCACHE_DIR=/root/.cache/ccache
+COPY . .
+RUN --mount=type=cache,target=/root/.cache/ccache \
+    --mount=type=cache,target=/root/.cache/uv \
+    export VLLM_VERSION_OVERRIDE=${VLLM_VERSION_OVERRIDE} \
+    && export SETUPTOOLS_SCM_PRETEND_VERSION=${VLLM_VERSION_OVERRIDE} \
+    && python3 use_existing_torch.py --prefix \
+    && python3 setup.py bdist_wheel --dist-dir=/tmp/vllm-dist --py-limited-api=cp38
+
+FROM dependencies AS runtime
+ARG FLASHINFER_VERSION=0.6.5
+COPY --from=wheel /tmp/vllm-dist /tmp/vllm-dist
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --break-system-packages /tmp/vllm-dist/*.whl --no-deps \
+    && uv pip install --system --break-system-packages \
+      flashinfer-cubin==${FLASHINFER_VERSION} \
+    && uv pip install --system --break-system-packages \
+      flashinfer-jit-cache==${FLASHINFER_VERSION} \
+      --extra-index-url https://flashinfer.ai/whl/cu130 \
+    && python3 -c 'import vllm; print(vllm.__version__)'
+
+ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64:/usr/local/cuda/lib64:${LD_LIBRARY_PATH} \
+    VLLM_USAGE_SOURCE=production-docker-image
+WORKDIR /workspace
+ENTRYPOINT []
+

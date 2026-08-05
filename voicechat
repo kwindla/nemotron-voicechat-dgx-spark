@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+export PYTHONPATH="${repo_root}/src${PYTHONPATH:+:${PYTHONPATH}}"
+python=python3
+cache_root=${VOICECHAT_CACHE_ROOT:-${HOME}/.cache/nemotron-voicechat}
+if [[ -x "${cache_root}/venv/bin/python" ]]; then
+  python="${cache_root}/venv/bin/python"
+elif [[ -x "${repo_root}/.venv/bin/python" ]]; then
+  # Developer worktrees may retain their own uv environment; bootstrap and
+  # normal runtime state never require one in the checkout.
+  python="${repo_root}/.venv/bin/python"
+fi
+exec "${python}" -m nemotron_voicechat_runtime.cli "$@"

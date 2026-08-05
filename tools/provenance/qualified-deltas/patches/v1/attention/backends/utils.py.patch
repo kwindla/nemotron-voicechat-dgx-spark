@@ -1,0 +1,12 @@
+--- a/vllm/v1/attention/backends/utils.py
++++ b/vllm/v1/attention/backends/utils.py
+@@ -63,9 +63,6 @@
+     query_start_loc: torch.Tensor
+     query_start_loc_cpu: torch.Tensor
+     """(batch_size + 1,), the start location of each request in query Tensor"""
+-
+-    doc_ids: torch.Tensor
+-    decode_offset: torch.Tensor
+ 
+     seq_lens: torch.Tensor
+     seq_lens_cpu: torch.Tensor

@@ -1,0 +1,93 @@
+--- a/vllm/config/model.py
++++ b/vllm/config/model.py
+@@ -106,11 +106,11 @@
+ 
+ 
+ @dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+-class CustomIOSpec:
+-    """Specification for a custom input or output tensor.
++class CustomInputSpec:
++    """Specification for a custom input tensor.
+     
+-    This defines the shape and dtype for custom tensors that will be provided
+-    to or produced by the model.
++    This defines the shape and dtype for custom inputs that will be provided
++    to the model via append_request.
+     """
+     name: str
+     """Name of the custom input"""
+@@ -256,7 +256,13 @@
+     OpenAI Chat Completions API. -1 means no cap, i.e. all (output_length *
+     vocab_size) logprobs are allowed to be returned and it may cause OOM."""
+     logprobs_mode: LogprobsMode = "raw_logprobs"
+-    """Whether to return the last layer hidden states of the model."""
++    """Indicates the content returned in the logprobs and prompt_logprobs.
++    Supported mode:
++    1) raw_logprobs, 2) processed_logprobs, 3) raw_logits, 4) processed_logits.
++    Raw means the values before applying any logit processors, like bad words.
++    Processed means the values after applying all processors, including
++    temperature and top_k/top_p.
++    """
+     disable_sliding_window: bool = False
+     """Whether to disable sliding window. If True, we will disable the sliding
+     window functionality of the model, capping to sliding window size. If the
+@@ -330,19 +336,11 @@
+     definitions"""
+     io_processor_plugin: Optional[str] = None
+     """IOProcessor plugin name to load at model startup"""
+-    custom_input_specs: Optional[list[CustomIOSpec]] = None
++    custom_input_specs: Optional[list[CustomInputSpec]] = None
+     """List of custom input specifications. Each spec defines name, dtype, and shape
+     for a custom input that will be provided via append_request. If specified, the model
+     will wait for custom inputs before scheduling.
+     """
+-    custom_output_specs: Optional[list[CustomIOSpec]] = None
+-    """List of custom output specifications (same schema as input specs).
+-    Each spec defines name, dtype, and dim for an output tensor produced
+-    by the model on each decode step.  Used to size shared-memory decode
+-    channels."""
+-    shm_decode: bool = False
+-    """Use shared-memory channels for decode-step custom I/O instead of
+-    ZMQ.  Requires ``custom_input_specs`` and ``custom_output_specs``."""
+ 
+     # Pooler config
+     pooler_config: Optional[PoolerConfig] = None
+@@ -747,36 +745,13 @@
+             try:
+                 # parse the custom input specifications from hf_config
+                 for spec_dict in custom_specs_dict:
+-                    spec = CustomIOSpec(**spec_dict)
++                    spec = CustomInputSpec(**spec_dict)
+                     self.custom_input_specs.append(spec)
+             except Exception as e:
+                 raise RuntimeError(
+                     f"Error parsing custom input specifications from hf_config: {e}"
+                 ) from e
+-        self.custom_output_specs = None
+-        custom_out_specs_dict = getattr(
+-            self.hf_config, "custom_output_specs", None
+-        )
+-        if custom_out_specs_dict:
+-            self.custom_output_specs = []
+-            try:
+-                for spec_dict in custom_out_specs_dict:
+-                    spec = CustomIOSpec(**spec_dict)
+-                    self.custom_output_specs.append(spec)
+-            except Exception as e:
+-                raise RuntimeError(
+-                    f"Error parsing custom output specifications "
+-                    f"from hf_config: {e}"
+-                ) from e
+-
+-        # Derive custom_outputs (name list) from output specs when
+-        # available; fall back to the legacy flat list for older configs.
+-        if self.custom_output_specs:
+-            self.custom_outputs = [s.name for s in self.custom_output_specs]
+-        else:
+-            self.custom_outputs = getattr(
+-                self.hf_config, "custom_outputs", None
+-            )
++        self.custom_outputs = getattr(self.hf_config, "custom_outputs", None)
+ 
+         if self.disable_sliding_window:
+             # Set after get_and_verify_max_len to ensure that max_model_len

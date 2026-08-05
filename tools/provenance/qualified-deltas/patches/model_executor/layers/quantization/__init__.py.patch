@@ -1,0 +1,28 @@
+--- a/vllm/model_executor/layers/quantization/__init__.py
++++ b/vllm/model_executor/layers/quantization/__init__.py
+@@ -36,6 +36,9 @@
+     "petit_nvfp4",
+ ]
+ QUANTIZATION_METHODS: list[str] = list(get_args(QuantizationMethods))
++
++# EA W8A32 registration: advertise the method without importing linear.py.
++QUANTIZATION_METHODS.append("ea_w8a32")
+ 
+ # The customized quantization methods which will be added to this dict.
+ _CUSTOMIZED_METHOD_TO_QUANT_CONFIG = {}
+@@ -91,6 +94,7 @@
+     from vllm.model_executor.layers.quantization.quark.quark import QuarkConfig
+ 
+     from .auto_round import AutoRoundConfig
++    from .ea_w8a32 import EAW8A32Config
+     from .awq import AWQConfig
+     from .awq_marlin import AWQMarlinConfig
+     from .bitblas import BitBLASConfig
+@@ -121,6 +125,7 @@
+ 
+     method_to_config: dict[str, type[QuantizationConfig]] = {
+         "awq": AWQConfig,
++        "ea_w8a32": EAW8A32Config,
+         "deepspeedfp": DeepSpeedFPConfig,
+         "tpu_int8": Int8TpuConfig,
+         "fp8": Fp8Config,

@@ -1,0 +1,103 @@
+ARG NATIVE_IMAGE=nemotron-voicechat-public-vllm-native:0.17.1-b31e9326a-fi065
+FROM ${NATIVE_IMAGE}
+
+ARG NATIVE_VLLM_REVISION=b31e9326a7d9394aab8c767f8ebe225c65594b60
+ARG VOICECHAT_VLLM_REVISION=237ba3cafc14d514551539ad980f17d40d273dfa
+ARG SPEECH_REVISION=911ec674ab40f04302ef33672be4179f45a7310f
+ARG CAUSAL_CONV1D_REVISION=4f6ae4e26ae5fe8af9372f8d312ab25cc4595223
+ARG MAMBA_REVISION=a14b1dff0454a3bc27d9eb31355dc01e4b2490ec
+ARG TORCHAUDIO_REVISION=1be5c8f6a78643bcf6577f604bd911dc9e02b9bd
+
+ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
+    UV_BREAK_SYSTEM_PACKAGES=1 \
+    UV_HTTP_TIMEOUT=500 \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      git patch libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --filter=blob:none https://github.com/vllm-project/vllm.git /opt/src/vllm-native \
+    && git -C /opt/src/vllm-native checkout --detach ${NATIVE_VLLM_REVISION} \
+    && git clone --filter=blob:none https://github.com/vklimkov-nvidia/vllm.git /opt/src/vllm-voicechat \
+    && git -C /opt/src/vllm-voicechat checkout --detach ${VOICECHAT_VLLM_REVISION}
+
+COPY config/qualified-candidate-1.json /opt/project/config/qualified-candidate-1.json
+COPY tools/provenance/qualified-deltas /opt/project/tools/provenance/qualified-deltas
+COPY tools/runtime/reconstruct_public_vllm.py /opt/project/tools/runtime/reconstruct_public_vllm.py
+RUN python3 /opt/project/tools/runtime/reconstruct_public_vllm.py \
+      --native-root /opt/src/vllm-native \
+      --voicechat-root /opt/src/vllm-voicechat \
+      --output /opt/reconstructed/vllm \
+    && package_dir=$(python3 -c 'import pathlib,vllm; print(pathlib.Path(vllm.__file__).parent)') \
+    && find "${package_dir}" -type f ! -name '*.so' -delete \
+    && cp -a /opt/reconstructed/vllm/. "${package_dir}/" \
+    && python3 -c 'import vllm; print(vllm.__version__)'
+
+RUN uv pip install --system --break-system-packages \
+      'nemo_toolkit[all]==2.6.2' \
+      huggingface-hub==0.34.4 hf-xet==1.1.9 \
+      torch-audiomentations==0.12.0 jinja2==3.1.6 soundfile==0.13.1 \
+      texterrors==0.5.1 fastapi==0.135.2 uvicorn==0.42.0 omegaconf==2.3.0 \
+    && uv pip install --system --break-system-packages --no-deps \
+      transformers==4.56.0 tokenizers==0.22.0 lhotse==1.32.2 \
+    && (python3 -m pip uninstall -y nvidia-resiliency-ext || true)
+
+RUN python3 -m pip uninstall -y torchaudio causal-conv1d mamba-ssm \
+    && git clone --filter=blob:none https://github.com/pytorch/audio.git /tmp/torchaudio \
+    && git -C /tmp/torchaudio checkout --detach ${TORCHAUDIO_REVISION} \
+    && cd /tmp/torchaudio \
+    && BUILD_SOX=0 USE_FFMPEG=0 USE_CUDA=0 python3 setup.py bdist_wheel \
+    && python3 -m pip install --no-deps dist/torchaudio-*.whl \
+    && git clone --filter=blob:none https://github.com/Dao-AILab/causal-conv1d.git /tmp/causal-conv1d \
+    && git -C /tmp/causal-conv1d checkout --detach ${CAUSAL_CONV1D_REVISION} \
+    && cd /tmp/causal-conv1d \
+    && sed -i '179,199c\        cc_flag.extend(["-gencode", "arch=compute_121,code=sm_121"])' setup.py \
+    && MAX_JOBS=4 TORCH_CUDA_ARCH_LIST=12.1 CAUSAL_CONV1D_FORCE_BUILD=TRUE \
+      python3 -m pip install --no-build-isolation --no-deps . \
+    && git clone --filter=blob:none https://github.com/state-spaces/mamba.git /tmp/mamba \
+    && git -C /tmp/mamba checkout --detach ${MAMBA_REVISION} \
+    && cd /tmp/mamba \
+    && sed -i '181,201c\        cc_flag.extend(["-gencode", "arch=compute_121,code=sm_121"])' setup.py \
+    && MAX_JOBS=4 TORCH_CUDA_ARCH_LIST=12.1 MAMBA_FORCE_BUILD=TRUE \
+      python3 -m pip install --no-build-isolation --no-deps . \
+    && rm -rf /tmp/torchaudio /tmp/causal-conv1d /tmp/mamba
+
+COPY src/nemotron_voicechat_runtime/patches/nemotron-voicechat-rnnt-turn-taking.patch /tmp/speech.patch
+RUN git clone --filter=blob:none https://github.com/NVIDIA-NeMo/Speech.git /opt/Speech \
+    && git -C /opt/Speech checkout --detach ${SPEECH_REVISION} \
+    && git -C /opt/Speech apply --check /tmp/speech.patch \
+    && git -C /opt/Speech apply /tmp/speech.patch \
+    && git -C /opt/Speech diff -- \
+      nemo/collections/speechlm2/inference/model_wrappers/model_factory.py \
+      nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py \
+      nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py \
+      | cmp - /tmp/speech.patch
+
+COPY container/constraints-pocket.txt /opt/project/container/constraints-pocket.txt
+RUN python3 -m venv --copies /opt/pocket-tts \
+    && /opt/pocket-tts/bin/python -m pip install --no-cache-dir \
+      --index-url https://download.pytorch.org/whl/cpu torch==2.9.1+cpu \
+    && /opt/pocket-tts/bin/python -m pip install --no-cache-dir \
+      --index-url https://pypi.org/simple \
+      --constraint /opt/project/container/constraints-pocket.txt pocket-tts==2.1.0 \
+    && /opt/pocket-tts/bin/python -c 'import torch; assert torch.version.cuda is None'
+
+COPY pyproject.toml README.md /opt/project/
+COPY src /opt/project/src
+RUN python3 -m pip install --no-deps /opt/project \
+    && /opt/pocket-tts/bin/python -m pip install --no-deps /opt/project
+
+RUN test -z "${VLLM_ALLOW_INSECURE_SERIALIZATION:-}" \
+    && python3 -m compileall -q /opt/project/src /opt/Speech/nemo/collections/speechlm2
+
+LABEL org.opencontainers.image.source="https://github.com/pipecat-ai/nemotron-voicechat-dgx-spark" \
+      ai.pipecat.voicechat.base="nvcr.io/nvidia/pytorch:25.12-py3@sha256:1dc787f5c6264fcc1c99809f99b84823e73ed4588d5a581b94290fc2a8fecff8" \
+      ai.pipecat.voicechat.native-vllm="b31e9326a7d9394aab8c767f8ebe225c65594b60" \
+      ai.pipecat.voicechat.voicechat-vllm="237ba3cafc14d514551539ad980f17d40d273dfa" \
+      ai.pipecat.voicechat.speech="911ec674ab40f04302ef33672be4179f45a7310f"
+
+WORKDIR /opt/project
+ENTRYPOINT []

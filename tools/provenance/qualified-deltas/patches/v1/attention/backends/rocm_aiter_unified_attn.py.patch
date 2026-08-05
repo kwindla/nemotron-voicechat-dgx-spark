@@ -1,0 +1,225 @@
+--- a/vllm/v1/attention/backends/rocm_aiter_unified_attn.py
++++ b/vllm/v1/attention/backends/rocm_aiter_unified_attn.py
+@@ -2,20 +2,22 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ """Attention layer with PagedAttention and Triton prefix prefill."""
+ 
++from typing import Optional
++
+ import torch
+ 
+ from vllm import _custom_ops as ops
+-from vllm._aiter_ops import rocm_aiter_ops
++from vllm.attention.backends.abstract import AttentionMetadata, AttentionType
+ from vllm.logger import init_logger
+ from vllm.model_executor.layers.quantization.utils.quant_utils import (
+     QuantKey,
+     kFp8StaticTensorSym,
+ )
+-from vllm.v1.attention.backend import AttentionLayer, AttentionType
+ from vllm.v1.attention.backends.flash_attn import FlashAttentionMetadata
+ from vllm.v1.attention.backends.rocm_attn import (
+     RocmAttentionBackend,
+     RocmAttentionImpl,
++    RocmAttentionMetadata,
+     RocmAttentionMetadataBuilder,
+ )
+ 
+@@ -25,8 +27,6 @@
+ class RocmAiterUnifiedAttentionBackend(RocmAttentionBackend):
+     accept_output_buffer: bool = True
+ 
+-    forward_includes_kv_cache_update: bool = False
+-
+     @staticmethod
+     def get_name() -> str:
+         return "ROCM_AITER_UNIFIED_ATTN"
+@@ -34,6 +34,10 @@
+     @staticmethod
+     def get_impl_cls() -> type["RocmAiterUnifiedAttentionImpl"]:
+         return RocmAiterUnifiedAttentionImpl
++
++    @staticmethod
++    def get_metadata_cls() -> type["AttentionMetadata"]:
++        return RocmAttentionMetadata
+ 
+     @staticmethod
+     def get_kv_cache_shape(
+@@ -55,16 +59,6 @@
+     def get_builder_cls() -> type["RocmAttentionMetadataBuilder"]:
+         return RocmAttentionMetadataBuilder
+ 
+-    @classmethod
+-    def supports_attn_type(cls, attn_type: str) -> bool:
+-        """RocmAiterUnifiedAttention supports all attention types."""
+-        return attn_type in (
+-            AttentionType.DECODER,
+-            AttentionType.ENCODER,
+-            AttentionType.ENCODER_ONLY,
+-            AttentionType.ENCODER_DECODER,
+-        )
+-
+ 
+ class RocmAiterUnifiedAttentionImpl(RocmAttentionImpl):
+     def fused_output_quant_supported(self, quant_key: QuantKey):
+@@ -76,13 +70,13 @@
+         head_size: int,
+         scale: float,
+         num_kv_heads: int,
+-        alibi_slopes: list[float] | None,
+-        sliding_window: int | None,
++        alibi_slopes: Optional[list[float]],
++        sliding_window: Optional[int],
+         kv_cache_dtype: str,
+-        logits_soft_cap: float | None = None,
++        logits_soft_cap: Optional[float] = None,
+         attn_type: AttentionType = AttentionType.DECODER,
+-        kv_sharing_target_layer_name: int | None = None,
+-        sinks: torch.Tensor | None = None,
++        kv_sharing_target_layer_name: Optional[int] = None,
++        sinks: Optional[torch.Tensor] = None,
+     ) -> None:
+         super().__init__(
+             num_heads,
+@@ -112,9 +106,9 @@
+         value: torch.Tensor,
+         kv_cache: torch.Tensor,
+         attn_metadata: FlashAttentionMetadata,
+-        output: torch.Tensor | None = None,
+-        output_scale: torch.Tensor | None = None,
+-        output_block_scale: torch.Tensor | None = None,
++        output: Optional[torch.Tensor] = None,
++        output_scale: Optional[torch.Tensor] = None,
++        output_block_scale: Optional[torch.Tensor] = None,
+     ) -> torch.Tensor:
+         """Forward pass with FlashAttention.
+ 
+@@ -138,7 +132,7 @@
+ 
+         if attn_metadata is None:
+             # Profiling run.
+-            return output.fill_(0)
++            return output
+ 
+         assert attn_metadata.use_cascade is False
+ 
+@@ -153,20 +147,21 @@
+ 
+         num_actual_tokens = attn_metadata.num_actual_tokens
+ 
+-        # Handle encoder attention differently - no KV cache needed
+-        if self.attn_type in (AttentionType.ENCODER_ONLY, AttentionType.ENCODER):
+-            # For encoder attention,
+-            # we use direct Q, K, V tensors without caching
+-            return self._forward_encoder_attention(
+-                query[:num_actual_tokens],
+-                key[:num_actual_tokens],
+-                value[:num_actual_tokens],
+-                output[:num_actual_tokens],
+-                attn_metadata,
+-                layer,
++        key_cache, value_cache = kv_cache.unbind(0)
++
++        if self.kv_sharing_target_layer_name is None:
++            # Reshape the input keys and values and store them in the cache.
++            # Skip this if sharing KV cache with an earlier attention layer.
++            ops.reshape_and_cache_flash(
++                key,
++                value,
++                key_cache,
++                value_cache,
++                attn_metadata.slot_mapping,
++                self.kv_cache_dtype,
++                layer._k_scale,
++                layer._v_scale,
+             )
+-
+-        key_cache, value_cache = kv_cache.unbind(0)
+ 
+         if self.kv_cache_dtype.startswith("fp8"):
+             key_cache = key_cache.view(self.fp8_dtype)
+@@ -181,10 +176,7 @@
+         max_seqlen_k = attn_metadata.max_seq_len
+         block_table = attn_metadata.block_table
+ 
+-        descale_shape = (
+-            cu_seqlens_q.shape[0] - 1,
+-            key.shape[1] if key is not None else self.num_kv_heads,
+-        )
++        descale_shape = (cu_seqlens_q.shape[0] - 1, key.shape[1])
+ 
+         self.unified_attention(
+             q=query[:num_actual_tokens],
+@@ -209,72 +201,3 @@
+         )
+ 
+         return output
+-
+-    def do_kv_cache_update(
+-        self,
+-        layer: AttentionLayer,
+-        key: torch.Tensor,
+-        value: torch.Tensor,
+-        kv_cache: torch.Tensor,
+-        slot_mapping: torch.Tensor,
+-    ):
+-        if self.attn_type in (AttentionType.ENCODER_ONLY, AttentionType.ENCODER):
+-            # For encoder attention,
+-            # we use direct Q, K, V tensors without caching
+-            return
+-        key_cache, value_cache = kv_cache.unbind(0)
+-
+-        # Reshape the input keys and values and store them in the cache.
+-        ops.reshape_and_cache_flash(
+-            key,
+-            value,
+-            key_cache,
+-            value_cache,
+-            slot_mapping,
+-            self.kv_cache_dtype,
+-            layer._k_scale,
+-            layer._v_scale,
+-        )
+-
+-    def fused_rope_kvcache_supported(self):
+-        return rocm_aiter_ops.is_enabled()
+-
+-    def do_rope_and_kv_cache_update(
+-        self,
+-        layer: AttentionLayer,
+-        query: torch.Tensor,
+-        key: torch.Tensor,
+-        value: torch.Tensor,
+-        positions: torch.Tensor,
+-        cos_sin_cache: torch.Tensor,
+-        is_neox: bool,
+-        kv_cache: torch.Tensor,
+-        layer_slot_mapping: torch.Tensor,
+-    ):
+-        if self.attn_type in (AttentionType.ENCODER_ONLY, AttentionType.ENCODER):
+-            # For encoder attention,
+-            # we use direct Q, K, V tensors without caching
+-            return
+-        key_cache, value_cache = kv_cache.unbind(0)
+-        flash_layout = True
+-
+-        is_fp8_kv_cache = self.kv_cache_dtype.startswith("fp8")
+-        if is_fp8_kv_cache:
+-            key_cache = key_cache.view(self.fp8_dtype)
+-            value_cache = value_cache.view(self.fp8_dtype)
+-
+-        rocm_aiter_ops.triton_rope_and_cache(
+-            query,
+-            key,
+-            value,
+-            positions,
+-            cos_sin_cache,
+-            is_neox,
+-            key_cache,
+-            value_cache,
+-            layer_slot_mapping,
+-            layer._k_scale,
+-            layer._v_scale,
+-            flash_layout,
+-            is_fp8_kv_cache,
+-        )

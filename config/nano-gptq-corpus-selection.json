@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "nano_gptq_corpus_selection",
+  "calibration": [
+    {
+      "root_index": 0,
+      "label": "clean calibration recorder 1",
+      "include_request_ids": ["2", "5"],
+      "exclude_request_ids": {
+        "1": "long user prompt was split by RNNT pause handling before the intended boundary",
+        "3": "picnic response exceeded the original 30-second wall-clock harness timeout",
+        "4": "seasons response exceeded the original 30-second wall-clock harness timeout"
+      }
+    },
+    {
+      "root_index": 1,
+      "label": "clean calibration recorder 2",
+      "include_request_ids": ["3"],
+      "exclude_request_ids": {
+        "1": "picnic response ignored the concise instruction and exceeded the corrected 75-second timeout",
+        "2": "literature turn 2 produced intrinsic near-silent FP32 audio despite correct contextual text"
+      }
+    }
+  ],
+  "evaluation": [
+    {
+      "root_index": 0,
+      "label": "physically separate short-answer migration evaluation recorder",
+      "include_request_ids": ["1"],
+      "exclude_request_ids": {}
+    }
+  ]
+}

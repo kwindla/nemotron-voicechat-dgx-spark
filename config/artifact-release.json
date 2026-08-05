@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "kind": "nemotron_voicechat_hugging_face_release_pointer",
+  "repository": "pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark",
+  "immutable_revision": "a20c68547d27421c1e66bd501bf295569a0cc309",
+  "release_sha256": "1d8c3db8efbb87e0da3be86f1045957018082e1e8a339edaaf7e9bf4fb70671b",
+  "payload_bytes": 19695079377,
+  "payload_file_count": 32,
+  "repository_file_count": 33,
+  "derived_from_ea": false
+}

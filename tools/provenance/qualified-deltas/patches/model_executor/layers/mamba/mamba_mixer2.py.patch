@@ -1,0 +1,131 @@
+--- a/vllm/model_executor/layers/mamba/mamba_mixer2.py
++++ b/vllm/model_executor/layers/mamba/mamba_mixer2.py
+@@ -469,6 +469,20 @@
+         self.model_config = model_config
+         self.cache_config = cache_config
+         self.prefix = prefix
++        # voicechat_public_pad_pair_mamba_rollback: buffers are allocated lazily after KV-cache binding,
++        # only for the explicitly configured PAD-pair artifact.
++        self.voicechat_pad_pair_enabled = bool(
++            model_config is not None
++            and getattr(
++                model_config.hf_config,
++                "voicechat_pad_pair_token_id",
++                None,
++            ) is not None
++        )
++        self.voicechat_pad_pair_shadow_conv = None
++        self.voicechat_pad_pair_shadow_ssm = None
++        self.voicechat_pad_pair_shadow_index = None
++        self.voicechat_pad_pair_shadow_virtual_engine = 0
+ 
+     def forward_native(
+         self,
+@@ -656,6 +670,40 @@
+             x = hidden_states_B_C_p.transpose(
+                 0, 1
+             )  # this is the form that causal-conv see
++
++            # voicechat_public_pad_pair_mamba_rollback: with chunk size one, the two logical chunks are
++            # exactly the states produced by two recurrent single-token calls.
++            # Retain the state after position zero before the kernels commit
++            # position one. This path is deliberately bounded to one initialized
++            # continuation request; larger/mixed batches fail closed.
++            pad_pair_active = (
++                self.voicechat_pad_pair_enabled
++                and num_prefills == 1
++                and num_prefill_tokens == 2
++                and chunk_size == 1
++                and prep_initial_states
++            )
++            if pad_pair_active:
++                if prefix_caching_enabled:
++                    raise RuntimeError(
++                        "PAD-pair Mamba rollback does not support prefix caching"
++                    )
++                shadow_index = state_indices_tensor_p.reshape(-1)[:1].clone()
++                prior_conv = conv_state[shadow_index].squeeze(0)
++                if (
++                    self.voicechat_pad_pair_shadow_conv is None
++                    or self.voicechat_pad_pair_shadow_conv.shape != prior_conv.shape
++                ):
++                    self.voicechat_pad_pair_shadow_conv = torch.empty_like(prior_conv)
++                self.voicechat_pad_pair_shadow_conv[..., :-1].copy_(
++                    prior_conv[..., 1:]
++                )
++                self.voicechat_pad_pair_shadow_conv[..., -1].copy_(x[:, 0])
++                self.voicechat_pad_pair_shadow_index = shadow_index
++                self.voicechat_pad_pair_shadow_virtual_engine = (
++                    forward_context.virtual_engine
++                )
++
+             hidden_states_B_C_p = causal_conv1d_fn(
+                 x,
+                 conv_weights,
+@@ -707,7 +755,12 @@
+                 cu_chunk_seqlens=cu_chunk_seqlen_p,
+                 last_chunk_indices=last_chunk_indices_p,
+                 initial_states=initial_states,
+-                return_intermediate_states=prefix_caching_enabled,
++                # voicechat_public_pad_pair_mamba_rollback: chunk-size-1 pair mode needs the
++                # state at both logical chunk boundaries; ordinary execution
++                # retains the original final-state-only allocation.
++                return_intermediate_states=(
++                    prefix_caching_enabled or pad_pair_active
++                ),
+                 dt_softplus=True,
+                 dt_limit=(0.0, float("inf")),
+                 out=preallocated_ssm_out_p.view(num_prefill_tokens, -1, self.head_dim),
+@@ -788,8 +841,24 @@
+             else:
+                 # update ssm states
+                 # - varlen state is a (num_prefills, nheads, headdim, dstate)
+-                #   tensor
+-                ssm_state[state_indices_tensor_p] = varlen_states
++                #   tensor, except voicechat_public_pad_pair_mamba_rollback pair mode where it contains
++                #   one entry for each chunk.
++                if pad_pair_active:
++                    first_state = varlen_states[0]
++                    if (
++                        self.voicechat_pad_pair_shadow_ssm is None
++                        or self.voicechat_pad_pair_shadow_ssm.shape
++                        != first_state.shape
++                    ):
++                        self.voicechat_pad_pair_shadow_ssm = torch.empty_like(
++                            first_state
++                        )
++                    self.voicechat_pad_pair_shadow_ssm.copy_(first_state)
++                    ssm_state[state_indices_tensor_p] = varlen_states[
++                        last_chunk_indices_p
++                    ]
++                else:
++                    ssm_state[state_indices_tensor_p] = varlen_states
+ 
+         # Process decode requests
+         if has_decode:
+@@ -870,6 +939,25 @@
+         # 5. Final linear projection
+         output[:num_actual_tokens], _ = self.out_proj(hidden_states)
+ 
++    def voicechat_restore_pad_pair_state(self) -> bool:
++        """Restore the exact first-position state after PAD rejection."""
++        # voicechat_public_pad_pair_mamba_rollback: called only by the config-gated rejection branch.
++        if (
++            self.voicechat_pad_pair_shadow_conv is None
++            or self.voicechat_pad_pair_shadow_ssm is None
++            or self.voicechat_pad_pair_shadow_index is None
++        ):
++            return False
++        self_kv_cache = self.kv_cache[
++            self.voicechat_pad_pair_shadow_virtual_engine
++        ]
++        conv_state = self_kv_cache[0].transpose(-1, -2)
++        ssm_state = self_kv_cache[1]
++        shadow_index = self.voicechat_pad_pair_shadow_index
++        conv_state[shadow_index] = self.voicechat_pad_pair_shadow_conv.unsqueeze(0)
++        ssm_state[shadow_index] = self.voicechat_pad_pair_shadow_ssm.unsqueeze(0)
++        return True
++
+     def get_state_dtype(self) -> tuple[torch.dtype, torch.dtype]:
+         assert self.model_config is not None
+         assert self.cache_config is not None

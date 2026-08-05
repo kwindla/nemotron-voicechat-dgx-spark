@@ -1,0 +1,23 @@
+--- a/vllm/v1/request.py
++++ b/vllm/v1/request.py
+@@ -276,20 +276,6 @@
+         self.custom_inputs_num_consumed += num_scheduled_tokens
+         return sliced_custom_inputs
+ 
+-    def extend_sequence(self, num_tokens: int) -> None:
+-        """Extend the token sequence with placeholder tokens.
+-
+-        Creates a gap between num_computed_tokens and num_tokens so that
+-        the scheduler treats the extra positions as a prefill-like chunk.
+-        Used for mid-stream context injection (e.g. function-call results).
+-        """
+-        placeholders = [0] * num_tokens
+-        self._output_token_ids.extend(placeholders)
+-        self._all_token_ids.extend(placeholders)
+-
+-        if self.get_hash_new_full_blocks is not None:
+-            self.block_hashes.extend(self.get_hash_new_full_blocks())
+-
+     def has_custom_inputs(self) -> bool:
+         """Check if custom inputs are ready."""
+         return self.custom_inputs_ready

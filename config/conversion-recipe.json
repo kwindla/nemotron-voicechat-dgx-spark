@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "kind": "nemotron_voicechat_dgx_spark_conversion_recipe",
+  "source": {
+    "repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+    "revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+    "model_bytes": 44382749892,
+    "model_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b"
+  },
+  "nano_skeleton": {
+    "repository": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+    "revision": "6533e8de2c68e4536bf7c411d7a3ce5734111476",
+    "runtime_path": "/models/NVIDIA-Nemotron-Nano-9B-v2"
+  },
+  "speech": {
+    "repository": "NVIDIA-NeMo/Speech",
+    "revision": "911ec674ab40f04302ef33672be4179f45a7310f"
+  },
+  "corpus": {
+    "manifest": "config/calibration-corpus-production-candidate-1.json",
+    "release_sha256": "ad8ce2fe3a66fae72ce45703216265180066b2745dc32d829ee550b45c487bd5",
+    "selection": "config/nano-gptq-corpus-selection.json",
+    "calibration_conversations": 3,
+    "calibration_calls": 3934,
+    "evaluation_conversations": 1,
+    "evaluation_calls": 1172,
+    "disjoint": true
+  },
+  "nano": {
+    "method": "calibrated symmetric GPTQ",
+    "bits": 8,
+    "activation_dtype": "bfloat16",
+    "group_size": 128,
+    "selected_tensors": 105,
+    "selected_families": [
+      "MLP up/down projections",
+      "Mamba in/out projections",
+      "text head"
+    ],
+    "full_precision": [
+      "function_head",
+      "embeddings",
+      "attention_projections"
+    ],
+    "padding": {
+      "selector": "stt_model.llm.layers.*.mixer.down_proj.weight",
+      "source_k": 15680,
+      "packed_k": 15744,
+      "zero_columns": 64
+    },
+    "seed": 0,
+    "block_size": 128,
+    "damp_percent": 0.01,
+    "max_shard_gib": 4.0,
+    "expected_composite_sha256": "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99"
+  },
+  "eartts": {
+    "method": "symmetric per-output-channel W8 weights",
+    "activation_dtype": "float32",
+    "selected_tensors": 205,
+    "max_shard_gib": 4.0,
+    "sliding_window": 1500,
+    "expected_composite_sha256": "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e",
+    "abi_note": "ea_w8a32 is the serialized vLLM quant_method identifier required by the qualified loader; it does not identify an EA checkpoint lineage."
+  },
+  "determinism": {
+    "clean_runs": 2,
+    "require_byte_identical_artifact_trees": true,
+    "minimum_remaining_gib": 100,
+    "immutable_outputs": true,
+    "resume_only_from_validated_stage_markers": true
+  },
+  "qualified_environment": {
+    "architecture": "linux/arm64",
+    "gpu": "NVIDIA GB10",
+    "compute_capability": "12.1",
+    "driver_version": "580.142",
+    "kernel_version": "6.17.0-1014-nvidia",
+    "packages": {
+      "torch": "2.10.0a0+b4e4ee81d3.nv25.12",
+      "transformers": "4.56.0",
+      "safetensors": "0.8.0",
+      "vllm": "0.17.1.dev0+gb31e9326a.fi065",
+      "compressed-tensors": "0.13.0",
+      "nvidia-modelopt": "0.37.0"
+    }
+  }
+}
