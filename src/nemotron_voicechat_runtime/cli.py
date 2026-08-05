@@ -27,6 +27,10 @@ from .artifacts import (
     require_free_space,
 )
 
+BOT_SOURCE_ROOT = REPO_ROOT / "src/nemotron_voicechat_pipecat"
+BOT_RELOAD_DEBOUNCE_SECONDS = 0.5
+BOT_RESTART_TIMEOUT_SECONDS = 45.0
+
 
 def _run(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess:
     print("+", " ".join(command), flush=True)
@@ -433,18 +437,54 @@ def _wait_health(url: str, process: subprocess.Popen, timeout: int) -> dict[str,
 def _stop_stack(
     model: subprocess.Popen | None, pipecat: subprocess.Popen | None, name: str
 ) -> None:
-    if pipecat is not None and pipecat.poll() is None:
-        pipecat.send_signal(signal.SIGINT)
-        try:
-            pipecat.wait(timeout=15)
-        except subprocess.TimeoutExpired:
-            pipecat.kill()
+    _stop_pipecat(pipecat)
     if model is not None and model.poll() is None:
-        subprocess.run(["docker", "stop", "--time", "20", name], check=False)
+        subprocess.run(["docker", "stop", "--timeout", "20", name], check=False)
         try:
             model.wait(timeout=25)
         except subprocess.TimeoutExpired:
             model.kill()
+
+
+def _stop_pipecat(pipecat: subprocess.Popen | None) -> None:
+    if pipecat is None or pipecat.poll() is not None:
+        return
+    try:
+        pipecat.send_signal(signal.SIGINT)
+    except ProcessLookupError:
+        return
+    try:
+        pipecat.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        try:
+            pipecat.kill()
+        except ProcessLookupError:
+            return
+        pipecat.wait(timeout=5)
+
+
+def _pipecat_command(layout: Layout, host: str, port: int) -> list[str]:
+    return [
+        str(layout.cache / "venv/bin/python"),
+        "-m",
+        "nemotron_voicechat_pipecat.demo",
+        "-t",
+        "webrtc",
+        "--host",
+        host,
+        "--port",
+        str(port),
+    ]
+
+
+def _start_pipecat(layout: Layout, model_port: int, host: str, port: int) -> subprocess.Popen:
+    environment = os.environ.copy()
+    environment["NEMOTRON_VOICECHAT_WS_URL"] = f"ws://127.0.0.1:{model_port}/v1/realtime"
+    return subprocess.Popen(
+        _pipecat_command(layout, host, port),
+        cwd=REPO_ROOT,
+        env=environment,
+    )
 
 
 def _process_start_time(pid: int, proc_root: Path = Path("/proc")) -> str | None:
@@ -465,6 +505,77 @@ def _owned_pipecat_process(
         expected_start_time is None
         or _process_start_time(pid, proc_root=proc_root) == expected_start_time
     )
+
+
+def _owned_launcher_process(
+    pid: int, proc_root: Path = Path("/proc"), expected_start_time: str | None = None
+) -> bool:
+    try:
+        arguments = (proc_root / str(pid) / "cmdline").read_bytes().split(b"\0")
+    except OSError:
+        return False
+    return (
+        any(
+            argument == b"-m"
+            and index + 1 < len(arguments)
+            and arguments[index + 1] == b"nemotron_voicechat_runtime.cli"
+            for index, argument in enumerate(arguments)
+        )
+        and b"up" in arguments
+        and (
+            expected_start_time is None
+            or _process_start_time(pid, proc_root=proc_root) == expected_start_time
+        )
+    )
+
+
+def _bot_source_snapshot(root: Path = BOT_SOURCE_ROOT) -> tuple[tuple[str, int, int], ...]:
+    """Return a cheap, stable fingerprint for the bot's Python source tree."""
+
+    snapshot: list[tuple[str, int, int]] = []
+    for path in sorted(root.rglob("*.py")):
+        try:
+            stat = path.stat()
+        except FileNotFoundError:
+            # Editors commonly replace files atomically. The next poll observes
+            # the replacement and extends the debounce window.
+            continue
+        snapshot.append((str(path.relative_to(root)), stat.st_mtime_ns, stat.st_size))
+    return tuple(snapshot)
+
+
+def _runtime_state(
+    *,
+    name: str,
+    model_port: int,
+    pipecat_host: str,
+    pipecat_port: int,
+    pipecat: subprocess.Popen | None,
+    bot_generation: int,
+    bot_status: str = "running",
+    bot_exit_code: int | None = None,
+) -> dict[str, Any]:
+    state = {
+        "schema": 2,
+        "launcher_pid": os.getpid(),
+        "launcher_start_time": _process_start_time(os.getpid()),
+        "bot_generation": bot_generation,
+        "bot_status": bot_status,
+        "container_name": name,
+        "model_port": model_port,
+        "pipecat_host": pipecat_host,
+        "pipecat_port": pipecat_port,
+    }
+    if pipecat is not None:
+        state.update(
+            {
+                "pipecat_pid": pipecat.pid,
+                "pipecat_start_time": _process_start_time(pipecat.pid),
+            }
+        )
+    if bot_exit_code is not None:
+        state["bot_exit_code"] = bot_exit_code
+    return state
 
 
 def _stop_orphan_pipecat(pid: int, expected_start_time: str | None = None) -> None:
@@ -507,12 +618,22 @@ def command_up(args: argparse.Namespace) -> int:
     (layout.traces / "model").mkdir(parents=True, exist_ok=True)
     model: subprocess.Popen | None = None
     pipecat: subprocess.Popen | None = None
+    bot_generation = 0
+    restart_requested = False
+    reload_snapshot: tuple[tuple[str, int, int], ...] | None = None
+    reload_after: float | None = None
     previous_sigterm = signal.getsignal(signal.SIGTERM)
+    previous_sigusr1 = signal.getsignal(signal.SIGUSR1)
 
     def terminate(_signum, _frame):
         raise KeyboardInterrupt
 
+    def request_bot_restart(_signum, _frame):
+        nonlocal restart_requested
+        restart_requested = True
+
     signal.signal(signal.SIGTERM, terminate)
+    signal.signal(signal.SIGUSR1, request_bot_restart)
     try:
         model = subprocess.Popen(model_container_command(config, layout, model_port))
         health = _wait_health(
@@ -521,57 +642,167 @@ def command_up(args: argparse.Namespace) -> int:
             deployment["health_timeout_seconds"],
         )
         print(f"Model ready: protocol={health.get('protocol')} typed_input=ready", flush=True)
-        environment = os.environ.copy()
-        environment["NEMOTRON_VOICECHAT_WS_URL"] = f"ws://127.0.0.1:{model_port}/v1/realtime"
-        pipecat = subprocess.Popen(
-            [
-                str(layout.cache / "venv/bin/python"),
-                "-m",
-                "nemotron_voicechat_pipecat.demo",
-                "-t",
-                "webrtc",
-                "--host",
-                pipecat_host,
-                "--port",
-                str(pipecat_port),
-            ],
-            cwd=REPO_ROOT,
-            env=environment,
-        )
+        pipecat = _start_pipecat(layout, model_port, pipecat_host, pipecat_port)
         atomic_json(
             layout.runtime_state_file,
-            {
-                "schema": 1,
-                "launcher_pid": os.getpid(),
-                "pipecat_pid": pipecat.pid,
-                "pipecat_start_time": _process_start_time(pipecat.pid),
-                "container_name": name,
-                "model_port": model_port,
-                "pipecat_host": pipecat_host,
-                "pipecat_port": pipecat_port,
-            },
+            _runtime_state(
+                name=name,
+                model_port=model_port,
+                pipecat_host=pipecat_host,
+                pipecat_port=pipecat_port,
+                pipecat=pipecat,
+                bot_generation=bot_generation,
+            ),
         )
         print(
             f"Pipecat Playground: http://{pipecat_host}:{pipecat_port}/client/",
             flush=True,
         )
+        if args.reload_bot:
+            reload_snapshot = _bot_source_snapshot()
+            print(f"Watching {BOT_SOURCE_ROOT} for bot source changes", flush=True)
         while True:
+            if args.reload_bot:
+                current_snapshot = _bot_source_snapshot()
+                if current_snapshot != reload_snapshot:
+                    reload_snapshot = current_snapshot
+                    reload_after = time.monotonic() + BOT_RELOAD_DEBOUNCE_SECONDS
+                elif reload_after is not None and time.monotonic() >= reload_after:
+                    reload_after = None
+                    restart_requested = True
+                    print("Bot source changed; restarting Pipecat...", flush=True)
+
+            if restart_requested:
+                restart_requested = False
+                _stop_pipecat(pipecat)
+                _wait_ports_available([(pipecat_host, pipecat_port)])
+                if model.poll() is not None:
+                    return model.returncode or 1
+                pipecat = _start_pipecat(layout, model_port, pipecat_host, pipecat_port)
+                bot_generation += 1
+                atomic_json(
+                    layout.runtime_state_file,
+                    _runtime_state(
+                        name=name,
+                        model_port=model_port,
+                        pipecat_host=pipecat_host,
+                        pipecat_port=pipecat_port,
+                        pipecat=pipecat,
+                        bot_generation=bot_generation,
+                    ),
+                )
+                print(
+                    f"Pipecat bot restarted (generation {bot_generation}); "
+                    "reconnect the Playground session",
+                    flush=True,
+                )
+                continue
+
             model_status = model.poll()
-            pipecat_status = pipecat.poll()
+            pipecat_status = pipecat.poll() if pipecat is not None else None
             if model_status is not None:
                 return model_status or 1
             if pipecat_status is not None:
+                if args.reload_bot or bot_generation > 0:
+                    print(
+                        f"Pipecat bot exited with status {pipecat_status}; model remains ready. "
+                        "Fix the bot and run `./voicechat restart-bot` or save a watched file.",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                    atomic_json(
+                        layout.runtime_state_file,
+                        _runtime_state(
+                            name=name,
+                            model_port=model_port,
+                            pipecat_host=pipecat_host,
+                            pipecat_port=pipecat_port,
+                            pipecat=None,
+                            bot_generation=bot_generation,
+                            bot_status="exited",
+                            bot_exit_code=pipecat_status,
+                        ),
+                    )
+                    pipecat = None
+                    time.sleep(0.5)
+                    continue
                 return pipecat_status or 1
             time.sleep(0.5)
     except KeyboardInterrupt:
         return 0
     finally:
         signal.signal(signal.SIGTERM, previous_sigterm)
-        _stop_stack(model, pipecat, name)
-        _wait_ports_available(
-            [("127.0.0.1", model_port), (pipecat_host, pipecat_port)]
+        try:
+            _stop_stack(model, pipecat, name)
+            _wait_ports_available([("127.0.0.1", model_port), (pipecat_host, pipecat_port)])
+        finally:
+            layout.runtime_state_file.unlink(missing_ok=True)
+            signal.signal(signal.SIGUSR1, previous_sigusr1)
+
+
+def command_restart_bot(args: argparse.Namespace) -> int:
+    if args.timeout <= 0:
+        raise ValueError("--timeout must be greater than zero")
+    layout = default_layout(args.cache_root, args.trace_root)
+    try:
+        state = json.loads(layout.runtime_state_file.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise RuntimeError("the stack is not running; start it with `./voicechat up`") from exc
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"runtime state is unreadable: {exc}") from exc
+
+    launcher_pid = state.get("launcher_pid")
+    launcher_start_time = state.get("launcher_start_time")
+    generation = state.get("bot_generation")
+    if (
+        state.get("schema") != 2
+        or not isinstance(launcher_pid, int)
+        or not isinstance(launcher_start_time, str)
+        or not isinstance(generation, int)
+    ):
+        raise RuntimeError(
+            "the running stack predates bot reload support; restart `./voicechat up` once"
         )
-        layout.runtime_state_file.unlink(missing_ok=True)
+    if not _owned_launcher_process(launcher_pid, expected_start_time=launcher_start_time):
+        raise RuntimeError("runtime state does not identify a live `voicechat up` launcher")
+
+    try:
+        os.kill(launcher_pid, signal.SIGUSR1)
+    except OSError as exc:
+        raise RuntimeError(f"could not signal the `voicechat up` launcher: {exc}") from exc
+
+    deadline = time.monotonic() + args.timeout
+    while time.monotonic() < deadline:
+        if not _owned_launcher_process(launcher_pid, expected_start_time=launcher_start_time):
+            raise RuntimeError("the `voicechat up` launcher exited while restarting the bot")
+        try:
+            current = json.loads(layout.runtime_state_file.read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, json.JSONDecodeError):
+            time.sleep(0.1)
+            continue
+        new_pid = current.get("pipecat_pid")
+        new_start_time = current.get("pipecat_start_time")
+        current_generation = current.get("bot_generation")
+        host = current.get("pipecat_host")
+        port = current.get("pipecat_port")
+        if (
+            current.get("launcher_pid") == launcher_pid
+            and isinstance(current_generation, int)
+            and current_generation > generation
+            and isinstance(new_pid, int)
+            and isinstance(new_start_time, str)
+            and isinstance(host, str)
+            and isinstance(port, int)
+            and _owned_pipecat_process(new_pid, expected_start_time=new_start_time)
+            and not _port_available(host, port)
+        ):
+            print(
+                f"Pipecat bot restarted (generation {current_generation}); "
+                "reconnect the Playground session"
+            )
+            return 0
+        time.sleep(0.1)
+    raise RuntimeError(f"timed out after {args.timeout:g}s waiting for the Pipecat bot restart")
 
 
 def command_down(args: argparse.Namespace) -> int:
@@ -633,9 +864,7 @@ def command_test(args: argparse.Namespace) -> int:
     missing = [flag for flag, value in required.items() if value is None]
     if missing:
         raise RuntimeError(f"live qualification requires {' and '.join(missing)}")
-    manifest = (
-        Path(args.fixture_manifest).expanduser().resolve() if args.fixture_manifest else None
-    )
+    manifest = Path(args.fixture_manifest).expanduser().resolve() if args.fixture_manifest else None
     if manifest is not None and not manifest.is_file():
         raise RuntimeError(f"fixture manifest does not exist: {manifest}")
     browser_mic = (
@@ -703,7 +932,17 @@ def parser() -> argparse.ArgumentParser:
     up.add_argument("--host")
     up.add_argument("--port", type=int)
     up.add_argument("--model-port", type=int)
+    up.add_argument(
+        "--reload-bot",
+        action="store_true",
+        help="restart only Pipecat when its Python source changes",
+    )
     up.set_defaults(handler=command_up)
+    restart_bot = subparsers.add_parser(
+        "restart-bot", help="restart Pipecat without restarting the model container"
+    )
+    restart_bot.add_argument("--timeout", type=float, default=BOT_RESTART_TIMEOUT_SECONDS)
+    restart_bot.set_defaults(handler=command_restart_bot)
     subparsers.add_parser("down").set_defaults(handler=command_down)
     subparsers.add_parser("status").set_defaults(handler=command_status)
     test = subparsers.add_parser("test")

@@ -46,6 +46,27 @@ Playground URL, and owns teardown. Ctrl-C stops Pipecat and removes the
 `--rm` model container. If the launcher was killed, `./voicechat down` removes
 only its deterministic orphan container.
 
+The bot implementation lives in
+`src/nemotron_voicechat_pipecat/demo.py`. After changing its system instruction,
+tool schemas, or handlers, restart only Pipecat from another terminal while the
+foreground stack remains running:
+
+```bash
+./voicechat restart-bot
+```
+
+The model container and its loaded weights remain resident. The restart closes
+the current WebRTC session, so reconnect the Playground client. For automatic
+restarts while editing any Python file in the Pipecat package, start the stack
+in development watch mode:
+
+```bash
+./voicechat up --reload-bot
+```
+
+Neither workflow requires another bootstrap or image build. Prompt and tool
+changes apply only to newly connected sessions.
+
 The raw model WebSocket is published only as `127.0.0.1:8786`; the browser sees
 Pipecat at `127.0.0.1:7860`. To serve a LAN deliberately:
 

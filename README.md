@@ -1,7 +1,17 @@
 # Nemotron Voicechat on DGX Spark
 
-Run NVIDIA NemotronLabs VoiceChat 11B on one DGX Spark and use it through a
-Pipecat SmallWebRTC bot and Pipecat's built-in Playground.
+[NVIDIA NemotronLabs VoiceChat](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-VoiceChat-11B)
+is an end-to-end, speech-to-speech, full-duplex model for conversational AI.
+
+NVIDIA describes VoiceChat as the first open, full-duplex model to support tool
+calling. It released the model as a research-oriented "Labs" checkpoint to
+facilitate community development.
+
+This repository runs VoiceChat 11B on one DGX Spark. To sustain real-time
+inference on Spark, we quantized the Nano and EarTTS weights, patched vLLM, and
+implemented conditional two-frame PAD drafting.
+
+## Getting started
 
 ```bash
 git clone https://github.com/pipecat-ai/nemotron-voicechat-dgx-spark.git
@@ -10,19 +20,58 @@ cd nemotron-voicechat-dgx-spark
 ./voicechat up
 ```
 
-Open **http://127.0.0.1:7860/client/**. Stop the foreground stack with Ctrl-C.
+The first bootstrap downloads about 65 GiB and builds the CUDA runtime image.
+Allow 1–2 hours and at least 90 GiB of free space. You may need to accept the
+[NVIDIA model terms](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-VoiceChat-11B)
+and run `hf auth login`, or provide `HF_TOKEN` only to the bootstrap command.
+No credential is copied into the image or required at runtime.
+Runtime is local and offline: there is no `.env` file, application API key,
+cloud model, or system service.
 
-The first bootstrap downloads about 65 GiB and builds the CUDA runtime image;
-allow 45–120 minutes and at least 90 GiB free. It may require accepting the
-[NVIDIA VoiceChat model terms](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-VoiceChat-11B)
-and running `hf auth login`, or supplying `HF_TOKEN` only to the bootstrap
-invocation. Runtime operation is local and offline: there is no `.env`, API
-key, cloud model, system service, or persisted application credential.
+`./voicechat up` takes about seven minutes to start. You will see the
+`PIPECAT DEVELOPMENT RUNNER` banner when the full stack is ready.
 
-## What ships
+Open **http://127.0.0.1:7860/client/**.
 
-- public NVIDIA VoiceChat parent revision `fb0f94e...`;
-- published, signed Production Candidate 1 weights at immutable revision
+Remote browser testing needs an HTTPS origin because browsers do not grant
+microphone access to insecure origins other than localhost or loopback.
+
+The client uses Pipecat's
+[SmallWebRTCTransport](https://docs.pipecat.ai/api-reference/server/services/transport/small-webrtc)
+for a low-latency peer-to-peer connection between the browser and the host
+Pipecat bot. The bot talks to the Docker inference server over a separate,
+loopback-only WebSocket.
+
+```bash
+# Run in another terminal.
+ngrok http http://127.0.0.1:7860
+```
+
+Open the HTTPS URL printed by ngrok. The tunnel exposes the Playground and
+WebRTC signaling endpoint, but media remains WebRTC; restrictive NAT or
+firewalls may require STUN/TURN or another Pipecat transport. The ngrok URL has
+no application authentication and the stack supports one client, so share it
+carefully. Never tunnel the raw model port (`8786`).
+
+Stop the foreground stack with Ctrl-C. Bootstrap requires network access, but
+running the stack (`./voicechat up`) can happen entirely offline.
+
+## What's in this repo
+
+This repository includes the inference runtime, downloaded-artifact
+verification, component gates, end-to-end qualification suite, Pipecat service,
+and sample bot in
+[`demo.py`](src/nemotron_voicechat_pipecat/demo.py).
+
+The deterministic production conversion pipeline and dual-source verification
+will be published in a follow-up commit after their long-running reproduction
+gate finishes. The converted weights and their content-addressed provenance
+are [public on Hugging Face](https://huggingface.co/pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark).
+
+The current release contains:
+
+- the public NVIDIA VoiceChat parent revision `fb0f94e...`;
+- published, hash-verified Production Candidate 1 weights at immutable revision
   `a20c685...` in
   [`pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark`](https://huggingface.co/pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark);
 - calibrated GPTQ W8 Nano and W8A32 EarTTS;
@@ -34,6 +83,49 @@ The GPU/CUDA/model stack runs in Docker. Pipecat runs from the pinned host `uv`
 environment. Pocket TTS is internal to the model container in an isolated
 CPU-only Python worker, so its PyTorch does not conflict with CUDA PyTorch.
 
+## Todo
+
+- Evaluate Pipecat Smart Turn as an external endpointing signal against the
+  model's current server-side VAD and RNNT turn detection. Measure latency and
+  false endpoints before changing the qualified default.
+- Check input text transcription chunking. We may be inserting spaces in RTVI
+  messages where we should not.
+- Improve inference stack startup time.
+- Experiment with application-layer tool routing instead of relying exclusively
+  on the model's function head.
+- Add an example for using VoiceChat as the front-end to NemoClaw.
+- Benchmark context degradation in long conversations and investigate safe
+  session rollover or compaction strategies.
+
+## Known limitations
+
+- NVIDIA trained the model with audio context windows no longer than two
+  minutes; conversational context beyond that window may not be retained
+  reliably.
+- NVIDIA classifies the checkpoint as research-only. Knowledge, reasoning,
+  transcript quality, and tool selection can be unreliable. See
+  [known limitations](docs/known-limitations.md) for measured runtime behavior
+  and upstream model limitations.
+
+## Editing the bot
+
+The system prompt, tool schemas, and handlers live in
+[`demo.py`](src/nemotron_voicechat_pipecat/demo.py). Keep the loaded model
+resident while restarting only Pipecat from another terminal:
+
+```bash
+./voicechat restart-bot
+```
+
+For automatic restarts whenever a Pipecat Python file changes:
+
+```bash
+./voicechat up --reload-bot
+```
+
+Bot restarts close the current WebRTC session, so reconnect the Playground.
+Changes apply to new sessions and require neither bootstrap nor an image build.
+
 ## Useful commands
 
 ```bash
@@ -44,12 +136,7 @@ CPU-only Python worker, so its PyTorch does not conflict with CUDA PyTorch.
 ./voicechat bootstrap --offline # proven cache-only reinstall/revalidation
 ```
 
-The initial public release includes the inference runtime, downloaded-artifact
-verification, component gates, and end-to-end qualification suite. The
-deterministic production conversion pipeline and dual-source verification will
-be published in a follow-up commit after their long-running reproduction gate
-finishes. The converted weights and their signed provenance are already public
-at the immutable Hugging Face revision above.
+## Docs and links
 
 See [deployment](docs/deployment.md), [architecture](docs/architecture.md),
 [strict-v3 protocol](docs/protocol-v3.md),
