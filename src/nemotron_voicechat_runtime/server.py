@@ -17,6 +17,7 @@ import functools
 import gc
 import hashlib
 import json
+import logging
 import math
 import os
 import platform
@@ -68,6 +69,7 @@ PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
         "nemotron_voicechat_dgx_spark_hf_release",
     }
 )
+LOGGER = logging.getLogger(__name__)
 
 
 def typed_input_trailing_silence_seconds(
@@ -809,6 +811,7 @@ class StepResult:
     turn_state: dict[str, Any]
     function_delta: str = ""
     function_text: str = ""
+    trace_diagnostics: dict[str, Any] | None = None
 
 
 @dataclass
@@ -1183,6 +1186,9 @@ class VoiceChatEngine:
             max_tail_frames=response_tail_max_frames,
             delivery_silence_frames=delivery_silence_frames,
         )
+        self.pad_pair_idle_no_buffer_frames = 0
+        self.pad_pair_watchdog_emitted = False
+        self.pad_pair_trace_errors = 0
 
     def _reset_wrapper_session_state(self) -> None:
         reset_fn = getattr(self.pipeline.s2s_model, "reset_transport_session_state", None)
@@ -1326,6 +1332,109 @@ class VoiceChatEngine:
             }
         return result
 
+    def _pad_pair_trace_diagnostics(
+        self,
+        context: Any,
+        frame_position: int,
+        turn_state: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Collect opt-in evidence without allowing diagnostics to break inference."""
+        from .runtime_optimizations import enabled
+
+        if not enabled("VOICECHAT_NANO_PAD_PAIR_TRACE"):
+            return None
+        try:
+            return self._collect_pad_pair_trace_diagnostics(
+                context, frame_position, turn_state
+            )
+        except Exception as exc:
+            self.pad_pair_trace_errors += 1
+            LOGGER.exception("Dropped Nano PAD-pair model-step diagnostics")
+            return {
+                "trace_error": type(exc).__name__,
+                "trace_record_errors": self.pad_pair_trace_errors,
+            }
+
+    def _collect_pad_pair_trace_diagnostics(
+        self,
+        context: Any,
+        frame_position: int,
+        turn_state: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Build the enabled scalar snapshot; caller owns exception isolation."""
+        from .runtime_optimizations import consume_pad_pair_trace
+
+        request_id_fn = getattr(self.pipeline, "_request_id_for_stream", None)
+        request_id = (
+            str(request_id_fn(self.stream_id)) if callable(request_id_fn) else str(self.stream_id)
+        )
+        snapshot = consume_pad_pair_trace(self.pipeline.s2s_model, request_id)
+        finalized = snapshot.get("last_effective_tokens")
+        effective: dict[str, Any] | None = None
+        if context is not None and frame_position >= 0:
+            gen_function = getattr(context, "gen_function_text", None)
+            if gen_function is not None:
+                text_token = int(context.gen_text[0, frame_position].item())
+                function_token = int(gen_function[0, frame_position].item())
+                scheduler_pad = (finalized or {}).get("pad")
+                pad_token = (
+                    int(scheduler_pad)
+                    if scheduler_pad is not None
+                    else int(self.pipeline.s2s_model.model.stt_model.text_pad_id)
+                )
+                effective = {
+                    "frame_idx": frame_position,
+                    "text": text_token,
+                    "function": function_token,
+                    "pad": pad_token,
+                    "text_is_pad": text_token == pad_token,
+                    "function_is_pad": function_token == pad_token,
+                    "both_pad": text_token == pad_token and function_token == pad_token,
+                }
+
+        fc = turn_state.get("function_calling") or {}
+        fc_idle = not any(
+            (
+                fc.get("active"),
+                fc.get("awaiting_response"),
+                fc.get("injecting_response"),
+                fc.get("forced_tokens"),
+                fc.get("background_active"),
+            )
+        )
+        buffered = any(event.get("decision") == "buffered" for event in snapshot["events"])
+        watching = bool(
+            snapshot.get("enabled") and fc_idle and turn_state.get("agent_control") == "pad"
+        )
+        watchdog = None
+        if watching and not buffered:
+            self.pad_pair_idle_no_buffer_frames += 1
+            if self.pad_pair_idle_no_buffer_frames >= 25 and not self.pad_pair_watchdog_emitted:
+                self.pad_pair_watchdog_emitted = True
+                watchdog = {
+                    "event": "idle_agent_without_pair_buffer",
+                    "consecutive_frames": self.pad_pair_idle_no_buffer_frames,
+                    "threshold_frames": 25,
+                    "effective_tokens": effective,
+                    "scheduler": snapshot.get("state"),
+                }
+        else:
+            self.pad_pair_idle_no_buffer_frames = 0
+            self.pad_pair_watchdog_emitted = False
+        effective_matches_finalize = None
+        if effective is not None and finalized is not None:
+            effective_matches_finalize = all(
+                effective.get(key) == finalized.get(key)
+                for key in ("frame_idx", "text", "function", "pad", "both_pad")
+            )
+        return {
+            "effective_tokens": effective,
+            "effective_tokens_match_finalize": effective_matches_finalize,
+            "pad_pair": snapshot,
+            "idle_no_buffer_frames": self.pad_pair_idle_no_buffer_frames,
+            "watchdog": watchdog,
+        }
+
     def start(self, system_prompt: str = "") -> None:
         if self.started:
             raise RuntimeError("session already started")
@@ -1339,6 +1448,9 @@ class VoiceChatEngine:
         self.vllm_request_position_baseline = {}
         self.agent_silence_watchdog.reset()
         self.response_boundary.reset()
+        self.pad_pair_idle_no_buffer_frames = 0
+        self.pad_pair_watchdog_emitted = False
+        self.pad_pair_trace_errors = 0
         self.pipeline.open_session()
         self.system_prompt = system_prompt.strip()
         # Prime the two vLLM request streams without consuming an audio frame.
@@ -1463,6 +1575,9 @@ class VoiceChatEngine:
 
         turn_state = self._turn_state(context, total_frames - 1)
         turn_state["vllm_request_positions"] = self._vllm_request_positions()
+        trace_diagnostics = self._pad_pair_trace_diagnostics(
+            context, total_frames - 1, turn_state
+        )
         rnnt_state = turn_state.get("rnnt")
         if isinstance(rnnt_state, dict):
             decoded_count = int(rnnt_state.get("decoded_token_count") or 0)
@@ -1481,6 +1596,7 @@ class VoiceChatEngine:
             turn_state=turn_state,
             function_delta=function_delta,
             function_text=function_text,
+            trace_diagnostics=trace_diagnostics,
         )
         control = result.turn_state.get("agent_control")
         rnnt_metrics = result.turn_state.get("rnnt", {})
@@ -2068,23 +2184,35 @@ async def send_step(
             response_id=protocol.response_id,
         )
     )
+    trace_fields = {
+        "frame": result.frame_index,
+        "transport_frame": transport_frame,
+        "input_audio": result.input_audio,
+        "output_audio": {**delivered_output_audio, "bytes": len(output_bytes)},
+        "model_output_audio": result.output_audio,
+        "audio_delivered": audio_delivered,
+        "inference_ms": round(result.inference_ms, 3),
+        "server_step_ms": round(result.server_step_ms, 3),
+        "user_text": result.user_text,
+        "user_text_changed": user_text_changed,
+        "assistant_delta": result.assistant_delta,
+        "function_delta": result.function_delta,
+        "function_text": result.function_text,
+        "turn_state": result.turn_state,
+    }
+    if result.trace_diagnostics is not None:
+        trace_fields["runtime_diagnostics"] = result.trace_diagnostics
     trace.event(
         "model_step",
-        frame=result.frame_index,
-        transport_frame=transport_frame,
-        input_audio=result.input_audio,
-        output_audio={**delivered_output_audio, "bytes": len(output_bytes)},
-        model_output_audio=result.output_audio,
-        audio_delivered=audio_delivered,
-        inference_ms=round(result.inference_ms, 3),
-        server_step_ms=round(result.server_step_ms, 3),
-        user_text=result.user_text,
-        user_text_changed=user_text_changed,
-        assistant_delta=result.assistant_delta,
-        function_delta=result.function_delta,
-        function_text=result.function_text,
-        turn_state=result.turn_state,
+        **trace_fields,
     )
+    if result.trace_diagnostics and result.trace_diagnostics.get("watchdog"):
+        trace.event(
+            "nano_pad_pair_watchdog",
+            frame=result.frame_index,
+            transport_frame=transport_frame,
+            **result.trace_diagnostics["watchdog"],
+        )
     return last_user_text
 
 

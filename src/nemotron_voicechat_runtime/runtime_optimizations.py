@@ -6,6 +6,7 @@ from __future__ import annotations
 import inspect
 import logging
 import os
+from collections import deque
 from functools import update_wrapper
 from pathlib import Path
 from typing import Any
@@ -350,8 +351,160 @@ def _pad_pair_state(engine: Any, request_id: str) -> dict[str, Any]:
             "precontrol_barriers": 0,
             "precontrol_pending_drains": 0,
             "precontrol_reasons": {},
+            # Diagnostic-only state. These records contain scalars and booleans
+            # only, so observing the scheduler never synchronizes CUDA tensors.
+            "trace_sequence": 0,
+            "trace_events": deque(),
+            "trace_events_dropped": 0,
+            "trace_record_errors": 0,
+            "last_effective_tokens": None,
         },
     )
+
+
+def _record_pad_pair_decision(
+    engine: Any,
+    request_id: str,
+    state: dict[str, Any],
+    **fields: Any,
+) -> None:
+    """Record diagnostics without ever invalidating a computed model result."""
+    if not enabled("VOICECHAT_NANO_PAD_PAIR_TRACE"):
+        return
+    try:
+        _record_pad_pair_decision_unchecked(engine, request_id, state, **fields)
+    except Exception:
+        # Observability is never allowed to change inference behavior. Keep this
+        # fallback defensive as it executes while handling a diagnostic failure.
+        try:
+            state["trace_record_errors"] = int(state.get("trace_record_errors", 0)) + 1
+            logging.exception("Dropped Nano PAD-pair trace event")
+        except Exception:
+            pass
+
+
+def _record_pad_pair_decision_unchecked(
+    engine: Any,
+    request_id: str,
+    state: dict[str, Any],
+    *,
+    decision: str,
+    pending_before: bool,
+    bypass: bool,
+    should_draft: bool,
+    generated_before: int,
+    generated_after: int,
+    accepted: int | None = None,
+) -> None:
+    """Retain a bounded, scalar-only account of each Nano scheduling decision."""
+    context = getattr(engine, "_voicechat_pad_pair_call_context", {})
+    has_prepare_context = context.get("request_id") is not None
+    context_calls = int(context.get("engine_calls", 0))
+    context["engine_calls"] = context_calls + 1
+    context_request_id = context.get("request_id")
+    disabled_reasons: list[str] = []
+    if bool(context.get("bypass", False)):
+        disabled_reasons.append("fc_in_progress")
+    if bool(state.get("sequential_mode", False)):
+        disabled_reasons.append("sequential_mode")
+    if context.get("precontrol_reason") is not None:
+        disabled_reasons.append(f"precontrol:{context['precontrol_reason']}")
+    if pending_before:
+        disabled_reasons.append("pending_row")
+    if not should_draft:
+        disabled_reasons.append("previous_effective_not_pad")
+
+    pair_eligible = not pending_before and not bypass and should_draft
+    state["trace_sequence"] += 1
+    event = {
+        "sequence": int(state["trace_sequence"]),
+        "decision": decision,
+        "request_id": str(request_id),
+        "context_request_id": (
+            None if context_request_id is None else str(context_request_id)
+        ),
+        "request_id_match": (
+            None
+            if context_request_id is None
+            else str(context_request_id) == str(request_id)
+        ),
+        "context_frame_idx": context.get("frame_idx"),
+        "context_engine_call": context_calls,
+        # This is deliberately positional, not an identity claim: NVIDIA's
+        # asynchronous function loop can interleave after prepare.
+        "call_origin": (
+            "no_prepare_context"
+            if not has_prepare_context
+            else "first_call_since_prepare"
+            if context_calls == 0
+            else "additional_call_since_prepare"
+        ),
+        "pending_before": pending_before,
+        "pending_after": state.get("pending") is not None,
+        "needs_correction_after": bool(state.get("needs_correction", False)),
+        "sequential_mode": bool(state.get("sequential_mode", False)),
+        "previous_effective_pad": state.get("previous_effective_pad"),
+        "bypass": bypass,
+        "should_draft": should_draft,
+        "pair_eligible": pair_eligible,
+        "invariant_violation": pair_eligible and decision != "buffered",
+        "disabled_reasons": disabled_reasons,
+        "generated_before": generated_before,
+        "generated_after": generated_after,
+        "accepted": accepted,
+    }
+    events = state["trace_events"]
+    if len(events) >= 128:
+        events.popleft()
+        state["trace_events_dropped"] += 1
+    events.append(event)
+
+
+def consume_pad_pair_trace(wrapper: Any, request_id: str) -> dict[str, Any]:
+    """Drain bounded per-call diagnostics for one request into a model-step trace."""
+    model = getattr(wrapper, "model_llm_interface", None)
+    engine = getattr(model, "engine", None)
+    if engine is None:
+        return {"enabled": False, "request_id": str(request_id), "events": []}
+    states = getattr(engine, "_voicechat_pad_pair_states", {})
+    state = states.get(request_id)
+    if state is None:
+        return {
+            "enabled": enabled("VOICECHAT_NANO_PAD_PAIR"),
+            "request_id": str(request_id),
+            "state_found": False,
+            "events": [],
+        }
+    events = state.get("trace_events")
+    drained: list[dict[str, Any]] = []
+    if events is not None:
+        while events:
+            drained.append(events.popleft())
+    return {
+        "enabled": enabled("VOICECHAT_NANO_PAD_PAIR"),
+        "request_id": str(request_id),
+        "state_found": True,
+        "events": drained,
+        "events_dropped": int(state.get("trace_events_dropped", 0)),
+        "trace_record_errors": int(state.get("trace_record_errors", 0)),
+        "last_effective_tokens": state.get("last_effective_tokens"),
+        "state": {
+            "pending": state.get("pending") is not None,
+            "needs_correction": bool(state.get("needs_correction", False)),
+            "assumed": state.get("assumed"),
+            "sequential_mode": bool(state.get("sequential_mode", False)),
+            "previous_effective_pad": state.get("previous_effective_pad"),
+            "buffered": int(state.get("buffered", 0)),
+            "accepted": int(state.get("accepted", 0)),
+            "rejected": int(state.get("rejected", 0)),
+            "sequential_bypass": int(state.get("sequential_bypass", 0)),
+            "sequential_pending_drains": int(
+                state.get("sequential_pending_drains", 0)
+            ),
+            "conditional_singles": int(state.get("conditional_singles", 0)),
+            "trace_record_errors": int(state.get("trace_record_errors", 0)),
+        },
+    }
 
 
 def _install_public_pad_pair_engine() -> None:
@@ -393,12 +546,25 @@ def _install_public_pad_pair_engine() -> None:
                 sequential_mode=False,
                 previous_effective_pad=None,
             )
-            return await original(
+            generated_before = len(request_state.generated_tokens)
+            result = await original(
                 engine,
                 input_tensors,
                 prompt_token_ids=prompt_token_ids,
                 request_id=request_id,
             )
+            _record_pad_pair_decision(
+                engine,
+                request_id,
+                state,
+                decision="initial",
+                pending_before=False,
+                bypass=False,
+                should_draft=False,
+                generated_before=generated_before,
+                generated_after=len(request_state.generated_tokens),
+            )
+            return result
 
         current = input_tensors[0].detach().clone()
         context = getattr(engine, "_voicechat_pad_pair_call_context", {})
@@ -410,6 +576,7 @@ def _install_public_pad_pair_engine() -> None:
         assumed = context.get("assumed")
         pending = state["pending"]
         should_draft = pad_pair_should_draft(state["previous_effective_pad"])
+        generated_before = len(request_state.generated_tokens)
 
         if pending is None:
             if bypass or not should_draft:
@@ -417,12 +584,24 @@ def _install_public_pad_pair_engine() -> None:
                     state["sequential_bypass"] += 1
                 else:
                     state["conditional_singles"] += 1
-                return await original(
+                result = await original(
                     engine,
                     [current],
                     prompt_token_ids=prompt_token_ids,
                     request_id=request_id,
                 )
+                _record_pad_pair_decision(
+                    engine,
+                    request_id,
+                    state,
+                    decision="sequential_bypass" if bypass else "sequential_conditional",
+                    pending_before=False,
+                    bypass=bypass,
+                    should_draft=should_draft,
+                    generated_before=generated_before,
+                    generated_after=len(request_state.generated_tokens),
+                )
+                return result
             state["pending"] = current
             state["buffered"] += 1
             pad_id = _pad_pair_token_id(engine)
@@ -431,7 +610,7 @@ def _install_public_pad_pair_engine() -> None:
                 request_id,
                 state["buffered"],
             )
-            return GenerationResult(
+            result = GenerationResult(
                 token_id=pad_id,
                 custom_outputs={
                     "function_tokens": current.new_tensor([pad_id], dtype=torch.long).cpu()
@@ -439,6 +618,18 @@ def _install_public_pad_pair_engine() -> None:
                 is_finished=False,
                 total_tokens=len(request_state.generated_tokens),
             )
+            _record_pad_pair_decision(
+                engine,
+                request_id,
+                state,
+                decision="buffered",
+                pending_before=False,
+                bypass=bypass,
+                should_draft=should_draft,
+                generated_before=generated_before,
+                generated_after=len(request_state.generated_tokens),
+            )
+            return result
 
         if bypass:
             # A function SOTC can be the accepted first position of a rejected
@@ -457,6 +648,17 @@ def _install_public_pad_pair_engine() -> None:
             state["assumed"] = None
             state["sequential_bypass"] += 1
             state["sequential_pending_drains"] += 1
+            _record_pad_pair_decision(
+                engine,
+                request_id,
+                state,
+                decision="sequential_pending_drain",
+                pending_before=True,
+                bypass=bypass,
+                should_draft=should_draft,
+                generated_before=generated_before,
+                generated_after=len(request_state.generated_tokens),
+            )
             return result
 
         if not should_draft:
@@ -470,6 +672,17 @@ def _install_public_pad_pair_engine() -> None:
             state["needs_correction"] = result is not None
             state["assumed"] = assumed
             state["conditional_singles"] += 1
+            _record_pad_pair_decision(
+                engine,
+                request_id,
+                state,
+                decision="sequential_pending_roll",
+                pending_before=True,
+                bypass=bypass,
+                should_draft=should_draft,
+                generated_before=generated_before,
+                generated_after=len(request_state.generated_tokens),
+            )
             return result
 
         packed = torch.cat((pending, current), dim=0)
@@ -484,6 +697,18 @@ def _install_public_pad_pair_engine() -> None:
             state["needs_correction"] = True
             state["assumed"] = assumed
             state["rejected"] += 1
+        _record_pad_pair_decision(
+            engine,
+            request_id,
+            state,
+            decision="pair_accepted" if accepted == 2 else "pair_rejected",
+            pending_before=True,
+            bypass=bypass,
+            should_draft=should_draft,
+            generated_before=generated_before,
+            generated_after=len(request_state.generated_tokens),
+            accepted=accepted,
+        )
         return result
 
     LLMStreamingEngine._voicechat_original_generate_next_token = original
@@ -526,6 +751,7 @@ def _prepare_pad_pair_call(wrapper: Any, arguments: dict[str, Any]) -> Any | Non
         # the conditional policy.  previous_effective_pad still prevents an
         # immediate draft unless the last effective outputs were both PAD.
         state["sequential_mode"] = False
+    precontrol_reason = None
     if enabled("VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER"):
         precontrol_reason = pad_pair_precontrol_reason(wrapper, arguments)
         if precontrol_reason is not None:
@@ -540,6 +766,9 @@ def _prepare_pad_pair_call(wrapper: Any, arguments: dict[str, Any]) -> Any | Non
         "frame_idx": frame_idx,
         "assumed": assumed,
         "bypass": fc_in_progress,
+        "fc_in_progress": fc_in_progress,
+        "precontrol_reason": precontrol_reason,
+        "engine_calls": 0,
     }
     return engine
 
@@ -558,6 +787,19 @@ def _finalize_pad_pair_call(wrapper: Any, engine: Any | None, arguments: dict[st
     effective_function = int(gen_function[:, frame_idx].item())
     pad_id = _pad_pair_token_id(engine)
     state["previous_effective_pad"] = effective_text == pad_id and effective_function == pad_id
+    if enabled("VOICECHAT_NANO_PAD_PAIR_TRACE"):
+        state["last_effective_tokens"] = {
+            "frame_idx": frame_idx,
+            "request_id": None if request_id is None else str(request_id),
+            "text": effective_text,
+            "function": effective_function,
+            "pad": pad_id,
+            "text_is_pad": effective_text == pad_id,
+            "function_is_pad": effective_function == pad_id,
+            "both_pad": state["previous_effective_pad"],
+            "fc_in_progress": pad_pair_fc_in_progress(arguments.get("fc_state")),
+            "precontrol_reason": context.get("precontrol_reason"),
+        }
     if enabled("VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER"):
         stt = wrapper.model.stt_model
         control_tokens = {int(stt.text_bos_id), int(stt.text_eos_id)}

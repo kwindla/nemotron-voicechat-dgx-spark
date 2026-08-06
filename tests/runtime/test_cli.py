@@ -58,6 +58,17 @@ def test_model_command_is_loopback_only_and_uses_signed_release(tmp_path: Path) 
     assert "API_KEY" not in rendered
 
 
+def test_model_command_enables_pad_pair_trace_only_when_requested(tmp_path: Path) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+
+    ordinary = " ".join(model_container_command(config, layout, 9876))
+    traced = model_container_command(config, layout, 9876, trace_pad_pair=True)
+
+    assert "VOICECHAT_NANO_PAD_PAIR_TRACE" not in ordinary
+    assert "VOICECHAT_NANO_PAD_PAIR_TRACE=1" in traced
+
+
 def test_cli_exposes_stable_foreground_commands() -> None:
     cli = parser()
     assert cli.parse_args(["bootstrap", "--offline"]).offline is True
@@ -66,9 +77,20 @@ def test_cli_exposes_stable_foreground_commands() -> None:
     )
     assert conversion.convert_from_source is True
     assert conversion.asr_model == "/tmp/parakeet.nemo"
-    up = cli.parse_args(["up", "--host", "0.0.0.0", "--port", "9000", "--reload-bot"])
+    up = cli.parse_args(
+        [
+            "up",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "9000",
+            "--reload-bot",
+            "--trace-pad-pair",
+        ]
+    )
     assert up.port == 9000
     assert up.reload_bot is True
+    assert up.trace_pad_pair is True
     assert cli.parse_args(["restart-bot"]).timeout == 45.0
     assert cli.parse_args(["test", "--live"]).live is True
     assert cli.parse_args(["down"]).command == "down"
@@ -342,7 +364,8 @@ def test_up_restarts_only_pipecat_when_restart_is_requested(tmp_path: Path, monk
     monkeypatch.setattr("nemotron_voicechat_runtime.cli._container_exists", lambda _name: False)
     monkeypatch.setattr("nemotron_voicechat_runtime.cli._port_available", lambda *_args: True)
     monkeypatch.setattr(
-        "nemotron_voicechat_runtime.cli.model_container_command", lambda *_args: ["model"]
+        "nemotron_voicechat_runtime.cli.model_container_command",
+        lambda *_args, **_kwargs: ["model"],
     )
     monkeypatch.setattr("nemotron_voicechat_runtime.cli.subprocess.Popen", lambda _cmd: model)
     monkeypatch.setattr(

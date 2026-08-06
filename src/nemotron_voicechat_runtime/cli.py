@@ -549,7 +549,13 @@ def command_bootstrap(args: argparse.Namespace) -> int:
     return 0
 
 
-def model_container_command(config: dict[str, Any], layout: Layout, model_port: int) -> list[str]:
+def model_container_command(
+    config: dict[str, Any],
+    layout: Layout,
+    model_port: int,
+    *,
+    trace_pad_pair: bool = False,
+) -> list[str]:
     environment = config["runtime"]["environment"] | {
         "HF_HOME": "/models/huggingface",
         "HUGGINGFACE_HUB_CACHE": "/models/huggingface/hub",
@@ -558,6 +564,8 @@ def model_container_command(config: dict[str, Any], layout: Layout, model_port: 
         # giving that derived, per-container state an ephemeral writable home.
         "HF_MODULES_CACHE": "/tmp/voicechat-hf-modules",
     }
+    if trace_pad_pair:
+        environment["VOICECHAT_NANO_PAD_PAIR_TRACE"] = "1"
     command = [
         "docker",
         "run",
@@ -837,7 +845,14 @@ def command_up(args: argparse.Namespace) -> int:
     signal.signal(signal.SIGTERM, terminate)
     signal.signal(signal.SIGUSR1, request_bot_restart)
     try:
-        model = subprocess.Popen(model_container_command(config, layout, model_port))
+        model = subprocess.Popen(
+            model_container_command(
+                config,
+                layout,
+                model_port,
+                trace_pad_pair=args.trace_pad_pair,
+            )
+        )
         health = _wait_health(
             f"http://127.0.0.1:{model_port}/health",
             model,
@@ -1159,6 +1174,11 @@ def parser() -> argparse.ArgumentParser:
         "--reload-bot",
         action="store_true",
         help="restart only Pipecat when its Python source changes",
+    )
+    up.add_argument(
+        "--trace-pad-pair",
+        action="store_true",
+        help="capture diagnostic-only Nano pair-scheduler decisions in model traces",
     )
     up.set_defaults(handler=command_up)
     restart_bot = subparsers.add_parser(

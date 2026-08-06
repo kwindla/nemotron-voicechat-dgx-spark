@@ -7,7 +7,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
+from unittest import mock
 
 import numpy as np
 
@@ -45,6 +46,87 @@ from nemotron_voicechat_runtime.server import (
 
 
 class RealtimeWebServerTest(unittest.TestCase):
+    def test_pad_pair_trace_failure_is_observability_only(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.pad_pair_trace_errors = 0
+
+        with (
+            mock.patch.dict(
+                "os.environ", {"VOICECHAT_NANO_PAD_PAIR_TRACE": "1"}, clear=True
+            ),
+            mock.patch.object(
+                engine,
+                "_collect_pad_pair_trace_diagnostics",
+                side_effect=RuntimeError("diagnostic failure"),
+            ),
+        ):
+            diagnostics = engine._pad_pair_trace_diagnostics(None, -1, {})
+
+        self.assertEqual(diagnostics["trace_error"], "RuntimeError")
+        self.assertEqual(diagnostics["trace_record_errors"], 1)
+        self.assertEqual(engine.pad_pair_trace_errors, 1)
+
+    def test_pad_pair_trace_watchdog_captures_nonpad_function_channel(self) -> None:
+        import nemotron_voicechat_runtime.runtime_optimizations as optimizations
+
+        wrapper = SimpleNamespace(
+            model=SimpleNamespace(stt_model=SimpleNamespace(text_pad_id=12))
+        )
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.pipeline = SimpleNamespace(
+            s2s_model=wrapper,
+            _request_id_for_stream=lambda _stream_id: "request-5",
+        )
+        engine.stream_id = 5
+        engine.pad_pair_idle_no_buffer_frames = 0
+        engine.pad_pair_watchdog_emitted = False
+        context = SimpleNamespace(
+            gen_text=np.asarray([[12]]),
+            gen_function_text=np.asarray([[77]]),
+        )
+        turn_state = {
+            "agent_control": "pad",
+            "function_calling": {
+                "active": False,
+                "awaiting_response": False,
+                "injecting_response": False,
+                "forced_tokens": 0,
+                "background_active": False,
+            },
+        }
+
+        def snapshot(*_args):
+            return {
+                "enabled": True,
+                "events": [],
+                "last_effective_tokens": {
+                    "frame_idx": 0,
+                    "text": 12,
+                    "function": 77,
+                    "pad": 12,
+                    "both_pad": False,
+                },
+                "state": {"previous_effective_pad": False},
+            }
+
+        with (
+            mock.patch.dict(
+                "os.environ", {"VOICECHAT_NANO_PAD_PAIR_TRACE": "1"}, clear=True
+            ),
+            mock.patch.object(optimizations, "consume_pad_pair_trace", side_effect=snapshot),
+        ):
+            diagnostics = None
+            for _ in range(25):
+                diagnostics = engine._pad_pair_trace_diagnostics(context, 0, turn_state)
+
+        self.assertIsNotNone(diagnostics)
+        self.assertEqual(diagnostics["idle_no_buffer_frames"], 25)
+        self.assertFalse(diagnostics["effective_tokens"]["function_is_pad"])
+        self.assertTrue(diagnostics["effective_tokens_match_finalize"])
+        self.assertEqual(
+            diagnostics["watchdog"]["event"], "idle_agent_without_pair_buffer"
+        )
+
     def test_realtime_warmup_exercises_third_frame_and_closes_session(self) -> None:
         from types import SimpleNamespace
 
