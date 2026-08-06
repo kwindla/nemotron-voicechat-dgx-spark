@@ -30,6 +30,16 @@ def test_timing_stats_keeps_p95_separate_from_mean() -> None:
     assert result["over_80ms"] == 5
 
 
+def test_max_typed_prompts_preserves_a_silence_only_tail() -> None:
+    module = load_module()
+    assert module.typed_prompt_index(0, 10, 3) == 0
+    assert module.typed_prompt_index(10, 10, 3) == 1
+    assert module.typed_prompt_index(20, 10, 3) == 2
+    assert module.typed_prompt_index(30, 10, 3) is None
+    assert module.typed_prompt_index(31, 10, 3) is None
+    assert module.typed_prompt_index(30, 10, None) == 3
+
+
 def test_source_completion_requires_the_declared_close_contract() -> None:
     module = load_module()
     assert module.source_completion_passes(
@@ -63,10 +73,7 @@ def test_response_job_attribution_falls_back_to_late_turn_mapping() -> None:
     response = {"turn_id": "turn-4", "job_id": None}
     assert module.resolve_response_job_id(response, {"turn-4": "qual-2250"}) == "qual-2250"
     response["job_id"] = "explicit-job"
-    assert (
-        module.resolve_response_job_id(response, {"turn-4": "qual-2250"})
-        == "explicit-job"
-    )
+    assert module.resolve_response_job_id(response, {"turn-4": "qual-2250"}) == "explicit-job"
 
 
 def test_expected_sender_close_is_narrow() -> None:

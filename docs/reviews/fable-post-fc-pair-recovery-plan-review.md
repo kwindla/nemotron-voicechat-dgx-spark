@@ -455,3 +455,128 @@ authoritative in-container run 86/86 under `--network none` with the
 real scheduler. The telemetry is cleared: proceed to the live
 failure-capture campaign (repeated-FC-same-turn repro with
 `--trace-pad-pair`).
+
+---
+
+## Short-session campaign checkpoint — 2026-08-06: APPROVED with one
+trigger-fidelity flag.
+
+Analyzer verified on the actual code: recovery windows anchor at
+`response.done` monotonic time with only subsequent model steps
+considered; the two-part fence is exact (first ordinary PAD within ≤2
+frames of the first post-close step, pair buffer within ≤2 frames of
+that PAD; `late_pad_return_after_response_close` / `late_pair_recovery`
+otherwise) — which inherently REJECTS speech-rescued recovery since a
+later user turn arrives far outside the fence. Fail-closed defaults
+(`no_model_step…`, `no_ordinary_pad…`, `ordinary_pad_without_pair_buffer`)
+are all non-recovered, and the overall pass requires every recovery
+`recovered` AND zero trace-integrity failures. `max_typed_prompts`
+correctly suppresses prompts after the cap while paced zero-audio
+continues. The 115 s / prompts-at-0/30/60 / max-3 / 5 s-drain schedule is
+consistent with the ≤120 s cap and leaves observable fence windows.
+
+**Flag (confirm before launch):** with three prompts, the repeated-call
+trigger element must live in the PROMPT WORDING (each tool prompt must
+elicit the tool twice within its single turn) — trigger fidelity was
+adjustment 3 of the sanity check; confirm the prompt text does this, or
+the campaign probes single-call recovery only. Note: my quick test-filter
+did not match the new analyzer tests by name; evidence accepted from the
+stated suite run.
+
+---
+
+## Bounded-campaign results verdict — 2026-08-06
+
+### Reading of the evidence: the recovery MECHANISM is healthy at short
+context — including under repeated calls. The historic defect is now
+localized to stochastic long-context operation, but that envelope is
+production-permitted, so it must be documented, not dismissed.
+
+- Across 19 observable `response.done` fences, PAD returned on the FIRST
+  post-close frame and buffering resumed within 0–1 frames, with zero
+  watchdogs or integrity faults — and crucially this includes the
+  OVERCALLED sessions (groups up to 2+6): repeated tool emissions within
+  a turn occurred and recovery was still immediate. The campaign
+  honestly failed its own completeness gate (only session-07 achieved
+  3-turn/2+2), which speaks well of the analyzer, and session-01's
+  final-close fail is the bounded-drain artifact working as designed.
+- Note the envelope carefully: the historic stall began at ~977 s —
+  INSIDE the production session limit (12,000 frames ≈ 16 min). "Long
+  context" localizes the trigger but does not move it outside supported
+  operation.
+
+### Ruling on the next step: YES to exactly ONE event-driven bounded
+campaign, pre-committed as the FINAL short-context probe. The
+event-driven pacing (response.done + 2 s, exact-twice/say-done prompts,
+continuous silence) fixes the completeness failures, and a clean
+3-turn/2+2 pass across sessions closes the short-context question
+properly rather than leaving a failed-gate report as the last word.
+Regardless of its outcome, then close the investigation phase with:
+
+1. Document the stochastic post-FC stall in known-limitations with its
+   observed base rate (one occurrence in the retained long-run corpus),
+   noting it is within the supported session envelope and self-recovers
+   on user speech.
+2. Enable `--trace-pad-pair` opportunistically on future long
+   qualification runs (telemetry is default-off clean and cheap when
+   on) so a natural recurrence self-captures the per-frame effective
+   tokens needed for the fix.
+3. Defer scheduler hardening until a telemetry-complete capture exists —
+   per the original ruling: no behavior change without localized
+   evidence.
+
+---
+
+## Serialized-mode implementation verdict — 2026-08-06: APPROVED for the
+final campaign. No further tests or refactoring required.
+
+Verified in the diff: the per-job `asyncio.Event` is registered BEFORE
+the prompt is sent (no set-before-registered race, single event loop
+serializes the dict); the receiver sets the event on the attributed
+`response.done`; `wait_for` uses the 40 s per-response timeout with the
+2 s settle; the sender task is cancelled on exit; and — decisively —
+`passed` requires `serialized_typed_error is None`, so any timeout or
+send failure fails the report rather than merely logging. The guard
+requiring `max_typed_prompts` is present, and normal mode is untouched.
+
+Notes for interpreting the run (not code changes):
+1. A 40 s timeout conflates "no answer" with "attribution gap" (if a
+   response.done lacks job_id and late turn-mapping fails, the event
+   never sets). Fail-closed is correct for the gate; just read any
+   timeout against the raw events before concluding no-answer.
+2. Budget arithmetic: worst case 3×40 s + settles exceeds the 115 s
+   source window; slow turns may truncate session tails and fail
+   completeness honestly — acceptable for 3 sessions, retry with the
+   same design if it bites.
+3. `typed_answer_events` entries are never popped — benign at ≤3 per
+   session.
+
+Launch the 3-session campaign.
+
+---
+
+## FINAL CLOSURE VERDICT — 2026-08-06: APPROVED. Commit cleared. The
+post-FC investigation is closed on honest evidence.
+
+Independently verified: the campaign report hash matches `128467bd…`;
+the report is honestly `passed=false` overall with sessions 01/03 strict
+passes and 02 fail-closed exactly as characterized; the scheduler diff
+contains ZERO added lines outside telemetry/diagnostic/logging patterns
+— no behavior change beyond the opt-in instrumentation, as mandated
+from the first ruling; and the known-limitations wording (510-frame
+stall, 1-of-2 retained long runs, self-recovery on next turn, clean
+short-context fences) matches the retained evidence.
+
+Session-02's raw sequence (early spoken no-call response, then two
+delayed calls on the original turn with zero audio, closing at the
+session boundary) is itself a valuable observation: a model FC-sequencing
+oddity at SHORT context during which the pair-recovery fences and
+integrity checks still stayed clean — reinforcing that the documented
+behavior is a model characteristic, not a scheduler defect, and that the
+no-speculative-hardening disposition is correct.
+
+Final state: mechanism proven healthy across 23 clean observable fences
+including repeated-call turns; the historic stall documented with base
+rate and self-recovery; opt-in `--trace-pad-pair` available to
+self-capture any natural recurrence; scheduler hardening deferred until
+a telemetry-complete capture exists. This review thread is complete.

@@ -32,6 +32,18 @@ DEFAULT_TYPED_PROMPTS = (
 )
 
 
+def typed_prompt_index(
+    frame_index: int, prompt_interval: int, max_typed_prompts: int | None
+) -> int | None:
+    """Return the scheduled prompt number while allowing silence-only tail frames."""
+    if frame_index % prompt_interval:
+        return None
+    prompt_index = frame_index // prompt_interval
+    if max_typed_prompts is not None and prompt_index >= max_typed_prompts:
+        return None
+    return prompt_index
+
+
 def percentile(values: list[float], quantile: float) -> float | None:
     return None if not values else round(float(np.percentile(values, quantile)), 3)
 
@@ -162,6 +174,8 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     active_response: dict[str, Any] | None = None
     receiver_done = asyncio.Event()
     session_closed: dict[str, Any] | None = None
+    typed_answer_events: dict[str, asyncio.Event] = {}
+    serialized_typed_error: dict[str, str] | None = None
 
     async with websockets.connect(
         args.url,
@@ -277,10 +291,12 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                             [expected_tool_result] if expected_tool_result else []
                         )
                         if active_response.get("job_id") in typed:
-                            typed[active_response["job_id"]]["answered"] = True
-                            typed[active_response["job_id"]]["response_id"] = active_response[
-                                "response_id"
-                            ]
+                            response_job_id = active_response["job_id"]
+                            typed[response_job_id]["answered"] = True
+                            typed[response_job_id]["response_id"] = active_response["response_id"]
+                            answer_event = typed_answer_events.get(response_job_id)
+                            if answer_event is not None:
+                                answer_event.set()
                         responses.append(active_response)
                         active_response = None
                     elif kind == "input_text.rejected":
@@ -298,6 +314,49 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         receiver_task = asyncio.create_task(receiver())
         started = time.monotonic() + 0.25
         sent_frames = 0
+        max_typed_prompts = getattr(args, "max_typed_prompts", None)
+        serialize_typed_turns = bool(getattr(args, "serialize_typed_turns", False))
+
+        async def send_serialized_typed_turns() -> None:
+            nonlocal serialized_typed_error
+            if max_typed_prompts is None:
+                serialized_typed_error = {
+                    "type": "ConfigurationError",
+                    "message": "serialized typed turns require max_typed_prompts",
+                }
+                return
+            try:
+                for prompt_index in range(max_typed_prompts):
+                    job_id = f"qual-serialized-{prompt_index}-{uuid.uuid4().hex[:8]}"
+                    answer_event = asyncio.Event()
+                    typed_answer_events[job_id] = answer_event
+                    typed[job_id] = {
+                        "text": DEFAULT_TYPED_PROMPTS[prompt_index % len(DEFAULT_TYPED_PROMPTS)],
+                        "requested_frame": sent_frames,
+                    }
+                    await websocket.send(
+                        json.dumps(
+                            {
+                                "type": "input_text.request",
+                                "job_id": job_id,
+                                "text": typed[job_id]["text"],
+                            }
+                        )
+                    )
+                    await asyncio.wait_for(
+                        answer_event.wait(), timeout=args.typed_response_timeout_seconds
+                    )
+                    if prompt_index + 1 < max_typed_prompts:
+                        await asyncio.sleep(args.typed_settle_seconds)
+            except Exception as exc:
+                serialized_typed_error = {
+                    "type": type(exc).__name__,
+                    "message": str(exc),
+                }
+
+        typed_sender_task = (
+            asyncio.create_task(send_serialized_typed_turns()) if serialize_typed_turns else None
+        )
         try:
             for index in range(total_frames):
                 if receiver_done.is_set():
@@ -307,10 +366,13 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 if delay > 0:
                     await asyncio.sleep(delay)
                 try:
-                    if index % prompt_interval == 0:
-                        prompt = DEFAULT_TYPED_PROMPTS[
-                            (index // prompt_interval) % len(DEFAULT_TYPED_PROMPTS)
-                        ]
+                    prompt_index = (
+                        None
+                        if serialize_typed_turns
+                        else typed_prompt_index(index, prompt_interval, max_typed_prompts)
+                    )
+                    if prompt_index is not None:
+                        prompt = DEFAULT_TYPED_PROMPTS[prompt_index % len(DEFAULT_TYPED_PROMPTS)]
                         job_id = f"qual-{index}-{uuid.uuid4().hex[:8]}"
                         typed[job_id] = {"text": prompt, "requested_frame": index}
                         await websocket.send(
@@ -349,6 +411,10 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 await websocket.send(json.dumps({"type": "session.stop"}))
                 await asyncio.wait_for(receiver_done.wait(), timeout=30)
         finally:
+            if typed_sender_task is not None and not typed_sender_task.done():
+                typed_sender_task.cancel()
+            if typed_sender_task is not None:
+                await asyncio.gather(typed_sender_task, return_exceptions=True)
             if not receiver_task.done():
                 receiver_task.cancel()
             await asyncio.gather(receiver_task, return_exceptions=True)
@@ -397,6 +463,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             and queue.get("passed") is True
             and metric_sequence_complete
             and session_closed is not None
+            and serialized_typed_error is None
         ),
         "duration_seconds": args.duration_seconds,
         "source_frames": total_frames,
@@ -415,6 +482,8 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "unexpected_errors": unexpected_errors,
         "expected_session_limit_error_count": expected_limit_error_count,
         "session_closed": session_closed,
+        "serialized_typed_turns": serialize_typed_turns,
+        "serialized_typed_error": serialized_typed_error,
         "expected_session_position_limit": limit_expected,
         "two_frame_p95_target": {
             "target_ms": 80.0,
@@ -433,6 +502,14 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--duration-seconds", type=float, default=1200)
     parser.add_argument("--typed-interval-seconds", type=float, default=60)
+    parser.add_argument(
+        "--max-typed-prompts",
+        type=int,
+        help="stop injecting typed turns after N prompts while paced audio continues",
+    )
+    parser.add_argument("--serialize-typed-turns", action="store_true")
+    parser.add_argument("--typed-settle-seconds", type=float, default=2.0)
+    parser.add_argument("--typed-response-timeout-seconds", type=float, default=40.0)
     parser.add_argument("--drain-seconds", type=float, default=30)
     parser.add_argument(
         "--expect-session-limit", action=argparse.BooleanOptionalAction, default=True
