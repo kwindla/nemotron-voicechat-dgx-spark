@@ -22,9 +22,11 @@ status alone is not release evidence.
   signed release `1d8c3db8efbb87e0da3be86f1045957018082e1e8a339edaaf7e9bf4fb70671b`.
 - [x] OpenMDW-1.1, origin notices, calibration provenance, model card, and known
   limitations are present in both the repository and published weight release.
-- [ ] After the source commit is public, publish the superseding model card as
-  a new immutable Hugging Face metadata revision. Do not regenerate or alter
-  the already-qualified weight payloads.
+- [x] After the source commit is public, publish the superseding model card as
+  a new immutable Hugging Face metadata revision without altering the qualified
+  weight payloads. Metadata revision
+  `547602dd74c934abed924c016e6546c312d8c6a3`; signed metadata release
+  `ab2a14265d0ffe2751d02f8a628c547ad95c8d6a8b7c202470b6b8597dd86e5e`.
 
 ## Runtime build
 

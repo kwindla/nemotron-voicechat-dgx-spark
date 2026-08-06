@@ -124,6 +124,8 @@ The immutable Hugging Face revision
 `a20c68547d27421c1e66bd501bf295569a0cc309` remains the signed authority for
 the published weight bytes. Its frozen model card predates the successful
 source-reproduction and sustained-runtime campaigns. The in-repository
-`release/MODEL_CARD.md` supersedes that prose with the later evidence; it will
-be published as a new immutable Hugging Face metadata revision without changing
-the qualified weight payloads.
+`release/MODEL_CARD.md` supersedes that prose with the later evidence. It was
+published without changing the qualified weight payloads at immutable metadata
+revision `547602dd74c934abed924c016e6546c312d8c6a3`, whose signed metadata
+release identity is
+`ab2a14265d0ffe2751d02f8a628c547ad95c8d6a8b7c202470b6b8597dd86e5e`.
