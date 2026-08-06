@@ -1,0 +1,11 @@
+ARG BASE_IMAGE=pipecat-ai/nemotron-voicechat-dgx-spark:production-candidate-1
+FROM ${BASE_IMAGE}
+
+ARG EARTTS_EXACT_CONSTANTS_STAGE=b
+COPY src/nemotron_voicechat_runtime/patch_eartts_exact_constants.py /tmp/
+RUN python3 /tmp/patch_eartts_exact_constants.py \
+      --stage "${EARTTS_EXACT_CONSTANTS_STAGE}" \
+    && rm /tmp/patch_eartts_exact_constants.py
+
+LABEL ai.pipecat.voicechat.experiment="step3 exact EarTTS constants" \
+      ai.pipecat.voicechat.eartts_exact_constants_stage="${EARTTS_EXACT_CONSTANTS_STAGE}"
