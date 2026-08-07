@@ -1,0 +1,73 @@
+{
+  "accounting_error_seconds": -2.4000001985768904e-07,
+  "arm": "/home/khkramer/src/nvidia-voice-chat/artifacts/container/dgx_spark/latest_voicechat/profiles/strict-v3-pair-20260806/step9/reduced-cache-exact-keyed",
+  "host_wall_seconds": 259.99735764,
+  "phases": [
+    {
+      "phase": "container launch and Python import",
+      "seconds": 0.376084194
+    },
+    {
+      "phase": "module import to main entry",
+      "seconds": 0.001801525
+    },
+    {
+      "phase": "main dispatch to pipeline build",
+      "seconds": 1.363556724
+    },
+    {
+      "phase": "pre-model pipeline setup",
+      "seconds": 34.695170896
+    },
+    {
+      "phase": "NeMo CPU model-structure initialization",
+      "seconds": 39.923811568
+    },
+    {
+      "phase": "checkpoint hydration and EarTTS handoff",
+      "seconds": 2.434866153
+    },
+    {
+      "phase": "EarTTS vLLM engine initialization",
+      "seconds": 37.069126634
+    },
+    {
+      "phase": "inter-engine fixed setup",
+      "seconds": 1.669682052
+    },
+    {
+      "phase": "Nano vLLM engine initialization",
+      "seconds": 122.127178998
+    },
+    {
+      "phase": "post-engine pipeline setup",
+      "seconds": 12.146449079
+    },
+    {
+      "phase": "pipeline warmup",
+      "seconds": 2.597624329
+    },
+    {
+      "phase": "realtime engine construction",
+      "seconds": 7.1537e-05
+    },
+    {
+      "phase": "realtime exact-prompt continuation warmup",
+      "seconds": 0.606117072
+    },
+    {
+      "phase": "application construction and server entry",
+      "seconds": 0.070315843
+    },
+    {
+      "phase": "Uvicorn startup",
+      "seconds": 3.595745782
+    },
+    {
+      "phase": "ready sentinel to first successful health poll",
+      "seconds": 1.319755014
+    }
+  ],
+  "schema": 1,
+  "sum_seconds": 259.9973574
+}

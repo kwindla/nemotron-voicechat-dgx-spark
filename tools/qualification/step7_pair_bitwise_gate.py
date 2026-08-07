@@ -132,6 +132,16 @@ def main() -> None:
             "VLLM_ALLOW_INSECURE_SERIALIZATION": "1",
         }
     )
+    if os.environ.get("VOICECHAT_STEP9_VALIDATE_BAKED_CACHE", "0") == "1":
+        from nemotron_voicechat_runtime.step9_cache_guard import (
+            validate_baked_vllm_cache,
+        )
+
+        validate_baked_vllm_cache()
+    if os.environ.get("VOICECHAT_STEP9_CAPTURE_SIZES", "").strip():
+        from nemotron_voicechat_runtime.server import _install_step9_capture_sizes
+
+        _install_step9_capture_sizes()
     sys.path.insert(0, str(args.speech_root.resolve()))
 
     import torch

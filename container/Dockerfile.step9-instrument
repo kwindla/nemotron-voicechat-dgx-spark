@@ -1,0 +1,15 @@
+ARG BASE_IMAGE=nemotron-local/voicechat-vllm:step7-pair-full-graph-hf1
+FROM ${BASE_IMAGE}
+
+COPY src/nemotron_voicechat_runtime/server.py \
+     /usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/server.py
+COPY src/nemotron_voicechat_runtime/step9_cache_guard.py \
+     /usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/step9_cache_guard.py
+COPY src/nemotron_voicechat_runtime/patch_step9_capture_contract.py /tmp/
+RUN python3 /tmp/patch_step9_capture_contract.py \
+    && rm /tmp/patch_step9_capture_contract.py \
+    && python3 -m py_compile \
+       /usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/server.py \
+       /usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/step9_cache_guard.py
+
+LABEL ai.pipecat.voicechat.step9="startup instrumentation and capture contract"

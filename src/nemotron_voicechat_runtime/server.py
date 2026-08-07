@@ -70,6 +70,22 @@ PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
     }
 )
 LOGGER = logging.getLogger(__name__)
+STARTUP_READY_SENTINEL = Path("/tmp/voicechat-step9-ready")
+
+
+def startup_event(event: str, **details: Any) -> None:
+    """Emit a machine-readable startup boundary without changing execution."""
+
+    payload = {
+        "event": event,
+        "monotonic_ns": time.monotonic_ns(),
+        "wall_time_ns": time.time_ns(),
+        **details,
+    }
+    print(f"VOICECHAT_STARTUP {json.dumps(payload, sort_keys=True)}", flush=True)
+
+
+startup_event("server_module_imported")
 
 
 def typed_input_trailing_silence_seconds(
@@ -1823,6 +1839,43 @@ def _install_local_nano_skeleton(skeleton: Path) -> None:
     wrapper_class._voicechat_local_skeleton_installed = True
 
 
+def _install_step9_capture_sizes() -> None:
+    """Inject the qualified capture inventory without mutating audited Speech."""
+
+    raw = os.environ.get("VOICECHAT_STEP9_CAPTURE_SIZES", "").strip()
+    if not raw:
+        return
+    sizes = [int(item) for item in raw.split(",")]
+    if (
+        any(item <= 0 for item in sizes)
+        or len(sizes) != len(set(sizes))
+        or sizes != sorted(sizes, reverse=True)
+    ):
+        raise RuntimeError(
+            "VOICECHAT_STEP9_CAPTURE_SIZES must be unique positive integers "
+            "in descending order"
+        )
+    from vllm.engine.arg_utils import AsyncEngineArgs
+
+    if getattr(AsyncEngineArgs, "_voicechat_step9_capture_sizes", None) == sizes:
+        return
+    if hasattr(AsyncEngineArgs, "_voicechat_step9_original_init"):
+        raise RuntimeError("Step-9 capture sizes were already installed with another inventory")
+    original = AsyncEngineArgs.__init__
+
+    @functools.wraps(original)
+    def init_with_capture_sizes(instance: Any, *args: Any, **kwargs: Any) -> None:
+        if kwargs.get("compilation_config") is not None:
+            raise RuntimeError("Step-9 refuses to overwrite an existing compilation_config")
+        kwargs["compilation_config"] = {"cudagraph_capture_sizes": sizes}
+        original(instance, *args, **kwargs)
+
+    AsyncEngineArgs._voicechat_step9_original_init = original
+    AsyncEngineArgs._voicechat_step9_capture_sizes = sizes
+    AsyncEngineArgs.__init__ = init_with_capture_sizes
+    print(f"VOICECHAT_STEP9_CAPTURE_SIZES {json.dumps(sizes)}", flush=True)
+
+
 def build_public_pipeline(args: argparse.Namespace) -> Any:
     """Build NVIDIA's streamer from the exact public combined weights."""
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -1852,6 +1905,7 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
 
     sys.path.insert(0, str(speech_root))
     install_torchaudio_soundfile_io()
+    _install_step9_capture_sizes()
     _install_local_nano_skeleton(skeleton)
     from .runtime_optimizations import install_public_wrapper_hooks
 
@@ -2068,9 +2122,12 @@ def build_pipeline(args: argparse.Namespace) -> Any:
     return build_public_pipeline(args)
 
 
-def warm_pipeline(pipeline: Any, warmup_wav: str | None) -> None:
+def warm_pipeline(
+    pipeline: Any, warmup_wav: str | None, *, system_prompt: str = ""
+) -> None:
     if not warmup_wav:
-        pipeline.warmup()
+        exact_prompt = env_bool("VOICECHAT_STEP9_EXACT_PROMPT_WARMUP", False)
+        pipeline.warmup(system_prompt=system_prompt if exact_prompt else None)
         return
     path = Path(warmup_wav).expanduser().resolve()
     if not path.is_file():
@@ -2295,9 +2352,12 @@ def create_app(
         if pocket_worker is not None:
             # Loading and one full prewarm synthesis are readiness requirements.
             await pocket_worker.start()
+        STARTUP_READY_SENTINEL.write_text("ready\n", encoding="utf-8")
+        startup_event("application_ready")
         try:
             yield
         finally:
+            STARTUP_READY_SENTINEL.unlink(missing_ok=True)
             if pocket_worker is not None:
                 await pocket_worker.stop()
 
@@ -3089,15 +3149,27 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    STARTUP_READY_SENTINEL.unlink(missing_ok=True)
+    startup_event("main_entered")
     args = parse_args()
+    if os.environ.get("VOICECHAT_STEP9_VALIDATE_BAKED_CACHE", "0") == "1":
+        from .step9_cache_guard import validate_baked_vllm_cache
+
+        startup_event("baked_cache_validation_started")
+        validate_baked_vllm_cache()
+        startup_event("baked_cache_validation_finished")
     function_template = (
         Path(args.speech_root).expanduser().resolve()
         / "examples/speechlm2/function_calling/template.jinja"
     )
     if not function_template.is_file():
         raise SystemExit(f"Missing NVIDIA function-calling template: {function_template}")
+    startup_event("pipeline_build_started")
     pipeline = build_pipeline(args)
-    warm_pipeline(pipeline, args.warmup_wav)
+    startup_event("pipeline_build_finished")
+    startup_event("pipeline_warmup_started")
+    warm_pipeline(pipeline, args.warmup_wav, system_prompt=args.system_prompt)
+    startup_event("pipeline_warmup_finished")
     agent_no_text_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES", "30"))
     agent_no_audio_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_AUDIO_FRAMES", "30"))
     agent_decoded_silence_frames = int(
@@ -3123,6 +3195,7 @@ def main() -> None:
                 "decoded_silence="
                 f"{agent_decoded_silence_frames}/{expected_decoded_silence_frames}"
             )
+    startup_event("realtime_engine_create_started")
     engine = VoiceChatEngine(
         pipeline,
         agent_silence_eos_dbfs=float(os.environ.get("VOICECHAT_WEB_AGENT_SILENCE_EOS_DBFS", "-90")),
@@ -3138,13 +3211,17 @@ def main() -> None:
         ),
         delivery_silence_frames=int(os.environ.get("VOICECHAT_WEB_DELIVERY_SILENCE_FRAMES", "12")),
     )
+    startup_event("realtime_engine_create_finished")
     if os.environ.get("VOICECHAT_WEB_REALTIME_WARMUP", "1") == "1":
+        startup_event("realtime_warmup_started")
         realtime_warmup = warm_realtime_engine(engine, system_prompt=args.system_prompt)
         pipeline.checkpoint_provenance["realtime_continuation_warmup"] = realtime_warmup
+        startup_event("realtime_warmup_finished")
     trace_dir = Path(args.trace_dir).expanduser().resolve() if args.trace_dir else None
     if trace_dir is not None:
         trace_dir.mkdir(parents=True, exist_ok=True)
         print(f"WebSocket traces: {trace_dir}", flush=True)
+    startup_event("application_create_started")
     app = create_app(
         engine,
         trace_dir,
@@ -3176,9 +3253,11 @@ def main() -> None:
             ),
         ),
     )
+    startup_event("application_create_finished")
 
     import uvicorn
 
+    startup_event("uvicorn_run_entered")
     uvicorn.run(
         app,
         host=args.host,

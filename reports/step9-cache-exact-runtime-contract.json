@@ -1,0 +1,13 @@
+{
+  "architecture": "aarch64",
+  "capture_sizes": "257,80,16,2,1",
+  "cuda_capability": [
+    12,
+    1
+  ],
+  "pair_full_graph": "1",
+  "python": "3.12.3",
+  "torch": "2.10.0a0+b4e4ee81d3.nv25.12",
+  "torch_cuda": "13.1",
+  "vllm": "0.17.1.dev0+gb31e9326a.fi065"
+}
