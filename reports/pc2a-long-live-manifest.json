@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "generator": "PC-2a adversarial replay assembled from retained Pocket TTS WAV fixtures",
+  "turns": [
+    {
+      "id": "long-01-time",
+      "text": "What time is it?",
+      "expected_response_any": [],
+      "audio_path": "/tmp/voicechat-manual-replay-fixture/turn-time.wav"
+    },
+    {
+      "id": "long-02-random",
+      "text": "Please generate a random number between ten and twenty.",
+      "expected_response_any": [],
+      "audio_path": "/tmp/voicechat-manual-replay-fixture/turn-random.wav"
+    },
+    {
+      "id": "long-03-joke",
+      "text": "Let's switch gears. Tell me a joke about a unicorn.",
+      "expected_response_any": [],
+      "audio_path": "/tmp/voicechat-manual-replay-fixture/turn-joke.wav"
+    },
+    {
+      "id": "long-04-math",
+      "text": "What is two plus three?",
+      "expected_response_any": [],
+      "audio_path": "/tmp/voicechat-manual-replay-fixture/turn-math.wav"
+    },
+    {
+      "id": "long-05-joke-repeat",
+      "text": "Let's switch gears. Tell me a joke about a unicorn.",
+      "expected_response_any": [],
+      "audio_path": "/tmp/voicechat-manual-replay-fixture/turn-joke.wav"
+    },
+    {
+      "id": "long-06-math-repeat",
+      "text": "What is two plus three?",
+      "expected_response_any": [],
+      "audio_path": "/tmp/voicechat-manual-replay-fixture/turn-math.wav"
+    }
+  ]
+}

@@ -16,6 +16,32 @@ from .provenance import PRODUCTION_ENVIRONMENT
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = REPO_ROOT / "config/production-candidate-1.toml"
+TYPED_INPUT_ENVIRONMENT = {
+    "VOICECHAT_TYPED_INPUT_LANGUAGE": "english_2026-04",
+    "VOICECHAT_TYPED_INPUT_VOICE": "alba",
+    "VOICECHAT_TYPED_INPUT_MAX_TEXT_CHARS": "1000",
+    "VOICECHAT_TYPED_INPUT_FRAME_MS": "20",
+    "VOICECHAT_TYPED_INPUT_EOU_MARGIN": "1.25",
+    "VOICECHAT_TYPED_INPUT_CPU_CORES": "7,8,9,15",
+    "VOICECHAT_TYPED_INPUT_TORCH_THREADS": "4",
+    "VOICECHAT_TYPED_INPUT_QUANTIZE": "1",
+    "VOICECHAT_TYPED_INPUT_PREWARM": "1",
+}
+PC2A_ENVIRONMENT = {
+    "VOICECHAT_NANO_PAIR_FULL_GRAPH": "1",
+    "VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE": "0",
+    "VOICECHAT_STEP9_ASSERT_NO_POST_READY_COMPILE": "1",
+    "VOICECHAT_STEP9_BAKED_CACHE_KEY": (
+        "pc2a-be0e0af6-serverc19e83bb-vllm0171-gb10sm121-"
+        "nano768-512-384-257-80-16-2-1-eartts257-80-16-2-1-v2"
+    ),
+    "VOICECHAT_STEP9_CAPTURE_SIZES": "768,512,384,257,80,16,2,1",
+    "VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES": "257,80,16,2,1",
+    "VOICECHAT_STEP9_EXACT_PROMPT_WARMUP": "0",
+    "VOICECHAT_STEP9_VALIDATE_BAKED_CACHE": "1",
+    "VOICECHAT_VLLM_EARTTS_MEMORY_UTILIZATION": "0.10",
+    "VOICECHAT_VLLM_NANO_MEMORY_UTILIZATION": "0.35",
+}
 
 
 def sha256_file(path: Path, chunk_bytes: int = 16 * 1024 * 1024) -> str:
@@ -29,20 +55,17 @@ def sha256_file(path: Path, chunk_bytes: int = 16 * 1024 * 1024) -> str:
 def load_config(path: Path = DEFAULT_CONFIG) -> dict[str, Any]:
     with path.open("rb") as stream:
         config = tomllib.load(stream)
-    if config.get("schema") != 1 or config.get("candidate") != "production-candidate-1":
+    candidate = config.get("candidate")
+    if config.get("schema") != 1 or candidate not in {
+        "production-candidate-1",
+        "promotion-candidate-2a",
+    }:
         raise ValueError(f"unsupported Voicechat configuration: {path}")
     configured = config.get("runtime", {}).get("environment", {})
-    if configured != PRODUCTION_ENVIRONMENT | {
-        "VOICECHAT_TYPED_INPUT_LANGUAGE": "english_2026-04",
-        "VOICECHAT_TYPED_INPUT_VOICE": "alba",
-        "VOICECHAT_TYPED_INPUT_MAX_TEXT_CHARS": "1000",
-        "VOICECHAT_TYPED_INPUT_FRAME_MS": "20",
-        "VOICECHAT_TYPED_INPUT_EOU_MARGIN": "1.25",
-        "VOICECHAT_TYPED_INPUT_CPU_CORES": "7,8,9,15",
-        "VOICECHAT_TYPED_INPUT_TORCH_THREADS": "4",
-        "VOICECHAT_TYPED_INPUT_QUANTIZE": "1",
-        "VOICECHAT_TYPED_INPUT_PREWARM": "1",
-    }:
+    expected = PRODUCTION_ENVIRONMENT | TYPED_INPUT_ENVIRONMENT
+    if candidate == "promotion-candidate-2a":
+        expected |= PC2A_ENVIRONMENT
+    if configured != expected:
         raise ValueError("TOML runtime environment differs from the frozen candidate")
     affinity = config.get("runtime", {}).get("cpu_affinity", {})
     codec = set(affinity.get("codec", []))

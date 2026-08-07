@@ -71,6 +71,7 @@ PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
 )
 LOGGER = logging.getLogger(__name__)
 STARTUP_READY_SENTINEL = Path("/tmp/voicechat-step9-ready")
+STEP9_FALLBACK_COUNTER = Path("/tmp/voicechat-step9-fallbacks.jsonl")
 
 
 def startup_event(event: str, **details: Any) -> None:
@@ -86,6 +87,22 @@ def startup_event(event: str, **details: Any) -> None:
 
 
 startup_event("server_module_imported")
+
+
+def step9_capture_fallback_status(path: Path = STEP9_FALLBACK_COUNTER) -> dict[str, Any]:
+    """Return the container-lifetime graphless-fallback count and last shape."""
+
+    try:
+        records = [line for line in path.read_text(encoding="utf-8").splitlines() if line]
+    except FileNotFoundError:
+        records = []
+    last_descriptor = None
+    if records:
+        try:
+            last_descriptor = json.loads(records[-1])
+        except json.JSONDecodeError:
+            last_descriptor = {"malformed_record": records[-1]}
+    return {"count": len(records), "last_descriptor": last_descriptor}
 
 
 def typed_input_trailing_silence_seconds(
@@ -1845,19 +1862,31 @@ def _install_step9_capture_sizes() -> None:
     raw = os.environ.get("VOICECHAT_STEP9_CAPTURE_SIZES", "").strip()
     if not raw:
         return
-    sizes = [int(item) for item in raw.split(",")]
-    if (
-        any(item <= 0 for item in sizes)
-        or len(sizes) != len(set(sizes))
-        or sizes != sorted(sizes, reverse=True)
-    ):
-        raise RuntimeError(
-            "VOICECHAT_STEP9_CAPTURE_SIZES must be unique positive integers "
-            "in descending order"
-        )
+    eartts_raw = os.environ.get("VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES", raw).strip()
+
+    def parse_sizes(value: str, name: str) -> list[int]:
+        parsed = [int(item) for item in value.split(",")]
+        if (
+            any(item <= 0 for item in parsed)
+            or len(parsed) != len(set(parsed))
+            or parsed != sorted(parsed, reverse=True)
+        ):
+            raise RuntimeError(
+                f"{name} must be unique positive integers in descending order"
+            )
+        return parsed
+
+    sizes = parse_sizes(raw, "VOICECHAT_STEP9_CAPTURE_SIZES")
+    eartts_sizes = parse_sizes(
+        eartts_raw, "VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES"
+    )
     from vllm.engine.arg_utils import AsyncEngineArgs
 
-    if getattr(AsyncEngineArgs, "_voicechat_step9_capture_sizes", None) == sizes:
+    installed_contract = (sizes, eartts_sizes)
+    if (
+        getattr(AsyncEngineArgs, "_voicechat_step9_capture_sizes", None)
+        == installed_contract
+    ):
         return
     if hasattr(AsyncEngineArgs, "_voicechat_step9_original_init"):
         raise RuntimeError("Step-9 capture sizes were already installed with another inventory")
@@ -1867,13 +1896,19 @@ def _install_step9_capture_sizes() -> None:
     def init_with_capture_sizes(instance: Any, *args: Any, **kwargs: Any) -> None:
         if kwargs.get("compilation_config") is not None:
             raise RuntimeError("Step-9 refuses to overwrite an existing compilation_config")
-        kwargs["compilation_config"] = {"cudagraph_capture_sizes": sizes}
+        model = kwargs.get("model", args[0] if args else "")
+        component_sizes = eartts_sizes if Path(str(model)).name == "eartts" else sizes
+        kwargs["compilation_config"] = {"cudagraph_capture_sizes": component_sizes}
         original(instance, *args, **kwargs)
 
     AsyncEngineArgs._voicechat_step9_original_init = original
-    AsyncEngineArgs._voicechat_step9_capture_sizes = sizes
+    AsyncEngineArgs._voicechat_step9_capture_sizes = installed_contract
     AsyncEngineArgs.__init__ = init_with_capture_sizes
-    print(f"VOICECHAT_STEP9_CAPTURE_SIZES {json.dumps(sizes)}", flush=True)
+    print(
+        "VOICECHAT_STEP9_CAPTURE_SIZES "
+        + json.dumps({"nano": sizes, "eartts": eartts_sizes}, sort_keys=True),
+        flush=True,
+    )
 
 
 def build_public_pipeline(args: argparse.Namespace) -> Any:
@@ -2188,6 +2223,7 @@ async def send_step(
     transport_frame: int,
     protocol: RealtimeProtocolSession,
 ) -> str:
+    step9_fallback = step9_capture_fallback_status()
     output_bytes = b""
     audio_delivered = response_audio_is_deliverable(result.turn_state)
     delivered_output_audio: dict[str, float | int]
@@ -2239,6 +2275,7 @@ async def send_step(
             turn_state=result.turn_state,
             turn_id=protocol.turn_id,
             response_id=protocol.response_id,
+            step9_capture_fallback=step9_fallback,
         )
     )
     trace_fields = {
@@ -2256,6 +2293,7 @@ async def send_step(
         "function_delta": result.function_delta,
         "function_text": result.function_text,
         "turn_state": result.turn_state,
+        "step9_capture_fallback": step9_fallback,
     }
     if result.trace_diagnostics is not None:
         trace_fields["runtime_diagnostics"] = result.trace_diagnostics
@@ -2282,6 +2320,7 @@ async def send_idle_step(
     transport_state: dict[str, Any] | None = None,
     protocol: RealtimeProtocolSession | None = None,
 ) -> None:
+    step9_fallback = step9_capture_fallback_status()
     output = {"samples": 0, "rms": 0.0, "rms_dbfs": -120.0, "peak": 0.0}
     turn_state = {
         "gate": "leading_silence",
@@ -2298,6 +2337,7 @@ async def send_idle_step(
         "input_audio": input_audio,
         "output_audio": output,
         "turn_state": turn_state,
+        "step9_capture_fallback": step9_fallback,
     }
     await websocket.send_json(
         protocol.diagnostic_event("voicechat.metrics", **event_fields)
@@ -2399,6 +2439,7 @@ def create_app(
             "driver_version": host_provenance["driver_version"],
             "kernel_version": host_provenance["kernel_version"],
             "nano_pad_pair": nano_pad_pair,
+            "step9_capture_fallback": step9_capture_fallback_status(),
             "typed_input": typed_input_health,
             "active_client": active_client.locked(),
             "uptime_seconds": round(time.time() - loaded_at, 1),

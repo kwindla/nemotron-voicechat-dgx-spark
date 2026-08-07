@@ -37,6 +37,7 @@ from nemotron_voicechat_runtime.server import (
     render_tool_system_prompt,
     response_audio_is_deliverable,
     session_position_limit_event,
+    step9_capture_fallback_status,
     validate_manifested_model,
     validate_nano_pad_pair_runtime,
     warm_realtime_engine,
@@ -46,6 +47,23 @@ from nemotron_voicechat_runtime.server import (
 
 
 class RealtimeWebServerTest(unittest.TestCase):
+    def test_step9_fallback_counter_is_persistent_and_reports_last_shape(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "fallbacks.jsonl"
+            self.assertEqual(
+                step9_capture_fallback_status(path),
+                {"count": 0, "last_descriptor": None},
+            )
+            path.write_text(
+                '{"num_tokens":320,"uniform_decode":false,"query_len":0}\n'
+                '{"num_tokens":900,"uniform_decode":false,"query_len":0}\n'
+            )
+            self.assertEqual(step9_capture_fallback_status(path)["count"], 2)
+            self.assertEqual(
+                step9_capture_fallback_status(path)["last_descriptor"]["num_tokens"],
+                900,
+            )
+
     def test_pad_pair_trace_failure_is_observability_only(self) -> None:
         engine = VoiceChatEngine.__new__(VoiceChatEngine)
         engine.pad_pair_trace_errors = 0
@@ -249,6 +267,10 @@ class RealtimeWebServerTest(unittest.TestCase):
         self.assertEqual(result["kernel_version"], "6.17.0-1014-nvidia")
         self.assertEqual(result["host_runtime"], expected)
         self.assertEqual(result["checkpoint"]["host_runtime"], expected)
+        self.assertEqual(
+            result["step9_capture_fallback"],
+            {"count": 0, "last_descriptor": None},
+        )
 
     def test_env_bool_uses_default_and_validates_explicit_values(self) -> None:
         from unittest.mock import patch

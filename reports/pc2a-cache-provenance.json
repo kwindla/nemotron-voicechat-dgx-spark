@@ -1,0 +1,28 @@
+{
+  "assembly_branch": "codex/promotion-assembly",
+  "assembly_head_before_hotfix": "a4ec085b2a53020ce36a00c0b519a2d7bfd951e3",
+  "cache_source_container": "3d14e2cb04f44534aac32a14c2efe896359fbceb33d21265c5a7faf41dd40022",
+  "capture_contract_basis": "Live five-turn Nano positions at agent BOS were 30, 149, 240, 315, and 388 tokens; post-first-turn growth averaged 89.5 tokens/turn. The 768 ceiling adds 380 tokens (4.2 measured-growth turns) beyond the observed maximum. EarTTS live prefills remained at one token and retain the prior contract.",
+  "eartts_capture_contract": [
+    257,
+    80,
+    16,
+    2,
+    1
+  ],
+  "instrument_image_id": "sha256:be0e0af6d5ff6e84c54943a3b1f90d10e008c2f161d81f025bb0f3ae93cb4a73",
+  "nano_capture_contract": [
+    768,
+    512,
+    384,
+    257,
+    80,
+    16,
+    2,
+    1
+  ],
+  "release_sha256": "1d8c3db8efbb87e0da3be86f1045957018082e1e8a339edaaf7e9bf4fb70671b",
+  "server_source_sha256": "c19e83bb53d21ae2ff3da52547f72cf497f142f5a8cc77c4f0904ae351432214",
+  "step9_dispatcher_sha256": "0d96b221d73847478289bd9f10a05531e373637c9152e76676e3bccd0bffd360",
+  "source_arm": "pc2-hotfix-regate/cache-source"
+}

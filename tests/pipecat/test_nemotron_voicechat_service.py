@@ -31,8 +31,8 @@ from nemotron_voicechat_pipecat.text_input import VoicechatTypedInputFrame
 
 
 class RecordingService(NemotronVoicechatLLMService):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.frames = []
         self.broadcasts = []
         self.errors = []
@@ -178,10 +178,118 @@ async def test_barge_in_discards_stale_response_events():
     assert service.interruptions == 1
     assert [type(frame) for frame in service.frames] == [
         LLMFullResponseStartFrame,
+    ]
+
+
+@pytest.mark.asyncio
+async def test_response_playout_prebuffer_fills_then_drains_in_order():
+    service = RecordingService(prebuffer_ms=160)
+    pcm = b"\x01\x00" * int(events.OUTPUT_SAMPLE_RATE * 0.08)
+    await service._response_created({"response_id": "response_1"})
+
+    await service._audio_delta(
+        {
+            "response_id": "response_1",
+            "encoding": "pcm16",
+            "sample_rate": events.OUTPUT_SAMPLE_RATE,
+            "channels": 1,
+            "delta": base64.b64encode(pcm).decode(),
+        }
+    )
+    assert [type(frame) for frame in service.frames] == [LLMFullResponseStartFrame]
+
+    await service._audio_delta(
+        {
+            "response_id": "response_1",
+            "encoding": "pcm16",
+            "sample_rate": events.OUTPUT_SAMPLE_RATE,
+            "channels": 1,
+            "delta": base64.b64encode(pcm).decode(),
+        }
+    )
+    assert [type(frame) for frame in service.frames] == [
+        LLMFullResponseStartFrame,
+        TTSStartedFrame,
+        TTSAudioRawFrame,
+        TTSAudioRawFrame,
+    ]
+    assert service.frames[2].audio == pcm
+    assert service.frames[3].audio == pcm
+
+
+@pytest.mark.asyncio
+async def test_short_response_drains_prebuffer_on_response_end():
+    service = RecordingService(prebuffer_ms=160)
+    pcm = b"\x02\x00" * int(events.OUTPUT_SAMPLE_RATE * 0.08)
+    await service._response_created({"response_id": "response_1"})
+    await service._audio_delta(
+        {
+            "response_id": "response_1",
+            "encoding": "pcm16",
+            "sample_rate": events.OUTPUT_SAMPLE_RATE,
+            "channels": 1,
+            "delta": base64.b64encode(pcm).decode(),
+        }
+    )
+    await service._response_done({"response_id": "response_1"})
+
+    assert [type(frame) for frame in service.frames] == [
+        LLMFullResponseStartFrame,
         TTSStartedFrame,
         TTSAudioRawFrame,
         TTSStoppedFrame,
+        LLMFullResponseEndFrame,
     ]
+
+
+@pytest.mark.asyncio
+async def test_interruption_flushes_unplayed_prebuffer():
+    service = RecordingService(prebuffer_ms=160)
+    pcm = b"\x03\x00" * int(events.OUTPUT_SAMPLE_RATE * 0.08)
+    await service._response_created({"response_id": "response_1"})
+    await service._audio_delta(
+        {
+            "response_id": "response_1",
+            "encoding": "pcm16",
+            "sample_rate": events.OUTPUT_SAMPLE_RATE,
+            "channels": 1,
+            "delta": base64.b64encode(pcm).decode(),
+        }
+    )
+
+    await service._reset_response_after_interruption()
+
+    assert [type(frame) for frame in service.frames] == [LLMFullResponseStartFrame]
+    assert service._playout_buffer == []
+    assert service._playout_buffer_ms == 0.0
+
+
+@pytest.mark.asyncio
+async def test_response_playout_prebuffer_can_be_disabled():
+    service = RecordingService(prebuffer_ms=0)
+    pcm = b"\x04\x00" * 80
+    await service._response_created({"response_id": "response_1"})
+    await service._audio_delta(
+        {
+            "response_id": "response_1",
+            "encoding": "pcm16",
+            "sample_rate": events.OUTPUT_SAMPLE_RATE,
+            "channels": 1,
+            "delta": base64.b64encode(pcm).decode(),
+        }
+    )
+
+    assert [type(frame) for frame in service.frames] == [
+        LLMFullResponseStartFrame,
+        TTSStartedFrame,
+        TTSAudioRawFrame,
+    ]
+
+
+def test_response_playout_prebuffer_env_overrides_constructor(monkeypatch):
+    monkeypatch.setenv("NEMOTRON_VOICECHAT_PREBUFFER_MS", "0")
+    service = RecordingService(prebuffer_ms=999)
+    assert service._prebuffer_ms == 0
 
 
 @pytest.mark.asyncio

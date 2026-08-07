@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -82,6 +83,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         graceful_close_timeout_secs: float = 8.0,
         liveness_timeout_secs: float = 45.0,
         audio_queue_max_chunks: int = 128,
+        prebuffer_ms: int = 160,
         **kwargs,
     ):
         defaults = self.Settings(
@@ -112,6 +114,21 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._handshake_timeout_secs = handshake_timeout_secs
         self._graceful_close_timeout_secs = graceful_close_timeout_secs
         self._liveness_timeout_secs = liveness_timeout_secs
+
+        configured_prebuffer_ms = os.environ.get("NEMOTRON_VOICECHAT_PREBUFFER_MS")
+        if configured_prebuffer_ms is not None:
+            try:
+                prebuffer_ms = int(configured_prebuffer_ms)
+            except ValueError as exc:
+                raise ValueError(
+                    "NEMOTRON_VOICECHAT_PREBUFFER_MS must be a non-negative integer"
+                ) from exc
+        if prebuffer_ms < 0:
+            raise ValueError("prebuffer_ms must be a non-negative integer")
+        self._prebuffer_ms = prebuffer_ms
+        self._playout_buffer: list[TTSAudioRawFrame] = []
+        self._playout_buffer_ms = 0.0
+        self._playout_started = False
 
         self._websocket = None
         self._receive_task: asyncio.Task | None = None
@@ -567,6 +584,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             await self.push_error(error_msg=f"Voicechat typed input failed: {job_id}")
 
     async def _speech_started(self):
+        self._clear_playout_buffer()
         if self._tts_open:
             await self.push_frame(TTSStoppedFrame())
         self._response_open = False
@@ -578,6 +596,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
 
     async def _reset_response_after_interruption(self):
         await self.stop_all_metrics()
+        self._clear_playout_buffer()
         if self._tts_open:
             await self.push_frame(TTSStoppedFrame())
         self._response_open = False
@@ -594,6 +613,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             self._response_open = True
             self._response_id = response_id
             self._tts_open = False
+            self._clear_playout_buffer()
             await self.push_frame(LLMFullResponseStartFrame())
 
     def _is_current_response(self, event: dict[str, Any]) -> bool:
@@ -620,20 +640,48 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         if not audio:
             return
         await self.stop_ttfb_metrics()
-        if not self._tts_open:
-            self._tts_open = True
-            await self.push_frame(TTSStartedFrame())
-        await self.push_frame(
-            TTSAudioRawFrame(
-                audio=audio,
-                sample_rate=events.OUTPUT_SAMPLE_RATE,
-                num_channels=1,
-            )
+        frame = TTSAudioRawFrame(
+            audio=audio,
+            sample_rate=events.OUTPUT_SAMPLE_RATE,
+            num_channels=1,
         )
+        if self._playout_started or self._prebuffer_ms == 0:
+            await self._start_playout()
+            await self.push_frame(frame)
+            return
+
+        self._playout_buffer.append(frame)
+        self._playout_buffer_ms += (
+            len(frame.audio) * 1000.0 / (2 * frame.sample_rate * frame.num_channels)
+        )
+        if self._playout_buffer_ms >= self._prebuffer_ms:
+            await self._release_playout_buffer()
+
+    async def _start_playout(self) -> None:
+        if self._playout_started:
+            return
+        self._playout_started = True
+        self._tts_open = True
+        await self.push_frame(TTSStartedFrame())
+
+    async def _release_playout_buffer(self) -> None:
+        if not self._playout_buffer:
+            return
+        buffered, self._playout_buffer = self._playout_buffer, []
+        self._playout_buffer_ms = 0.0
+        await self._start_playout()
+        for frame in buffered:
+            await self.push_frame(frame)
+
+    def _clear_playout_buffer(self) -> None:
+        self._playout_buffer.clear()
+        self._playout_buffer_ms = 0.0
+        self._playout_started = False
 
     async def _response_done(self, event: dict[str, Any]):
         if not self._is_current_response(event):
             return
+        await self._release_playout_buffer()
         if self._tts_open:
             await self.push_frame(TTSStoppedFrame())
         await self.push_frame(LLMFullResponseEndFrame())
@@ -641,6 +689,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._response_open = False
         self._tts_open = False
         self._response_id = None
+        self._clear_playout_buffer()
 
     async def _function_call(self, event: dict[str, Any]):
         if not self._is_current_response(event):

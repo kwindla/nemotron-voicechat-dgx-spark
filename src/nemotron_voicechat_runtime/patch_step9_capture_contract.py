@@ -13,22 +13,33 @@ TARGETS = {
             "/usr/local/lib/python3.12/dist-packages/vllm/v1/"
             "cudagraph_dispatcher.py"
         ),
-        "76f9530a9800c6ad971cbc789ce94461a7395d0221bff00fb916ccf3fa9f684c",
+        {
+            "76f9530a9800c6ad971cbc789ce94461a7395d0221bff00fb916ccf3fa9f684c",
+            # production-candidate-2, after the v1 Step-9 contract was installed.
+            "35b89d55e3c23959f43dc697ba11c612a90fc5f52032bc4587b25d62156a90cc",
+        },
     ),
     "backends": (
         Path("/usr/local/lib/python3.12/dist-packages/vllm/compilation/backends.py"),
-        "8cd2f8edfa082555bd71a2ab7626cbb15b2e02f4ef0754dccdde7254ed2da5e0",
+        {
+            "8cd2f8edfa082555bd71a2ab7626cbb15b2e02f4ef0754dccdde7254ed2da5e0",
+            # production-candidate-2, after the v1 Step-9 contract was installed.
+            "b21e4eb67af555506119282a63eab95b96b80b812e7cb67efe370bbf1ecc3750",
+        },
     ),
 }
-MARKER = "voicechat_step9_capture_contract_v1"
+OLD_MARKER = "voicechat_step9_capture_contract_v1"
+MARKER = "voicechat_step9_capture_contract_v2"
 
 
 def qualified_source(name: str) -> tuple[Path, str]:
-    path, expected = TARGETS[name]
+    path, expected_hashes = TARGETS[name]
     data = path.read_bytes()
     actual = hashlib.sha256(data).hexdigest()
-    if actual != expected:
-        raise RuntimeError(f"unqualified input {path}: {actual} != {expected}")
+    if actual not in expected_hashes:
+        raise RuntimeError(
+            f"unqualified input {path}: {actual} not in {sorted(expected_hashes)}"
+        )
     return path, data.decode("utf-8")
 
 
@@ -40,11 +51,47 @@ def replace_once(source: str, anchor: str, replacement: str, label: str) -> str:
 
 
 def patch_dispatcher(source: str) -> str:
+    if OLD_MARKER in source:
+        source = replace_once(
+            source,
+            "from vllm.forward_context import BatchDescriptor\n",
+            "from vllm.forward_context import BatchDescriptor\n"
+            "from vllm.logger import init_logger\n\n"
+            "logger = init_logger(__name__)\n",
+            "dispatcher logger",
+        )
+        source = replace_once(
+            source,
+            f'''        # {OLD_MARKER}: reduced-capture promotion forbids an uncovered
+        # post-ready shape. Fail closed instead of silently entering eager mode.
+        if (
+            os.environ.get("VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE", "0") == "1"
+            and os.path.exists("/tmp/voicechat-step9-ready")
+        ):
+            raise RuntimeError(
+                "Step-9 uncovered post-ready cudagraph descriptor: %r"
+                % (batch_descriptor,)
+            )
+
+''',
+            _coverage_fallback_source(),
+            "v1 strict post-ready coverage",
+        )
+        return source.replace(OLD_MARKER, MARKER)
+
     source = replace_once(
         source,
         "import os\n",
         "import json\nimport os\n",
         "dispatcher json import",
+    )
+    source = replace_once(
+        source,
+        "from vllm.forward_context import BatchDescriptor\n",
+        "from vllm.forward_context import BatchDescriptor\n"
+        "from vllm.logger import init_logger\n\n"
+        "logger = init_logger(__name__)\n",
+        "dispatcher logger",
     )
     source = replace_once(
         source,
@@ -97,17 +144,8 @@ def patch_dispatcher(source: str) -> str:
         """        # finally, just return no cudagraphs
         return CUDAGraphMode.NONE, None
 """,
-        f"""        # {MARKER}: reduced-capture promotion forbids an uncovered
-        # post-ready shape. Fail closed instead of silently entering eager mode.
-        if (
-            os.environ.get("VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE", "0") == "1"
-            and os.path.exists("/tmp/voicechat-step9-ready")
-        ):
-            raise RuntimeError(
-                "Step-9 uncovered post-ready cudagraph descriptor: %r"
-                % (batch_descriptor,)
-            )
-
+        _coverage_fallback_source()
+        + """
         # finally, just return no cudagraphs
         return CUDAGraphMode.NONE, None
 """,
@@ -115,7 +153,46 @@ def patch_dispatcher(source: str) -> str:
     )
 
 
+def _coverage_fallback_source() -> str:
+    return f'''        # {MARKER}: uncovered post-ready descriptors use vLLM's
+        # graphless path in production. Qualification can opt into a hard
+        # coverage assertion; neither path triggers a new graph capture/compile.
+        if os.path.exists("/tmp/voicechat-step9-ready"):
+            if os.environ.get("VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE", "0") == "1":
+                raise RuntimeError(
+                    "Step-9 uncovered post-ready cudagraph descriptor: %r"
+                    % (batch_descriptor,)
+                )
+            fallback_record = json.dumps(
+                {{
+                    "num_tokens": int(batch_descriptor.num_tokens),
+                    "uniform_decode": bool(batch_descriptor.uniform_decode),
+                    "query_len": int(getattr(batch_descriptor, "query_len", 0)),
+                    "pid": os.getpid(),
+                }},
+                sort_keys=True,
+            ) + "\\n"
+            fallback_fd = os.open(
+                "/tmp/voicechat-step9-fallbacks.jsonl",
+                os.O_APPEND | os.O_CREAT | os.O_WRONLY,
+                0o644,
+            )
+            try:
+                os.write(fallback_fd, fallback_record.encode("utf-8"))
+            finally:
+                os.close(fallback_fd)
+            logger.warning_once(
+                "Step-9 uncovered post-ready cudagraph descriptor: %r; "
+                "falling back to graphless execution",
+                batch_descriptor,
+            )
+
+'''
+
+
 def patch_backends(source: str) -> str:
+    if OLD_MARKER in source:
+        return source.replace(OLD_MARKER, MARKER)
     return replace_once(
         source,
         """    def __call__(self, graph: fx.GraphModule, example_inputs) -> Callable:

@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from nemotron_voicechat_runtime.artifacts import Layout, load_config
+from nemotron_voicechat_runtime.artifacts import Layout, PC2A_ENVIRONMENT, load_config
 from nemotron_voicechat_runtime.cli import (
     _activate_converted_release,
     _bot_source_snapshot,
@@ -38,6 +38,17 @@ def test_checked_in_config_materializes_frozen_runtime_contract() -> None:
     )
     affinity = config["runtime"]["cpu_affinity"]
     assert set(affinity["codec"]).isdisjoint(affinity["pocket_tts"])
+
+
+def test_pc2a_config_materializes_hotfix_runtime_contract() -> None:
+    config = load_config(Path("config/production-candidate-2.toml"))
+    assert config["candidate"] == "promotion-candidate-2a"
+    assert config["image"]["runtime"] == (
+        "nemotron-local/voicechat-vllm:promotion-candidate-2a"
+    )
+    environment = config["runtime"]["environment"]
+    assert {name: environment.get(name) for name in PC2A_ENVIRONMENT} == PC2A_ENVIRONMENT
+    assert environment["VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE"] == "0"
 
 
 def test_model_command_is_loopback_only_and_uses_signed_release(tmp_path: Path) -> None:

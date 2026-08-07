@@ -42,6 +42,9 @@ def _runtime_contract() -> dict[str, Any]:
         "vllm": vllm_version,
         "cuda_capability": capability,
         "capture_sizes": os.environ.get("VOICECHAT_STEP9_CAPTURE_SIZES", ""),
+        "eartts_capture_sizes": os.environ.get(
+            "VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES", ""
+        ),
         "pair_full_graph": os.environ.get("VOICECHAT_NANO_PAIR_FULL_GRAPH", "0"),
     }
 
