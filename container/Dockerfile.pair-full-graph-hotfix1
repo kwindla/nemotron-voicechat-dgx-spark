@@ -1,0 +1,8 @@
+ARG BASE_IMAGE=nemotron-local/voicechat-vllm:step7-pair-full-graph
+FROM ${BASE_IMAGE}
+
+COPY src/nemotron_voicechat_runtime/patch_pair_full_graph_hotfix1.py /tmp/
+RUN python3 /tmp/patch_pair_full_graph_hotfix1.py \
+    && rm /tmp/patch_pair_full_graph_hotfix1.py
+
+LABEL ai.pipecat.voicechat.step7_hotfix="verification and side-by-side routing"

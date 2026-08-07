@@ -24,7 +24,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--nano-vllm-path", type=Path, default=Path("/models/derived/nano"))
     parser.add_argument("--speech-root", type=Path, default=Path("/opt/voicechat"))
     parser.add_argument("--max-calls", type=int, default=0)
-    parser.add_argument("--gpu-memory-utilization", type=float, default=0.55)
+    parser.add_argument("--gpu-memory-utilization", type=float, default=0.35)
     return parser.parse_args()
 
 
@@ -35,7 +35,9 @@ def _normalize(value: Any, *, request_id: str) -> Any:
         return value.detach().cpu().clone()
     if isinstance(value, dict):
         return {
-            str(key): ("<request>" if key == "request_id" else _normalize(item, request_id=request_id))
+            str(key): (
+                "<request>" if key == "request_id" else _normalize(item, request_id=request_id)
+            )
             for key, item in value.items()
         }
     if isinstance(value, tuple):
@@ -111,6 +113,8 @@ def _decision_view(state: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> None:
     args = parse_args()
+    if not 0.0 < args.gpu_memory_utilization <= 0.40:
+        raise SystemExit("--gpu-memory-utilization must be in (0, 0.40] for the Step-7 gate")
     if args.output.exists():
         raise SystemExit(f"refusing to overwrite {args.output}")
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -132,6 +136,7 @@ def main() -> None:
 
     import torch
     from nemo.collections.speechlm2.inference.model_wrappers.model_factory import create_model
+
     from nemotron_voicechat_runtime.runtime_optimizations import (
         _install_public_pad_pair_engine,
         _pad_pair_state,
@@ -199,12 +204,8 @@ def main() -> None:
                     previous_text == 12 and last_new_function == 12
                 )
 
-            old_result = model(
-                saved["input_embeds"].to("cuda"), request_id=old_request, **kwargs
-            )
-            new_result = model(
-                saved["input_embeds"].to("cuda"), request_id=new_request, **kwargs
-            )
+            old_result = model(saved["input_embeds"].to("cuda"), request_id=old_request, **kwargs)
+            new_result = model(saved["input_embeds"].to("cuda"), request_id=new_request, **kwargs)
             old_normalized = _normalize(old_result, request_id=old_request)
             new_normalized = _normalize(new_result, request_id=new_request)
             output_mismatch = _exact(old_normalized, new_normalized)
@@ -212,20 +213,23 @@ def main() -> None:
             new_state = _pad_pair_state(model.engine, new_request)
             decision_mismatch = _exact(_decision_view(old_state), _decision_view(new_state))
 
-            if isinstance(old_result, dict) and old_result.get("function_predicted_token") is not None:
+            if (
+                isinstance(old_result, dict)
+                and old_result.get("function_predicted_token") is not None
+            ):
                 last_old_function = int(old_result["function_predicted_token"].reshape(-1)[-1])
-            if isinstance(new_result, dict) and new_result.get("function_predicted_token") is not None:
+            if (
+                isinstance(new_result, dict)
+                and new_result.get("function_predicted_token") is not None
+            ):
                 last_new_function = int(new_result["function_predicted_token"].reshape(-1)[-1])
 
             decisions = _decision_view(old_state)
             executed = sum(
-                int(decisions[key])
-                for key in ("accepted", "rejected", "conditional_singles")
+                int(decisions[key]) for key in ("accepted", "rejected", "conditional_singles")
             )
             pair_executed = int(decisions["accepted"]) + int(decisions["rejected"])
-            previous_pair_executed = (
-                comparisons[-1]["pair_executed"] if comparisons else 0
-            )
+            previous_pair_executed = comparisons[-1]["pair_executed"] if comparisons else 0
             cache_result = None
             if pair_executed != previous_pair_executed:
                 cache_results = model._run_async(
@@ -256,8 +260,10 @@ def main() -> None:
                 "pair_executed": pair_executed,
             }
             comparisons.append(item)
-            if output_mismatch or decision_mismatch or (
-                cache_result is not None and not cache_result.get("equal", False)
+            if (
+                output_mismatch
+                or decision_mismatch
+                or (cache_result is not None and not cache_result.get("equal", False))
             ):
                 mismatch = item | {
                     "output_mismatch": output_mismatch,

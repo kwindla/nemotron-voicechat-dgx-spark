@@ -7,7 +7,6 @@ import hashlib
 import py_compile
 from pathlib import Path
 
-
 PURELIB = Path("/usr/local/lib/python3.12/dist-packages")
 TARGETS = {
     "forward_context": (
@@ -77,7 +76,12 @@ def patch_forward_context(source: str) -> str:
 
 
 def patch_dispatcher(source: str) -> str:
-    source = replace_once(source, "from typing import Optional\n", "import os\nfrom typing import Optional\n", "dispatcher os import")
+    source = replace_once(
+        source,
+        "from typing import Optional\n",
+        "import os\nfrom typing import Optional\n",
+        "dispatcher os import",
+    )
     source = replace_once(
         source,
         """        self.keys_initialized = False
@@ -168,7 +172,9 @@ def patch_mamba_attn(source: str) -> str:
 
 
 def patch_runner(source: str) -> str:
-    source = replace_once(source, "import gc\n", "import gc\nimport json\nimport os\n", "runner telemetry imports")
+    source = replace_once(
+        source, "import gc\n", "import gc\nimport json\nimport os\n", "runner telemetry imports"
+    )
     source = replace_once(
         source,
         """        self.uniform_decode_query_len = (
@@ -239,13 +245,23 @@ def patch_runner(source: str) -> str:
             voicechat_pair_full_graph = bool(
                 self.voicechat_pair_full_graph and voicechat_pair_step
             )
-            if (
-                voicechat_pair_full_graph
-                and os.environ.get("VOICECHAT_STEP7_BITWISE_GATE", "0")
+            voicechat_step7_bitwise_gate = (
+                os.environ.get("VOICECHAT_STEP7_BITWISE_GATE", "0")
                 .strip()
                 .lower()
                 in {"1", "true", "yes", "on"}
-            ):
+            )
+            voicechat_step7_perf_side_by_side = (
+                os.environ.get("VOICECHAT_STEP7_PERF_SIDE_BY_SIDE", "0")
+                .strip()
+                .lower()
+                in {"1", "true", "yes", "on"}
+            )
+            if voicechat_step7_bitwise_gate and voicechat_step7_perf_side_by_side:
+                raise RuntimeError(
+                    "Step-7 bitwise and performance routing are mutually exclusive"
+                )
+            if voicechat_pair_full_graph and voicechat_step7_bitwise_gate:
                 # The exactness harness keeps two independent requests in one
                 # worker process.  Only its explicitly named baseline request
                 # is held on the unmodified PIECEWISE path.
@@ -257,6 +273,18 @@ def patch_runner(source: str) -> str:
                         "Step-7 bitwise gate received an unqualified pair request: "
                         f"{{request_id}}"
                     )
+            elif voicechat_pair_full_graph and voicechat_step7_perf_side_by_side:
+                # Alternate modes inside one worker so engine and RNG state
+                # remain directly comparable: even IDs PIECEWISE, odd FULL.
+                request_id = str(self.input_batch.req_ids[0])
+                try:
+                    request_number = int(request_id)
+                except ValueError as exc:
+                    raise RuntimeError(
+                        "Step-7 performance routing requires a numeric request ID: "
+                        f"{{request_id}}"
+                    ) from exc
+                voicechat_pair_full_graph = bool(request_number % 2)
             batch_descriptor = BatchDescriptor(
                 num_tokens=num_input_tokens,
                 uniform_decode=(uniform_decode or voicechat_pair_full_graph),
@@ -298,6 +326,19 @@ def patch_runner(source: str) -> str:
                 ]
 
             current_states = []
+            # The rejection path consumes graph-written first-position
+            # shadows after model replay. Compare those graph side effects as
+            # well as the committed cache so a rollback failure is localized.
+            for module_name, module in self.model.named_modules():
+                for shadow_name in (
+                    "voicechat_pad_pair_shadow_conv",
+                    "voicechat_pad_pair_shadow_ssm",
+                ):
+                    shadow = getattr(module, shadow_name, None)
+                    if isinstance(shadow, torch.Tensor) and shadow.numel():
+                        current_states.append(
+                            (f"{{module_name}}.{{shadow_name}}", shadow)
+                        )
             unmatched_layers = []
             for layer_name, layer in self.model.named_modules():
                 if not hasattr(layer, "kv_cache"):
@@ -310,10 +351,32 @@ def patch_runner(source: str) -> str:
                 while stack:
                     state_name, state = stack.pop()
                     if isinstance(state, torch.Tensor):
+                        if state.numel() == 0:
+                            continue
+                        selected_block_ids = block_ids[group_index]
+                        maximum_block_id = max(selected_block_ids)
+                        if (
+                            state.ndim > 1
+                            and state.shape[0] in (1, 2)
+                            and maximum_block_id < state.shape[1]
+                        ):
+                            # Hybrid attention buffers can retain the legacy
+                            # [K/V, block, ...] layout while Mamba state uses
+                            # [block, ...]. Compare the request blocks on the
+                            # actual block axis in either representation.
+                            selected_state = state[:, selected_block_ids]
+                        elif maximum_block_id < state.shape[0]:
+                            selected_state = state[selected_block_ids]
+                        else:
+                            raise RuntimeError(
+                                "Step-7 cannot locate cache block axis for %s: "
+                                "shape=%s max_block_id=%d"
+                                % (state_name, tuple(state.shape), maximum_block_id)
+                            )
                         current_states.append(
                             (
                                 state_name,
-                                state[block_ids[group_index]],
+                                selected_state,
                             )
                         )
                     elif isinstance(state, (list, tuple)):
@@ -418,6 +481,55 @@ def patch_runner(source: str) -> str:
             return output
 """,
         "worker execution timing finish",
+    )
+    source = replace_once(
+        source,
+        """            model_output = self._model_forward(
+                input_ids=input_ids,
+                positions=positions,
+                intermediate_tensors=intermediate_tensors,
+                inputs_embeds=inputs_embeds,
+                **model_kwargs,
+            )
+
+        with record_function_or_nullcontext("Postprocess"):
+""",
+        f"""            model_output = self._model_forward(
+                input_ids=input_ids,
+                positions=positions,
+                intermediate_tensors=intermediate_tensors,
+                inputs_embeds=inputs_embeds,
+                **model_kwargs,
+            )
+
+        if voicechat_pair_full_graph:
+            # {MARKER}: CUDA replay updates the tensor shadows but cannot replay
+            # the Python attribute assignment that points rollback at the
+            # current request's Mamba block. Rebind it from this execution's
+            # live metadata before sampling can reject the draft.
+            if not isinstance(attn_metadata, dict):
+                raise RuntimeError("Nano PAD-pair FULL graph requires dict metadata")
+            rebound_layers = 0
+            for module_name, module in self.model.named_modules():
+                if not callable(
+                    getattr(module, "voicechat_restore_pad_pair_state", None)
+                ):
+                    continue
+                module_metadata = attn_metadata.get(module_name)
+                if module_metadata is None:
+                    raise RuntimeError(
+                        "Nano PAD-pair FULL graph lacks metadata for %s" % module_name
+                    )
+                module.voicechat_pad_pair_shadow_index = (
+                    module_metadata.state_indices_tensor.reshape(-1)[:1].clone()
+                )
+                rebound_layers += 1
+            if rebound_layers == 0:
+                raise RuntimeError("Nano PAD-pair FULL graph rebound no Mamba layers")
+
+        with record_function_or_nullcontext("Postprocess"):
+""",
+        "pair rollback block-index rebind",
     )
     source = replace_once(
         source,
@@ -549,7 +661,9 @@ def patch_runner(source: str) -> str:
 
 
 def patch_runtime(source: str) -> str:
-    source = replace_once(source, "import inspect\n", "import inspect\nimport json\n", "runtime json import")
+    source = replace_once(
+        source, "import inspect\n", "import inspect\nimport json\n", "runtime json import"
+    )
     source = replace_once(source, "import os\n", "import os\nimport time\n", "runtime time import")
     source = replace_once(
         source,
@@ -610,10 +724,7 @@ def main() -> None:
             raise RuntimeError(f"{name}: marker missing after patch")
         path.write_text(patched, encoding="utf-8")
         py_compile.compile(str(path), doraise=True)
-        print(
-            f"patched {name}: {path} "
-            f"sha256={hashlib.sha256(path.read_bytes()).hexdigest()}"
-        )
+        print(f"patched {name}: {path} sha256={hashlib.sha256(path.read_bytes()).hexdigest()}")
 
 
 if __name__ == "__main__":

@@ -13,11 +13,42 @@ from pathlib import Path
 from nemotron_voicechat_runtime.artifacts import default_layout, load_config
 from nemotron_voicechat_runtime.cli import model_container_command
 
+KIB_PER_GIB = 1024 * 1024
+
+
+def require_launch_headroom() -> None:
+    running = subprocess.run(
+        ["docker", "ps", "-q"], check=True, capture_output=True, text=True
+    ).stdout.splitlines()
+    if running:
+        raise RuntimeError(f"Step 7 requires an empty Docker runtime before launch: {running}")
+    available_kib = next(
+        int(line.split()[1])
+        for line in Path("/proc/meminfo").read_text().splitlines()
+        if line.startswith("MemAvailable:")
+    )
+    if available_kib <= 100 * KIB_PER_GIB:
+        raise RuntimeError(
+            "Step 7 requires host MemAvailable > 100 GiB before launch; "
+            f"found {available_kib / KIB_PER_GIB:.3f} GiB"
+        )
+
 
 def start(args: argparse.Namespace) -> None:
+    if not 0.0 < args.nano_gpu_memory_utilization <= 0.40:
+        raise ValueError("--nano-gpu-memory-utilization must be in (0, 0.40] for Step 7")
+    if args.memory.lower() != "90g" or args.memory_swap.lower() != "90g":
+        raise ValueError("Step 7 requires --memory 90g --memory-swap 90g")
+    require_launch_headroom()
     config = load_config(args.config)
     config["image"]["runtime"] = args.image
     config["deployment"]["container_name"] = args.name
+    config["runtime"]["environment"]["VOICECHAT_VLLM_NANO_MEMORY_UTILIZATION"] = str(
+        args.nano_gpu_memory_utilization
+    )
+    config["runtime"]["environment"]["VOICECHAT_VLLM_EARTTS_MEMORY_UTILIZATION"] = str(
+        args.eartts_gpu_memory_utilization
+    )
     for assignment in args.env:
         name, separator, value = assignment.partition("=")
         if not separator or not name:
@@ -26,6 +57,12 @@ def start(args: argparse.Namespace) -> None:
     layout = default_layout(args.cache_root, str(args.trace_root))
     (layout.traces / "model").mkdir(parents=True, exist_ok=True)
     command = model_container_command(config, layout, args.port, trace_pad_pair=args.trace_pad_pair)
+    command[2:2] = [
+        "--memory",
+        args.memory,
+        "--memory-swap",
+        args.memory_swap,
+    ]
     command.remove("--rm")
     command.insert(2, "-d")
     container_id = subprocess.run(
@@ -46,12 +83,8 @@ def start(args: argparse.Namespace) -> None:
                 f"http://127.0.0.1:{args.port}/health", timeout=2
             ) as response:
                 health = json.load(response)
-            if health.get("status") == "ready" and health.get("typed_input", {}).get(
-                "ready"
-            ):
-                args.health.write_text(
-                    json.dumps(health, indent=2, sort_keys=True) + "\n"
-                )
+            if health.get("status") == "ready" and health.get("typed_input", {}).get("ready"):
+                args.health.write_text(json.dumps(health, indent=2, sort_keys=True) + "\n")
                 print(json.dumps({"container_id": container_id, "health": health}))
                 return
         except Exception as exc:
@@ -77,6 +110,10 @@ def main() -> None:
     launch.add_argument("--trace-root", type=Path, required=True)
     launch.add_argument("--health", type=Path, required=True)
     launch.add_argument("--timeout", type=float, default=900)
+    launch.add_argument("--nano-gpu-memory-utilization", type=float, required=True)
+    launch.add_argument("--eartts-gpu-memory-utilization", type=float, default=0.10)
+    launch.add_argument("--memory", default="90g")
+    launch.add_argument("--memory-swap", default="90g")
     launch.add_argument("--env", action="append", default=[])
     launch.add_argument("--trace-pad-pair", action="store_true")
     launch.set_defaults(func=start)
