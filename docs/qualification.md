@@ -19,12 +19,11 @@ offline inside the pinned public runtime image before any GPU component gate.
 
 ## Full DGX gate
 
-Obtain the pinned Parakeet/Nemotron streaming ASR checkpoint, install Chromium
-for Playwright once, and run:
+Install Chromium for Playwright once, and run:
 
 ```bash
 uv run playwright install chromium
-./voicechat test --live --asr-model /absolute/path/to/asr.nemo
+./voicechat test --live
 ```
 
 No speech fixture is required. The command uses the in-container CPU-only
@@ -39,9 +38,32 @@ microphone fixture. It then runs, in order:
 6. Chromium through Pipecat Playground and SmallWebRTC, including typed input,
    real microphone input, audio playback, and cross-modality memory;
 7. the retained strict-v3 multi-turn network client with input/output ASR;
-8. a paced run longer than 15 minutes, with typed turns every minute, queue
+8. six fresh-session seeded memory cases covering voice, typed-via-Pocket, and
+   system-prompt establishment crossed with voice and typed recall, plus one
+   fresh-session unseeded negative control;
+9. a paced run longer than 15 minutes, with typed turns every minute, queue
    growth checks, silent-turn accounting, and graceful 12,000-frame closure;
-9. offline ASR of every retained assistant response.
+10. offline Nemotron English ASR of every retained assistant response, including all
+    eleven seed-acknowledgement, recall, and negative-control WAVs from the
+    memory matrix.
+
+Memory recall prompts never contain a secret. Every seeded cell has a unique
+secret; its runtime gate requires the model text channel to return its own
+secret and none of the other five, and its independent Parakeet pass applies
+the same inclusion/exclusion predicate to rendered EarTTS audio. The unseeded
+negative control must return none of the six secrets in either channel. Seed
+acknowledgements must be non-empty, audible, and structurally complete but need
+not repeat the secret; their audio is still independently transcribed and must
+match the model text within the ASR threshold. Thus all eleven WAVs are checked
+for audio/text fidelity, while secret recall is evaluated on the six seeded
+recalls plus the unseeded negative recall. Each matrix cell and the negative
+control use a fresh
+model session. Reports distinguish `typed_pocket` from microphone PCM and
+system prefill so a green matrix cannot be mistaken for direct-text injection
+evidence. The qualified Pocket carrier uses the frozen base seed from the
+production environment and a SHA-256-derived per-text seed; repeated exact text
+therefore produces byte-identical internal PCM instead of changing the model
+stimulus between qualification sessions.
 
 The raw model port is checked from every discovered non-loopback IPv4 address;
 an HTTP error still counts as exposure and fails the gate. Every subprocess has
@@ -64,9 +86,58 @@ For a shorter diagnostic run that is not a release qualification, explicitly
 disable the session-limit expectation:
 
 ```bash
-./voicechat test --live --asr-model /path/to/asr.nemo \
+./voicechat test --live \
   --duration-seconds 180 --no-expect-session-limit
 ```
+
+### Independent ASR evaluator
+
+Qualification uses `nvidia/nemotron-speech-streaming-en-0.6b`, NVIDIA's
+recommended checkpoint for English-only transcription, at immutable Hugging Face
+revision `ebe59e5a817142986528bbbee5dba8db7b38ed50`. Its float32 safetensors,
+processor, tokenizer, and configuration files are checked against the complete
+inventory in `config/nemotron-asr-en-0.6b.json`.
+
+The evaluator is a separate image based on the pinned NVIDIA PyTorch 25.12 image.
+It pins Transformers 5.14.1 and uses `AutoModelForRNNT`/`AutoProcessor` directly:
+16 kHz mono float audio, batch size one, the checkpoint-fixed English language,
+13 lookahead tokens, greedy whole-WAV generation with the official encoder-derived
+stop condition, the checkpoint's supported SDPA attention, no TF32, no
+`trust_remote_code`, and no network
+at qualification time. Reports include the immutable evaluator image ID,
+model revision and snapshot hashes, package/CUDA/device identities, decoder
+configuration, input WAV hashes, token IDs, and transcript. Missing provenance,
+unexpected files, hash drift, unsupported deterministic CUDA operations, malformed
+audio, or an unavailable GPU fails closed.
+
+The qualification-only image is built and audited lazily by `test --live` and
+`bootstrap --convert-from-source`; ordinary bootstrap and serving do not require
+it. The audit compares the image-baked backend, manifest, and requirements with
+the checked-in bytes, runs `pip check`, and performs deterministic short and long
+silence decodes on the GPU before any verdict is accepted.
+The non-silent canary is one unmodified, hash-pinned LibriSpeech clip used under
+CC BY 4.0; attribution and exact source details are in
+`licenses/LibriSpeech-canary-NOTICE.md`. No reference text or word boost is passed
+to the ASR model.
+
+This evaluator is independent of the VoiceChat serving environment and shares no
+weights or decoder with EarTTS, though both the old and new evaluators are from the
+NVIDIA speech-model family. EarTTS component generation remains in the serving
+image. Its two canonical WAVs are handed to the evaluator through a byte-count and
+SHA-256 manifest, then the finalized report is rejected if either file changed.
+
+Changing the ASR judge is itself calibrated under
+`docs/asr-judge-swap-policy.md`. The original component-identity policy and its red
+result remain preserved. The prospective policy requires zero classification,
+semantic inclusion/exclusion, per-response, or aggregate verdict changes; exact
+separate-rerun determinism with unchanged contracts/WAV identities; and positive
+and negative EarTTS controls. The artifact also records the shared pre-ASR silence
+classifier control and exact-image reruns that bind the archived old-judge rows to
+their `.nemo` model. Every WER-threshold
+change remains disclosed and may be accepted only when another unchanged false
+conjunct proves it cannot affect the archived verdict. A load-bearing WER change
+blocks promotion, and the first green-path run receives an additional WER-margin
+review.
 
 ## Downloaded versus converted artifacts
 
@@ -123,6 +194,51 @@ does not enable it. Treat trace-enabled timing as diagnostic composition data,
 not as release latency evidence, because collection adds small per-frame host
 work. A behavioral scheduler change requires a telemetry-complete recurrence;
 the historic lossy trace alone is not a sufficient oracle.
+
+### Direct-text semantic ladder
+
+The direct-text diagnostic runs the same checked-in 20-case corpus through
+Pocket+RNNT, FP32 direct positions, and W8 direct positions. Pocket must finish
+every case with valid runtime provenance and structural evidence. Its RNNT
+transcript is then evaluated by a per-case mechanical carrier predicate.
+An explicitly failed response terminal can be structurally complete: balanced
+terminal events and session closure count as evidence, while the failed status
+remains a red semantic result. This prevents a model-selected loop-limit or
+other valid failure terminal from masquerading as missing test execution.
+Carrier-inconclusive cases are reported as inconclusive rather than success;
+carrier-preserved model errors remain visible reference failures. Pocket is not
+a conjunctive direct-text oracle because synthesis/RNNT can lose punctuation,
+colors, digits, or other predicate-bearing content before Nano receives it.
+
+Qualification was designed to be decided independently on both clean-token
+direct lanes. Each token form had to meet the 95% semantic threshold, pass every
+tool name and argument predicate, pass every safety-critical predicate, and
+satisfy every hidden-position transaction invariant. The experiment failed
+that production gate: direct text met only 10/20 semantic cases. A subsequent
+neutral off/on/off trace compared c014 with a frozen acoustic carrier. The
+acoustic path selected SOTC at settlement/EOU and produced the exact tool call;
+direct injection kept PAD ahead of SOTC and emitted no call. Production typed
+input therefore remains Pocket-to-acoustic conditioning. The direct machinery
+is diagnostic-only evidence for evaluating a future trained adapter or native
+multimodal checkpoint interface.
+
+A direct response that does not reach its terminal within the fixed 240-frame
+case bound remains a red, structurally incomplete case; the runner does not
+increase that bound or reinterpret it as success. It aborts the stream and
+starts the next case from a clean session. Transport reset explicitly restores
+the wrapper-level agent-idle fallback before direct preflight, preventing an
+open-turn bit from the bounded abort from poisoning the next fresh stream.
+
+The FP32 qualification artifacts retain their immutable extraction manifest.
+Before the isolated FP32 container starts, the runner writes an audited derived
+manifest beside the qualification results. It verifies the expected extraction
+kind, exact Nano/EarTTS component set, and exact build-time component paths;
+then it changes only those two paths to their read-only `/derived` mount paths
+and adds the source-manifest SHA-256 plus the path mapping. The source manifest
+is re-read to prove it was not modified. The server receives this adapter as a
+separate read-only mount and applies its ordinary strict path, per-file,
+aggregate-model, checkpoint, and reproducibility validation. Production
+manifest validation has no qualification bypass.
 
 ## Release evidence
 

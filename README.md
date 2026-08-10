@@ -25,6 +25,8 @@ Allow 1–2 hours and at least 90 GiB of free space. You may need to accept the
 and run `hf auth login`, or provide `HF_TOKEN` only to the bootstrap command.
 No credential is copied into the image or required at runtime.
 Runtime is local and offline, once all the model weights and dependencies are downloaded.
+The separate English Nemotron ASR evaluator is qualification-only and is built
+on demand by `./voicechat test --live` or source conversion, not by normal serving bootstrap.
 
 `./voicechat up` takes about seven minutes to start. You will see the
 `PIPECAT DEVELOPMENT RUNNER` banner when the full stack is ready.
@@ -70,8 +72,9 @@ The current release contains:
   `a20c685...` in
   [`pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark`](https://huggingface.co/pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark);
 - calibrated GPTQ W8 Nano and W8A32 EarTTS;
-- strict-v3 realtime WebSocket inference with RNNT turn taking, native audio,
-  function calling, watchdogs, and a server-owned Pocket TTS typed-input bridge;
+- strict-v3 realtime WebSocket inference with Pipecat Smart Turn endpointing,
+  explicit client commits, RNNT transcription, native audio, function calling,
+  watchdogs, and a server-owned Pocket TTS typed-input bridge;
 - a foreground Pipecat SmallWebRTC bot using the installed Playground client.
 
 The GPU/CUDA/model stack runs in Docker. Pipecat runs from the pinned host `uv`
@@ -80,9 +83,8 @@ CPU-only Python worker, so its PyTorch does not conflict with CUDA PyTorch.
 
 ## Todo
 
-- Evaluate Pipecat Smart Turn as an external endpointing signal against the
-  model's current server-side VAD and RNNT turn detection. Measure latency and
-  false endpoints before changing the qualified default.
+- Qualify Smart Turn latency, false endpoints, and host CPU contention against
+  the captured RNNT-owned-turn baseline.
 - Check input text transcription chunking. We may be inserting spaces in RTVI
   messages where we should not.
 - Improve inference stack startup time.
@@ -134,7 +136,7 @@ Changes apply to new sessions and require neither bootstrap nor an image build.
 Developers reproducing the conversion can run:
 
 ```bash
-./voicechat bootstrap --convert-from-source --asr-model /path/to/parakeet.nemo
+./voicechat bootstrap --convert-from-source
 ```
 
 That path uses the exact published calibration/evaluation corpus, performs two

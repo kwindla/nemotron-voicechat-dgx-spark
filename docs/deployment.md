@@ -97,6 +97,10 @@ creates a different candidate.
 The model container mounts only verified model roots and Pocket's HF cache
 read-only; traces are the sole read-write mount. NVIDIA Speech and the project
 server are built into the image. `VLLM_ALLOW_INSECURE_SERIALIZATION` is unset.
+Online runtime and qualification-evaluator image builds use the host network
+for build steps so they do not depend on Docker bridge DNS. Audit containers
+remain network-isolated, and an offline bootstrap never invokes an image
+builder.
 The codec worker is pinned to cores 5–6 and Pocket TTS to 7–9 and 15. Pocket's
 `/health` object echoes its effective `sched_getaffinity` CPU list; operators
 should treat overlap with codec cores as a startup/configuration defect.
@@ -109,7 +113,10 @@ uv run --frozen ruff check .
 ```
 
 `./voicechat test --live` includes DGX/browser integration and is intentionally
-expensive; it generates its own speech fixtures and only requires `--asr-model`.
+expensive; it generates its own speech fixtures and uses an immutable independent
+ASR evaluator image. That qualification-only image is
+built or audited lazily when the live suite starts; normal bootstrap and `up`
+do not require it.
 Its default run exceeds 15 minutes and verifies graceful session-limit closure.
 See `docs/qualification.md` for its ordered gates and evidence layout.
 Maintainers use `./voicechat release -- ...` as the narrow wrapper around the

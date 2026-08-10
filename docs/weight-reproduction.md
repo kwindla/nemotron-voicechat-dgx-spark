@@ -36,18 +36,12 @@ labels from the signed corpus manifest without changing any replay payload.
 
 ## One command
 
-Inside the pinned conversion runtime, with inputs mounted read-only:
+The bootstrap orchestrator mounts the verified inputs read-only, runs conversion
+inside the pinned serving runtime, and finalizes its EarTTS WAVs in the separate
+ASR evaluator image:
 
 ```bash
-python tools/conversion/reproduce_release_artifacts.py \
-  --speech-root /inputs/Speech \
-  --checkpoint-root /inputs/NVIDIA-NemotronLabs-VoiceChat-11B \
-  --nano-skeleton /inputs/NVIDIA-Nemotron-Nano-9B-v2 \
-  --calibration-root /inputs/calibration/0 \
-  --calibration-root /inputs/calibration/1 \
-  --evaluation-root /inputs/evaluation/0 \
-  --asr-model /inputs/parakeet \
-  --work-root /outputs/voicechat-release
+./voicechat bootstrap --convert-from-source
 ```
 
 Use `--preflight-only` first to validate source identities, the complete replay
@@ -58,13 +52,13 @@ GPTQ conversions, and two independent EarTTS W8A32 conversions. It compares
 every byte in each pair, applies the qualified weight-preserving runtime
 configuration, and rejects any final file whose SHA-256 differs from
 `config/qualified-candidate-1.json`. It then runs the held-out Nano replay gate
-and the EarTTS decode/Parakeet gate in both eager and CUDA-graph modes.
+and the EarTTS decode/Nemotron-English-ASR gate in both eager and CUDA-graph modes.
 
 The Nano replay and first-divergence implementation lives in
 `nano_component_gate.py`, `nano_replay.py`, and `nano_attribution.py`.
-`eartts_component_gate.py` is the standalone fixed-token audio/ASR gate. These
-tools are called by the one-command flow; they can also be run directly to
-localize a failed gate.
+`eartts_component_gate.py` generates the standalone fixed-token audio evidence;
+`finalize_eartts_component_asr.py` hash-checks and scores it in the evaluator
+image. These tools are called by the one-command flow.
 
 The Nano replay deliberately targets the first raw converter output because
 that config exposes the full text logits required for margin comparison. The
