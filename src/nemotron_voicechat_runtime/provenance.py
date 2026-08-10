@@ -2,6 +2,46 @@
 
 from __future__ import annotations
 
+import re
+
+RUNTIME_PROVENANCE_REQUIRED_SOURCES = frozenset(
+    {
+        "src/nemotron_voicechat_runtime/pocket_controller.py",
+        "src/nemotron_voicechat_runtime/pocket_worker.py",
+        "src/nemotron_voicechat_runtime/direct_semantic_probe.py",
+        "src/nemotron_voicechat_runtime/protocol.py",
+        "src/nemotron_voicechat_runtime/provenance.py",
+        "src/nemotron_voicechat_runtime/runtime_optimizations.py",
+        "src/nemotron_voicechat_runtime/semantic_corpus.py",
+        "src/nemotron_voicechat_runtime/server.py",
+        (
+            "src/nemotron_voicechat_runtime/patches/"
+            "nemotron-voicechat-rnnt-turn-taking.patch"
+        ),
+    }
+)
+
+
+def valid_runtime_image_id(value: object) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value) is not None
+
+
+def valid_runtime_provenance(value: object) -> bool:
+    """Require immutable image identity and every direct-path source hash."""
+    if not isinstance(value, dict) or not valid_runtime_image_id(value.get("runtime_image_id")):
+        return False
+    sources = value.get("source_sha256")
+    if (
+        not isinstance(sources, dict)
+        or not RUNTIME_PROVENANCE_REQUIRED_SOURCES.issubset(sources)
+    ):
+        return False
+    return all(
+        isinstance(sources[name], str)
+        and re.fullmatch(r"[0-9a-f]{64}", sources[name]) is not None
+        for name in RUNTIME_PROVENANCE_REQUIRED_SOURCES
+    )
+
 RUNTIME_SOURCE_PATHS = (
     "container/Dockerfile.runtime-overlay",
     "src/nemotron_voicechat_runtime/audio_compat.py",
@@ -14,6 +54,8 @@ RUNTIME_SOURCE_PATHS = (
     "src/nemotron_voicechat_runtime/patch_public_skip_custom_text_logits.py",
     "src/nemotron_voicechat_runtime/patch_voicechat_marlin_g128_padding.py",
     "src/nemotron_voicechat_runtime/patches/nemotron-voicechat-rnnt-turn-taking.patch",
+    "src/nemotron_voicechat_runtime/pocket_controller.py",
+    "src/nemotron_voicechat_runtime/pocket_worker.py",
     "src/nemotron_voicechat_runtime/protocol.py",
     "src/nemotron_voicechat_runtime/provenance.py",
     "src/nemotron_voicechat_runtime/runtime_optimizations.py",
@@ -39,6 +81,8 @@ PRODUCTION_ENVIRONMENT = {
     "S2S_TTS_TEXT_TOKEN_RATIO_CAP": "16",
     "TRANSFORMERS_OFFLINE": "1",
     "VOICECHAT_EARTTS_DECODE_PAD_SILENCE": "1",
+    "VOICECHAT_EARTTS_IDLE_PAD_BYPASS": "1",
+    "VOICECHAT_EARTTS_PREPARED_EPOCH": "1",
     "VOICECHAT_EARTTS_RESET_ON_BOS": "1",
     "VOICECHAT_NANO_PAD_PAIR": "1",
     "VOICECHAT_NANO_PAD_PAIR_CONDITIONAL": "1",
@@ -48,6 +92,7 @@ PRODUCTION_ENVIRONMENT = {
     "VOICECHAT_RNNT_FC_INTERRUPT_MS": "240",
     "VOICECHAT_STREAMING_MAX_LEN": "12288",
     "VOICECHAT_TRANSPORT_VAD_MIN_RNNT_TOKENS": "2",
+    "VOICECHAT_TYPED_INPUT_SEED": "0",
     "VOICECHAT_USE_PERCEPTION_CUDAGRAPH": "1",
     "VOICECHAT_VLLM_DELTA_OUTPUT": "1",
     "VOICECHAT_VLLM_DELTA_OUTPUT_TARGET": "eartts",
@@ -67,6 +112,7 @@ PRODUCTION_ENVIRONMENT = {
     "VOICECHAT_WEB_RESPONSE_TAIL_SILENCE_FRAMES": "3",
     "VOICECHAT_WEB_SPEECH_GATE_DBFS": "-40",
     "VOICECHAT_WEB_SPEECH_GATE_MIN_FRAMES": "3",
+    "VOICECHAT_WEB_SPEECH_GATE_ONSET_CONTEXT_FRAMES": "2",
     "VOICECHAT_WEB_SYSTEM_PROMPT": ("Respond concisely in one sentence. Do not repeat yourself."),
     "VOICECHAT_WEB_WS_PING_INTERVAL": "none",
     "VOICECHAT_WEB_WS_PING_TIMEOUT": "none",

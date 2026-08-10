@@ -1,4 +1,6 @@
 .env
+old-env
+proj-*/
 .cache/
 .venv/
 __pycache__/

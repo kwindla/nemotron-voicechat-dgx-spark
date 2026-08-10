@@ -42,6 +42,7 @@ class PocketWorkerManager:
         language: str = "english_2026-04",
         voice: str = "alba",
         threads: int = 4,
+        seed: int = 0,
         cpus: tuple[int, ...] = (7, 8, 9, 15),
         startup_timeout: float = 120.0,
     ):
@@ -50,6 +51,7 @@ class PocketWorkerManager:
         self.language = language
         self.voice = voice
         self.threads = threads
+        self.seed = seed
         self.cpus = cpus
         codec_cpus = {
             int(value) for value in os.environ.get("EA_CPU_CODEC_CORES", "5,6").split(",")
@@ -123,6 +125,8 @@ class PocketWorkerManager:
                 self.voice,
                 "--threads",
                 str(self.threads),
+                "--seed",
+                str(self.seed),
                 "--cpus",
                 ",".join(str(cpu) for cpu in self.cpus),
                 env=self._worker_environment(),

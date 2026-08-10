@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
+from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
+from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.audio.vad.vad_analyzer import VADParams
 from pipecat.frames.frames import FunctionCallResultFrame
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMAssistantAggregator,
     LLMUserAggregator,
+    LLMUserAggregatorParams,
 )
+from pipecat.turns.user_start.vad_user_turn_start_strategy import VADUserTurnStartStrategy
+from pipecat.turns.user_stop.turn_analyzer_user_turn_stop_strategy import (
+    TurnAnalyzerUserTurnStopStrategy,
+)
+from pipecat.turns.user_turn_strategies import UserTurnStrategies
 
 
 class VoicechatUserAggregator(LLMUserAggregator):
@@ -44,7 +53,29 @@ def create_voicechat_context_aggregators(
     context: LLMContext,
 ):
     """Create the paired universal aggregators used by the Voicechat bot."""
-    user = VoicechatUserAggregator(context)
+    user = VoicechatUserAggregator(
+        context,
+        params=LLMUserAggregatorParams(
+            vad_analyzer=SileroVADAnalyzer(
+                params=VADParams(
+                    confidence=0.7,
+                    min_volume=0.6,
+                    start_secs=0.2,
+                    stop_secs=0.2,
+                )
+            ),
+            user_turn_strategies=UserTurnStrategies(
+                start=[VADUserTurnStartStrategy()],
+                stop=[
+                    TurnAnalyzerUserTurnStopStrategy(
+                        turn_analyzer=LocalSmartTurnAnalyzerV3(cpu_count=1),
+                        wait_for_transcript=False,
+                    )
+                ],
+            ),
+            user_turn_stop_timeout=5.0,
+        ),
+    )
     assistant = VoicechatAssistantAggregator(
         context,
         _paired_user_aggregator=user,

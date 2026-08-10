@@ -67,6 +67,9 @@ async def test_input_queue_overflow_reports_once_and_disables_input(monkeypatch)
         disconnects += 1
 
     service._input_resampler = Resampler()
+    service._session_ready.set()
+    service._context_ready.set()
+    service._audio_send_task = object()
     monkeypatch.setattr(asyncio, "wait_for", overflow)
     monkeypatch.setattr(service, "_disconnect", disconnect)
     frame = InputAudioRawFrame(audio=b"\x00\x00" * 160, sample_rate=16_000, num_channels=1)
@@ -92,7 +95,9 @@ async def test_strict_handshake_audio_response_and_graceful_close():
                     "event_id": "evt_1",
                     "protocol": {"name": "voicechat.realtime", "version": 3},
                     "session": {"id": "session_test"},
-                    "capabilities": {},
+                    "capabilities": {
+                        "input_turn_detection": "client_smart_turn_v1"
+                    },
                 }
             )
         )

@@ -81,11 +81,20 @@ class SynthesisResult:
 class PocketBackend:
     """One prewarmed Pocket model shared by serialized worker requests."""
 
-    def __init__(self, *, language: str, voice: str, quantize: bool, threads: int):
+    def __init__(
+        self,
+        *,
+        language: str,
+        voice: str,
+        quantize: bool,
+        threads: int,
+        seed: int,
+    ):
         self.language = language
         self.voice = voice
         self.quantize = quantize
         self.threads = threads
+        self.seed = seed
         self.model: Any | None = None
         self.voice_state: Any | None = None
         self.package_version: str | None = None
@@ -112,6 +121,7 @@ class PocketBackend:
 
     def synthesize(self, text: str, cancel_event: threading.Event) -> SynthesisResult:
         import numpy as np
+        import torch
         from scipy.signal import resample_poly
 
         model = self.model
@@ -123,17 +133,26 @@ class PocketBackend:
         chunks: list[Any] = []
         if cancel_event.is_set():
             raise SynthesisCancelled
-        for chunk in model.generate_audio_stream(voice_state, text, copy_state=True):
-            if cancel_event.is_set():
-                raise SynthesisCancelled
-            if first_audio_at is None:
-                first_audio_at = time.monotonic()
-            values = chunk.detach().to("cpu").float().numpy()
-            values = np.asarray(values, dtype=np.float32).reshape(-1)
-            if values.size and not np.isfinite(values).all():
-                raise ValueError("Pocket TTS returned non-finite audio")
-            if values.size:
-                chunks.append(values)
+        # Pocket samples latent noise at its default non-zero temperature. That
+        # diversity has no value here because this waveform is an internal text
+        # carrier, not user-facing speech. Derive a stable per-text seed so the
+        # same typed input produces the same model stimulus across sessions while
+        # different inputs do not all reuse an identical random stream.
+        text_hash = hashlib.sha256(text.encode("utf-8")).digest()
+        synthesis_seed = (self.seed + int.from_bytes(text_hash[:8], "big")) % (2**63)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(synthesis_seed)
+            for chunk in model.generate_audio_stream(voice_state, text, copy_state=True):
+                if cancel_event.is_set():
+                    raise SynthesisCancelled
+                if first_audio_at is None:
+                    first_audio_at = time.monotonic()
+                values = chunk.detach().to("cpu").float().numpy()
+                values = np.asarray(values, dtype=np.float32).reshape(-1)
+                if values.size and not np.isfinite(values).all():
+                    raise ValueError("Pocket TTS returned non-finite audio")
+                if values.size:
+                    chunks.append(values)
         if cancel_event.is_set():
             raise SynthesisCancelled
         if not chunks:
@@ -179,6 +198,8 @@ class WorkerServer:
                         "sample_rate": INPUT_SAMPLE_RATE,
                         "cpus": sorted(os.sched_getaffinity(0)),
                         "threads": self.backend.threads,
+                        "seed": self.backend.seed,
+                        "seed_scheme": "sha256-text-plus-base-v1",
                         "assets": self.backend.assets,
                     },
                 )
@@ -246,6 +267,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--voice", default="alba")
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--cpus", default="7,8,9,15")
+    parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--no-quantize", action="store_true")
     return parser.parse_args()
 
@@ -264,6 +286,7 @@ async def async_main(args: argparse.Namespace) -> None:
         voice=args.voice,
         quantize=not args.no_quantize,
         threads=args.threads,
+        seed=args.seed,
     )
     await asyncio.to_thread(backend.load_and_prewarm)
     path = Path(args.socket)

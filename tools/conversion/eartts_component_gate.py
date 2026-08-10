@@ -8,7 +8,6 @@ import gc
 import hashlib
 import json
 import os
-import re
 import sys
 import time
 import wave
@@ -31,68 +30,6 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(16 * 1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
-
-
-def model_file_provenance(path: Path) -> dict[str, str | int]:
-    resolved = path.expanduser().resolve()
-    if not resolved.is_file():
-        raise FileNotFoundError(f"ASR evaluator is not a regular file: {resolved}")
-    return {
-        "model": str(resolved),
-        "bytes": resolved.stat().st_size,
-        "sha256": sha256(resolved),
-    }
-
-
-def normalize(text: str) -> list[str]:
-    number_equivalents = {"five": "5"}
-    return [
-        number_equivalents.get(token, token)
-        for token in re.findall(r"[a-z0-9]+", (text or "").lower())
-    ]
-
-
-def word_error_rate(reference: str, hypothesis: str) -> float:
-    left, right = normalize(reference), normalize(hypothesis)
-    if not left:
-        return 0.0 if not right else 1.0
-    previous = list(range(len(right) + 1))
-    for row, expected in enumerate(left, 1):
-        current = [row]
-        for column, actual in enumerate(right, 1):
-            current.append(
-                min(
-                    current[-1] + 1,
-                    previous[column] + 1,
-                    previous[column - 1] + (expected != actual),
-                )
-            )
-        previous = current
-    return previous[-1] / len(left)
-
-
-def extract_text(result: object) -> str:
-    while isinstance(result, (list, tuple)) and result:
-        result = result[0]
-    return str(getattr(result, "text", result) or "")
-
-
-def configure_graph_free_decoding(model: object) -> None:
-    """Keep the independent-ASR correctness gate off CUDA graph capture."""
-    from omegaconf import OmegaConf
-
-    model.change_decoding_strategy(
-        decoding_cfg=OmegaConf.create(
-            {
-                "strategy": "greedy",
-                "greedy": {
-                    "max_symbols": 10,
-                    "loop_labels": False,
-                    "use_cuda_graph_decoder": False,
-                },
-            }
-        )
-    )
 
 
 def save_pcm16_wav(path: Path, waveform: object, sample_rate: int) -> None:
@@ -318,7 +255,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint-root", type=Path, required=True)
     parser.add_argument("--nano-skeleton", type=Path, required=True)
     parser.add_argument("--eartts-vllm-path", type=Path, required=True)
-    parser.add_argument("--asr-model", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument(
         "--backend",
@@ -373,7 +309,6 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    asr_provenance = model_file_provenance(args.asr_model)
     debug_dir = args.output_dir / "debug"
     if args.debug_tensors:
         debug_dir.mkdir(parents=True, exist_ok=True)
@@ -718,22 +653,10 @@ def main() -> None:
     offline_resampled = torchaudio.functional.resample(offline_waveform, 22050, 16000)
     offline_wav_16k_path = args.output_dir / "eartts-component-offline-16k.wav"
     save_pcm16_wav(offline_wav_16k_path, offline_resampled, 16000)
-    import nemo.collections.asr as nemo_asr
-
-    asr = nemo_asr.models.ASRModel.restore_from(
-        str(args.asr_model), map_location=torch.device("cuda")
-    )
-    configure_graph_free_decoding(asr)
-    asr = asr.to("cuda").eval()
-    with torch.inference_mode():
-        transcript = extract_text(asr.transcribe([str(wav_16k_path)], batch_size=1))
-        offline_transcript = extract_text(asr.transcribe([str(offline_wav_16k_path)], batch_size=1))
-    wer = word_error_rate(REFERENCE_TEXT, transcript)
-    offline_wer = word_error_rate(REFERENCE_TEXT, offline_transcript)
-    passed = bool(transcript.strip()) and wer <= args.max_wer and "5" in normalize(transcript)
-
     report = {
-        "passed": passed,
+        "passed": False,
+        "pre_asr_passed": True,
+        "pending_external_asr": True,
         "checkpoint": {
             "repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
             "revision": PUBLIC_REVISION,
@@ -784,11 +707,21 @@ def main() -> None:
             "rms": float(streaming_waveform.square().mean().sqrt()),
         },
         "external_asr": {
-            **asr_provenance,
-            "transcript": transcript,
-            "wer": wer,
+            "status": "pending",
             "max_wer": args.max_wer,
             "is_required_gate": True,
+        },
+        "asr_inputs": {
+            "streaming": {
+                "path": wav_16k_path.name,
+                "bytes": wav_16k_path.stat().st_size,
+                "sha256": sha256(wav_16k_path),
+            },
+            "offline": {
+                "path": offline_wav_16k_path.name,
+                "bytes": offline_wav_16k_path.stat().st_size,
+                "sha256": sha256(offline_wav_16k_path),
+            },
         },
         "offline_diagnostic": {
             "path": str(offline_wav_path),
@@ -799,8 +732,7 @@ def main() -> None:
             "peak": float(offline_waveform.abs().max()),
             "rms": float(offline_waveform.square().mean().sqrt()),
             "external_asr": {
-                "transcript": offline_transcript,
-                "wer": offline_wer,
+                "status": "pending",
                 "is_required_gate": False,
             },
         },
@@ -814,7 +746,7 @@ def main() -> None:
     report_path = args.output_dir / "report.json"
     report_path.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
-    raise SystemExit(0 if passed else 1)
+    raise SystemExit(0)
 
 
 if __name__ == "__main__":

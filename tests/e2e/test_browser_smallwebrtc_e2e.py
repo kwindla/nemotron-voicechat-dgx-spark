@@ -31,12 +31,20 @@ def _rtc_probe_script(peer_connection_slot: str) -> str:
       const NativePeerConnection = window.RTCPeerConnection;
       const observedChannels = new WeakSet();
       window.__voicechatRtviMessages = [];
+      window.__voicechatRtviTimedMessages = [];
       const observeChannel = (channel) => {{
         if (observedChannels.has(channel)) return;
         observedChannels.add(channel);
         channel.addEventListener("message", (event) => {{
           if (typeof event.data !== "string") return;
-          try {{ window.__voicechatRtviMessages.push(JSON.parse(event.data)); }}
+          try {{
+            const message = JSON.parse(event.data);
+            window.__voicechatRtviMessages.push(message);
+            window.__voicechatRtviTimedMessages.push({{
+              receivedPerformanceMs: performance.now(),
+              message,
+            }});
+          }}
           catch (_error) {{}}
         }});
       }};
@@ -53,6 +61,90 @@ def _rtc_probe_script(peer_connection_slot: str) -> str:
         }}
       }};
     }})();"""
+
+
+def _voice_latency_probe_script() -> str:
+    """Measure browser microphone-to-playout speech latency on one clock."""
+
+    return """(() => {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const context = new AudioContextClass({latencyHint: 'interactive'});
+      const state = window.__voicechatV2V = {
+        schema: 1,
+        method: 'browser_webaudio_pcm_rms',
+        thresholdRms: 0.01,
+        thresholdDbfs: -40,
+        processorSamples: 256,
+        sampleRate: context.sampleRate,
+        outboundSpeechFirstMs: null,
+        outboundSpeechLastMs: null,
+        inboundSpeechFirstMs: null,
+        latencyMs: null,
+        maxOutboundRms: 0,
+        maxInboundRms: 0,
+        stopped: false,
+      };
+      window.__voicechatResetV2V = () => Object.assign(state, {
+        outboundSpeechFirstMs: null,
+        outboundSpeechLastMs: null,
+        inboundSpeechFirstMs: null,
+        latencyMs: null,
+        maxOutboundRms: 0,
+        maxInboundRms: 0,
+        stopped: false,
+      });
+      const monitoredTracks = new Set();
+      const monitor = (stream, direction) => {
+        const track = stream?.getAudioTracks?.()[0];
+        if (!track || monitoredTracks.has(track.id)) return;
+        monitoredTracks.add(track.id);
+        const source = context.createMediaStreamSource(new MediaStream([track]));
+        const processor = context.createScriptProcessor(state.processorSamples, 1, 1);
+        const silent = context.createGain();
+        silent.gain.value = 0;
+        processor.onaudioprocess = (event) => {
+          if (state.stopped) return;
+          const samples = event.inputBuffer.getChannelData(0);
+          let sumSquares = 0;
+          for (let index = 0; index < samples.length; index++)
+            sumSquares += samples[index] * samples[index];
+          const rms = Math.sqrt(sumSquares / samples.length);
+          const now = performance.now();
+          if (direction === 'outbound') {
+            state.maxOutboundRms = Math.max(state.maxOutboundRms, rms);
+            if (rms > state.thresholdRms) {
+              if (state.outboundSpeechFirstMs === null) state.outboundSpeechFirstMs = now;
+              state.outboundSpeechLastMs = now;
+            }
+          } else {
+            state.maxInboundRms = Math.max(state.maxInboundRms, rms);
+            if (state.outboundSpeechFirstMs !== null &&
+                state.inboundSpeechFirstMs === null &&
+                rms > state.thresholdRms) {
+              state.inboundSpeechFirstMs = now;
+              state.latencyMs = now - state.outboundSpeechLastMs;
+            }
+          }
+        };
+        source.connect(processor);
+        processor.connect(silent);
+        silent.connect(context.destination);
+      };
+      const nativeGetUserMedia = navigator.mediaDevices.getUserMedia.bind(
+        navigator.mediaDevices
+      );
+      navigator.mediaDevices.getUserMedia = async (...args) => {
+        const stream = await nativeGetUserMedia(...args);
+        monitor(stream, 'outbound');
+        return stream;
+      };
+      const findRemoteAudio = () => {
+        context.resume();
+        for (const element of document.querySelectorAll('audio'))
+          if (element.srcObject) monitor(element.srcObject, 'inbound');
+      };
+      setInterval(findRemoteAudio, 20);
+    })();"""
 
 
 def _free_port() -> int:
@@ -127,7 +219,7 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                     "type": "session.created",
                     "event_id": "evt_created",
                     "protocol": {"name": "voicechat.realtime", "version": 3},
-                    "capabilities": {},
+                    "capabilities": {"input_turn_detection": "client_smart_turn_v1"},
                     "session": {"id": "browser_e2e"},
                 }
             )
@@ -150,6 +242,28 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                                 "id": "browser_e2e",
                                 "protocol_version": 3,
                             },
+                        }
+                    )
+                )
+            elif message["type"] == "input_audio_buffer.turn_start":
+                await websocket.send(
+                    json.dumps(
+                        {
+                            "type": "input_audio_buffer.turn_started",
+                            "client_event_id": message["event_id"],
+                            "client_turn_id": message["client_turn_id"],
+                            "turn_id": f"turn_browser_{message['client_turn_id']}",
+                        }
+                    )
+                )
+            elif message["type"] == "input_audio_buffer.commit":
+                await websocket.send(
+                    json.dumps(
+                        {
+                            "type": "input_audio_buffer.committed",
+                            "client_event_id": message["event_id"],
+                            "client_turn_id": message["client_turn_id"],
+                            "turn_id": f"turn_browser_{message['client_turn_id']}",
                         }
                     )
                 )
@@ -282,9 +396,7 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                     permissions=["microphone", "camera"],
                     base_url=f"http://127.0.0.1:{runner_port}",
                 )
-                await context.add_init_script(
-                    _rtc_probe_script("__voicechatTestPeerConnection")
-                )
+                await context.add_init_script(_rtc_probe_script("__voicechatTestPeerConnection"))
                 page = await context.new_page()
                 browser_log: list[str] = []
                 page.on("console", lambda message: browser_log.append(message.text))
@@ -320,9 +432,7 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                 await page.get_by_text(
                     "The deterministic test passed.", exact=False
                 ).first.wait_for(timeout=20_000)
-                observed_rtvi = await page.evaluate(
-                    "() => window.__voicechatRtviMessages || []"
-                )
+                observed_rtvi = await page.evaluate("() => window.__voicechatRtviMessages || []")
 
                 async def playback_stats():
                     return await page.evaluate(
@@ -403,6 +513,8 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
         microphone_wav = tmp_path / "silent-microphone.wav"
         _write_silent_microphone(microphone_wav)
     prompt = "What is two plus three? Answer in one short sentence."
+    measure_second_voice_turn = os.environ.get("VOICECHAT_LIVE_SECOND_VOICE") == "1"
+    tool_first = os.environ.get("VOICECHAT_LIVE_TOOL_FIRST") == "1"
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(
@@ -424,6 +536,9 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
         page.on("pageerror", lambda error: browser_log.append(f"pageerror: {error}"))
         try:
             await page.goto(url.rstrip("/") + "/", wait_until="load", timeout=30_000)
+            # Install the media probe after the secure document exists but
+            # before Connect requests the microphone.
+            await page.evaluate(_voice_latency_probe_script())
             connect = page.get_by_role("button", name="Connect", exact=True)
             disconnect = page.get_by_role("button", name="Disconnect", exact=True)
             for _ in range(6):
@@ -469,6 +584,28 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
                     event_type,
                 )
 
+            async def rtvi_event_count(event_type: str) -> int:
+                return await page.evaluate(
+                    """(eventType) => (window.__voicechatRtviMessages || [])
+                      .filter((message) => message?.type === eventType).length""",
+                    event_type,
+                )
+
+            async def wait_for_rtvi_event(
+                event_type: str, *, after: int, timeout: float = 90
+            ) -> int:
+                deadline = asyncio.get_running_loop().time() + timeout
+                count = 0
+                while asyncio.get_running_loop().time() < deadline:
+                    count = await rtvi_event_count(event_type)
+                    if count > after:
+                        return count
+                    await asyncio.sleep(0.25)
+                pytest.fail(
+                    f"no new {event_type} after index {after}; count={count} "
+                    f"browser_log={browser_log[-50:]}"
+                )
+
             async def wait_for_rtvi_text(
                 event_type: str,
                 pattern: re.Pattern[str],
@@ -488,6 +625,39 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
                     f"texts={texts!r} browser_log={browser_log[-50:]}"
                 )
 
+            if tool_first:
+                # Start a deliberately long function epoch while Chrome is
+                # already delivering the fake microphone's leading silence.
+                # The later real voice turn proves that held idle PCM did not
+                # become seconds of ordered input debt.
+                tool_started_ms = await page.evaluate("performance.now()")
+                bot_before_tool = len(await rtvi_transcriptions("bot-transcription"))
+                stopped_before_tool = await rtvi_event_count("bot-stopped-speaking")
+                await text_box.fill(
+                    "Use the available clock tool and tell me the current time."
+                )
+                await text_box.press("Enter")
+                tool_texts = await wait_for_rtvi_text(
+                    "bot-transcription",
+                    re.compile(r"\S"),
+                    after=bot_before_tool,
+                    timeout=120,
+                )
+                stopped_after_tool = await wait_for_rtvi_event(
+                    "bot-stopped-speaking", after=stopped_before_tool, timeout=120
+                )
+                print(
+                    "VOICECHAT_TOOL_FIRST "
+                    + json.dumps(
+                        {
+                            "elapsedMs": await page.evaluate("performance.now()")
+                            - tool_started_ms,
+                            "transcripts": tool_texts[bot_before_tool:],
+                        },
+                        sort_keys=True,
+                    )
+                )
+
             baseline = await rtc_stats()
 
             # The generated microphone carries a real spoken "remember
@@ -497,14 +667,81 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
             # would correctly make the server's half-duplex gate discard the
             # microphone turn.
             sapphire_pattern = re.compile(r"\bsapphire\b", re.I)
-            await wait_for_rtvi_text(
-                "user-transcription", sapphire_pattern, timeout=120
+            stopped_before_voice = (
+                stopped_after_tool
+                if tool_first
+                else await rtvi_event_count("bot-stopped-speaking")
             )
-            await wait_for_rtvi_text(
-                "bot-transcription", sapphire_pattern, timeout=120
+            await wait_for_rtvi_text("user-transcription", sapphire_pattern, timeout=120)
+            # The acknowledgement need not repeat the secret. Memory is tested
+            # only by the later recall prompt, which deliberately omits it.
+            await wait_for_rtvi_event(
+                "bot-stopped-speaking", after=stopped_before_voice, timeout=120
             )
+            voice_to_voice = await page.evaluate(
+                """(stopProbe) => {
+                  const state = window.__voicechatV2V;
+                  state.stopped = stopProbe;
+                  const {stopped, ...report} = state;
+                  return report;
+                }""",
+                not measure_second_voice_turn,
+            )
+            assert voice_to_voice["outboundSpeechFirstMs"] is not None
+            assert voice_to_voice["outboundSpeechLastMs"] is not None
+            assert voice_to_voice["inboundSpeechFirstMs"] is not None
+            assert voice_to_voice["latencyMs"] >= 0
+            print("VOICE_TO_VOICE_LATENCY " + json.dumps(voice_to_voice, sort_keys=True))
+            rtvi_timing = await page.evaluate(
+                """() => (window.__voicechatRtviTimedMessages || [])
+                  .filter(({message}) =>
+                    String(message?.type || '').includes('speaking') ||
+                    String(message?.type || '').includes('metrics'))"""
+            )
+            print("VOICE_TO_VOICE_RTVI_TIMING " + json.dumps(rtvi_timing, sort_keys=True))
+
+            if measure_second_voice_turn:
+                user_before_second = len(await rtvi_transcriptions("user-transcription"))
+                stopped_before_second = await rtvi_event_count("bot-stopped-speaking")
+                await page.evaluate("() => window.__voicechatResetV2V()")
+                await wait_for_rtvi_text(
+                    "user-transcription",
+                    sapphire_pattern,
+                    after=user_before_second,
+                    timeout=120,
+                )
+                await wait_for_rtvi_event(
+                    "bot-stopped-speaking", after=stopped_before_second, timeout=120
+                )
+                second_voice_to_voice = await page.evaluate(
+                    """() => {
+                      const state = window.__voicechatV2V;
+                      state.stopped = true;
+                      const {stopped, ...report} = state;
+                      return report;
+                    }"""
+                )
+                assert second_voice_to_voice["outboundSpeechFirstMs"] is not None
+                assert second_voice_to_voice["outboundSpeechLastMs"] is not None
+                assert second_voice_to_voice["inboundSpeechFirstMs"] is not None
+                assert second_voice_to_voice["latencyMs"] >= 0
+                print(
+                    "VOICE_TO_VOICE_LATENCY_WARM "
+                    + json.dumps(second_voice_to_voice, sort_keys=True)
+                )
+                second_rtvi_timing = await page.evaluate(
+                    """() => (window.__voicechatRtviTimedMessages || [])
+                      .filter(({message}) =>
+                        String(message?.type || '').includes('speaking') ||
+                        String(message?.type || '').includes('metrics'))"""
+                )
+                print(
+                    "VOICE_TO_VOICE_RTVI_TIMING_WARM "
+                    + json.dumps(second_rtvi_timing, sort_keys=True)
+                )
 
             bot_before_math = len(await rtvi_transcriptions("bot-transcription"))
+            stopped_before_math = await rtvi_event_count("bot-stopped-speaking")
             await text_box.fill(prompt)
             await text_box.press("Enter")
             await wait_for_rtvi_text(
@@ -512,6 +749,7 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
                 re.compile(r"\bfive\b", re.I),
                 after=bot_before_math,
             )
+            await wait_for_rtvi_event("bot-stopped-speaking", after=stopped_before_math)
 
             # This prompt deliberately omits the codeword. A new final
             # bot-transcription event proves that typed input can recall
@@ -519,9 +757,7 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
             bot_before_recall = len(await rtvi_transcriptions("bot-transcription"))
             await text_box.fill("What codeword did I ask you to remember?")
             await text_box.press("Enter")
-            await wait_for_rtvi_text(
-                "bot-transcription", sapphire_pattern, after=bot_before_recall
-            )
+            await wait_for_rtvi_text("bot-transcription", sapphire_pattern, after=bot_before_recall)
 
             stats = {"inbound": 0, "outbound": 0, "tracks": 0, "currentTime": 0}
             deadline = asyncio.get_running_loop().time() + 90

@@ -42,6 +42,14 @@ PC2A_ENVIRONMENT = {
     "VOICECHAT_VLLM_EARTTS_MEMORY_UTILIZATION": "0.10",
     "VOICECHAT_VLLM_NANO_MEMORY_UTILIZATION": "0.35",
 }
+PC2A_LEGACY_ENVIRONMENT_EXCLUSIONS = frozenset(
+    {
+        "VOICECHAT_EARTTS_IDLE_PAD_BYPASS",
+        "VOICECHAT_EARTTS_PREPARED_EPOCH",
+        "VOICECHAT_TYPED_INPUT_SEED",
+        "VOICECHAT_WEB_SPEECH_GATE_ONSET_CONTEXT_FRAMES",
+    }
+)
 
 
 def sha256_file(path: Path, chunk_bytes: int = 16 * 1024 * 1024) -> str:
@@ -65,6 +73,11 @@ def load_config(path: Path = DEFAULT_CONFIG) -> dict[str, Any]:
     expected = PRODUCTION_ENVIRONMENT | TYPED_INPUT_ENVIRONMENT
     if candidate == "promotion-candidate-2a":
         expected |= PC2A_ENVIRONMENT
+        expected = {
+            name: value
+            for name, value in expected.items()
+            if name not in PC2A_LEGACY_ENVIRONMENT_EXCLUSIONS
+        }
     if configured != expected:
         raise ValueError("TOML runtime environment differs from the frozen candidate")
     affinity = config.get("runtime", {}).get("cpu_affinity", {})

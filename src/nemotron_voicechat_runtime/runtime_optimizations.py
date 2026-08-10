@@ -6,10 +6,345 @@ from __future__ import annotations
 import inspect
 import logging
 import os
+import threading
+import time
 from collections import deque
 from functools import update_wrapper
 from pathlib import Path
 from typing import Any
+
+
+def _runtime_tensor_identity(value: Any) -> Any:
+    """Return a synchronization-free identity for immutable runtime inputs."""
+
+    if hasattr(value, "data_ptr") and hasattr(value, "shape"):
+        return (
+            "tensor",
+            id(value),
+            int(value.data_ptr()),
+            int(getattr(value, "_version", 0)),
+            tuple(int(part) for part in value.shape),
+            str(value.dtype),
+            str(value.device),
+        )
+    if isinstance(value, dict):
+        return (
+            "dict",
+            tuple(
+                (str(key), _runtime_tensor_identity(item))
+                for key, item in sorted(value.items(), key=lambda pair: str(pair[0]))
+            ),
+        )
+    if isinstance(value, (list, tuple)):
+        return (type(value).__name__, tuple(_runtime_tensor_identity(item) for item in value))
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return (type(value).__name__, value)
+    raise TypeError(f"unsupported prepared-epoch input type: {type(value).__name__}")
+
+
+class EarTTSPreparedEpochController:
+    """Own one request-bound, single-use EarTTS speaker-prefill epoch."""
+
+    def __init__(self, wrapper: Any, tts_model: Any, backend: Any):
+        self.wrapper = wrapper
+        self.tts_model = tts_model
+        self.backend = backend
+        self.lock = threading.RLock()
+        self.session_epoch = 0
+        self.prepare_epoch = 0
+        self.state = "invalid"
+        self.reason = "not_attested"
+        self.prepared: dict[str, Any] | None = None
+        self.armed_client_turn_id: int | None = None
+        self.prepare_count = 0
+        self.prepare_failure_count = 0
+        self.prepared_reuse_count = 0
+        self.bos_transition_count = 0
+        self.last_prepare: dict[str, Any] | None = None
+        self.last_bos_event: dict[str, Any] | None = None
+        stream_engine = getattr(backend, "engine", None)
+        if not bool(getattr(stream_engine, "_unique_backend_request_ids", False)):
+            raise RuntimeError(
+                "EarTTS prepared epoch requires generation-unique backend request IDs"
+            )
+        if not callable(getattr(stream_engine, "resolve_backend_request_id", None)):
+            raise RuntimeError(
+                "EarTTS prepared epoch requires a backend request-ID resolver"
+            )
+
+    def _request_snapshot(self, request_id: str) -> dict[str, Any]:
+        engine = getattr(self.backend, "engine", None)
+        requests = getattr(engine, "requests", None)
+        request = requests.get(request_id) if hasattr(requests, "get") else None
+        status = getattr(getattr(request, "status", None), "value", None)
+        generated = getattr(request, "generated_tokens", None)
+        iterator = getattr(request, "generation_iterator", None)
+        backend_request_id = getattr(request, "backend_request_id", None)
+        backend_generation = getattr(request, "backend_generation", None)
+        if request is None or status != "active" or generated is None or iterator is None:
+            raise RuntimeError("EarTTS prepared epoch requires an active initialized request")
+        if (
+            not isinstance(backend_request_id, str)
+            or not backend_request_id
+            or backend_request_id == request_id
+            or isinstance(backend_generation, bool)
+            or not isinstance(backend_generation, int)
+            or backend_generation < 1
+        ):
+            raise RuntimeError(
+                "EarTTS prepared epoch requires a unique physical backend request"
+            )
+        resolved = engine.resolve_backend_request_id(request_id)
+        if resolved != backend_request_id:
+            raise RuntimeError("EarTTS backend request-ID resolver is inconsistent")
+        return {
+            "request_id": request_id,
+            "backend_request_id": backend_request_id,
+            "backend_generation": backend_generation,
+            "request_state_id": id(request),
+            "iterator_id": id(iterator),
+            "generated_tokens": len(generated),
+            "speaker_identity": _runtime_tensor_identity(self.wrapper.tts_init_inputs),
+            "prompt_token_ids": tuple(int(token) for token in self.wrapper.tts_prompt_token_ids),
+            "initial_code_identity": _runtime_tensor_identity(
+                self.wrapper.first_tts_code_input
+            ),
+        }
+
+    def _matches(self, request_id: str) -> tuple[bool, str]:
+        if self.prepared is None:
+            return False, "missing_prepared_snapshot"
+        if self.prepared.get("session_epoch") != self.session_epoch:
+            return False, "session_epoch_mismatch"
+        if self.prepared.get("prepare_epoch") != self.prepare_epoch:
+            return False, "prepare_epoch_mismatch"
+        try:
+            current = self._request_snapshot(request_id)
+        except Exception:
+            return False, "request_inactive"
+        for key in (
+            "request_id",
+            "backend_request_id",
+            "backend_generation",
+            "request_state_id",
+            "iterator_id",
+            "generated_tokens",
+            "speaker_identity",
+            "prompt_token_ids",
+            "initial_code_identity",
+        ):
+            if current.get(key) != self.prepared.get(key):
+                return False, f"{key}_mismatch"
+        return True, "exact_match"
+
+    def _publish_clean(self, request_id: str, *, reason: str) -> None:
+        snapshot = self._request_snapshot(request_id)
+        self.prepare_epoch += 1
+        snapshot.update(
+            session_epoch=self.session_epoch,
+            prepare_epoch=self.prepare_epoch,
+        )
+        self.prepared = snapshot
+        self.armed_client_turn_id = None
+        self.state = "clean_unarmed"
+        self.reason = reason
+        # A BOS event is evidence for the epoch that produced it. Publishing a
+        # new clean epoch makes the preceding event stale by construction; the
+        # next successful BOS will publish a new event before its frame can be
+        # exposed by the server.
+        self.last_bos_event = None
+
+    def invalidate(self, reason: str) -> None:
+        with self.lock:
+            self.state = "invalid"
+            self.reason = reason
+            self.prepared = None
+            self.armed_client_turn_id = None
+
+    def reset_session(self, reason: str = "session_reset") -> None:
+        with self.lock:
+            self.session_epoch += 1
+            self.prepare_count = 0
+            self.prepare_failure_count = 0
+            self.prepared_reuse_count = 0
+            self.bos_transition_count = 0
+            self.state = "invalid"
+            self.reason = reason
+            self.prepared = None
+            self.armed_client_turn_id = None
+            self.last_prepare = None
+            self.last_bos_event = None
+            self.tts_model._reset_on_bos_count = 0
+            self.tts_model._reset_on_bos_last_request_id = None
+            self.tts_model._reset_on_bos_last_timing_ms = None
+
+    def attest_existing_prefill(self, request_id: str) -> dict[str, Any]:
+        with self.lock:
+            self._publish_clean(str(request_id), reason="session_prefill_attested")
+            return self.status()
+
+    def prepare(
+        self,
+        request_id: str,
+        *,
+        quiescent_check: Any,
+        site: str = "turn_start_prepare",
+    ) -> dict[str, Any]:
+        request_id = str(request_id)
+        with self.lock:
+            started = time.perf_counter()
+            if not callable(quiescent_check) or not bool(quiescent_check()):
+                self.invalidate("function_cycle_not_quiescent")
+                self.prepare_failure_count += 1
+                return {"passed": False, **self.status(), "timing": None}
+            matched, _ = self._matches(request_id)
+            if self.state == "clean_unarmed" and matched:
+                self.last_prepare = {
+                    "schema": 1,
+                    "site": site,
+                    "outcome": "already_clean",
+                    "abort_call_ms": 0.0,
+                    "prefill_call_ms": 0.0,
+                    "total_ms": (time.perf_counter() - started) * 1000.0,
+                }
+                return {"passed": True, **self.status(), "timing": dict(self.last_prepare)}
+
+            self.invalidate("preparation_started")
+            abort_finished = started
+            prefill_finished = None
+            try:
+                requests = getattr(getattr(self.backend, "engine", None), "requests", None)
+                old_request = requests.get(request_id) if hasattr(requests, "get") else None
+                if not bool(self.backend.abort_request(request_id)):
+                    raise RuntimeError("EarTTS prepare could not abort the active request")
+                abort_finished = time.perf_counter()
+                if hasattr(requests, "get") and requests.get(request_id) is old_request:
+                    raise RuntimeError("EarTTS prepare retained the aborted request state")
+                self.backend(
+                    self.wrapper.tts_init_inputs,
+                    request_id=request_id,
+                    prompt_token_ids=self.wrapper.tts_prompt_token_ids,
+                )
+                prefill_finished = time.perf_counter()
+                if not bool(quiescent_check()):
+                    raise RuntimeError("function cycle became active during EarTTS prepare")
+                if hasattr(requests, "get") and requests.get(request_id) is old_request:
+                    raise RuntimeError("EarTTS prepare reused the prior request state")
+                self._publish_clean(request_id, reason="turn_start_prepared")
+                self.prepare_count += 1
+                self.last_prepare = {
+                    "schema": 1,
+                    "site": site,
+                    "outcome": "prepared",
+                    "abort_call_ms": (abort_finished - started) * 1000.0,
+                    "prefill_call_ms": (prefill_finished - abort_finished) * 1000.0,
+                    "total_ms": (prefill_finished - started) * 1000.0,
+                }
+                return {"passed": True, **self.status(), "timing": dict(self.last_prepare)}
+            except Exception:
+                self.prepare_failure_count += 1
+                self.invalidate("preparation_failed")
+                self.last_prepare = {
+                    "schema": 1,
+                    "site": site,
+                    "outcome": "failed",
+                    "abort_call_ms": max(0.0, (abort_finished - started) * 1000.0),
+                    "prefill_call_ms": (
+                        None
+                        if prefill_finished is None
+                        else (prefill_finished - abort_finished) * 1000.0
+                    ),
+                    "total_ms": (time.perf_counter() - started) * 1000.0,
+                }
+                return {"passed": False, **self.status(), "timing": dict(self.last_prepare)}
+
+    def arm(
+        self,
+        request_id: str,
+        client_turn_id: int,
+        *,
+        quiescent_check: Any,
+    ) -> dict[str, Any]:
+        with self.lock:
+            if (
+                not isinstance(client_turn_id, int)
+                or isinstance(client_turn_id, bool)
+                or client_turn_id < 1
+            ):
+                raise ValueError("prepared epoch requires a positive client_turn_id")
+            if self.state == "clean_armed":
+                return {"passed": False, **self.status(), "reason": "already_armed"}
+            if not callable(quiescent_check) or not bool(quiescent_check()):
+                self.invalidate("function_cycle_not_quiescent")
+                return {"passed": False, **self.status()}
+            matched, mismatch = self._matches(str(request_id))
+            if self.state != "clean_unarmed" or not matched:
+                self.invalidate(mismatch if not matched else "not_clean_unarmed")
+                return {"passed": False, **self.status()}
+            self.state = "clean_armed"
+            self.reason = "client_commit_armed"
+            self.armed_client_turn_id = client_turn_id
+            return {"passed": True, **self.status()}
+
+    def consume_prepared_bos(self, request_id: str) -> tuple[bool, str, int | None]:
+        """Consume a matching arm before BOS inference; failures stay invalid."""
+
+        matched, mismatch = self._matches(str(request_id))
+        armed_turn = self.armed_client_turn_id
+        if self.state != "clean_armed" or armed_turn is None or not matched:
+            reason = mismatch if not matched else "prepared_epoch_not_armed"
+            self.invalidate(reason)
+            return False, reason, None
+        self.state = "dirty"
+        self.reason = "prepared_bos_consumed"
+        self.armed_client_turn_id = None
+        return True, "exact_prepared_epoch", armed_turn
+
+    def mark_real_call(self, reason: str) -> None:
+        self.state = "dirty"
+        self.reason = reason
+        self.prepared = None
+        self.armed_client_turn_id = None
+
+    def status(self) -> dict[str, Any]:
+        with self.lock:
+            identity = self.prepared or self.last_bos_event
+            return {
+                "schema": 2,
+                "enabled": True,
+                "state": self.state,
+                "reason": self.reason,
+                "session_epoch": self.session_epoch,
+                "prepare_epoch": self.prepare_epoch,
+                "request_id": (
+                    None
+                    if self.prepared is None
+                    else str(self.prepared.get("request_id"))
+                ),
+                "backend_request_id": (
+                    None
+                    if identity is None
+                    else str(identity.get("backend_request_id"))
+                ),
+                "backend_generation": (
+                    None
+                    if identity is None
+                    else int(identity.get("backend_generation", 0))
+                ),
+                "generated_tokens": (
+                    None
+                    if self.prepared is None
+                    else int(self.prepared.get("generated_tokens", 0))
+                ),
+                "armed_client_turn_id": self.armed_client_turn_id,
+                "prepare_count": self.prepare_count,
+                "prepare_failure_count": self.prepare_failure_count,
+                "prepared_reuse_count": self.prepared_reuse_count,
+                "bos_transition_count": self.bos_transition_count,
+                "last_bos_event": (
+                    None if self.last_bos_event is None else dict(self.last_bos_event)
+                ),
+            }
 
 
 def enabled(name: str) -> bool:
@@ -131,6 +466,8 @@ def pad_pair_precontrol_reason(wrapper: Any, arguments: dict[str, Any]) -> str |
     last frame before that threshold. A false positive only costs one safe
     sequential step; a false negative can cross the control boundary.
     """
+    if getattr(wrapper, "_external_user_eou_requested", False):
+        return "external_user_eou"
     if getattr(wrapper, "_external_agent_eos_requested", False):
         return "external_eos"
     if getattr(wrapper, "_redirect_tokens_queue", None):
@@ -195,6 +532,76 @@ def eartts_pad_should_decode_silence(
         tail_ratio > 0 and not agent_idle and prior_pad_tokens > tail_ratio * prior_content_tokens
     )
     return current_token == pad_token and (agent_idle or tail_done)
+
+
+def eartts_idle_pad_bypass_eligible(
+    *,
+    enabled: bool,
+    decode_audio: bool,
+    use_vllm_eartts: bool,
+    ordinary_pcm: bool,
+    source_embeddings_supplied: bool,
+    force_output_pad: bool,
+    current_token: int,
+    pad_token: int,
+    agent_idle: bool,
+    fc_state: dict[str, Any] | None,
+    acoustic_capture_enabled: bool,
+) -> bool:
+    """Return whether one PAD position may skip EarTTS generation.
+
+    This is deliberately narrower than the PAD-to-decoder-silence policy.  It
+    applies only to ordinary PCM positions while the agent and the complete
+    function-call state machine are idle.  Direct text source positions still
+    advance EarTTS as part of their qualified hidden-position transaction.
+    """
+    fc_quiescent = not (
+        fc_state
+        and (
+            fc_state.get("active", False)
+            or fc_state.get("awaiting_response", False)
+            or fc_state.get("awaiting_eotr", False)
+            or fc_state.get("injecting_response", False)
+            or fc_state.get("forced_function_tokens")
+        )
+    )
+    decoder_silence_eligible = eartts_pad_should_decode_silence(
+        current_token=current_token,
+        pad_token=pad_token,
+        agent_idle=agent_idle,
+        prior_content_tokens=0,
+        prior_pad_tokens=0,
+        tail_ratio=0.0,
+    )
+    return bool(
+        enabled
+        and decode_audio
+        and use_vllm_eartts
+        and ordinary_pcm
+        and not source_embeddings_supplied
+        and not force_output_pad
+        and decoder_silence_eligible
+        and fc_quiescent
+        and not acoustic_capture_enabled
+    )
+
+
+def eartts_idle_pad_bypass_transition(
+    *, recurrent_code: Any, past_key_values: Any, codec_silence_tokens: Any
+) -> tuple[Any, Any, Any]:
+    """Create decoder silence without mutating EarTTS recurrent state."""
+    if not hasattr(recurrent_code, "shape") or len(recurrent_code.shape) != 3:
+        raise RuntimeError("EarTTS recurrent code must have shape [B, T, Q]")
+    if int(recurrent_code.shape[1]) != 1:
+        raise RuntimeError("EarTTS idle-PAD bypass requires one recurrent position")
+    if not hasattr(codec_silence_tokens, "numel"):
+        raise RuntimeError("EarTTS codec silence tokens are unavailable")
+    if int(codec_silence_tokens.numel()) != int(recurrent_code.shape[2]):
+        raise RuntimeError("EarTTS codec silence shape does not match recurrent code")
+    decoder_code = (
+        codec_silence_tokens.view(1, 1, -1).expand_as(recurrent_code).clone()
+    )
+    return decoder_code, recurrent_code, past_key_values
 
 
 def slice_position_outputs(
@@ -276,6 +683,24 @@ def _pad_pair_engine_eligible(engine: Any, input_tensors: list[Any]) -> bool:
     )
 
 
+def _pad_pair_buffered_custom_outputs(current: Any, pad_id: int) -> dict[str, Any]:
+    """Build the synthetic PAD result, stamping it only for logit diagnostics."""
+    import torch
+
+    outputs = {
+        "function_tokens": current.new_tensor([pad_id], dtype=torch.long).cpu()
+    }
+    try:
+        agent_logit_trace_topk = int(
+            os.environ.get("S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK", "0").strip()
+        )
+    except ValueError:
+        agent_logit_trace_topk = 0
+    if agent_logit_trace_topk > 0:
+        outputs["voicechat_pad_pair_buffered"] = True
+    return outputs
+
+
 async def _generate_packed_pad_pair(
     engine: Any,
     input_tensor: Any,
@@ -289,6 +714,12 @@ async def _generate_packed_pad_pair(
     )
 
     request_state = engine.requests[request_id]
+    resolve_backend_request_id = getattr(engine, "resolve_backend_request_id", None)
+    backend_request_id = (
+        str(resolve_backend_request_id(request_id))
+        if callable(resolve_backend_request_id)
+        else request_id
+    )
     if request_state.generation_iterator is None or not request_state.generated_tokens:
         raise RuntimeError("PAD pair requires an initialized continuation request")
     spec = engine.custom_input_specs[0]
@@ -297,7 +728,7 @@ async def _generate_packed_pad_pair(
     spec_name = spec.get("name") if isinstance(spec, dict) else spec.name
     custom_inputs = {spec_name: input_tensor.to(dtype=getattr(torch, input_dtype)).cpu()}
     await engine.engine.append_request(
-        request_id=request_id,
+        request_id=backend_request_id,
         custom_inputs=custom_inputs,
     )
     output = await request_state.generation_iterator.__anext__()
@@ -507,13 +938,21 @@ def consume_pad_pair_trace(wrapper: Any, request_id: str) -> dict[str, Any]:
     }
 
 
-def _install_public_pad_pair_engine() -> None:
+def _install_public_pad_pair_engine(
+    streaming_engine_module: Any | None = None,
+    nemo_logging: Any | None = None,
+) -> None:
     """Install the opt-in two-position continuation policy on Nano only."""
-    from nemo.collections.speechlm2.inference.vllm.streaming_llm_engine import (
-        GenerationResult,
-        LLMStreamingEngine,
-    )
-    from nemo.utils import logging as nemo_logging
+    if streaming_engine_module is None:
+        from nemo.collections.speechlm2.inference.vllm import streaming_llm_engine
+
+        streaming_engine_module = streaming_llm_engine
+    if nemo_logging is None:
+        from nemo.utils import logging as imported_nemo_logging
+
+        nemo_logging = imported_nemo_logging
+    GenerationResult = streaming_engine_module.GenerationResult
+    LLMStreamingEngine = streaming_engine_module.LLMStreamingEngine
 
     if hasattr(LLMStreamingEngine, "_voicechat_original_generate_next_token"):
         return
@@ -612,9 +1051,7 @@ def _install_public_pad_pair_engine() -> None:
             )
             result = GenerationResult(
                 token_id=pad_id,
-                custom_outputs={
-                    "function_tokens": current.new_tensor([pad_id], dtype=torch.long).cpu()
-                },
+                custom_outputs=_pad_pair_buffered_custom_outputs(current, pad_id),
                 is_finished=False,
                 total_tokens=len(request_state.generated_tokens),
             )
@@ -910,6 +1347,14 @@ async def generate_next_token_delta(
     if request_id not in stream_engine.requests:
         raise RuntimeError(f"Request {request_id} not found. Call start_generation() first.")
     request_state = stream_engine.requests[request_id]
+    resolve_backend_request_id = getattr(
+        stream_engine, "resolve_backend_request_id", None
+    )
+    backend_request_id = (
+        str(resolve_backend_request_id(request_id))
+        if callable(resolve_backend_request_id)
+        else request_id
+    )
     if request_state.status != StreamStatus.ACTIVE:
         return None
     if len(input_tensors) != len(stream_engine.custom_input_specs):
@@ -948,12 +1393,12 @@ async def generate_next_token_delta(
                     "custom_inputs": custom_inputs,
                 },
                 stream_engine.sampling_params,
-                request_id=request_id,
+                request_id=backend_request_id,
             )
         elif request_state.generated_tokens:
             try:
                 await stream_engine.engine.append_request(
-                    request_id=request_id,
+                    request_id=backend_request_id,
                     custom_inputs=custom_inputs,
                 )
             except ValueError as exc:
@@ -1046,7 +1491,37 @@ def install_eartts_decode_pad_silence(wrapper: Any) -> bool:
     return True
 
 
-def install_eartts_reset_on_bos(wrapper: Any) -> bool:
+def install_eartts_idle_pad_bypass(wrapper: Any) -> bool:
+    """Install the narrow ordinary-PCM idle-PAD EarTTS bypass contract."""
+    tts_model = getattr(getattr(wrapper, "model", None), "tts_model", None)
+    if getattr(wrapper, "_eartts_idle_pad_bypass_installed", False):
+        return False
+    if not getattr(wrapper, "use_vllm_eartts", False):
+        raise RuntimeError("EarTTS idle-PAD bypass requires the vLLM EarTTS backend")
+    if not getattr(tts_model, "_decode_pad_silence_installed", False):
+        raise RuntimeError(
+            "EarTTS idle-PAD bypass requires the qualified PAD decoder-silence policy"
+        )
+    silence = getattr(tts_model, "codec_silence_tokens", None)
+    if silence is None:
+        raise RuntimeError("EarTTS idle-PAD bypass requires codec silence tokens")
+    initial_code = getattr(wrapper, "first_tts_code_input", None)
+    if initial_code is None:
+        raise RuntimeError("EarTTS idle-PAD bypass requires the initial recurrent code")
+    # Validate the fixed acoustic dimensions during startup, before serving can
+    # select the bypass. Runtime positions use this same recurrent-code shape.
+    eartts_idle_pad_bypass_transition(
+        recurrent_code=initial_code,
+        past_key_values=None,
+        codec_silence_tokens=silence,
+    )
+    wrapper._eartts_idle_pad_bypass_eligible = eartts_idle_pad_bypass_eligible
+    wrapper._eartts_idle_pad_bypass_transition = eartts_idle_pad_bypass_transition
+    wrapper._eartts_idle_pad_bypass_installed = True
+    return True
+
+
+def install_eartts_reset_on_bos(wrapper: Any, *, prepared_epoch: bool = False) -> bool:
     """Reset only the EarTTS vLLM request immediately before each spoken turn."""
     tts_model = getattr(getattr(wrapper, "model", None), "tts_model", None)
     backend = getattr(tts_model, "tts_model", None)
@@ -1054,30 +1529,147 @@ def install_eartts_reset_on_bos(wrapper: Any) -> bool:
     if original is None or backend is None or getattr(tts_model, "_reset_on_bos_installed", False):
         return False
 
-    def reset_on_bos_infer_codes_one_step(*args, **kwargs):
+    controller = (
+        EarTTSPreparedEpochController(wrapper, tts_model, backend)
+        if prepared_epoch
+        else None
+    )
+
+    def call_infer_codes_one_step(*args, **kwargs):
         current = kwargs.get("current_subword_id")
         request_id = kwargs.get("request_id")
-        if (
+        # This diagnostic always describes the current call. A non-BOS call or
+        # a failing BOS call must not expose the preceding reset's timing.
+        tts_model._reset_on_bos_last_timing_ms = None
+        completed_reset_timing = None
+        is_bos = bool(
             current is not None
             and current.numel() == 1
             and int(current.item()) == int(tts_model.text_bos_id)
             and request_id is not None
-        ):
-            backend.abort_request(request_id)
+        )
+        prepared_reuse = False
+        prepared_reason = "prepared_epoch_disabled"
+        armed_client_turn_id = None
+        prepared_session_epoch = None
+        prepared_prepare_epoch = None
+        if controller is not None and is_bos:
+            prepared_reuse, prepared_reason, armed_client_turn_id = (
+                controller.consume_prepared_bos(str(request_id))
+            )
+            if prepared_reuse and controller.prepared is not None:
+                prepared_session_epoch = int(controller.prepared["session_epoch"])
+                prepared_prepare_epoch = int(controller.prepared["prepare_epoch"])
+        elif controller is not None:
+            controller.mark_real_call("real_non_bos_call")
+
+        if is_bos and not prepared_reuse:
+            reset_started = time.perf_counter()
+            requests = getattr(getattr(backend, "engine", None), "requests", None)
+            existing_request = (
+                requests.get(request_id) if hasattr(requests, "get") else None
+            )
+            if existing_request is not None and not bool(
+                backend.abort_request(request_id)
+            ):
+                raise RuntimeError("EarTTS BOS reset could not abort the active request")
+            abort_finished = time.perf_counter()
             backend(
                 wrapper.tts_init_inputs,
                 request_id=request_id,
                 prompt_token_ids=wrapper.tts_prompt_token_ids,
             )
+            prefill_finished = time.perf_counter()
+            tts_model._reset_on_bos_count += 1
+            tts_model._reset_on_bos_last_request_id = str(request_id)
+            completed_reset_timing = {
+                "schema": 1,
+                "reset_count": int(tts_model._reset_on_bos_count),
+                "request_id": str(request_id),
+                "abort_call_ms": (abort_finished - reset_started) * 1000.0,
+                "prefill_call_ms": (prefill_finished - abort_finished) * 1000.0,
+                "reset_total_ms": (prefill_finished - reset_started) * 1000.0,
+            }
             initial_code = wrapper.first_tts_code_input
             if initial_code is None:
                 raise RuntimeError("EarTTS BOS reset requires first_tts_code_input")
             kwargs["prev_audio_tokens"] = initial_code.detach().clone()
             logging.info("Reset and speaker-prefilled EarTTS request %s at BOS", request_id)
-        return original(*args, **kwargs)
+        elif is_bos:
+            initial_code = wrapper.first_tts_code_input
+            if initial_code is None:
+                if controller is not None:
+                    controller.invalidate("initial_code_missing_at_prepared_bos")
+                raise RuntimeError("EarTTS prepared BOS requires first_tts_code_input")
+            kwargs["prev_audio_tokens"] = initial_code.detach().clone()
+
+        try:
+            result = original(*args, **kwargs)
+        except Exception:
+            if controller is not None:
+                controller.invalidate(
+                    "prepared_bos_inference_failed"
+                    if prepared_reuse
+                    else "real_eartts_call_failed"
+                )
+            raise
+        if completed_reset_timing is not None:
+            tts_model._reset_on_bos_last_timing_ms = completed_reset_timing
+        if controller is not None and is_bos:
+            current_request = controller._request_snapshot(str(request_id))
+            controller.bos_transition_count += 1
+            if prepared_reuse:
+                controller.prepared_reuse_count += 1
+            controller.state = "dirty"
+            controller.reason = (
+                "prepared_bos_completed" if prepared_reuse else "legacy_bos_completed"
+            )
+            controller.prepared = None
+            controller.armed_client_turn_id = None
+            controller.last_bos_event = {
+                "schema": 2,
+                "mode": "prepared_reuse" if prepared_reuse else "legacy_fallback",
+                "request_id": str(request_id),
+                "backend_request_id": current_request["backend_request_id"],
+                "backend_generation": current_request["backend_generation"],
+                "armed_client_turn_id": (
+                    armed_client_turn_id if prepared_reuse else None
+                ),
+                "session_epoch": (
+                    prepared_session_epoch
+                    if prepared_reuse
+                    else controller.session_epoch
+                ),
+                "prepare_epoch": (
+                    prepared_prepare_epoch
+                    if prepared_reuse
+                    else controller.prepare_epoch
+                ),
+                "reset_count": int(tts_model._reset_on_bos_count),
+                "transition_count": controller.bos_transition_count,
+                "reuse_count": controller.prepared_reuse_count,
+                "fallback_reason": None if prepared_reuse else prepared_reason,
+            }
+        return result
+
+    def reset_on_bos_infer_codes_one_step(*args, **kwargs):
+        if controller is None:
+            return call_infer_codes_one_step(*args, **kwargs)
+        with controller.lock:
+            return call_infer_codes_one_step(*args, **kwargs)
 
     tts_model.infer_codes_one_step = reset_on_bos_infer_codes_one_step
+    tts_model._reset_on_bos_count = 0
+    tts_model._reset_on_bos_last_request_id = None
+    tts_model._reset_on_bos_last_timing_ms = None
     tts_model._reset_on_bos_installed = True
+    if controller is not None:
+        wrapper._eartts_prepared_epoch_controller = controller
+        wrapper._attest_eartts_prepared_epoch = controller.attest_existing_prefill
+        wrapper._prepare_eartts_prepared_epoch = controller.prepare
+        wrapper._arm_eartts_prepared_epoch = controller.arm
+        wrapper._reset_eartts_prepared_epoch = controller.reset_session
+        wrapper._eartts_prepared_epoch_status = controller.status
     return True
 
 
@@ -1154,13 +1746,46 @@ def prepare_public_fixed_stages(pipeline: Any, checkpoint_root: Path) -> dict[st
         "cpu_codec": False,
         "vllm_delta_output": [],
         "eartts_decode_pad_silence": False,
+        "eartts_idle_pad_bypass": False,
+        "eartts_prepared_epoch": False,
+        "eartts_unique_backend_request_ids": False,
         "eartts_reset_on_bos": False,
         "nano_pad_pair_control_barrier": enabled("VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER"),
     }
     if enabled("VOICECHAT_EARTTS_DECODE_PAD_SILENCE"):
         details["eartts_decode_pad_silence"] = install_eartts_decode_pad_silence(pipeline.s2s_model)
+    if enabled("VOICECHAT_EARTTS_IDLE_PAD_BYPASS"):
+        details["eartts_idle_pad_bypass"] = install_eartts_idle_pad_bypass(
+            pipeline.s2s_model
+        )
     if enabled("VOICECHAT_EARTTS_RESET_ON_BOS"):
-        details["eartts_reset_on_bos"] = install_eartts_reset_on_bos(pipeline.s2s_model)
+        prepared_epoch = enabled("VOICECHAT_EARTTS_PREPARED_EPOCH")
+        if prepared_epoch and not details["eartts_idle_pad_bypass"]:
+            raise RuntimeError("EarTTS prepared epoch requires idle-PAD bypass")
+        details["eartts_reset_on_bos"] = install_eartts_reset_on_bos(
+            pipeline.s2s_model,
+            prepared_epoch=prepared_epoch,
+        )
+        details["eartts_prepared_epoch"] = prepared_epoch
+        if prepared_epoch:
+            stream_engine = getattr(
+                getattr(
+                    getattr(pipeline.s2s_model.model, "tts_model", None),
+                    "tts_model",
+                    None,
+                ),
+                "engine",
+                None,
+            )
+            details["eartts_unique_backend_request_ids"] = bool(
+                getattr(stream_engine, "_unique_backend_request_ids", False)
+            )
+            if not details["eartts_unique_backend_request_ids"]:
+                raise RuntimeError(
+                    "EarTTS prepared epoch requires unique backend request IDs"
+                )
+    elif enabled("VOICECHAT_EARTTS_PREPARED_EPOCH"):
+        raise RuntimeError("EarTTS prepared epoch requires reset-on-BOS")
     if enabled("VOICECHAT_VLLM_DELTA_OUTPUT"):
         details["vllm_delta_output"] = install_vllm_delta_output(
             pipeline.s2s_model,

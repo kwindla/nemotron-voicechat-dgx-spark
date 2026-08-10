@@ -1,0 +1,78 @@
+FROM nvcr.io/nvidia/pytorch@sha256:1dc787f5c6264fcc1c99809f99b84823e73ed4588d5a581b94290fc2a8fecff8
+
+ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
+    HF_HOME=/models/huggingface \
+    VOICECHAT_ASR_MODEL=/models/nemotron-asr \
+    VOICECHAT_ASR_MANIFEST=/opt/voicechat-asr/model-manifest.json \
+    VOICECHAT_ASR_EXPECTED_BACKEND=/opt/voicechat-asr/nemotron_voicechat_asr_evaluator/backend.py \
+    VOICECHAT_ASR_BACKEND_SHA256=53b5142165fa8bfb1bff5685847157b7b37202d699e636de510ede8942f7d21a \
+    CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+    NVIDIA_TF32_OVERRIDE=0
+
+COPY container/requirements-asr-evaluator.txt /opt/voicechat-asr/requirements.txt
+RUN python3 -m pip install --no-cache-dir --no-deps --require-hashes \
+      -r /opt/voicechat-asr/requirements.txt \
+    && python3 -m pip check \
+    && python3 -c 'from transformers import AutoModelForRNNT, AutoProcessor; print(AutoModelForRNNT, AutoProcessor)'
+
+COPY config/nemotron-asr-en-0.6b.json /opt/voicechat-asr/model-manifest.json
+COPY licenses/LibriSpeech-canary-NOTICE.md /licenses/LibriSpeech-canary-NOTICE.md
+COPY src/nemotron_voicechat_asr_evaluator /opt/voicechat-asr/nemotron_voicechat_asr_evaluator
+RUN python3 - <<'PY'
+import json
+import hashlib
+from pathlib import Path
+import pyarrow.parquet as pq
+from huggingface_hub import hf_hub_download, snapshot_download
+
+manifest = json.load(open('/opt/voicechat-asr/model-manifest.json', encoding='utf-8'))
+snapshot_download(
+    manifest['model_id'],
+    revision=manifest['revision'],
+    local_dir='/models/nemotron-asr',
+    allow_patterns=list(manifest['files']),
+)
+canary = manifest['speech_canary']
+parquet = Path(hf_hub_download(
+    canary['dataset_id'],
+    canary['parquet_path'],
+    repo_type='dataset',
+    revision=canary['revision'],
+))
+assert hashlib.sha256(parquet.read_bytes()).hexdigest() == canary['parquet_sha256']
+row = pq.read_table(parquet).slice(canary['row'], 1).to_pylist()[0]
+payload = row['audio']['bytes']
+assert hashlib.sha256(payload).hexdigest() == canary['audio_sha256']
+Path(canary['audio_path']).write_bytes(payload)
+PY
+RUN PYTHONPATH=/opt/voicechat-asr python3 - <<'PY'
+import numpy as np
+import soundfile as sf
+from nemotron_voicechat_asr_evaluator import NemotronEnglishAsr, load_manifest
+
+backend = NemotronEnglishAsr(device='cpu')
+manifest = load_manifest()
+audio, rate = sf.read(manifest['speech_canary']['audio_path'], dtype='float32')
+assert rate == 16_000 and audio.ndim == 1
+result = backend.transcribe(np.asarray(audio, dtype=np.float32))
+words = set(result['transcript'].lower().split())
+assert set(manifest['speech_canary']['expected_words']).issubset(words), result
+assert isinstance(result['token_ids'], list)
+PY
+
+ENV HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    PYTHONPATH=/opt/voicechat-asr:/workspace/project/src:/workspace/project/tools/qualification
+
+LABEL org.opencontainers.image.source="https://github.com/pipecat-ai/nemotron-voicechat-dgx-spark" \
+      ai.pipecat.voicechat.role="independent-asr-evaluator" \
+      ai.pipecat.voicechat.base-image="nvcr.io/nvidia/pytorch@sha256:1dc787f5c6264fcc1c99809f99b84823e73ed4588d5a581b94290fc2a8fecff8" \
+      ai.pipecat.voicechat.asr-model="nvidia/nemotron-speech-streaming-en-0.6b" \
+      ai.pipecat.voicechat.asr-revision="ebe59e5a817142986528bbbee5dba8db7b38ed50" \
+      ai.pipecat.voicechat.asr-backend-sha256="53b5142165fa8bfb1bff5685847157b7b37202d699e636de510ede8942f7d21a" \
+      ai.pipecat.voicechat.asr-manifest-sha256="047dc8050e259f8299323f0e57f050b6142d66c27364d6a434ce4fbb96a0395e" \
+      ai.pipecat.voicechat.asr-requirements-sha256="42f7e5614648ea9abdd6aa471f89ec330359129259d7d47347e50e1444811837" \
+      ai.pipecat.voicechat.transformers="5.14.1"
+
+WORKDIR /workspace/project
+ENTRYPOINT []

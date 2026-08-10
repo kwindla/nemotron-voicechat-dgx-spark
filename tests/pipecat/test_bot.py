@@ -5,6 +5,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
+from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.frames.frames import (
     FunctionCallFromLLM,
     FunctionCallInProgressFrame,
@@ -16,6 +18,10 @@ from pipecat.processors.frame_processor import FrameDirection
 from pipecat.runner.types import RunnerArguments, SmallWebRTCRunnerArguments
 from pipecat.transports.smallwebrtc.connection import SmallWebRTCConnection
 from pipecat.transports.smallwebrtc.transport import SmallWebRTCTransport
+from pipecat.turns.user_start.vad_user_turn_start_strategy import VADUserTurnStartStrategy
+from pipecat.turns.user_stop.turn_analyzer_user_turn_stop_strategy import (
+    TurnAnalyzerUserTurnStopStrategy,
+)
 
 from nemotron_voicechat_pipecat import NemotronVoicechatLLMService
 from nemotron_voicechat_pipecat import demo as bot_module
@@ -97,6 +103,11 @@ async def test_pipeline_uses_smallwebrtc_and_universal_realtime_aggregators(
     try:
         pipeline, context, service = bot_module.create_pipeline(transport)
         names = [type(processor).__name__ for processor in pipeline.processors]
+        user_aggregator = next(
+            processor
+            for processor in pipeline.processors
+            if isinstance(processor, VoicechatUserAggregator)
+        )
 
         assert isinstance(transport, SmallWebRTCTransport)
         assert isinstance(service, NemotronVoicechatLLMService)
@@ -109,6 +120,15 @@ async def test_pipeline_uses_smallwebrtc_and_universal_realtime_aggregators(
         assert any(
             isinstance(processor, VoicechatUserAggregator) for processor in pipeline.processors
         )
+        assert isinstance(user_aggregator._params.vad_analyzer, SileroVADAnalyzer)
+        assert user_aggregator._params.vad_analyzer.params.start_secs == 0.2
+        assert user_aggregator._params.vad_analyzer.params.stop_secs == 0.2
+        assert user_aggregator._params.user_turn_stop_timeout == 5.0
+        strategies = user_aggregator._params.user_turn_strategies
+        assert isinstance(strategies.start[0], VADUserTurnStartStrategy)
+        assert isinstance(strategies.stop[0], TurnAnalyzerUserTurnStopStrategy)
+        assert isinstance(strategies.stop[0]._turn_analyzer, LocalSmartTurnAnalyzerV3)
+        assert strategies.stop[0].wait_for_transcript is False
         assert names.index("NemotronVoicechatLLMService") < names.index(
             "VoicechatAssistantAggregator"
         )

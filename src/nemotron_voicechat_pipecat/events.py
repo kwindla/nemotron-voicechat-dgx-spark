@@ -73,6 +73,33 @@ def audio_append(audio: bytes) -> dict[str, Any]:
     }
 
 
+def audio_turn_start(client_turn_id: int) -> dict[str, Any]:
+    """Open one client-detected microphone turn."""
+    if client_turn_id < 1:
+        raise ValueError("client_turn_id must be positive")
+    return {
+        "type": "input_audio_buffer.turn_start",
+        "event_id": event_id(),
+        "client_turn_id": client_turn_id,
+    }
+
+
+def audio_commit(
+    client_turn_id: int, *, diagnostics: dict[str, int | float] | None = None
+) -> dict[str, Any]:
+    """Commit one client-detected microphone turn."""
+    if client_turn_id < 1:
+        raise ValueError("client_turn_id must be positive")
+    event: dict[str, Any] = {
+        "type": "input_audio_buffer.commit",
+        "event_id": event_id(),
+        "client_turn_id": client_turn_id,
+    }
+    if diagnostics is not None:
+        event["diagnostics"] = {"schema": 1, **diagnostics}
+    return event
+
+
 def typed_input_request(*, text: str, job_id: str) -> dict[str, Any]:
     """Build one server-owned typed-input request."""
 

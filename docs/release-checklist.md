@@ -48,7 +48,7 @@ status alone is not release evidence.
 
 ## Production qualification
 
-- [x] Run `./voicechat test --live --asr-model /absolute/path/to/asr.nemo`
+- [ ] Run `./voicechat test --live` with the immutable ASR evaluator image
   against the downloaded published artifacts and retain its entire output
   directory.
 - [x] Nano (all 1,172 calls), EarTTS eager/graph, and isolated Pocket worker

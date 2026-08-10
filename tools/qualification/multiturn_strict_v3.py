@@ -13,13 +13,18 @@ import wave
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import websockets
 
-INPUT_RATE = 16_000
+from nemotron_voicechat_runtime.qualification_audio import (
+    FRAME_SAMPLES,
+    read_fixture,
+    send_audio,
+    send_silence_until_stopped,
+)
+
+__all__ = ("FRAME_SAMPLES",)
+
 OUTPUT_RATE = 22_050
-FRAME_SAMPLES = 1_280
-FRAME_SECONDS = FRAME_SAMPLES / INPUT_RATE
 NUMBER_EQUIVALENTS = {
     "five": "5",
     "twenty": "20",
@@ -61,93 +66,12 @@ def word_error_rate(reference: str, hypothesis: str) -> float:
     return previous[-1] / len(expected)
 
 
-def read_fixture(path: Path) -> bytes:
-    with wave.open(str(path), "rb") as source:
-        channels = source.getnchannels()
-        width = source.getsampwidth()
-        rate = source.getframerate()
-        values = np.frombuffer(source.readframes(source.getnframes()), dtype="<i2")
-    if width != 2:
-        raise ValueError(f"{path}: expected PCM16 WAV")
-    samples = values.astype(np.float32) / 32768.0
-    if channels > 1:
-        samples = samples.reshape(-1, channels).mean(axis=1)
-    if rate != INPUT_RATE:
-        count = round(samples.size * INPUT_RATE / rate)
-        samples = np.interp(
-            np.arange(count, dtype=np.float64) * rate / INPUT_RATE,
-            np.arange(samples.size, dtype=np.float64),
-            samples,
-        ).astype(np.float32)
-    return np.rint(np.clip(samples, -1.0, 1.0) * 32767).astype("<i2").tobytes()
-
-
 def write_wav(path: Path, payload: bytes) -> None:
     with wave.open(str(path), "wb") as output:
         output.setnchannels(1)
         output.setsampwidth(2)
         output.setframerate(OUTPUT_RATE)
         output.writeframes(payload)
-
-
-async def send_audio(
-    websocket: Any, payload: bytes, event_prefix: str, trailing_frames: int
-) -> None:
-    frame_bytes = FRAME_SAMPLES * 2
-    padded = payload + bytes((-len(payload)) % frame_bytes)
-    frames = [
-        padded[offset : offset + frame_bytes] for offset in range(0, len(padded), frame_bytes)
-    ]
-    frames.extend([bytes(frame_bytes)] * trailing_frames)
-    started = time.monotonic()
-    for index, frame in enumerate(frames):
-        deadline = started + index * FRAME_SECONDS
-        if (delay := deadline - time.monotonic()) > 0:
-            await asyncio.sleep(delay)
-        await websocket.send(
-            json.dumps(
-                {
-                    "type": "input_audio_buffer.append",
-                    "event_id": f"{event_prefix}-{index}",
-                    "encoding": "pcm16",
-                    "sample_rate": INPUT_RATE,
-                    "channels": 1,
-                    "audio": base64.b64encode(frame).decode(),
-                }
-            )
-        )
-
-
-async def send_silence_until_stopped(
-    websocket: Any, event_prefix: str, stop: asyncio.Event
-) -> None:
-    """Keep the frame-driven model advancing until its response closes."""
-
-    frame = bytes(FRAME_SAMPLES * 2)
-    started = time.monotonic()
-    index = 0
-    while not stop.is_set():
-        deadline = started + (index + 1) * FRAME_SECONDS
-        try:
-            await asyncio.wait_for(
-                stop.wait(), timeout=max(0.0, deadline - time.monotonic())
-            )
-            break
-        except TimeoutError:
-            pass
-        await websocket.send(
-            json.dumps(
-                {
-                    "type": "input_audio_buffer.append",
-                    "event_id": f"{event_prefix}-continuation-{index}",
-                    "encoding": "pcm16",
-                    "sample_rate": INPUT_RATE,
-                    "channels": 1,
-                    "audio": base64.b64encode(frame).decode(),
-                }
-            )
-        )
-        index += 1
 
 
 async def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -166,6 +90,10 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         event_stream.write(json.dumps(created, sort_keys=True) + "\n")
         if created.get("protocol") != {"name": "voicechat.realtime", "version": 3}:
             raise RuntimeError(f"unexpected protocol: {created.get('protocol')}")
+        if created.get("capabilities", {}).get("input_turn_detection") != (
+            "client_smart_turn_v1"
+        ):
+            raise RuntimeError("server did not advertise client Smart Turn v1")
         await websocket.send(
             json.dumps(
                 {
@@ -188,7 +116,13 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             active: dict[str, Any] | None = None
             input_text = ""
             payload = read_fixture(Path(fixture["audio_path"]))
-            await send_audio(websocket, payload, fixture["id"], args.trailing_silence_frames)
+            await send_audio(
+                websocket,
+                payload,
+                fixture["id"],
+                args.trailing_silence_frames,
+                turn_index,
+            )
             continuation_stop = asyncio.Event()
             continuation = asyncio.create_task(
                 send_silence_until_stopped(websocket, fixture["id"], continuation_stop)
@@ -266,6 +200,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
 
     event_stream.close()
     report = {
+        "report_kind": "multiturn_strict_v3",
         "passed": (
             len(results) == len(manifest["turns"])
             and all(
@@ -278,6 +213,8 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             and session_closed is not None
         ),
         "fixture_generator": manifest.get("generator"),
+        "expected_turn_count": len(manifest["turns"]),
+        "max_input_wer": args.max_input_wer,
         "manifest": str(args.manifest.resolve()),
         "responses": results,
         "session_closed": session_closed,
@@ -301,7 +238,11 @@ def main() -> None:
         report = asyncio.run(run(args))
     except Exception as exc:
         args.output.mkdir(parents=True, exist_ok=True)
-        report = {"passed": False, "error": f"{type(exc).__name__}: {exc}"}
+        report = {
+            "report_kind": "multiturn_strict_v3",
+            "passed": False,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
         (args.output / "report.json").write_text(
             json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
