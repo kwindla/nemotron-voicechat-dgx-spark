@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import threading
 from types import SimpleNamespace
 
 import pytest
@@ -149,6 +150,41 @@ def test_worker_assets_are_verified_at_immutable_snapshot_paths(monkeypatch, tmp
     path.write_bytes(b"corruptxx")
     with pytest.raises(RuntimeError, match="hash mismatch"):
         pocket_worker.validate_assets()
+
+
+def test_internal_text_carrier_is_deterministic_per_text_and_restores_rng() -> None:
+    torch = pytest.importorskip("torch", reason="runtime image supplies PyTorch")
+
+    class Model:
+        sample_rate = 16_000
+
+        @staticmethod
+        def generate_audio_stream(_voice_state, _text, *, copy_state):
+            assert copy_state is True
+            yield torch.randn(320)
+            yield torch.randn(320)
+
+    backend = pocket_worker.PocketBackend(
+        language="english_2026-04",
+        voice="alba",
+        quantize=True,
+        threads=4,
+        seed=17,
+    )
+    backend.model = Model()
+    backend.voice_state = object()
+
+    torch.manual_seed(123)
+    expected_next = torch.rand(1)
+    torch.manual_seed(123)
+    first = backend.synthesize("Repeatable text.", threading.Event())
+    actual_next = torch.rand(1)
+    second = backend.synthesize("Repeatable text.", threading.Event())
+    other = backend.synthesize("Different text.", threading.Event())
+
+    assert first.pcm16 == second.pcm16
+    assert first.pcm16 != other.pcm16
+    assert torch.equal(actual_next, expected_next)
 
 
 def test_eou_closure_has_margin_and_model_frame_alignment():

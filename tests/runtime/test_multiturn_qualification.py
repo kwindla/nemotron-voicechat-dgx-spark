@@ -10,6 +10,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from nemotron_voicechat_runtime import qualification_audio
+
 
 def load_module():
     path = Path("tools/qualification/multiturn_strict_v3.py")
@@ -28,7 +30,9 @@ def test_memory_fixture_accepts_acknowledgement_but_recall_requires_secret() -> 
     spec.loader.exec_module(module)
 
     acknowledgement, math, recall = module.TURNS
-    assert acknowledgement["text"] == "Remember that the codeword is sapphire."
+    assert acknowledgement["text"] == (
+        "Remember that the codeword is sapphire and acknowledge it briefly."
+    )
     assert "noted" in acknowledgement["expected_response_any"]
     assert math["text"] == "What is two plus three?"
     assert recall["expected_response_any"] == ["sapphire"]
@@ -78,3 +82,59 @@ async def test_continuation_silence_is_paced_until_response_stop() -> None:
         base64.b64decode(str(message["audio"])) == bytes(module.FRAME_SAMPLES * 2)
         for message in websocket.messages
     )
+
+
+@pytest.mark.parametrize("trailing_frames", [0, 2])
+@pytest.mark.asyncio
+async def test_audio_turn_helper_preserves_exact_barriers_pcm_and_padding(
+    monkeypatch: pytest.MonkeyPatch, trailing_frames: int
+) -> None:
+    module = load_module()
+    assert module.send_audio is qualification_audio.send_audio
+
+    async def no_sleep(_delay: float) -> None:
+        return None
+
+    monkeypatch.setattr(qualification_audio.asyncio, "sleep", no_sleep)
+
+    class RecordingWebSocket:
+        def __init__(self) -> None:
+            self.messages: list[dict[str, object]] = []
+
+        async def send(self, raw: str) -> None:
+            self.messages.append(json.loads(raw))
+
+    payload = b"\x01\x02" * (module.FRAME_SAMPLES + 5)
+    websocket = RecordingWebSocket()
+    await module.send_audio(
+        websocket,
+        payload,
+        "fixture",
+        trailing_frames,
+        client_turn_id=7,
+    )
+
+    assert [message["type"] for message in websocket.messages] == [
+        "input_audio_buffer.turn_start",
+        *(["input_audio_buffer.append"] * (2 + trailing_frames)),
+        "input_audio_buffer.commit",
+    ]
+    assert websocket.messages[0]["client_turn_id"] == 7
+    assert websocket.messages[-1]["client_turn_id"] == 7
+    assert [message["event_id"] for message in websocket.messages] == [
+        "fixture-start",
+        *[f"fixture-{index}" for index in range(2 + trailing_frames)],
+        "fixture-commit",
+    ]
+    appended = websocket.messages[1:-1]
+    assert all(
+        message["encoding"] == "pcm16"
+        and message["sample_rate"] == 16_000
+        and message["channels"] == 1
+        for message in appended
+    )
+    decoded = [base64.b64decode(str(message["audio"])) for message in appended]
+    frame_bytes = module.FRAME_SAMPLES * 2
+    expected = payload + bytes(2 * frame_bytes - len(payload))
+    assert b"".join(decoded[:2]) == expected
+    assert decoded[2:] == [bytes(frame_bytes)] * trailing_frames

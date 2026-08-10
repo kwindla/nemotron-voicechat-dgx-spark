@@ -1,5 +1,6 @@
 import asyncio
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -7,6 +8,7 @@ from nemotron_voicechat_runtime.server import (
     ExternalToolBridge,
     coerce_tool_arguments,
     normalize_tool_definitions,
+    validate_function_output,
 )
 
 
@@ -61,6 +63,59 @@ def test_external_tool_bridge_round_trip() -> None:
         assert json.loads(call.arguments) == {"city": "Paris", "units": "metric"}
         bridge.submit(call.call_id, '{"temperature":21}')
         assert await result_task == '{"temperature":21}'
+        bridge.close()
+
+    asyncio.run(scenario())
+
+
+def test_external_tool_bridge_drops_unsent_call_when_emit_fails() -> None:
+    async def scenario() -> None:
+        async def emit(_call) -> None:
+            raise RuntimeError("function_call_loop_limit")
+
+        bridge = ExternalToolBridge(asyncio.get_running_loop(), emit, timeout_seconds=2.0)
+        handler = bridge.handlers([{"name": "lookup"}])["lookup"]
+
+        result = await asyncio.to_thread(handler, {})
+
+        assert json.loads(result) == {
+            "error": "function_call_event_failed: function_call_loop_limit"
+        }
+        assert bridge._pending == {}
+        bridge.close()
+
+    asyncio.run(scenario())
+
+
+def test_rejected_function_output_can_be_resubmitted_for_same_call() -> None:
+    async def scenario() -> None:
+        calls = []
+        call_ready = asyncio.Event()
+
+        async def emit(call) -> None:
+            calls.append(call)
+            call_ready.set()
+
+        def build_tokens(text: str) -> list[int]:
+            return [1] * (129 if "too-many" in text else 3)
+
+        wrapper = SimpleNamespace(
+            _fc_convert_num_to_text=False,
+            _build_fc_response_tokens=build_tokens,
+        )
+        engine = SimpleNamespace(pipeline=SimpleNamespace(s2s_model=wrapper))
+        bridge = ExternalToolBridge(asyncio.get_running_loop(), emit, timeout_seconds=2.0)
+        handler = bridge.handlers([{"name": "lookup"}])["lookup"]
+        result_task = asyncio.create_task(asyncio.to_thread(handler, {}))
+        await asyncio.wait_for(call_ready.wait(), timeout=1.0)
+
+        with pytest.raises(ValueError, match="129 tokens; maximum is 128"):
+            validate_function_output(engine, "too-many")
+        assert not result_task.done()
+
+        output, _ = validate_function_output(engine, '{"value":18}')
+        bridge.submit(calls[0].call_id, output)
+        assert await result_task == '{"value":18}'
         bridge.close()
 
     asyncio.run(scenario())

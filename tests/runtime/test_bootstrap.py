@@ -146,6 +146,23 @@ def test_public_build_supports_required_no_cache_gate() -> None:
     assert "build_flags+=(--no-cache)" in script
 
 
+def test_public_build_uses_host_network_for_required_online_build_steps() -> None:
+    script = Path("container/build-public-runtime.sh").read_text(encoding="utf-8")
+    build_invocations = script.split("DOCKER_BUILDKIT=1 docker build ")[1:]
+    assert len(build_invocations) == 2
+    assert script.count("--network host") == 2
+    assert all("--network host" in invocation for invocation in build_invocations)
+    audit = Path("container/audit-public-runtime.sh").read_text(encoding="utf-8")
+    assert "--network none" in audit
+
+
+def test_asr_evaluator_build_uses_host_network_but_audit_does_not() -> None:
+    script = Path("container/build-asr-evaluator.sh").read_text(encoding="utf-8")
+    assert script.count("--network host") == 1
+    audit = Path("container/audit-asr-evaluator.sh").read_text(encoding="utf-8")
+    assert "--network none" in audit
+
+
 def test_runtime_audit_uses_required_tool_and_fails_closed_on_scan_error() -> None:
     script = Path("container/audit-public-runtime.sh").read_text(encoding="utf-8")
     assert "\nrg " not in script
@@ -153,3 +170,8 @@ def test_runtime_audit_uses_required_tool_and_fails_closed_on_scan_error() -> No
     assert "lineage_scan_status=$?" in script
     assert "lineage_scan_status} -ne 1" in script
     assert "Runtime image lineage scan failed" in script
+    assert script.count("-e PYTHONPATH=/opt/Speech") == 1
+    canary_block = script.split("eartts-request-generation-canary.json", 1)[0].rsplit(
+        "docker run", 1
+    )[1]
+    assert "-e PYTHONPATH=/opt/Speech" in canary_block

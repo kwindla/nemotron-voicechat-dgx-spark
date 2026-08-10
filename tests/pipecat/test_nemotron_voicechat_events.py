@@ -26,6 +26,22 @@ def test_audio_append_is_explicit_pcm16_mono_16khz():
     assert base64.b64decode(message["audio"]) == b"\x01\x02"
 
 
+def test_client_turn_barriers_are_correlated_and_bounded():
+    started = events.audio_turn_start(7)
+    committed = events.audio_commit(7, diagnostics={"client_enqueue_monotonic_s": 12.5})
+
+    assert started["type"] == "input_audio_buffer.turn_start"
+    assert committed["type"] == "input_audio_buffer.commit"
+    assert started["client_turn_id"] == committed["client_turn_id"] == 7
+    assert committed["diagnostics"] == {
+        "schema": 1,
+        "client_enqueue_monotonic_s": 12.5,
+    }
+    assert started["event_id"] != committed["event_id"]
+    with pytest.raises(ValueError, match="positive"):
+        events.audio_commit(0)
+
+
 def test_typed_input_request_preserves_exact_text_and_client_job_id():
     message = events.typed_input_request(text="  exact  ", job_id="job-1")
     assert message["type"] == "input_text.request"

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import signal
+import wave
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -11,15 +12,22 @@ import pytest
 from nemotron_voicechat_runtime.artifacts import Layout, PC2A_ENVIRONMENT, load_config
 from nemotron_voicechat_runtime.cli import (
     _activate_converted_release,
+    _asr_provenance_contract,
+    _bootstrap_ready,
     _bot_source_snapshot,
+    _build_image,
+    _ensure_asr_evaluator,
+    _finalize_source_asr_stage,
     _owned_launcher_process,
     _owned_pipecat_process,
     _process_start_time,
     _remove_stale_conversion_activations,
-    _source_conversion_asr_model,
-    _stop_stack,
     _tree_copy_gib,
+    _runtime_image_matches_checkout,
+    _stop_stack,
+    _validated_external_asr_report,
     _wait_ports_available,
+    command_bootstrap,
     command_release,
     command_restart_bot,
     command_up,
@@ -51,6 +59,154 @@ def test_pc2a_config_materializes_hotfix_runtime_contract() -> None:
     assert environment["VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE"] == "0"
 
 
+def test_asr_evaluator_audits_and_returns_one_immutable_resolution(monkeypatch) -> None:
+    image_id = f"sha256:{'a' * 64}"
+    audited: list[list[str]] = []
+    inspections = 0
+
+    def run(command, **_kwargs):
+        nonlocal inspections
+        if command[:3] == ["docker", "image", "inspect"]:
+            inspections += 1
+            return SimpleNamespace(stdout=image_id + "\n")
+        raise AssertionError(command)
+
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli._image_exists", lambda _image: True)
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli.subprocess.run", run)
+    monkeypatch.setattr(
+        "nemotron_voicechat_runtime.cli._run",
+        lambda command, **_kwargs: audited.append(command),
+    )
+
+    assert _ensure_asr_evaluator(load_config(), offline=False, no_cache=False) == image_id
+    assert inspections == 1
+    assert audited[0][-1] == image_id
+
+
+def test_runtime_image_source_identity_matches_exact_checkout(monkeypatch) -> None:
+    digest = "a" * 64
+    for function in (
+        "public_runtime_source_sha256",
+        "public_runtime_payload_sha256",
+        "public_runtime_recipe_sha256",
+    ):
+        monkeypatch.setattr(f"nemotron_voicechat_runtime.cli.{function}", lambda _root: digest)
+    monkeypatch.setattr(
+        "nemotron_voicechat_runtime.cli.subprocess.run",
+        lambda *_a, **_k: SimpleNamespace(
+            stdout=json.dumps(
+                [
+                    {
+                        "Config": {
+                            "Labels": {
+                                "ai.pipecat.voicechat.project-source-sha256": digest,
+                                "ai.pipecat.voicechat.project-payload-sha256": digest,
+                                "ai.pipecat.voicechat.build-recipe-sha256": digest,
+                            }
+                        }
+                    }
+                ]
+            )
+        ),
+    )
+
+    assert _runtime_image_matches_checkout("runtime:test") is True
+
+
+def test_bootstrap_rebuilds_stale_runtime_and_offline_fails(tmp_path: Path, monkeypatch) -> None:
+    config = {"image": {"runtime": "runtime:test"}}
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+    commands: list[list[str]] = []
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli._image_exists", lambda _image: True)
+    monkeypatch.setattr(
+        "nemotron_voicechat_runtime.cli._runtime_image_matches_checkout",
+        lambda _image: False,
+    )
+    monkeypatch.setattr(
+        "nemotron_voicechat_runtime.cli._run",
+        lambda command, **_kwargs: commands.append(command),
+    )
+
+    _build_image(config, layout, offline=False, no_cache=False)
+
+    assert commands == [[str(Path.cwd() / "container/build-public-runtime.sh")]]
+    with pytest.raises(RuntimeError, match="stale image"):
+        _build_image(config, layout, offline=True, no_cache=False)
+
+
+def test_up_readiness_rejects_runtime_from_older_checkout(tmp_path: Path, monkeypatch) -> None:
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+    layout.cache.mkdir(parents=True)
+    release = {"release_sha256": "a" * 64, "revision": "revision"}
+    (layout.cache / "artifact-state.json").write_text(
+        json.dumps(
+            {
+                "release_sha256": release["release_sha256"],
+                "release_revision": release["revision"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli._image_exists", lambda _image: True)
+    monkeypatch.setattr(
+        "nemotron_voicechat_runtime.cli._runtime_image_matches_checkout",
+        lambda _image: False,
+    )
+
+    ready, reason = _bootstrap_ready(
+        {"image": {"runtime": "runtime:test"}, "artifacts": {"release": release}},
+        layout,
+    )
+
+    assert ready is False
+    assert reason == "public runtime image does not match this checkout"
+
+
+def test_bootstrap_propagates_audited_asr_id_to_source_conversion(
+    tmp_path: Path, monkeypatch
+) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+    layout.cache.mkdir(parents=True)
+    asr_id = f"sha256:{'a' * 64}"
+    runtime_id = f"sha256:{'b' * 64}"
+    observed: list[str] = []
+    for name in (
+        "require_free_space",
+        "_executable",
+        "_sync_host",
+        "_download_artifacts",
+        "_build_image",
+    ):
+        monkeypatch.setattr(f"nemotron_voicechat_runtime.cli.{name}", lambda *_a, **_k: None)
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli.load_config", lambda _path: config)
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli.default_layout", lambda *_a: layout)
+    monkeypatch.setattr(
+        "nemotron_voicechat_runtime.cli._ensure_asr_evaluator", lambda *_a, **_k: asr_id
+    )
+
+    def convert(_args, _config, _layout, exact_asr_id):
+        observed.append(exact_asr_id)
+        return {"artifact_materialization": "source-converted"}
+
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli._convert_from_source", convert)
+    monkeypatch.setattr(
+        "nemotron_voicechat_runtime.cli.subprocess.run",
+        lambda *_a, **_k: SimpleNamespace(stdout=runtime_id + "\n"),
+    )
+    args = SimpleNamespace(
+        config=Path("config/production-candidate-1.toml"),
+        cache_root=layout.cache,
+        trace_root=layout.traces,
+        offline=False,
+        no_cache=False,
+        convert_from_source=True,
+    )
+
+    assert command_bootstrap(args) == 0
+    assert observed == [asr_id]
+
+
 def test_model_command_is_loopback_only_and_uses_signed_release(tmp_path: Path) -> None:
     config = load_config()
     layout = Layout(tmp_path / "cache", tmp_path / "traces")
@@ -64,9 +220,25 @@ def test_model_command_is_loopback_only_and_uses_signed_release(tmp_path: Path) 
     assert "HF_HOME=/models/huggingface" in command
     assert "HUGGINGFACE_HUB_CACHE=/models/huggingface/hub" in command
     assert "HF_MODULES_CACHE=/tmp/voicechat-hf-modules" in command
+    assert f"VOICECHAT_RUNTIME_IMAGE={config['image']['runtime']}" in command
+    assert "VOICECHAT_RUNTIME_IMAGE_ID" not in rendered
     assert f"{layout.hf_home}:/models/huggingface:ro" in command
     assert "VLLM_ALLOW_INSECURE_SERIALIZATION" not in rendered
     assert "API_KEY" not in rendered
+
+
+def test_model_command_records_immutable_runtime_image_id(tmp_path: Path) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+
+    command = model_container_command(
+        config,
+        layout,
+        9876,
+        runtime_image_id=f"sha256:{'a' * 64}",
+    )
+
+    assert f"VOICECHAT_RUNTIME_IMAGE_ID=sha256:{'a' * 64}" in command
 
 
 def test_model_command_enables_pad_pair_trace_only_when_requested(tmp_path: Path) -> None:
@@ -80,14 +252,70 @@ def test_model_command_enables_pad_pair_trace_only_when_requested(tmp_path: Path
     assert "VOICECHAT_NANO_PAD_PAIR_TRACE=1" in traced
 
 
+def test_model_command_enables_bounded_post_fc_trace_only_when_requested(
+    tmp_path: Path,
+) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+
+    ordinary = " ".join(model_container_command(config, layout, 9876))
+    traced = model_container_command(config, layout, 9876, trace_post_fc_tokens=9)
+
+    assert "S2S_POST_FC_TOKEN_TRACE_FRAMES" not in ordinary
+    assert "S2S_POST_FC_TOKEN_TRACE_FRAMES=9" in traced
+    with pytest.raises(ValueError, match="0 through 32"):
+        model_container_command(config, layout, 9876, trace_post_fc_tokens=33)
+
+
+def test_model_command_enables_agent_logits_only_with_post_fc_trace(
+    tmp_path: Path,
+) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+
+    ordinary = " ".join(model_container_command(config, layout, 9876))
+    traced = " ".join(
+        model_container_command(
+            config,
+            layout,
+            9876,
+            trace_post_fc_tokens=9,
+            trace_post_fc_agent_logits=20,
+        )
+    )
+
+    assert "S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK" not in ordinary
+    assert "S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK=20" in traced
+    with pytest.raises(ValueError, match="requires a nonzero"):
+        model_container_command(config, layout, 9876, trace_post_fc_agent_logits=20)
+    with pytest.raises(ValueError, match="0 through 20"):
+        model_container_command(
+            config,
+            layout,
+            9876,
+            trace_post_fc_tokens=9,
+            trace_post_fc_agent_logits=21,
+        )
+
+
+def test_model_command_enables_fc_async_heartbeat_only_when_requested(
+    tmp_path: Path,
+) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+
+    ordinary = " ".join(model_container_command(config, layout, 9876))
+    traced = " ".join(model_container_command(config, layout, 9876, trace_fc_async_heartbeat=True))
+
+    assert "S2S_FC_ASYNC_HEARTBEAT" not in ordinary
+    assert "S2S_FC_ASYNC_HEARTBEAT=1" in traced
+
+
 def test_cli_exposes_stable_foreground_commands() -> None:
     cli = parser()
     assert cli.parse_args(["bootstrap", "--offline"]).offline is True
-    conversion = cli.parse_args(
-        ["bootstrap", "--convert-from-source", "--asr-model", "/tmp/parakeet.nemo"]
-    )
+    conversion = cli.parse_args(["bootstrap", "--convert-from-source"])
     assert conversion.convert_from_source is True
-    assert conversion.asr_model == "/tmp/parakeet.nemo"
     up = cli.parse_args(
         [
             "up",
@@ -97,11 +325,19 @@ def test_cli_exposes_stable_foreground_commands() -> None:
             "9000",
             "--reload-bot",
             "--trace-pad-pair",
+            "--trace-post-fc-tokens",
+            "9",
+            "--trace-post-fc-agent-logits",
+            "20",
+            "--trace-fc-async-heartbeat",
         ]
     )
     assert up.port == 9000
     assert up.reload_bot is True
+    assert up.trace_post_fc_agent_logits == 20
     assert up.trace_pad_pair is True
+    assert up.trace_post_fc_tokens == 9
+    assert up.trace_fc_async_heartbeat is True
     assert cli.parse_args(["restart-bot"]).timeout == 45.0
     assert cli.parse_args(["test", "--live"]).live is True
     assert cli.parse_args(["down"]).command == "down"
@@ -109,17 +345,7 @@ def test_cli_exposes_stable_foreground_commands() -> None:
     assert cli.parse_args(["release", "stage"]).arguments == ["stage"]
 
 
-def test_source_conversion_requires_a_regular_asr_checkpoint(tmp_path: Path) -> None:
-    with pytest.raises(RuntimeError, match="requires --asr-model"):
-        _source_conversion_asr_model(None)
-    with pytest.raises(RuntimeError, match="not a regular file"):
-        _source_conversion_asr_model(str(tmp_path / "missing.nemo"))
-    checkpoint = tmp_path / "parakeet.nemo"
-    checkpoint.write_bytes(b"checkpoint")
-    assert _source_conversion_asr_model(str(checkpoint)) == checkpoint.resolve()
-
-
-def test_source_conversion_transactionally_activates_verified_local_files(
+def test_source_conversion_atomically_activates_verified_local_files(
     tmp_path: Path, monkeypatch
 ) -> None:
     layout = Layout(tmp_path / "cache", tmp_path / "traces")
@@ -138,15 +364,124 @@ def test_source_conversion_transactionally_activates_verified_local_files(
     local_eartts = converted / "eartts/model.safetensors"
     local_nano.write_bytes(b"source-nano")
     local_eartts.write_bytes(b"source-eartts")
+    evaluator_id = f"sha256:{'a' * 64}"
+    asr_evidence = {}
+    for name in ("eartts-eager", "eartts-graph"):
+        source = converted.parent / f"gates/{name}"
+        source.mkdir(parents=True)
+        input_records = {}
+        results = {}
+        for channel in ("streaming", "offline"):
+            wav = source / f"{channel}.wav"
+            with wave.open(str(wav), "wb") as output:
+                output.setnchannels(1)
+                output.setsampwidth(2)
+                output.setframerate(16_000)
+                output.writeframes(b"\0\0" * 160)
+            observed = {
+                "path": wav.name,
+                "bytes": wav.stat().st_size,
+                "sha256": hashlib.sha256(wav.read_bytes()).hexdigest(),
+            }
+            input_records[channel] = observed
+            results[channel] = {
+                "input_bytes": observed["bytes"],
+                "input_sha256": observed["sha256"],
+            }
+        source_report = {
+            "asr_inputs": input_records,
+            "fixture": {"reference_text": "The answer is five."},
+            "external_asr": {"status": "pending", "max_wer": 0.5},
+        }
+        source_report_path = source / "report.json"
+        source_report_path.write_text(json.dumps(source_report), encoding="utf-8")
+        final = {
+            "passed": True,
+            "pending_external_asr": False,
+            "pre_asr_report_sha256": hashlib.sha256(source_report_path.read_bytes()).hexdigest(),
+            "external_asr": {
+                **_asr_provenance_contract(),
+                **results["streaming"],
+                "passed": True,
+                "evaluator_image_id": evaluator_id,
+                "transcript": "The answer is five.",
+                "wer": 0.0,
+                "max_wer": 0.5,
+            },
+            "offline_diagnostic": {"external_asr": results["offline"]},
+        }
+        final_path = converted.parent / f"external-asr/{name}.json"
+        final_path.parent.mkdir(parents=True, exist_ok=True)
+        final_path.write_text(json.dumps(final), encoding="utf-8")
+        asr_evidence[name] = _validated_external_asr_report(
+            converted.parent, final_path, source, evaluator_id
+        )
+
+    eager_source = converted.parent / "gates/eartts-eager"
+    eager_final_path = converted.parent / "external-asr/eartts-eager.json"
+    original_final = json.loads(eager_final_path.read_text(encoding="utf-8"))
+    for field, value, message in (
+        ("backend_sha256", "f" * 64, "audited evaluator"),
+        ("transcript", "", "does not rederive"),
+        ("max_wer", 0.9, "does not rederive"),
+        ("passed", False, "invalid finalized"),
+    ):
+        mutated = json.loads(json.dumps(original_final))
+        target = mutated if field == "passed" else mutated["external_asr"]
+        target[field] = value
+        eager_final_path.write_text(json.dumps(mutated), encoding="utf-8")
+        with pytest.raises(RuntimeError, match=message):
+            _validated_external_asr_report(
+                converted.parent, eager_final_path, eager_source, evaluator_id
+            )
+    eager_final_path.write_text(json.dumps(original_final), encoding="utf-8")
+
+    source_report_path = eager_source / "report.json"
+    original_source = json.loads(source_report_path.read_text(encoding="utf-8"))
+    streaming_wav = eager_source / "streaming.wav"
+    original_wav = streaming_wav.read_bytes()
+    with wave.open(str(streaming_wav), "wb") as output:
+        output.setnchannels(1)
+        output.setsampwidth(2)
+        output.setframerate(8_000)
+        output.writeframes(b"\0\0" * 80)
+    changed = {
+        "path": "streaming.wav",
+        "bytes": streaming_wav.stat().st_size,
+        "sha256": hashlib.sha256(streaming_wav.read_bytes()).hexdigest(),
+    }
+    mutated_source = json.loads(json.dumps(original_source))
+    mutated_source["asr_inputs"]["streaming"] = changed
+    source_report_path.write_text(json.dumps(mutated_source), encoding="utf-8")
+    mutated_final = json.loads(json.dumps(original_final))
+    mutated_final["pre_asr_report_sha256"] = hashlib.sha256(
+        source_report_path.read_bytes()
+    ).hexdigest()
+    mutated_final["external_asr"]["input_bytes"] = changed["bytes"]
+    mutated_final["external_asr"]["input_sha256"] = changed["sha256"]
+    eager_final_path.write_text(json.dumps(mutated_final), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="not PCM16 mono 16 kHz"):
+        _validated_external_asr_report(
+            converted.parent, eager_final_path, eager_source, evaluator_id
+        )
+    streaming_wav.write_bytes(original_wav)
+    source_report_path.write_text(json.dumps(original_source), encoding="utf-8")
+    eager_final_path.write_text(json.dumps(original_final), encoding="utf-8")
+
+    assert _finalize_source_asr_stage(converted.parent, evaluator_id) == asr_evidence
+    assert _finalize_source_asr_stage(converted.parent, evaluator_id) == asr_evidence
     reproduction = {
         "schema": 1,
         "kind": "voicechat_release_artifact_reproduction",
+        "asr_evaluator_image_id": evaluator_id,
+        "component_gates_external_asr": asr_evidence,
     }
     reproduction_sha = hashlib.sha256(
         json.dumps(reproduction, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     reproduction["sha256"] = reproduction_sha
-    (converted / "reproduction.json").write_text(json.dumps(reproduction), encoding="utf-8")
+    attestation = converted.parent / "external-asr/reproduction.json"
+    attestation.write_text(json.dumps(reproduction), encoding="utf-8")
 
     verified: list[Path] = []
 
@@ -159,7 +494,7 @@ def test_source_conversion_transactionally_activates_verified_local_files(
         return {"release_sha256": expected_sha}
 
     monkeypatch.setattr("nemotron_voicechat_runtime.bootstrap_download.verify_release", verify)
-    result = _activate_converted_release(layout, converted, "signed-release-sha")
+    result = _activate_converted_release(layout, converted, "signed-release-sha", evaluator_id)
 
     assert result == {
         "artifact_materialization": "source-converted",
@@ -178,7 +513,9 @@ def test_source_conversion_refuses_a_corrupt_reproduction_report(tmp_path: Path)
     converted = tmp_path / "conversion/release"
     (converted / "nano").mkdir(parents=True)
     (converted / "eartts").mkdir()
-    (converted / "reproduction.json").write_text(
+    attestation = converted.parent / "external-asr/reproduction.json"
+    attestation.parent.mkdir(parents=True)
+    attestation.write_text(
         json.dumps(
             {
                 "schema": 1,
@@ -190,7 +527,7 @@ def test_source_conversion_refuses_a_corrupt_reproduction_report(tmp_path: Path)
     )
 
     with pytest.raises(RuntimeError, match="failed its self-hash"):
-        _activate_converted_release(layout, converted, "signed-release-sha")
+        _activate_converted_release(layout, converted, "signed-release-sha", f"sha256:{'a' * 64}")
 
 
 def test_stale_source_conversion_activation_cleanup_is_fail_closed(tmp_path: Path) -> None:
@@ -365,10 +702,12 @@ def test_up_restarts_only_pipecat_when_restart_is_requested(tmp_path: Path, monk
     }
 
     monkeypatch.setattr("nemotron_voicechat_runtime.cli.load_config", lambda _path: config)
-    monkeypatch.setattr(
-        "nemotron_voicechat_runtime.cli.default_layout",
-        lambda *_args: Layout(tmp_path / "cache", tmp_path / "traces"),
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+    layout.state_file.parent.mkdir(parents=True)
+    layout.state_file.write_text(
+        json.dumps({"runtime_image_id": f"sha256:{'a' * 64}"}), encoding="utf-8"
     )
+    monkeypatch.setattr("nemotron_voicechat_runtime.cli.default_layout", lambda *_args: layout)
     monkeypatch.setattr(
         "nemotron_voicechat_runtime.cli._bootstrap_ready", lambda *_args: (True, "ready")
     )
