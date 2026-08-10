@@ -13,6 +13,8 @@ PUBLIC_RUNTIME_RECIPE_LABEL = "ai.pipecat.voicechat.build-recipe-sha256"
 
 PUBLIC_RUNTIME_PAYLOAD_FILES = (
     "README.md",
+    "config/production-candidate-1.toml",
+    "config/production-candidate-2.toml",
     "config/qualified-candidate-1.json",
     "container/constraints-pocket.txt",
     "pyproject.toml",

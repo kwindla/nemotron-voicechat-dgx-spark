@@ -1313,6 +1313,7 @@ def public_pad_pair_status(wrapper: Any) -> dict[str, Any]:
         "pad_token_id": pad_id,
         "conditional": enabled("VOICECHAT_NANO_PAD_PAIR_CONDITIONAL"),
         "control_barrier": enabled("VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER"),
+        "full_graph": enabled("VOICECHAT_NANO_PAIR_FULL_GRAPH"),
         "requests": requests,
     }
 

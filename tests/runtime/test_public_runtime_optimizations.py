@@ -1,7 +1,8 @@
 import asyncio
 import json
+import sys
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from unittest import mock
 
 import pytest
@@ -64,6 +65,162 @@ def test_pad_pair_buffered_stamp_is_diagnostic_only() -> None:
     ):
         alternate_zero = _pad_pair_buffered_custom_outputs(current, 12)
     assert set(alternate_zero) == {"function_tokens"}
+
+
+def test_retired_pad_pair_delegates_every_position_without_draft_state() -> None:
+    import torch
+
+    calls = []
+
+    async def original(_engine, input_tensors, **_kwargs):
+        calls.append(input_tensors[0].clone())
+        return SimpleNamespace(token_id=12)
+
+    class LocalStreamingEngine:
+        generate_next_token = original
+
+    streaming_engine = SimpleNamespace(
+        LLMStreamingEngine=LocalStreamingEngine,
+        GenerationResult=SimpleNamespace,
+    )
+    _install_public_pad_pair_engine(
+        streaming_engine_module=streaming_engine,
+        nemo_logging=SimpleNamespace(info=lambda *_args, **_kwargs: None),
+    )
+    engine = SimpleNamespace(
+        _voicechat_pad_pair_token_id=12,
+        custom_input_specs=[{"name": "combined_embeds", "dtype": "float32"}],
+    )
+
+    with mock.patch.dict(
+        "os.environ",
+        {
+            "VOICECHAT_NANO_PAD_PAIR": "0",
+            "VOICECHAT_NANO_PAD_PAIR_CONDITIONAL": "0",
+            "VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER": "0",
+        },
+        clear=True,
+    ):
+        for index in range(4):
+            result = asyncio.run(
+                LocalStreamingEngine.generate_next_token(
+                    engine,
+                    [torch.full((1, 4), float(index))],
+                    request_id="request-1",
+                )
+            )
+            assert result.token_id == 12
+
+    assert [int(value[0, 0].item()) for value in calls] == [0, 1, 2, 3]
+    assert not hasattr(engine, "_voicechat_pad_pair_states")
+
+
+def test_retained_stall_sequence_ends_at_the_next_packed_request() -> None:
+    """Pin frames 20--23 of retained failing session 2d08e743 as executable evidence."""
+    import torch
+
+    module_name = "nemo.collections.speechlm2.inference.vllm.streaming_llm_engine"
+    streaming_engine = ModuleType(module_name)
+    streaming_engine.GenerationResult = SimpleNamespace
+    streaming_engine.StreamStatus = SimpleNamespace(FINISHED=object())
+
+    async def original(*_args, **_kwargs):
+        raise AssertionError("confirmed PAD stretch must use the packed path")
+
+    class LocalStreamingEngine:
+        generate_next_token = original
+
+    streaming_engine.LLMStreamingEngine = LocalStreamingEngine
+    _install_public_pad_pair_engine(
+        streaming_engine_module=streaming_engine,
+        nemo_logging=SimpleNamespace(info=lambda *_args, **_kwargs: None),
+    )
+
+    class Iterator:
+        def __init__(self, initial_tokens):
+            self.initial_tokens = list(initial_tokens)
+            self.calls = 0
+
+        async def __anext__(self):
+            self.calls += 1
+            assert self.calls == 1
+            accepted = self.initial_tokens + [12, 12]
+            completion = SimpleNamespace(
+                token_ids=accepted,
+                custom_outputs={"function_tokens": torch.tensor([12, 12])},
+                finish_reason=None,
+            )
+            return SimpleNamespace(outputs=[completion], finished=False)
+
+    class PackedBoundaryReached(RuntimeError):
+        pass
+
+    class Backend:
+        def __init__(self):
+            self.append_shapes = []
+
+        async def append_request(self, *, custom_inputs, **_kwargs):
+            shape = tuple(custom_inputs["combined_embeds"].shape)
+            self.append_shapes.append(shape)
+            if len(self.append_shapes) == 2:
+                raise PackedBoundaryReached("retained frame 23 enters packed Nano")
+
+    generated = list(range(21))
+    request_state = SimpleNamespace(
+        generation_iterator=Iterator(generated),
+        generated_tokens=generated,
+        status=object(),
+    )
+    backend = Backend()
+    engine = SimpleNamespace(
+        _voicechat_pad_pair_token_id=12,
+        requests={"request-1": request_state},
+        custom_input_specs=[{"name": "combined_embeds", "dtype": "float32"}],
+        engine=backend,
+    )
+    state = _pad_pair_state(engine, "request-1")
+    state["previous_effective_pad"] = True
+
+    async def run_trace_suffix():
+        frame20 = await LocalStreamingEngine.generate_next_token(
+            engine, [torch.full((1, 4), 20.0)], request_id="request-1"
+        )
+        frame20_position = len(request_state.generated_tokens)
+        frame21 = await LocalStreamingEngine.generate_next_token(
+            engine, [torch.full((1, 4), 21.0)], request_id="request-1"
+        )
+        frame21_position = len(request_state.generated_tokens)
+        frame22 = await LocalStreamingEngine.generate_next_token(
+            engine, [torch.full((1, 4), 22.0)], request_id="request-1"
+        )
+        frame22_position = len(request_state.generated_tokens)
+        assert state["pending"] is not None
+        with pytest.raises(PackedBoundaryReached, match="frame 23"):
+            await LocalStreamingEngine.generate_next_token(
+                engine, [torch.full((1, 4), 23.0)], request_id="request-1"
+            )
+        return frame20, frame21, frame22, (
+            frame20_position,
+            frame21_position,
+            frame22_position,
+        )
+
+    with (
+        mock.patch.dict(sys.modules, {module_name: streaming_engine}),
+        mock.patch.dict(
+            "os.environ",
+            {
+                "VOICECHAT_NANO_PAD_PAIR": "1",
+                "VOICECHAT_NANO_PAD_PAIR_CONDITIONAL": "1",
+            },
+            clear=True,
+        ),
+    ):
+        frame20, frame21, frame22, positions = asyncio.run(run_trace_suffix())
+
+    assert positions == (21, 23, 23)
+    assert (frame20.token_id, frame21.token_id, frame22.token_id) == (12, 12, 12)
+    assert backend.append_shapes == [(2, 4), (2, 4)]
 
 
 def test_delta_generation_consumes_one_token_without_cumulative_history():

@@ -27,6 +27,8 @@ RUN git clone --filter=blob:none https://github.com/vllm-project/vllm.git /opt/s
     && git clone --filter=blob:none https://github.com/vklimkov-nvidia/vllm.git /opt/src/vllm-voicechat \
     && git -C /opt/src/vllm-voicechat checkout --detach ${VOICECHAT_VLLM_REVISION}
 
+COPY config/production-candidate-1.toml /opt/project/config/production-candidate-1.toml
+COPY config/production-candidate-2.toml /opt/project/config/production-candidate-2.toml
 COPY config/qualified-candidate-1.json /opt/project/config/qualified-candidate-1.json
 COPY tools/provenance/qualified-deltas /opt/project/tools/provenance/qualified-deltas
 COPY tools/runtime/reconstruct_public_vllm.py /opt/project/tools/runtime/reconstruct_public_vllm.py
