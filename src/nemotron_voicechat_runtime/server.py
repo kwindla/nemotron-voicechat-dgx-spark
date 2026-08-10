@@ -17,6 +17,7 @@ import functools
 import gc
 import hashlib
 import json
+import logging
 import math
 import os
 import platform
@@ -68,6 +69,40 @@ PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
         "nemotron_voicechat_dgx_spark_hf_release",
     }
 )
+LOGGER = logging.getLogger(__name__)
+STARTUP_READY_SENTINEL = Path("/tmp/voicechat-step9-ready")
+STEP9_FALLBACK_COUNTER = Path("/tmp/voicechat-step9-fallbacks.jsonl")
+
+
+def startup_event(event: str, **details: Any) -> None:
+    """Emit a machine-readable startup boundary without changing execution."""
+
+    payload = {
+        "event": event,
+        "monotonic_ns": time.monotonic_ns(),
+        "wall_time_ns": time.time_ns(),
+        **details,
+    }
+    print(f"VOICECHAT_STARTUP {json.dumps(payload, sort_keys=True)}", flush=True)
+
+
+startup_event("server_module_imported")
+
+
+def step9_capture_fallback_status(path: Path = STEP9_FALLBACK_COUNTER) -> dict[str, Any]:
+    """Return the container-lifetime graphless-fallback count and last shape."""
+
+    try:
+        records = [line for line in path.read_text(encoding="utf-8").splitlines() if line]
+    except FileNotFoundError:
+        records = []
+    last_descriptor = None
+    if records:
+        try:
+            last_descriptor = json.loads(records[-1])
+        except json.JSONDecodeError:
+            last_descriptor = {"malformed_record": records[-1]}
+    return {"count": len(records), "last_descriptor": last_descriptor}
 
 
 def typed_input_trailing_silence_seconds(
@@ -809,6 +844,7 @@ class StepResult:
     turn_state: dict[str, Any]
     function_delta: str = ""
     function_text: str = ""
+    trace_diagnostics: dict[str, Any] | None = None
 
 
 @dataclass
@@ -1183,6 +1219,9 @@ class VoiceChatEngine:
             max_tail_frames=response_tail_max_frames,
             delivery_silence_frames=delivery_silence_frames,
         )
+        self.pad_pair_idle_no_buffer_frames = 0
+        self.pad_pair_watchdog_emitted = False
+        self.pad_pair_trace_errors = 0
 
     def _reset_wrapper_session_state(self) -> None:
         reset_fn = getattr(self.pipeline.s2s_model, "reset_transport_session_state", None)
@@ -1326,6 +1365,109 @@ class VoiceChatEngine:
             }
         return result
 
+    def _pad_pair_trace_diagnostics(
+        self,
+        context: Any,
+        frame_position: int,
+        turn_state: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Collect opt-in evidence without allowing diagnostics to break inference."""
+        from .runtime_optimizations import enabled
+
+        if not enabled("VOICECHAT_NANO_PAD_PAIR_TRACE"):
+            return None
+        try:
+            return self._collect_pad_pair_trace_diagnostics(
+                context, frame_position, turn_state
+            )
+        except Exception as exc:
+            self.pad_pair_trace_errors += 1
+            LOGGER.exception("Dropped Nano PAD-pair model-step diagnostics")
+            return {
+                "trace_error": type(exc).__name__,
+                "trace_record_errors": self.pad_pair_trace_errors,
+            }
+
+    def _collect_pad_pair_trace_diagnostics(
+        self,
+        context: Any,
+        frame_position: int,
+        turn_state: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Build the enabled scalar snapshot; caller owns exception isolation."""
+        from .runtime_optimizations import consume_pad_pair_trace
+
+        request_id_fn = getattr(self.pipeline, "_request_id_for_stream", None)
+        request_id = (
+            str(request_id_fn(self.stream_id)) if callable(request_id_fn) else str(self.stream_id)
+        )
+        snapshot = consume_pad_pair_trace(self.pipeline.s2s_model, request_id)
+        finalized = snapshot.get("last_effective_tokens")
+        effective: dict[str, Any] | None = None
+        if context is not None and frame_position >= 0:
+            gen_function = getattr(context, "gen_function_text", None)
+            if gen_function is not None:
+                text_token = int(context.gen_text[0, frame_position].item())
+                function_token = int(gen_function[0, frame_position].item())
+                scheduler_pad = (finalized or {}).get("pad")
+                pad_token = (
+                    int(scheduler_pad)
+                    if scheduler_pad is not None
+                    else int(self.pipeline.s2s_model.model.stt_model.text_pad_id)
+                )
+                effective = {
+                    "frame_idx": frame_position,
+                    "text": text_token,
+                    "function": function_token,
+                    "pad": pad_token,
+                    "text_is_pad": text_token == pad_token,
+                    "function_is_pad": function_token == pad_token,
+                    "both_pad": text_token == pad_token and function_token == pad_token,
+                }
+
+        fc = turn_state.get("function_calling") or {}
+        fc_idle = not any(
+            (
+                fc.get("active"),
+                fc.get("awaiting_response"),
+                fc.get("injecting_response"),
+                fc.get("forced_tokens"),
+                fc.get("background_active"),
+            )
+        )
+        buffered = any(event.get("decision") == "buffered" for event in snapshot["events"])
+        watching = bool(
+            snapshot.get("enabled") and fc_idle and turn_state.get("agent_control") == "pad"
+        )
+        watchdog = None
+        if watching and not buffered:
+            self.pad_pair_idle_no_buffer_frames += 1
+            if self.pad_pair_idle_no_buffer_frames >= 25 and not self.pad_pair_watchdog_emitted:
+                self.pad_pair_watchdog_emitted = True
+                watchdog = {
+                    "event": "idle_agent_without_pair_buffer",
+                    "consecutive_frames": self.pad_pair_idle_no_buffer_frames,
+                    "threshold_frames": 25,
+                    "effective_tokens": effective,
+                    "scheduler": snapshot.get("state"),
+                }
+        else:
+            self.pad_pair_idle_no_buffer_frames = 0
+            self.pad_pair_watchdog_emitted = False
+        effective_matches_finalize = None
+        if effective is not None and finalized is not None:
+            effective_matches_finalize = all(
+                effective.get(key) == finalized.get(key)
+                for key in ("frame_idx", "text", "function", "pad", "both_pad")
+            )
+        return {
+            "effective_tokens": effective,
+            "effective_tokens_match_finalize": effective_matches_finalize,
+            "pad_pair": snapshot,
+            "idle_no_buffer_frames": self.pad_pair_idle_no_buffer_frames,
+            "watchdog": watchdog,
+        }
+
     def start(self, system_prompt: str = "") -> None:
         if self.started:
             raise RuntimeError("session already started")
@@ -1339,6 +1481,9 @@ class VoiceChatEngine:
         self.vllm_request_position_baseline = {}
         self.agent_silence_watchdog.reset()
         self.response_boundary.reset()
+        self.pad_pair_idle_no_buffer_frames = 0
+        self.pad_pair_watchdog_emitted = False
+        self.pad_pair_trace_errors = 0
         self.pipeline.open_session()
         self.system_prompt = system_prompt.strip()
         # Prime the two vLLM request streams without consuming an audio frame.
@@ -1463,6 +1608,9 @@ class VoiceChatEngine:
 
         turn_state = self._turn_state(context, total_frames - 1)
         turn_state["vllm_request_positions"] = self._vllm_request_positions()
+        trace_diagnostics = self._pad_pair_trace_diagnostics(
+            context, total_frames - 1, turn_state
+        )
         rnnt_state = turn_state.get("rnnt")
         if isinstance(rnnt_state, dict):
             decoded_count = int(rnnt_state.get("decoded_token_count") or 0)
@@ -1481,6 +1629,7 @@ class VoiceChatEngine:
             turn_state=turn_state,
             function_delta=function_delta,
             function_text=function_text,
+            trace_diagnostics=trace_diagnostics,
         )
         control = result.turn_state.get("agent_control")
         rnnt_metrics = result.turn_state.get("rnnt", {})
@@ -1707,6 +1856,61 @@ def _install_local_nano_skeleton(skeleton: Path) -> None:
     wrapper_class._voicechat_local_skeleton_installed = True
 
 
+def _install_step9_capture_sizes() -> None:
+    """Inject the qualified capture inventory without mutating audited Speech."""
+
+    raw = os.environ.get("VOICECHAT_STEP9_CAPTURE_SIZES", "").strip()
+    if not raw:
+        return
+    eartts_raw = os.environ.get("VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES", raw).strip()
+
+    def parse_sizes(value: str, name: str) -> list[int]:
+        parsed = [int(item) for item in value.split(",")]
+        if (
+            any(item <= 0 for item in parsed)
+            or len(parsed) != len(set(parsed))
+            or parsed != sorted(parsed, reverse=True)
+        ):
+            raise RuntimeError(
+                f"{name} must be unique positive integers in descending order"
+            )
+        return parsed
+
+    sizes = parse_sizes(raw, "VOICECHAT_STEP9_CAPTURE_SIZES")
+    eartts_sizes = parse_sizes(
+        eartts_raw, "VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES"
+    )
+    from vllm.engine.arg_utils import AsyncEngineArgs
+
+    installed_contract = (sizes, eartts_sizes)
+    if (
+        getattr(AsyncEngineArgs, "_voicechat_step9_capture_sizes", None)
+        == installed_contract
+    ):
+        return
+    if hasattr(AsyncEngineArgs, "_voicechat_step9_original_init"):
+        raise RuntimeError("Step-9 capture sizes were already installed with another inventory")
+    original = AsyncEngineArgs.__init__
+
+    @functools.wraps(original)
+    def init_with_capture_sizes(instance: Any, *args: Any, **kwargs: Any) -> None:
+        if kwargs.get("compilation_config") is not None:
+            raise RuntimeError("Step-9 refuses to overwrite an existing compilation_config")
+        model = kwargs.get("model", args[0] if args else "")
+        component_sizes = eartts_sizes if Path(str(model)).name == "eartts" else sizes
+        kwargs["compilation_config"] = {"cudagraph_capture_sizes": component_sizes}
+        original(instance, *args, **kwargs)
+
+    AsyncEngineArgs._voicechat_step9_original_init = original
+    AsyncEngineArgs._voicechat_step9_capture_sizes = installed_contract
+    AsyncEngineArgs.__init__ = init_with_capture_sizes
+    print(
+        "VOICECHAT_STEP9_CAPTURE_SIZES "
+        + json.dumps({"nano": sizes, "eartts": eartts_sizes}, sort_keys=True),
+        flush=True,
+    )
+
+
 def build_public_pipeline(args: argparse.Namespace) -> Any:
     """Build NVIDIA's streamer from the exact public combined weights."""
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -1736,6 +1940,7 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
 
     sys.path.insert(0, str(speech_root))
     install_torchaudio_soundfile_io()
+    _install_step9_capture_sizes()
     _install_local_nano_skeleton(skeleton)
     from .runtime_optimizations import install_public_wrapper_hooks
 
@@ -1952,9 +2157,12 @@ def build_pipeline(args: argparse.Namespace) -> Any:
     return build_public_pipeline(args)
 
 
-def warm_pipeline(pipeline: Any, warmup_wav: str | None) -> None:
+def warm_pipeline(
+    pipeline: Any, warmup_wav: str | None, *, system_prompt: str = ""
+) -> None:
     if not warmup_wav:
-        pipeline.warmup()
+        exact_prompt = env_bool("VOICECHAT_STEP9_EXACT_PROMPT_WARMUP", False)
+        pipeline.warmup(system_prompt=system_prompt if exact_prompt else None)
         return
     path = Path(warmup_wav).expanduser().resolve()
     if not path.is_file():
@@ -2015,6 +2223,7 @@ async def send_step(
     transport_frame: int,
     protocol: RealtimeProtocolSession,
 ) -> str:
+    step9_fallback = step9_capture_fallback_status()
     output_bytes = b""
     audio_delivered = response_audio_is_deliverable(result.turn_state)
     delivered_output_audio: dict[str, float | int]
@@ -2066,25 +2275,39 @@ async def send_step(
             turn_state=result.turn_state,
             turn_id=protocol.turn_id,
             response_id=protocol.response_id,
+            step9_capture_fallback=step9_fallback,
         )
     )
+    trace_fields = {
+        "frame": result.frame_index,
+        "transport_frame": transport_frame,
+        "input_audio": result.input_audio,
+        "output_audio": {**delivered_output_audio, "bytes": len(output_bytes)},
+        "model_output_audio": result.output_audio,
+        "audio_delivered": audio_delivered,
+        "inference_ms": round(result.inference_ms, 3),
+        "server_step_ms": round(result.server_step_ms, 3),
+        "user_text": result.user_text,
+        "user_text_changed": user_text_changed,
+        "assistant_delta": result.assistant_delta,
+        "function_delta": result.function_delta,
+        "function_text": result.function_text,
+        "turn_state": result.turn_state,
+        "step9_capture_fallback": step9_fallback,
+    }
+    if result.trace_diagnostics is not None:
+        trace_fields["runtime_diagnostics"] = result.trace_diagnostics
     trace.event(
         "model_step",
-        frame=result.frame_index,
-        transport_frame=transport_frame,
-        input_audio=result.input_audio,
-        output_audio={**delivered_output_audio, "bytes": len(output_bytes)},
-        model_output_audio=result.output_audio,
-        audio_delivered=audio_delivered,
-        inference_ms=round(result.inference_ms, 3),
-        server_step_ms=round(result.server_step_ms, 3),
-        user_text=result.user_text,
-        user_text_changed=user_text_changed,
-        assistant_delta=result.assistant_delta,
-        function_delta=result.function_delta,
-        function_text=result.function_text,
-        turn_state=result.turn_state,
+        **trace_fields,
     )
+    if result.trace_diagnostics and result.trace_diagnostics.get("watchdog"):
+        trace.event(
+            "nano_pad_pair_watchdog",
+            frame=result.frame_index,
+            transport_frame=transport_frame,
+            **result.trace_diagnostics["watchdog"],
+        )
     return last_user_text
 
 
@@ -2097,6 +2320,7 @@ async def send_idle_step(
     transport_state: dict[str, Any] | None = None,
     protocol: RealtimeProtocolSession | None = None,
 ) -> None:
+    step9_fallback = step9_capture_fallback_status()
     output = {"samples": 0, "rms": 0.0, "rms_dbfs": -120.0, "peak": 0.0}
     turn_state = {
         "gate": "leading_silence",
@@ -2113,6 +2337,7 @@ async def send_idle_step(
         "input_audio": input_audio,
         "output_audio": output,
         "turn_state": turn_state,
+        "step9_capture_fallback": step9_fallback,
     }
     await websocket.send_json(
         protocol.diagnostic_event("voicechat.metrics", **event_fields)
@@ -2167,9 +2392,12 @@ def create_app(
         if pocket_worker is not None:
             # Loading and one full prewarm synthesis are readiness requirements.
             await pocket_worker.start()
+        STARTUP_READY_SENTINEL.write_text("ready\n", encoding="utf-8")
+        startup_event("application_ready")
         try:
             yield
         finally:
+            STARTUP_READY_SENTINEL.unlink(missing_ok=True)
             if pocket_worker is not None:
                 await pocket_worker.stop()
 
@@ -2211,6 +2439,7 @@ def create_app(
             "driver_version": host_provenance["driver_version"],
             "kernel_version": host_provenance["kernel_version"],
             "nano_pad_pair": nano_pad_pair,
+            "step9_capture_fallback": step9_capture_fallback_status(),
             "typed_input": typed_input_health,
             "active_client": active_client.locked(),
             "uptime_seconds": round(time.time() - loaded_at, 1),
@@ -2961,15 +3190,27 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    STARTUP_READY_SENTINEL.unlink(missing_ok=True)
+    startup_event("main_entered")
     args = parse_args()
+    if os.environ.get("VOICECHAT_STEP9_VALIDATE_BAKED_CACHE", "0") == "1":
+        from .step9_cache_guard import validate_baked_vllm_cache
+
+        startup_event("baked_cache_validation_started")
+        validate_baked_vllm_cache()
+        startup_event("baked_cache_validation_finished")
     function_template = (
         Path(args.speech_root).expanduser().resolve()
         / "examples/speechlm2/function_calling/template.jinja"
     )
     if not function_template.is_file():
         raise SystemExit(f"Missing NVIDIA function-calling template: {function_template}")
+    startup_event("pipeline_build_started")
     pipeline = build_pipeline(args)
-    warm_pipeline(pipeline, args.warmup_wav)
+    startup_event("pipeline_build_finished")
+    startup_event("pipeline_warmup_started")
+    warm_pipeline(pipeline, args.warmup_wav, system_prompt=args.system_prompt)
+    startup_event("pipeline_warmup_finished")
     agent_no_text_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES", "30"))
     agent_no_audio_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_AUDIO_FRAMES", "30"))
     agent_decoded_silence_frames = int(
@@ -2995,6 +3236,7 @@ def main() -> None:
                 "decoded_silence="
                 f"{agent_decoded_silence_frames}/{expected_decoded_silence_frames}"
             )
+    startup_event("realtime_engine_create_started")
     engine = VoiceChatEngine(
         pipeline,
         agent_silence_eos_dbfs=float(os.environ.get("VOICECHAT_WEB_AGENT_SILENCE_EOS_DBFS", "-90")),
@@ -3010,13 +3252,17 @@ def main() -> None:
         ),
         delivery_silence_frames=int(os.environ.get("VOICECHAT_WEB_DELIVERY_SILENCE_FRAMES", "12")),
     )
+    startup_event("realtime_engine_create_finished")
     if os.environ.get("VOICECHAT_WEB_REALTIME_WARMUP", "1") == "1":
+        startup_event("realtime_warmup_started")
         realtime_warmup = warm_realtime_engine(engine, system_prompt=args.system_prompt)
         pipeline.checkpoint_provenance["realtime_continuation_warmup"] = realtime_warmup
+        startup_event("realtime_warmup_finished")
     trace_dir = Path(args.trace_dir).expanduser().resolve() if args.trace_dir else None
     if trace_dir is not None:
         trace_dir.mkdir(parents=True, exist_ok=True)
         print(f"WebSocket traces: {trace_dir}", flush=True)
+    startup_event("application_create_started")
     app = create_app(
         engine,
         trace_dir,
@@ -3048,9 +3294,11 @@ def main() -> None:
             ),
         ),
     )
+    startup_event("application_create_finished")
 
     import uvicorn
 
+    startup_event("uvicorn_run_entered")
     uvicorn.run(
         app,
         host=args.host,

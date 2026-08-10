@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from nemotron_voicechat_runtime.artifacts import Layout, load_config
+from nemotron_voicechat_runtime.artifacts import Layout, PC2A_ENVIRONMENT, load_config
 from nemotron_voicechat_runtime.cli import (
     _activate_converted_release,
     _bot_source_snapshot,
@@ -40,6 +40,17 @@ def test_checked_in_config_materializes_frozen_runtime_contract() -> None:
     assert set(affinity["codec"]).isdisjoint(affinity["pocket_tts"])
 
 
+def test_pc2a_config_materializes_hotfix_runtime_contract() -> None:
+    config = load_config(Path("config/production-candidate-2.toml"))
+    assert config["candidate"] == "promotion-candidate-2a"
+    assert config["image"]["runtime"] == (
+        "nemotron-local/voicechat-vllm:promotion-candidate-2a"
+    )
+    environment = config["runtime"]["environment"]
+    assert {name: environment.get(name) for name in PC2A_ENVIRONMENT} == PC2A_ENVIRONMENT
+    assert environment["VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE"] == "0"
+
+
 def test_model_command_is_loopback_only_and_uses_signed_release(tmp_path: Path) -> None:
     config = load_config()
     layout = Layout(tmp_path / "cache", tmp_path / "traces")
@@ -58,6 +69,17 @@ def test_model_command_is_loopback_only_and_uses_signed_release(tmp_path: Path) 
     assert "API_KEY" not in rendered
 
 
+def test_model_command_enables_pad_pair_trace_only_when_requested(tmp_path: Path) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+
+    ordinary = " ".join(model_container_command(config, layout, 9876))
+    traced = model_container_command(config, layout, 9876, trace_pad_pair=True)
+
+    assert "VOICECHAT_NANO_PAD_PAIR_TRACE" not in ordinary
+    assert "VOICECHAT_NANO_PAD_PAIR_TRACE=1" in traced
+
+
 def test_cli_exposes_stable_foreground_commands() -> None:
     cli = parser()
     assert cli.parse_args(["bootstrap", "--offline"]).offline is True
@@ -66,9 +88,20 @@ def test_cli_exposes_stable_foreground_commands() -> None:
     )
     assert conversion.convert_from_source is True
     assert conversion.asr_model == "/tmp/parakeet.nemo"
-    up = cli.parse_args(["up", "--host", "0.0.0.0", "--port", "9000", "--reload-bot"])
+    up = cli.parse_args(
+        [
+            "up",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "9000",
+            "--reload-bot",
+            "--trace-pad-pair",
+        ]
+    )
     assert up.port == 9000
     assert up.reload_bot is True
+    assert up.trace_pad_pair is True
     assert cli.parse_args(["restart-bot"]).timeout == 45.0
     assert cli.parse_args(["test", "--live"]).live is True
     assert cli.parse_args(["down"]).command == "down"
@@ -342,7 +375,8 @@ def test_up_restarts_only_pipecat_when_restart_is_requested(tmp_path: Path, monk
     monkeypatch.setattr("nemotron_voicechat_runtime.cli._container_exists", lambda _name: False)
     monkeypatch.setattr("nemotron_voicechat_runtime.cli._port_available", lambda *_args: True)
     monkeypatch.setattr(
-        "nemotron_voicechat_runtime.cli.model_container_command", lambda *_args: ["model"]
+        "nemotron_voicechat_runtime.cli.model_container_command",
+        lambda *_args, **_kwargs: ["model"],
     )
     monkeypatch.setattr("nemotron_voicechat_runtime.cli.subprocess.Popen", lambda _cmd: model)
     monkeypatch.setattr(

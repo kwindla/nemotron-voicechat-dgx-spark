@@ -1,0 +1,24 @@
+ARG BASE_IMAGE=nemotron-local/voicechat-vllm:promotion-candidate-2
+FROM ${BASE_IMAGE}
+
+COPY src/nemotron_voicechat_runtime/patch_step9_capture_contract.py /tmp/
+COPY src/nemotron_voicechat_runtime/server.py \
+     /usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/server.py
+COPY src/nemotron_voicechat_runtime/step9_cache_guard.py \
+     /usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/step9_cache_guard.py
+COPY tools/qualification/step9_capture_sweep.py \
+     /opt/voicechat/tools/qualification/step9_capture_sweep.py
+RUN python3 /tmp/patch_step9_capture_contract.py \
+    && rm /tmp/patch_step9_capture_contract.py \
+    && rm -rf /root/.cache/vllm
+
+ENV VOICECHAT_STEP9_VALIDATE_BAKED_CACHE=0 \
+    VOICECHAT_STEP9_BAKED_CACHE_KEY= \
+    VOICECHAT_STEP9_CAPTURE_SIZES=768,512,384,257,80,16,2,1 \
+    VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES=257,80,16,2,1 \
+    VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE=0 \
+    VOICECHAT_STEP9_ASSERT_NO_POST_READY_COMPILE=1
+
+LABEL ai.pipecat.voicechat.pc2_hotfix="graphless uncovered-shape fallback" \
+      ai.pipecat.voicechat.nano_capture_contract="768,512,384,257,80,16,2,1" \
+      ai.pipecat.voicechat.eartts_capture_contract="257,80,16,2,1"

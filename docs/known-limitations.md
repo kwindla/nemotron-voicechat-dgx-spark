@@ -31,7 +31,18 @@
   2.98 seconds of implied playback debt before the session limit. A fresh-stack
   repeat answered all 18 typed turns and passed with 400 ms peak debt. The
   failed run remains evidence of a stochastic recovery weakness rather than
-  being averaged into the successful qualification.
+  being averaged into the successful qualification. This occurred in one of
+  the two retained full-length source-runtime runs inspected for this specific
+  mechanism; the tiny, trigger-unequal sample is evidence, not an estimate of
+  its general probability. In the failed trace, sequential execution persisted
+  for 510 frames and pairing resumed only when the next typed/user turn changed
+  the model token stream. Follow-up short-context stress runs observed 23
+  post-function-call recovery fences, including repeated and over-called tool
+  cycles: every observable fence returned to PAD on its first post-close model
+  frame and buffered a pair within 0–1 frame, with no trace-integrity fault.
+  The old failing trace lacks effective function-token IDs, so scheduler
+  behavior is not changed speculatively; future long qualifications should use
+  the opt-in PAD-pair trace to capture a natural recurrence.
 - RNNT endpointing is configured for 1.6 seconds (`20 × 80 ms`) for natural
   human pauses. Changing it changes the qualified turn-taking behavior.
 - Typed input is deliberately half-duplex and the model server owns the gate.

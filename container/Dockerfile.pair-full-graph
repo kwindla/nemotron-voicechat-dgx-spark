@@ -1,0 +1,9 @@
+ARG BASE_IMAGE=pipecat-ai/nemotron-voicechat-dgx-spark:production-candidate-1
+FROM ${BASE_IMAGE}
+
+COPY src/nemotron_voicechat_runtime/patch_pair_full_graph.py /tmp/
+RUN python3 /tmp/patch_pair_full_graph.py \
+    && rm /tmp/patch_pair_full_graph.py
+
+LABEL ai.pipecat.voicechat.experiment="step7 Nano pair FULL CUDA graph" \
+      ai.pipecat.voicechat.pair_graph="dedicated query_len=2 exact chunk-scan"

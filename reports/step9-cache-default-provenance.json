@@ -1,0 +1,17 @@
+{
+  "base_commit": "9ee8d21eb1c8dd197cf6e2a17f9d62deb827de4f",
+  "base_image_id": "sha256:e935fbf2e2bda49e152a12a5373e02b56a44823572fd7d3bb450aa3da37d4be1",
+  "cache_source_container": "ca4a1140371e266f92be7323051fb024bf225e5fb7c6a8aea13725702b1deb3d",
+  "capture_contract": "vLLM default 35 sizes plus Step-7 dedicated query_len=2 FULL graph",
+  "eartts_composite_sha256": "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e",
+  "instrument_image_id": "sha256:15bdcc8677c91e0f2e031c4ceae37902dfa35a3527e190afb5aaeb85bece8313",
+  "nano_composite_sha256": "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99",
+  "pair_graph_runner_sha256": "909614c832ebe2b24702d0698429379f301bb70560594fbcd670735f97753189",
+  "release_sha256": "1d8c3db8efbb87e0da3be86f1045957018082e1e8a339edaaf7e9bf4fb70671b",
+  "server_source_sha256": "015fb6e0468abac44696d179e4d80d6fe7cbeb2b2c07d6d3b123b7d5b07138c9",
+  "source_arm": "step9/baseline-a2",
+  "vllm_cache_directories": [
+    "7249140f80",
+    "96c043f5b0"
+  ]
+}

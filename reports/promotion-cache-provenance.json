@@ -1,0 +1,22 @@
+{
+  "assembly_branch": "codex/promotion-assembly",
+  "assembly_head_before_cache_seal": "b5da5d1b583ef7615fb160468c666595bb8773c2",
+  "cache_source_container": "cafc323bd65ebff239cdf2d8f9ae566823fb24f1b39a80d3ba7eee8fd9831155",
+  "capture_contract": [
+    257,
+    80,
+    16,
+    2,
+    1
+  ],
+  "capture_contract_basis": "post-FC tool prompt and tool-response prefills (257/80), production default prompt (16), Nano/EarTTS decode and Step-7 pair graph (1/2)",
+  "change_a_commit": "b002cb203d1184a1701a0f1ad6826ff137e137d7",
+  "eartts_source_sha256": "82c5e5a370060baa7f85ace1a286467616214e1161d8bbb91508ff88d9d7a88c",
+  "instrument_image_id": "sha256:bff4d33067f386937899bf1a3fb5900a5f165219b85838ff67ddd98a8fd413b7",
+  "pair_graph_commit": "9ee8d21eb1c8dd197cf6e2a17f9d62deb827de4f",
+  "pair_graph_runner_sha256": "909614c832ebe2b24702d0698429379f301bb70560594fbcd670735f97753189",
+  "release_sha256": "1d8c3db8efbb87e0da3be86f1045957018082e1e8a339edaaf7e9bf4fb70671b",
+  "server_source_sha256": "015fb6e0468abac44696d179e4d80d6fe7cbeb2b2c07d6d3b123b7d5b07138c9",
+  "source_arm": "promotion-assembly/cache-source",
+  "step9_commit": "ca368e68fca110e028805b1f4780d10010299787"
+}

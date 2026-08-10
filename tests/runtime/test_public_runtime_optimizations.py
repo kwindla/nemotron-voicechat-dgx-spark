@@ -12,6 +12,10 @@ RUNTIME_ROOT = Path(__file__).resolve().parents[2] / "src" / "nemotron_voicechat
 
 from nemotron_voicechat_runtime.runtime_optimizations import (
     _finalize_pad_pair_call,
+    _install_public_pad_pair_engine,
+    _pad_pair_state,
+    _record_pad_pair_decision,
+    consume_pad_pair_trace,
     correct_add_fusion_pending,
     eartts_pad_should_decode_silence,
     enabled,
@@ -162,6 +166,201 @@ def test_conditional_pad_pair_drafts_only_after_effective_pad():
         assert pad_pair_should_draft(False)
 
 
+def test_pad_pair_trace_is_opt_in_and_consumed():
+    engine = SimpleNamespace(
+        _voicechat_pad_pair_call_context={
+            "request_id": "request-1",
+            "frame_idx": 41,
+            "engine_calls": 0,
+            "bypass": False,
+            "precontrol_reason": None,
+        }
+    )
+    state = _pad_pair_state(engine, "request-1")
+    state["previous_effective_pad"] = True
+    wrapper = SimpleNamespace(model_llm_interface=SimpleNamespace(engine=engine))
+
+    with mock.patch.dict("os.environ", {}, clear=True):
+        _record_pad_pair_decision(
+            engine,
+            "request-1",
+            state,
+            decision="buffered",
+            pending_before=False,
+            bypass=False,
+            should_draft=True,
+            generated_before=50,
+            generated_after=50,
+        )
+    assert not state["trace_events"]
+
+    with mock.patch.dict(
+        "os.environ", {"VOICECHAT_NANO_PAD_PAIR_TRACE": "1"}, clear=True
+    ):
+        _record_pad_pair_decision(
+            engine,
+            "request-1",
+            state,
+            decision="buffered",
+            pending_before=False,
+            bypass=False,
+            should_draft=True,
+            generated_before=50,
+            generated_after=50,
+        )
+        snapshot = consume_pad_pair_trace(wrapper, "request-1")
+
+    assert [event["decision"] for event in snapshot["events"]] == ["buffered"]
+    assert snapshot["events"][0]["pair_eligible"] is True
+    assert snapshot["events"][0]["invariant_violation"] is False
+    assert snapshot["events"][0]["request_id_match"] is True
+    assert not state["trace_events"]
+
+
+def test_pad_pair_trace_flags_request_mismatch_and_eligible_nonbuffer():
+    engine = SimpleNamespace(
+        _voicechat_pad_pair_call_context={
+            "request_id": "wrapper-request",
+            "frame_idx": 7,
+            "engine_calls": 1,
+            "bypass": False,
+            "precontrol_reason": None,
+        }
+    )
+    state = _pad_pair_state(engine, "engine-request")
+    state["previous_effective_pad"] = True
+
+    with mock.patch.dict(
+        "os.environ", {"VOICECHAT_NANO_PAD_PAIR_TRACE": "1"}, clear=True
+    ):
+        _record_pad_pair_decision(
+            engine,
+            "engine-request",
+            state,
+            decision="sequential_conditional",
+            pending_before=False,
+            bypass=False,
+            should_draft=True,
+            generated_before=8,
+            generated_after=9,
+        )
+
+    event = state["trace_events"].popleft()
+    assert event["call_origin"] == "additional_call_since_prepare"
+    assert event["request_id_match"] is False
+    assert event["invariant_violation"] is True
+
+
+def test_pad_pair_trace_failure_cannot_discard_generation_result():
+    engine = SimpleNamespace(
+        _voicechat_pad_pair_call_context={
+            "request_id": "request-1",
+            "engine_calls": "not-an-integer",
+        }
+    )
+    state = _pad_pair_state(engine, "request-1")
+
+    with mock.patch.dict(
+        "os.environ", {"VOICECHAT_NANO_PAD_PAIR_TRACE": "1"}, clear=True
+    ):
+        _record_pad_pair_decision(
+            engine,
+            "request-1",
+            state,
+            decision="buffered",
+            pending_before=False,
+            bypass=False,
+            should_draft=True,
+            generated_before=1,
+            generated_after=1,
+        )
+
+    assert state["trace_record_errors"] == 1
+    assert not state["trace_events"]
+
+
+def test_installed_pad_pair_scheduler_records_buffer_then_pair(monkeypatch):
+    import torch
+
+    streaming_engine = pytest.importorskip(
+        "nemo.collections.speechlm2.inference.vllm.streaming_llm_engine",
+        reason="NVIDIA Speech is supplied by the runtime container",
+    )
+
+    async def original(*_args, **_kwargs):
+        raise AssertionError("buffered-to-pair path must not use the sequential backend")
+
+    class LocalStreamingEngine:
+        generate_next_token = original
+
+    monkeypatch.setattr(streaming_engine, "LLMStreamingEngine", LocalStreamingEngine)
+    _install_public_pad_pair_engine()
+
+    class Iterator:
+        async def __anext__(self):
+            completion = SimpleNamespace(
+                token_ids=[7, 12, 12],
+                custom_outputs={"function_tokens": torch.tensor([12, 12])},
+                finish_reason=None,
+            )
+            return SimpleNamespace(outputs=[completion], finished=False)
+
+    class Backend:
+        async def append_request(self, **_kwargs):
+            return None
+
+    request_state = SimpleNamespace(
+        generation_iterator=Iterator(),
+        generated_tokens=[7],
+        status=object(),
+    )
+    engine = SimpleNamespace(
+        _voicechat_pad_pair_token_id=12,
+        _voicechat_pad_pair_call_context={
+            "request_id": "request-1",
+            "frame_idx": 10,
+            "engine_calls": 0,
+            "bypass": False,
+            "precontrol_reason": None,
+        },
+        requests={"request-1": request_state},
+        custom_input_specs=[{"name": "combined_embeds", "dtype": "float32"}],
+        engine=Backend(),
+    )
+    state = _pad_pair_state(engine, "request-1")
+    state["previous_effective_pad"] = True
+    wrapper = SimpleNamespace(model_llm_interface=SimpleNamespace(engine=engine))
+
+    async def run():
+        first = await LocalStreamingEngine.generate_next_token(
+            engine, [torch.zeros(1, 4)], request_id="request-1"
+        )
+        second = await LocalStreamingEngine.generate_next_token(
+            engine, [torch.ones(1, 4)], request_id="request-1"
+        )
+        return first, second
+
+    with mock.patch.dict(
+        "os.environ",
+        {
+            "VOICECHAT_NANO_PAD_PAIR": "1",
+            "VOICECHAT_NANO_PAD_PAIR_CONDITIONAL": "1",
+            "VOICECHAT_NANO_PAD_PAIR_TRACE": "1",
+        },
+        clear=True,
+    ):
+        first, second = asyncio.run(run())
+        snapshot = consume_pad_pair_trace(wrapper, "request-1")
+
+    assert first.token_id == 12
+    assert second.token_id == 12
+    assert request_state.generated_tokens == [7, 12, 12]
+    assert [event["decision"] for event in snapshot["events"]] == [
+        "buffered",
+        "pair_accepted",
+    ]
+
+
 def test_function_async_transition_has_latched_pending_drain_contract():
     source = (RUNTIME_ROOT / "runtime_optimizations.py").read_text()
     assert 'state["sequential_mode"] = True' in source
@@ -205,7 +404,12 @@ def test_control_transition_latches_a_live_pending_row():
     }
 
     with mock.patch.dict(
-        "os.environ", {"VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER": "1"}, clear=True
+        "os.environ",
+        {
+            "VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER": "1",
+            "VOICECHAT_NANO_PAD_PAIR_TRACE": "1",
+        },
+        clear=True,
     ):
         _finalize_pad_pair_call(wrapper, engine, arguments)
 
@@ -214,6 +418,18 @@ def test_control_transition_latches_a_live_pending_row():
     assert state["control_barriers"] == 1
     assert state["control_pending_drains"] == 1
     assert state["previous_effective_pad"] is False
+    assert state["last_effective_tokens"] == {
+        "frame_idx": 3,
+        "request_id": "request-1",
+        "text": 1,
+        "function": 12,
+        "pad": 12,
+        "text_is_pad": False,
+        "function_is_pad": True,
+        "both_pad": False,
+        "fc_in_progress": False,
+        "precontrol_reason": None,
+    }
 
 
 def test_pad_pair_precontrol_predicts_rnnt_eou_one_frame_early():

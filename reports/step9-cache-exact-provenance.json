@@ -1,0 +1,16 @@
+{
+  "base_commit": "9ee8d21eb1c8dd197cf6e2a17f9d62deb827de4f",
+  "base_image_id": "sha256:e935fbf2e2bda49e152a12a5373e02b56a44823572fd7d3bb450aa3da37d4be1",
+  "cache_source_container": "c3f63e9ad8e0ab3782e854965ba3dddaf850b60c62a4af72c03d289add8ce722",
+  "capture_contract": [
+    257,
+    80,
+    16,
+    2,
+    1
+  ],
+  "exact_prompt": "Respond concisely in one sentence. Do not repeat yourself.",
+  "exact_prompt_sha256": "c56b27c2602f4b55c945f95b538107ab24faebdded43ac7183af1ead57981b5c",
+  "instrument_image_id": "sha256:15bdcc8677c91e0f2e031c4ceae37902dfa35a3527e190afb5aaeb85bece8313",
+  "source_arm": "step9/capture-reduced-exact-source"
+}

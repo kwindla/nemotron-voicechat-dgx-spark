@@ -108,6 +108,22 @@ near-silent responses, closed at exactly 12,000 model frames, measured a
 A separate failed source-runtime run that accumulated 2.98 seconds of debt
 after malformed late function-call recovery is retained as negative evidence.
 
+### Capturing a post-function-call pairing recurrence
+
+The retained failure predates per-frame effective-token telemetry. When a long
+qualification is being run for diagnostic purposes, start the model server with:
+
+```bash
+./voicechat up --trace-pad-pair
+```
+
+The opt-in trace records scalar scheduler decisions, effective text/function
+token IDs, request identity, and a log-only no-pair watchdog. Default serving
+does not enable it. Treat trace-enabled timing as diagnostic composition data,
+not as release latency evidence, because collection adds small per-frame host
+work. A behavioral scheduler change requires a telemetry-complete recurrence;
+the historic lossy trace alone is not a sufficient oracle.
+
 ## Release evidence
 
 The public image audit writes image inspection, complete history, main and
