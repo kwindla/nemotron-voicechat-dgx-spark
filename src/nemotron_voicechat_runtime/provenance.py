@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 
 RUNTIME_PROVENANCE_REQUIRED_SOURCES = frozenset(
     {
@@ -62,6 +63,25 @@ RUNTIME_SOURCE_PATHS = (
     "src/nemotron_voicechat_runtime/server.py",
 )
 
+NANO_PAD_PAIR_PRODUCTION_POLICY = {
+    "VOICECHAT_NANO_PAD_PAIR": "0",
+    "VOICECHAT_NANO_PAD_PAIR_CONDITIONAL": "0",
+    "VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER": "0",
+    "VOICECHAT_NANO_PAIR_FULL_GRAPH": "0",
+}
+
+
+def validate_nano_pad_pair_production_policy(environment: Mapping[str, str]) -> None:
+    """Reject serving configurations that re-enable retired PAD speculation."""
+    actual = {
+        name: environment.get(name, "0") for name in NANO_PAD_PAIR_PRODUCTION_POLICY
+    }
+    if actual != NANO_PAD_PAIR_PRODUCTION_POLICY:
+        raise RuntimeError(
+            "production Nano PAD-pair policy differs from the retired contract: "
+            f"expected {NANO_PAD_PAIR_PRODUCTION_POLICY}, got {actual}"
+        )
+
 # These values affect model semantics, response boundaries, or latency. The
 # The foreground launcher materializes this precise qualified set from TOML as
 # explicit Docker environment values.
@@ -84,9 +104,9 @@ PRODUCTION_ENVIRONMENT = {
     "VOICECHAT_EARTTS_IDLE_PAD_BYPASS": "1",
     "VOICECHAT_EARTTS_PREPARED_EPOCH": "1",
     "VOICECHAT_EARTTS_RESET_ON_BOS": "1",
-    "VOICECHAT_NANO_PAD_PAIR": "1",
-    "VOICECHAT_NANO_PAD_PAIR_CONDITIONAL": "1",
-    "VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER": "1",
+    "VOICECHAT_NANO_PAD_PAIR": "0",
+    "VOICECHAT_NANO_PAD_PAIR_CONDITIONAL": "0",
+    "VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER": "0",
     "VOICECHAT_RNNT_BOU_FRAMES": "3",
     "VOICECHAT_RNNT_EOU_FRAMES": "20",
     "VOICECHAT_RNNT_FC_INTERRUPT_MS": "240",

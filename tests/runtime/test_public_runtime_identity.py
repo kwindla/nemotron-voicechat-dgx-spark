@@ -35,6 +35,8 @@ def test_runtime_identity_inventory_covers_installed_source_and_build_inputs(
     assert "container/Dockerfile.public-vllm" in relatives
     assert ".dockerignore" in relatives
     assert "pyproject.toml" in relatives
+    assert "config/production-candidate-1.toml" in relatives
+    assert "config/production-candidate-2.toml" in relatives
 
     for source in paths:
         destination = tmp_path / source.relative_to(REPO_ROOT)
@@ -58,6 +60,16 @@ def test_runtime_identity_inventory_covers_installed_source_and_build_inputs(
     assert public_runtime_payload_sha256(tmp_path) != original_payload
     assert public_runtime_source_sha256(tmp_path) != original
     ordinary.unlink()
+
+    for relative in (
+        "config/production-candidate-1.toml",
+        "config/production-candidate-2.toml",
+    ):
+        policy = tmp_path / relative
+        policy.write_bytes(policy.read_bytes() + b"\n# policy identity mutation\n")
+        assert public_runtime_payload_sha256(tmp_path) != original_payload
+        assert public_runtime_source_sha256(tmp_path) != original
+        shutil.copy2(REPO_ROOT / relative, policy)
 
     dockerignore = tmp_path / ".dockerignore"
     dockerignore.write_bytes(dockerignore.read_bytes() + b"\nnew-pattern\n")
@@ -105,3 +117,11 @@ def test_build_and_audit_bind_the_same_project_source_label() -> None:
     assert "COPY --from=voicechat_recipe_snapshot" in dockerfile
     assert PUBLIC_RUNTIME_SOURCE_LABEL in audit
     assert "copied-source-identity.json" in audit
+    assert (
+        "COPY config/production-candidate-1.toml "
+        "/opt/project/config/production-candidate-1.toml"
+    ) in dockerfile
+    assert (
+        "COPY config/production-candidate-2.toml "
+        "/opt/project/config/production-candidate-2.toml"
+    ) in dockerfile

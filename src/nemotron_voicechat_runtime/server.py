@@ -56,7 +56,12 @@ from .protocol import (
     RealtimeProtocolSession,
     protocol_capabilities,
 )
-from .provenance import PRODUCTION_ENVIRONMENT, RUNTIME_SOURCE_PATHS
+from .provenance import (
+    NANO_PAD_PAIR_PRODUCTION_POLICY,
+    PRODUCTION_ENVIRONMENT,
+    RUNTIME_SOURCE_PATHS,
+    validate_nano_pad_pair_production_policy,
+)
 
 PINNED_COMMIT = "911ec674ab40f04302ef33672be4179f45a7310f"
 PRODUCTION_ENGINE_TYPE = "vllm_llm_vllm_eartts"
@@ -3990,6 +3995,7 @@ def _install_step9_capture_sizes() -> None:
 
 def build_public_pipeline(args: argparse.Namespace) -> Any:
     """Build NVIDIA's streamer from the exact public combined weights."""
+    validate_nano_pad_pair_production_policy(os.environ)
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     os.environ.setdefault("VLLM_ATTENTION_BACKEND", "TRITON_ATTN")
@@ -4555,6 +4561,10 @@ def _runtime_source_provenance(engine: VoiceChatEngine) -> dict[str, Any]:
         "source_sha256": {name: sha256_file(path) for name, path in sorted(source_paths.items())},
         "semantic_environment": {
             name: os.environ.get(name) for name in sorted(PRODUCTION_ENVIRONMENT)
+        },
+        "nano_pad_pair_policy": {
+            name: os.environ.get(name, "0")
+            for name in sorted(NANO_PAD_PAIR_PRODUCTION_POLICY)
         },
     }
     if fc_async_heartbeat_enabled():
