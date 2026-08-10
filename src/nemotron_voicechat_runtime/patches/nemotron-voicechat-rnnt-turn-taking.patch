@@ -1,8 +1,369 @@
 diff --git a/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py b/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
-index bb28de0c0..75298053e 100644
+index bb28de0c0..df5b59c74 100644
 --- a/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
 +++ b/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
-@@ -542,10 +542,22 @@ class VllmLLMModel(ModelInterface):
+@@ -34,6 +34,7 @@ Usage Example:
+ 
+ from abc import ABC, abstractmethod
+ from typing import Optional, Dict, Any, Union, Set
++import json
+ import math
+ import os
+ import torch
+@@ -250,6 +251,8 @@ class VllmLLMModel(ModelInterface):
+         temperature: float = 1.0,
+         model_type: str = "llm",
+         text_pad_id: Optional[int] = None,
++        function_logit_trace_ids: Optional[Dict[str, int]] = None,
++        agent_logit_trace_ids: Optional[Dict[str, int]] = None,
+         device_id: Optional[int] = None,
+         **sampling_kwargs
+     ):
+@@ -306,6 +309,35 @@ class VllmLLMModel(ModelInterface):
+                     save_path=engine_path
+                 )
+ 
++        agent_trace_value = os.environ.get(
++            "S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK", "0"
++        ).strip()
++        self._agent_logit_trace_topk = self._parse_agent_logit_trace_topk(
++            agent_trace_value, model_type=model_type
++        )
++        self._agent_logit_trace_ids = None
++        if self._agent_logit_trace_topk:
++            expected_agent_trace_ids = {"pad", "bos"}
++            if (
++                not isinstance(agent_logit_trace_ids, dict)
++                or set(agent_logit_trace_ids) != expected_agent_trace_ids
++                or any(
++                    not isinstance(token_id, int) or isinstance(token_id, bool)
++                    for token_id in agent_logit_trace_ids.values()
++                )
++            ):
++                raise ValueError(
++                    "agent-logit tracing requires resolved text PAD/BOS token IDs"
++                )
++            self._validate_agent_logit_trace_artifact(
++                engine_path, self._agent_logit_trace_topk
++            )
++            self._agent_logit_trace_ids = dict(agent_logit_trace_ids)
++            logging.warning(
++                "Agent-logit diagnostic enabled (top-k=%d); this adds a full text-head output and bounded GPU reductions",
++                self._agent_logit_trace_topk,
++            )
++
+         from nemo.collections.speechlm2.inference.vllm.streaming_llm_engine import create_engine
+         # device_id is passed to LLMStreamingEngine, which sets CUDA_VISIBLE_DEVICES
+         # inside initialize() right before AsyncLLM spawns its GPU workers.
+@@ -355,9 +387,286 @@ class VllmLLMModel(ModelInterface):
+             self._text_pad_id = 0
+         logging.info(f"text_pad_id resolved to: {self._text_pad_id}")
+ 
++        trace_value = os.environ.get("S2S_FUNCTION_LOGIT_TRACE_TOPK", "0").strip()
++        self._function_logit_trace_topk = self._parse_function_logit_trace_topk(
++            trace_value, model_type=model_type
++        )
++
++        self._function_logit_trace_ids = None
++        if self._function_logit_trace_topk:
++            expected_trace_ids = {"pad", "sotc", "eotc", "eotr", "text_bos"}
++            if (
++                not isinstance(function_logit_trace_ids, dict)
++                or set(function_logit_trace_ids) != expected_trace_ids
++                or any(
++                    not isinstance(token_id, int) or isinstance(token_id, bool)
++                    for token_id in function_logit_trace_ids.values()
++                )
++            ):
++                raise ValueError(
++                    "function-logit tracing requires resolved PAD/SOTC/EOTC/EOTR/text-BOS IDs"
++                )
++            self._function_logit_trace_ids = dict(function_logit_trace_ids)
++            logging.warning(
++                "Function-logit diagnostic enabled (top-k=%d); this adds GPU reductions and synchronization",
++                self._function_logit_trace_topk,
++            )
++
+         logging.debug(f"Special token IDs: {self.special_token_ids}")
+         logging.info("vLLM engine ready!")
+ 
++    @staticmethod
++    def _parse_function_logit_trace_topk(value: str, model_type: str = "llm") -> int:
++        try:
++            top_k = int(value)
++        except ValueError as exc:
++            raise ValueError(
++                "S2S_FUNCTION_LOGIT_TRACE_TOPK must be an integer from 0 through 20"
++            ) from exc
++        if not 0 <= top_k <= 20:
++            raise ValueError(
++                "S2S_FUNCTION_LOGIT_TRACE_TOPK must be an integer from 0 through 20"
++            )
++        if model_type == "eartts":
++            return 0
++        if model_type != "llm" and top_k:
++            raise ValueError(
++                f"function-logit tracing is unsupported for vLLM model type {model_type!r}"
++            )
++        return top_k
++
++    @staticmethod
++    def _parse_agent_logit_trace_topk(value: str, model_type: str = "llm") -> int:
++        try:
++            top_k = int(value)
++        except ValueError as exc:
++            raise ValueError(
++                "S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK must be an integer from 0 through 20"
++            ) from exc
++        if not 0 <= top_k <= 20:
++            raise ValueError(
++                "S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK must be an integer from 0 through 20"
++            )
++        if model_type == "eartts":
++            return 0
++        if model_type != "llm" and top_k:
++            raise ValueError(
++                f"agent-logit tracing is unsupported for vLLM model type {model_type!r}"
++            )
++        return top_k
++
++    @staticmethod
++    def _validate_agent_logit_trace_artifact(engine_path: str, top_k: int) -> None:
++        """Reject production Nano artifacts when the diagnostic head is requested."""
++        if not top_k:
++            return
++        config_path = os.path.join(engine_path, "config.json")
++        try:
++            with open(config_path, encoding="utf-8") as config_file:
++                custom_outputs = json.load(config_file).get("custom_outputs")
++        except (OSError, json.JSONDecodeError) as exc:
++            raise ValueError(
++                "agent-logit tracing could not validate the Nano diagnostic config"
++            ) from exc
++        if not isinstance(custom_outputs, list) or "text_logits" not in custom_outputs:
++            raise ValueError(
++                "agent-logit tracing requires the weight-identical diagnostic text-logit overlay"
++            )
++
++    def _summarize_agent_logits(
++        self,
++        text_logits: torch.Tensor,
++        predicted_token: Any,
++    ) -> Dict[str, Any]:
++        """Reduce one agent-head row to bounded JSON-only diagnostics."""
++        if not isinstance(text_logits, torch.Tensor):
++            raise RuntimeError("agent-logit trace expected a tensor custom output")
++        if text_logits.dim() != 2 or text_logits.shape[0] != 1:
++            raise RuntimeError(
++                "agent-logit trace expected exactly one [1, vocab] final-position row; "
++                f"got {tuple(text_logits.shape)}"
++            )
++        trace_ids = self._agent_logit_trace_ids
++        if trace_ids is None:
++            raise RuntimeError("agent-logit trace token IDs were not initialized")
++        row = text_logits[0]
++        vocab_size = int(row.shape[0])
++        if not bool(torch.isfinite(row).all().item()):
++            raise RuntimeError("agent-logit trace encountered NaN or infinite logits")
++        if any(token_id < 0 or token_id >= vocab_size for token_id in trace_ids.values()):
++            raise RuntimeError("agent-logit trace token ID is outside the text vocabulary")
++        if vocab_size < self._agent_logit_trace_topk:
++            raise RuntimeError("text vocabulary is smaller than requested diagnostic top-k")
++
++        top_values, top_ids = torch.topk(row, self._agent_logit_trace_topk)
++        head_argmax_id = int(torch.argmax(row).item())
++        head_argmax_logit = row[head_argmax_id]
++        head_argmax_equal_count = int(torch.count_nonzero(row == head_argmax_logit).item())
++        predicted_token_id = int(torch.as_tensor(predicted_token).reshape(-1)[0].item())
++        if head_argmax_id != predicted_token_id:
++            raise RuntimeError(
++                "agent-logit trace argmax does not match the vLLM predicted token"
++            )
++        watched = {}
++        for name, token_id in trace_ids.items():
++            logit = row[token_id]
++            watched[name] = {
++                "token_id": token_id,
++                "logit": float(logit.detach().float().cpu().item()),
++                "rank": int(torch.count_nonzero(row > logit).item()) + 1,
++                "equal_count": int(torch.count_nonzero(row == logit).item()),
++            }
++        top_values_cpu = top_values.detach().float().cpu().tolist()
++        top_ids_cpu = top_ids.detach().cpu().tolist()
++        return {
++            "top_k_requested": self._agent_logit_trace_topk,
++            "vocab_size": vocab_size,
++            "head_argmax_id": head_argmax_id,
++            "head_argmax_logit": float(head_argmax_logit.detach().float().cpu().item()),
++            "head_argmax_equal_count": head_argmax_equal_count,
++            "predicted_token_id": predicted_token_id,
++            "argmax_matches_predicted": True,
++            "watched": watched,
++            "top_k": [
++                {"token_id": int(token_id), "logit": float(logit)}
++                for token_id, logit in zip(top_ids_cpu, top_values_cpu, strict=True)
++            ],
++        }
++
++    def _attach_agent_logit_trace(
++        self,
++        ans: Dict[str, Any],
++        result: Any,
++    ) -> None:
++        """Attach one explicitly requested agent trace or fail closed."""
++        if not self._agent_logit_trace_topk:
++            raise RuntimeError("agent-logit capture requested while the diagnostic is disabled")
++        custom_outputs = result.custom_outputs if result else None
++        buffered_marker = (
++            custom_outputs.get("voicechat_pad_pair_buffered")
++            if custom_outputs
++            else None
++        )
++        if buffered_marker is not None:
++            if buffered_marker is not True or "text_logits" in custom_outputs:
++                raise RuntimeError(
++                    "agent-logit trace received a contradictory PAD-pair buffered marker"
++                )
++            predicted_token_id = int(
++                torch.as_tensor(ans["predicted_token"]).reshape(-1)[0].item()
++            )
++            function_token = custom_outputs.get("function_tokens")
++            function_token_id = (
++                int(torch.as_tensor(function_token).reshape(-1)[0].item())
++                if function_token is not None
++                else None
++            )
++            if (
++                predicted_token_id != self._text_pad_id
++                or function_token_id != self._text_pad_id
++            ):
++                raise RuntimeError(
++                    "agent-logit trace PAD-pair buffered marker requires synthetic PAD tokens"
++                )
++            ans["agent_logit_trace"] = {
++                "no_model_position": True,
++                "scheduler_decision": "pad_pair_buffered",
++                "synthetic_token_id": predicted_token_id,
++                "total_tokens": int(result.total_tokens),
++            }
++            return
++        if not custom_outputs or "text_logits" not in custom_outputs:
++            raise RuntimeError(
++                "agent-logit tracing requested but text_logits custom output is missing"
++            )
++        ans["agent_logit_trace"] = self._summarize_agent_logits(
++            custom_outputs["text_logits"], ans["predicted_token"]
++        )
++
++    def _summarize_function_logits(
++        self,
++        function_logits: torch.Tensor,
++        function_token: Any,
++    ) -> Dict[str, Any]:
++        """Reduce one function-head row to bounded JSON-only diagnostics."""
++        if not isinstance(function_logits, torch.Tensor):
++            raise RuntimeError("function-logit trace expected a tensor custom output")
++        if function_logits.dim() != 2 or function_logits.shape[0] != 1:
++            raise RuntimeError(
++                "function-logit trace expected exactly one [1, vocab] final-position row; "
++                f"got {tuple(function_logits.shape)}"
++            )
++        trace_ids = self._function_logit_trace_ids
++        if trace_ids is None:
++            raise RuntimeError("function-logit trace token IDs were not initialized")
++        row = function_logits[0]
++        vocab_size = int(row.shape[0])
++        if not bool(torch.isfinite(row).all().item()):
++            raise RuntimeError("function-logit trace encountered NaN or infinite logits")
++        if any(token_id < 0 or token_id >= vocab_size for token_id in trace_ids.values()):
++            raise RuntimeError("function-logit trace token ID is outside the function vocabulary")
++        if vocab_size < self._function_logit_trace_topk:
++            raise RuntimeError("function vocabulary is smaller than requested diagnostic top-k")
++
++        top_values, top_ids = torch.topk(row, self._function_logit_trace_topk)
++        head_argmax_id = int(torch.argmax(row).item())
++        head_argmax_logit = row[head_argmax_id]
++        head_argmax_equal_count = int(torch.count_nonzero(row == head_argmax_logit).item())
++        predicted_token_id = int(torch.as_tensor(function_token).reshape(-1)[0].item())
++        if head_argmax_id != predicted_token_id:
++            raise RuntimeError(
++                "function-logit trace argmax does not match function_tokens custom output"
++            )
++        watched_values = torch.stack([row[token_id] for token_id in trace_ids.values()])
++        sotc_logit = row[trace_ids["sotc"]]
++        sotc_rank = int(torch.count_nonzero(row > sotc_logit).item()) + 1
++        sotc_equal_count = int(torch.count_nonzero(row == sotc_logit).item())
++        watched_cpu = watched_values.detach().float().cpu().tolist()
++        top_values_cpu = top_values.detach().float().cpu().tolist()
++        top_ids_cpu = top_ids.detach().cpu().tolist()
++        return {
++            "top_k_requested": self._function_logit_trace_topk,
++            "vocab_size": vocab_size,
++            "head_argmax_id": head_argmax_id,
++            "head_argmax_logit": float(head_argmax_logit.detach().float().cpu().item()),
++            "head_argmax_equal_count": head_argmax_equal_count,
++            "predicted_token_id": predicted_token_id,
++            "argmax_matches_predicted": True,
++            "sotc_rank": sotc_rank,
++            "sotc_equal_count": sotc_equal_count,
++            "watched": {
++                name: {"token_id": token_id, "logit": float(logit)}
++                for (name, token_id), logit in zip(
++                    trace_ids.items(), watched_cpu, strict=True
++                )
++            },
++            "top_k": [
++                {"token_id": int(token_id), "logit": float(logit)}
++                for token_id, logit in zip(top_ids_cpu, top_values_cpu, strict=True)
++            ],
++        }
++
++    def _attach_function_logit_trace(
++        self,
++        ans: Dict[str, Any],
++        result: Any,
++    ) -> None:
++        """Attach one enabled trace or fail closed on a partial custom output."""
++        if not self._function_logit_trace_topk:
++            return
++        custom_outputs = result.custom_outputs if result else None
++        if not custom_outputs or "function_logits" not in custom_outputs:
++            raise RuntimeError(
++                "function-logit tracing requested but function_logits custom output is missing"
++            )
++        if "function_predicted_token" not in ans:
++            raise RuntimeError(
++                "function-logit tracing requested but function_tokens custom output is missing"
++            )
++        ans["function_logit_trace"] = self._summarize_function_logits(
++            custom_outputs["function_logits"], ans["function_predicted_token"]
++        )
++
+     @staticmethod
+     def _get_special_token_ids_from_vllm_tokenizer(tokenizer) -> Set[int]:
+         """
+@@ -478,7 +787,8 @@ class VllmLLMModel(ModelInterface):
+         decode_steps: int = 1,
+         prompt_token_ids: Optional[list] = None,
+         generated_tokens: Optional[torch.Tensor] = None,
+-        current_step: int = 0
++        current_step: int = 0,
++        capture_agent_logit_trace: bool = False,
+     ) -> Dict[str, Any]:
+         """
+         Process embeddings sequentially to generate text and ASR tokens.
+@@ -527,6 +837,10 @@ class VllmLLMModel(ModelInterface):
+         assert len(text_token_ids) <= decode_steps, "Generated more tokens than input embeddings"
+         # Handle case when no tokens were generated
+         if not text_token_ids:
++            if capture_agent_logit_trace:
++                raise RuntimeError(
++                    "agent-logit tracing requested but no token was generated"
++                )
+             pad_id = self._text_pad_id
+             logging.warning(
+                 "[VLLMModel] No tokens generated for request %s at step %s, returning PAD",
+@@ -542,10 +856,22 @@ class VllmLLMModel(ModelInterface):
  
          is_finished = len(text_token_ids) < decode_steps or (result and result.is_finished)
  
@@ -28,8 +389,19 @@ index bb28de0c0..75298053e 100644
              # Use provided generated_tokens or create empty tensor
              batch_size = text_logits.shape[0]
              if generated_tokens is None:
+@@ -569,6 +895,10 @@ class VllmLLMModel(ModelInterface):
+         }
+         if result and result.custom_outputs and "function_tokens" in result.custom_outputs:
+             ans["function_predicted_token"] = result.custom_outputs["function_tokens"]
++        if self._function_logit_trace_topk:
++            self._attach_function_logit_trace(ans, result)
++        if capture_agent_logit_trace:
++            self._attach_agent_logit_trace(ans, result)
+         return ans
+ 
+ 
 diff --git a/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py b/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
-index 6085e5562..0c5ab3a90 100755
+index 6085e5562..ee43125c6 100755
 --- a/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
 +++ b/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
 @@ -29,7 +29,9 @@ import argparse
@@ -42,7 +414,52 @@ index 6085e5562..0c5ab3a90 100755
  from typing import Optional, Tuple
  from nemo.utils import logging
  from jiwer import wer
-@@ -291,6 +293,17 @@ class NemotronVoicechatInferenceWrapper:
+@@ -245,6 +247,44 @@ class NemotronVoicechatInferenceWrapper:
+         # After tool-response injection completes, exempt the next agent BOS from
+         # self-play suppression so the post-TC verbal response is not silenced.
+         self._post_tc_bos_exempt: bool = False
++        # In client-owned EOU mode a boundary SOTC must run while the agent is
++        # idle.  The client-owned BOS is therefore deferred until the tool
++        # response has finished injecting. These must exist before warmup calls
++        # infer_one_step().
++        self._client_eou_sotc_committed_frame = None
++        self._client_eou_sotc_committed_count = 0
++        self._agent_open_function_suppression_count = 0
++        self._agent_open_function_last_raw_token_id = None
++        self._agent_open_function_suppressed_frame = None
++        self._post_fc_client_bos_requested = False
++        self._post_fc_client_bos_requested_frame = None
++        self._post_fc_client_bos_forced_frame = None
++        self._post_fc_client_bos_forced_count = 0
++        # Tool-free client sessions may fuse the final qualified RNNT blank
++        # with the one client-owned agent BOS.  This latch is deliberately
++        # distinct from _external_user_eou_requested so the pre-RNNT function
++        # guard cannot mistake an unproven blank position for a tool boundary.
++        self._external_user_eou_blank_fence_target = None
++        self._external_user_eou_blank_fence_last = None
++        try:
++            self._post_fc_token_trace_frames = int(
++                os.environ.get("S2S_POST_FC_TOKEN_TRACE_FRAMES", "0")
++            )
++        except ValueError as exc:
++            raise ValueError(
++                "S2S_POST_FC_TOKEN_TRACE_FRAMES must be an integer from 0 through 32"
++            ) from exc
++        if not 0 <= self._post_fc_token_trace_frames <= 32:
++            raise ValueError(
++                "S2S_POST_FC_TOKEN_TRACE_FRAMES must be an integer from 0 through 32"
++            )
++        self._post_fc_token_trace_until_frame = -1
++        self._post_fc_token_trace_sequence = 0
++        self._post_fc_token_trace_pending = []
++        self._post_fc_token_trace_lock = threading.Lock()
++        self._fc_async_heartbeat_enabled = os.environ.get(
++            "S2S_FC_ASYNC_HEARTBEAT", "0"
++        ).strip().lower() in {"1", "true", "yes", "on"}
+ 
+         # vLLM configuration
+         self.engine_type = model_cfg.get("engine_type", "native")
+@@ -291,6 +331,17 @@ class NemotronVoicechatInferenceWrapper:
          self._use_perception_cudagraph = use_perception_cudagraph
          self._pad_and_drop_preencoded = bool(model_cfg.get("pad_and_drop_preencoded", False))
  
@@ -60,7 +477,7 @@ index 6085e5562..0c5ab3a90 100755
          self._initialize_model()
  
          logging.info("NemotronVoicechatInferenceWrapper initialized successfully.")
-@@ -298,6 +311,129 @@ class NemotronVoicechatInferenceWrapper:
+@@ -298,6 +349,129 @@ class NemotronVoicechatInferenceWrapper:
          logging.info(f"{self.model.stt_model.perception.encoder._cfg = }")
          logging.info(f"{self.model.stt_model.perception.encoder.streaming_cfg = }")
  
@@ -190,7 +607,7 @@ index 6085e5562..0c5ab3a90 100755
      @staticmethod
      def _resolve_dtype(compute_dtype):
          if isinstance(compute_dtype, torch.dtype):
-@@ -645,6 +781,19 @@ class NemotronVoicechatInferenceWrapper:
+@@ -645,6 +819,19 @@ class NemotronVoicechatInferenceWrapper:
              if unexpected_tts:
                  logging.info(f"  {len(unexpected_tts)} unexpected TTS keys")
  
@@ -210,7 +627,7 @@ index 6085e5562..0c5ab3a90 100755
              if self.use_vllm_eartts:
                  # gonna convert and load vllm eartts engine
                  # Use object.__setattr__ to bypass PyTorch's module registration
-@@ -681,7 +830,28 @@ class NemotronVoicechatInferenceWrapper:
+@@ -681,7 +868,28 @@ class NemotronVoicechatInferenceWrapper:
              logging.info("  Native LLM deleted")
  
          # Setup model
@@ -240,7 +657,37 @@ index 6085e5562..0c5ab3a90 100755
          self.model.eval()
  
          # Convert only the S2S components to the configured dtype, not the TTS model
-@@ -905,6 +1075,11 @@ class NemotronVoicechatInferenceWrapper:
+@@ -854,6 +1062,17 @@ class NemotronVoicechatInferenceWrapper:
+                 repetition_penalty=self.repetition_penalty,
+                 temperature=self.temperature,
+                 text_pad_id=stt.text_pad_id,
++                function_logit_trace_ids={
++                    "pad": int(stt.text_pad_id),
++                    "sotc": self._fc_sotc_id,
++                    "eotc": self._fc_eotc_id,
++                    "eotr": self._fc_eotr_id,
++                    "text_bos": int(stt.text_bos_id),
++                },
++                agent_logit_trace_ids={
++                    "pad": int(stt.text_pad_id),
++                    "bos": int(stt.text_bos_id),
++                },
+             )
+ 
+             logging.info("VllmLLMModel interface created")
+@@ -888,6 +1107,11 @@ class NemotronVoicechatInferenceWrapper:
+         self._fc_async_enabled = bool(self.model_cfg.get("fc_async_enabled", False))
+         self._fc_async_two_phase = bool(self.model_cfg.get("fc_async_two_phase", False))
+         self._fc_async_api_latency_sec = float(self.model_cfg.get("fc_async_api_latency_sec", 0.0))
++        self._fc_eotr_wait_max_steps = int(
++            self.model_cfg.get("fc_eotr_wait_max_steps", 1)
++        )
++        if self._fc_eotr_wait_max_steps <= 0:
++            raise ValueError("fc_eotr_wait_max_steps must be positive")
+         # When False (default), async FC always feeds silence to the LLM — no real or cached audio.
+         # When True, real audio frames are used if available, falling back to last cached audio.
+         self._fc_async_use_real_audio = bool(self.model_cfg.get("fc_async_use_real_audio", False))
+@@ -905,6 +1129,11 @@ class NemotronVoicechatInferenceWrapper:
  
          # Turn-taking source: "rnnt" (default) or "asr_head"
          self._turn_taking_source = str(self.model_cfg.get("turn_taking_source", "rnnt")).lower()
@@ -252,7 +699,1460 @@ index 6085e5562..0c5ab3a90 100755
          # rnnt_eou_frames: number of consecutive 80 ms frames with NO new RNNT
          # tokens (i.e. silence) before EOU is declared.  On EOU the agent BOS
          # token is force-inserted so the agent starts speaking.
-@@ -2507,7 +2682,17 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1127,6 +1356,9 @@ class NemotronVoicechatInferenceWrapper:
+         buffer_size_samples: int,
+         emb_queue: "queue.Queue",
+         stop_event: "threading.Event",
++        fc_state: dict | None = None,
++        cycle_sotc_frame: int | None = None,
++        phase: str = "tool_call",
+     ) -> None:
+         """Background thread: encode live audio frames as they arrive from the
+         Triton execute() calls (one 80ms frame per queue entry) and put
+@@ -1135,6 +1367,21 @@ class NemotronVoicechatInferenceWrapper:
+         Unlike ``_perception_background_worker``, there is no wall-clock gate —
+         frames arrive exactly when Triton delivers them (every ~80ms in production).
+         """
++        _heartbeat = bool(self._fc_async_heartbeat_enabled and fc_state is not None)
++        if _heartbeat:
++            self._publish_fc_async_heartbeat(
++                fc_state,
++                key="async_perception_heartbeat",
++                cycle_sotc_frame=cycle_sotc_frame,
++                phase=phase,
++                invocation=1 if phase == "tool_call" else 2,
++                async_step=None,
++                model_frame=None,
++                stage="entry",
++                state="started",
++                live_audio_queue=live_audio_queue,
++                perception_queue=emb_queue,
++            )
+         perception_stream = torch.cuda.Stream(device=self.device)
+         # Keep the rolling buffer on GPU so _update_audio_buffer doesn't
+         # hit a device mismatch when new_audio arrives on self.device.
+@@ -1142,14 +1389,58 @@ class NemotronVoicechatInferenceWrapper:
+         fill = buffer_fill
+ 
+         while not stop_event.is_set():
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_perception_heartbeat",
++                    cycle_sotc_frame=cycle_sotc_frame,
++                    phase=phase,
++                    invocation=1 if phase == "tool_call" else 2,
++                    async_step=None,
++                    model_frame=None,
++                    stage="audio_wait",
++                    state="started",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=emb_queue,
++                )
+             try:
+                 new_audio = live_audio_queue.get(timeout=0.1)
+             except queue.Empty:
++                if _heartbeat:
++                    self._publish_fc_async_heartbeat(
++                        fc_state,
++                        key="async_perception_heartbeat",
++                        cycle_sotc_frame=cycle_sotc_frame,
++                        phase=phase,
++                        invocation=1 if phase == "tool_call" else 2,
++                        async_step=None,
++                        model_frame=None,
++                        stage="between_stages",
++                        state="idle",
++                        completed_stage="audio_wait",
++                        live_audio_queue=live_audio_queue,
++                        perception_queue=emb_queue,
++                    )
+                 continue
+ 
+             if new_audio is None:
+                 break  # sentinel
+ 
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_perception_heartbeat",
++                    cycle_sotc_frame=cycle_sotc_frame,
++                    phase=phase,
++                    invocation=1 if phase == "tool_call" else 2,
++                    async_step=None,
++                    model_frame=None,
++                    stage="perception_encode",
++                    state="started",
++                    completed_stage="audio_wait",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=emb_queue,
++                )
+             new_audio = new_audio.to(self.device, dtype=self.dtype)
+             buf, fill, current_buf = self._update_audio_buffer(buf, fill, new_audio, buffer_size_samples)
+             buf_len = torch.tensor([current_buf.shape[1]], dtype=torch.long, device=self.device)
+@@ -1161,6 +1452,21 @@ class NemotronVoicechatInferenceWrapper:
+                         input_signal_length=buf_len,
+                         return_encoder_emb=True,
+                     )
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_perception_heartbeat",
++                    cycle_sotc_frame=cycle_sotc_frame,
++                    phase=phase,
++                    invocation=1 if phase == "tool_call" else 2,
++                    async_step=None,
++                    model_frame=None,
++                    stage="perception_sync",
++                    state="started",
++                    completed_stage="perception_encode",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=emb_queue,
++                )
+             perception_stream.synchronize()
+ 
+             source_encoded = source_encoded.to(self.dtype)
+@@ -1173,7 +1479,263 @@ class NemotronVoicechatInferenceWrapper:
+             else:
+                 asr_emb_frame = None
+ 
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_perception_heartbeat",
++                    cycle_sotc_frame=cycle_sotc_frame,
++                    phase=phase,
++                    invocation=1 if phase == "tool_call" else 2,
++                    async_step=None,
++                    model_frame=None,
++                    stage="embedding_publish",
++                    state="started",
++                    completed_stage="perception_sync",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=emb_queue,
++                )
+             emb_queue.put((user_audio_emb, asr_emb_frame))
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_perception_heartbeat",
++                    cycle_sotc_frame=cycle_sotc_frame,
++                    phase=phase,
++                    invocation=1 if phase == "tool_call" else 2,
++                    async_step=None,
++                    model_frame=None,
++                    stage="between_stages",
++                    state="idle",
++                    completed_stage="embedding_publish",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=emb_queue,
++                )
++
++        if _heartbeat:
++            self._publish_fc_async_heartbeat(
++                fc_state,
++                key="async_perception_heartbeat",
++                cycle_sotc_frame=cycle_sotc_frame,
++                phase=phase,
++                invocation=1 if phase == "tool_call" else 2,
++                async_step=None,
++                model_frame=None,
++                stage="complete",
++                state="complete",
++                live_audio_queue=live_audio_queue,
++                perception_queue=emb_queue,
++            )
++
++    def _perception_live_worker_guarded(
++        self,
++        live_audio_queue: "queue.Queue",
++        audio_buffer: torch.Tensor,
++        buffer_fill: int,
++        buffer_size_samples: int,
++        emb_queue: "queue.Queue",
++        stop_event: "threading.Event",
++        fc_state: dict | None = None,
++        cycle_sotc_frame: int | None = None,
++        phase: str = "tool_call",
++    ) -> None:
++        """Retain a terminal heartbeat if the live perception thread fails."""
++        try:
++            self._perception_live_worker(
++                live_audio_queue,
++                audio_buffer,
++                buffer_fill,
++                buffer_size_samples,
++                emb_queue,
++                stop_event,
++                fc_state,
++                cycle_sotc_frame,
++                phase,
++            )
++        except Exception as exc:
++            if self._fc_async_heartbeat_enabled and fc_state is not None:
++                previous = fc_state.get("async_perception_heartbeat")
++                failed_stage = (
++                    previous.get("stage") if isinstance(previous, dict) else None
++                )
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_perception_heartbeat",
++                    cycle_sotc_frame=cycle_sotc_frame,
++                    phase=phase,
++                    invocation=1 if phase == "tool_call" else 2,
++                    async_step=None,
++                    model_frame=None,
++                    stage="failed",
++                    state="failed",
++                    failed_stage=failed_stage,
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=emb_queue,
++                )
++            logging.error(
++                "[FC Async] Live perception worker failed: %s: %s",
++                type(exc).__name__,
++                exc,
++                exc_info=True,
++            )
++            raise
++
++    @staticmethod
++    def _bounded_queue_depth(value) -> int | None:
++        if value is None:
++            return None
++        try:
++            return max(0, min(int(value.qsize()), 1_000_000))
++        except Exception:
++            return None
++
++    def _publish_fc_async_heartbeat(
++        self,
++        fc_state: dict,
++        *,
++        key: str,
++        cycle_sotc_frame: int | None,
++        phase: str,
++        invocation: int,
++        async_step: int | None,
++        model_frame: int | None,
++        stage: str,
++        state: str,
++        completed_stage: str | None = None,
++        failed_stage: str | None = None,
++        live_audio_queue=None,
++        perception_queue=None,
++        tts_audio_queue=None,
++        rnnt_text_queue=None,
++    ) -> None:
++        """Publish one immutable-after-publication scalar heartbeat snapshot."""
++        if not self._fc_async_heartbeat_enabled:
++            return
++        previous = fc_state.get(key)
++        if (
++            isinstance(previous, dict)
++            and previous.get("cycle_sotc_frame") == cycle_sotc_frame
++            and isinstance(previous.get("invocation"), int)
++            and previous["invocation"] > invocation
++        ):
++            # A phase-1 perception worker may outlive its bounded join during
++            # phase-2 re-entry. Never let that older writer replace newer-cycle
++            # diagnostic evidence.
++            return
++        same_cycle = bool(
++            isinstance(previous, dict)
++            and previous.get("cycle_sotc_frame") == cycle_sotc_frame
++            and previous.get("invocation") == invocation
++        )
++        now = time.monotonic()
++        last_completed_stage = (
++            previous.get("last_completed_stage") if same_cycle else None
++        )
++        last_completed_monotonic = (
++            previous.get("last_completed_monotonic") if same_cycle else None
++        )
++        last_failed_stage = previous.get("last_failed_stage") if same_cycle else None
++        if completed_stage is not None:
++            last_completed_stage = completed_stage
++            last_completed_monotonic = now
++        if failed_stage is not None:
++            last_failed_stage = failed_stage
++        fc_state[key] = {
++            "schema": 1,
++            "cycle_sotc_frame": cycle_sotc_frame,
++            "phase": phase,
++            "invocation": invocation,
++            "async_step": async_step,
++            "model_frame": model_frame,
++            "stage": stage,
++            "state": state,
++            "stage_started_monotonic": now,
++            "last_completed_stage": last_completed_stage,
++            "last_completed_monotonic": last_completed_monotonic,
++            "last_failed_stage": last_failed_stage,
++            "thread_ident": threading.get_ident(),
++            "live_audio_queue_depth": self._bounded_queue_depth(live_audio_queue),
++            "perception_queue_depth": self._bounded_queue_depth(perception_queue),
++            "tts_audio_queue_depth": self._bounded_queue_depth(tts_audio_queue),
++            "rnnt_text_queue_depth": self._bounded_queue_depth(rnnt_text_queue),
++        }
++
++    def _append_post_fc_token_trace(self, record: dict) -> None:
++        """Queue one bounded, JSON-only diagnostic record for the transport trace."""
++        if not self._post_fc_token_trace_frames:
++            return
++        with self._post_fc_token_trace_lock:
++            self._post_fc_token_trace_sequence += 1
++            item = dict(record)
++            item["sequence"] = self._post_fc_token_trace_sequence
++            self._post_fc_token_trace_pending.append(item)
++            if len(self._post_fc_token_trace_pending) > 64:
++                del self._post_fc_token_trace_pending[:-64]
++
++    def drain_post_fc_token_trace(self) -> list[dict]:
++        """Return pending diagnostic records once, without retaining tensor state."""
++        if not self._post_fc_token_trace_frames:
++            return []
++        with self._post_fc_token_trace_lock:
++            records = self._post_fc_token_trace_pending
++            self._post_fc_token_trace_pending = []
++        return records
++
++    def _reset_post_fc_token_trace(self) -> None:
++        with self._post_fc_token_trace_lock:
++            self._post_fc_token_trace_until_frame = -1
++            self._post_fc_token_trace_sequence = 0
++            self._post_fc_token_trace_pending = []
++
++    def _trace_token_text(self, token_id: int) -> str:
++        try:
++            return self.tokenizer.ids_to_text([int(token_id)])
++        except Exception:
++            return ""
++
++    def _trace_agent_topk(
++        self, value: dict | None, raw_agent_token_id: int
++    ) -> dict | None:
++        """Add decoded token text to one already-bounded agent-head summary."""
++        if value is None:
++            return None
++        if value.get("no_model_position") is True:
++            expected_keys = {
++                "no_model_position",
++                "scheduler_decision",
++                "synthetic_token_id",
++                "total_tokens",
++            }
++            pad_id = int(self.model.stt_model.text_pad_id)
++            if (
++                set(value) != expected_keys
++                or value.get("scheduler_decision") != "pad_pair_buffered"
++                or value.get("synthetic_token_id") != raw_agent_token_id
++                or raw_agent_token_id != pad_id
++            ):
++                raise RuntimeError(
++                    "agent-logit trace buffered token does not match recorded raw PAD"
++                )
++            return dict(value)
++        if value.get("predicted_token_id") != raw_agent_token_id:
++            raise RuntimeError(
++                "agent-logit trace predicted token does not match recorded raw agent token"
++            )
++        result = dict(value)
++        result["watched"] = {
++            name: {
++                **item,
++                "text": self._trace_token_text(item["token_id"]),
++            }
++            for name, item in value.get("watched", {}).items()
++        }
++        result["top_k"] = [
++            {
++                **item,
++                "text": self._trace_token_text(item["token_id"]),
++            }
++            for item in value.get("top_k", [])
++        ]
++        return result
+ 
+     def _run_fc_async_steps(
+         self,
+@@ -1200,6 +1762,7 @@ class NemotronVoicechatInferenceWrapper:
+         abort_event: "threading.Event | None" = None,
+         quit_async_event: "threading.Event | None" = None,
+         stream_id: "int | None" = None,
++        cycle_sotc_frame: "int | None" = None,
+     ) -> tuple[int, dict | None]:
+         """
+         Run LLM steps at full speed during function calling.
+@@ -1275,6 +1838,29 @@ class NemotronVoicechatInferenceWrapper:
+         async_steps = 0
+         t = current_frame_idx + 1  # start from next position after SOTC
+         rt_real_count = 0  # track how many real audio frames were used (for logging)
++        _heartbeat = bool(self._fc_async_heartbeat_enabled)
++        _cycle_sotc_frame = (
++            current_frame_idx if cycle_sotc_frame is None else int(cycle_sotc_frame)
++        )
++        _heartbeat_phase = "tool_response" if tool_response_text else "tool_call"
++        _heartbeat_invocation = 2 if tool_response_text else 1
++        if _heartbeat:
++            fc_state.pop("async_heartbeat", None)
++            fc_state.pop("async_perception_heartbeat", None)
++            self._publish_fc_async_heartbeat(
++                fc_state,
++                key="async_heartbeat",
++                cycle_sotc_frame=_cycle_sotc_frame,
++                phase=_heartbeat_phase,
++                invocation=_heartbeat_invocation,
++                async_step=0,
++                model_frame=t,
++                stage="entry",
++                state="started",
++                live_audio_queue=live_audio_queue,
++                tts_audio_queue=tts_audio_output_queue,
++                rnnt_text_queue=rnnt_text_queue,
++            )
+ 
+         # Phase 2 re-entry: if tool_response_text is provided AND we are NOT in
+         # an active call (i.e. call was already generated in a previous invocation),
+@@ -1288,6 +1874,15 @@ class NemotronVoicechatInferenceWrapper:
+             response_tokens = self._build_fc_response_tokens(tool_response_text)
+             fc_state["forced_function_tokens"] = response_tokens
+             fc_state["injecting_response"] = True
++            fc_state["awaiting_eotr"] = True
++            fc_state["eotr_observed"] = False
++            fc_state["eotr_observed_frame"] = None
++            fc_state["eotr_wait_steps"] = 0
++            fc_state["eotr_timeout"] = False
++            fc_state["eotr_unexpected_token_id"] = None
++            fc_state["eotr_unexpected_token_frame"] = None
++            fc_state["eotr_first_post_drain_token_id"] = None
++            fc_state["eotr_first_post_drain_token_frame"] = None
+             fc_state.setdefault("tool_response_inject_start_wall", _time.time())
+             fc_state.setdefault("tool_response_inject_start_frame", current_frame_idx + 1)
+             fc_state["tool_response_num_tokens"] = len(response_tokens)
+@@ -1327,7 +1922,11 @@ class NemotronVoicechatInferenceWrapper:
+             _percep_queue = queue.Queue()
+             _percep_stop = threading.Event()
+             _percep_thread = threading.Thread(
+-                target=self._perception_live_worker,
++                target=(
++                    self._perception_live_worker_guarded
++                    if self._fc_async_heartbeat_enabled
++                    else self._perception_live_worker
++                ),
+                 args=(
+                     live_audio_queue,
+                     live_audio_buffer if live_audio_buffer is not None
+@@ -1336,6 +1935,9 @@ class NemotronVoicechatInferenceWrapper:
+                     live_buffer_size_samples,
+                     _percep_queue,
+                     _percep_stop,
++                    fc_state,
++                    _cycle_sotc_frame,
++                    _heartbeat_phase,
+                 ),
+                 daemon=True,
+             )
+@@ -1353,6 +1955,22 @@ class NemotronVoicechatInferenceWrapper:
+         _live_mode = live_audio_queue is not None
+ 
+         while async_steps < max_async_steps and t < T_total:
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_heartbeat",
++                    cycle_sotc_frame=_cycle_sotc_frame,
++                    phase=_heartbeat_phase,
++                    invocation=_heartbeat_invocation,
++                    async_step=async_steps,
++                    model_frame=t,
++                    stage="prepare",
++                    state="started",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=_percep_queue,
++                    tts_audio_queue=tts_audio_output_queue,
++                    rnnt_text_queue=rnnt_text_queue,
++                )
+             # Check for interrupt signal from the main thread (user spoke during FC).
+             if abort_event is not None and abort_event.is_set():
+                 logging.info(
+@@ -1382,6 +2000,34 @@ class NemotronVoicechatInferenceWrapper:
+ 
+             _step_start = time.time()
+ 
++            _trace_enabled = bool(self._post_fc_token_trace_frames)
++            _trace_forced_before = fc_state.get("forced_function_tokens") or []
++            _trace_candidate = bool(
++                _trace_enabled
++                and (
++                    len(_trace_forced_before) == 1
++                    or (
++                        not _trace_forced_before
++                        and fc_state.get("awaiting_eotr", False)
++                    )
++                )
++            )
++            if _trace_candidate:
++                _trace_previous_agent_token_id = int(gen_text[0, t - 1].item())
++                _trace_previous_function_token_id = int(
++                    gen_function_text[0, t - 1].item()
++                )
++                _trace_bos_latch_before = bool(self._post_fc_client_bos_requested)
++                _trace_agent_open_before = not self._get_agent_idle(stream_id)
++                _trace_fc_before = {
++                    "active": bool(fc_state.get("active", False)),
++                    "injecting_response": bool(
++                        fc_state.get("injecting_response", False)
++                    ),
++                    "awaiting_eotr": bool(fc_state.get("awaiting_eotr", False)),
++                    "forced_tokens": len(fc_state.get("forced_function_tokens") or []),
++                }
++
+             agent_text_emb = self.model.stt_model.embed_tokens(
+                 gen_text[:, t - 1]
+             ).unsqueeze(1).to(dtype=self.dtype)
+@@ -1394,6 +2040,23 @@ class NemotronVoicechatInferenceWrapper:
+             function_emb = self.model.stt_model.embed_tokens(
+                 gen_function_text[:, t - 1]
+             ).unsqueeze(1).to(dtype=self.dtype)
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_heartbeat",
++                    cycle_sotc_frame=_cycle_sotc_frame,
++                    phase=_heartbeat_phase,
++                    invocation=_heartbeat_invocation,
++                    async_step=async_steps,
++                    model_frame=t,
++                    stage="perception_poll",
++                    state="started",
++                    completed_stage="prepare",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=_percep_queue,
++                    tts_audio_queue=tts_audio_output_queue,
++                    rnnt_text_queue=rnnt_text_queue,
++                )
+             _t_embed = time.time()
+             _t_embed_total += _t_embed - _step_start
+ 
+@@ -1431,6 +2094,23 @@ class NemotronVoicechatInferenceWrapper:
+                 user_text_embeds=user_text_emb,
+                 function_embeds=function_emb,
+             )
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_heartbeat",
++                    cycle_sotc_frame=_cycle_sotc_frame,
++                    phase=_heartbeat_phase,
++                    invocation=_heartbeat_invocation,
++                    async_step=async_steps,
++                    model_frame=t,
++                    stage="nano",
++                    state="started",
++                    completed_stage="perception_poll",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=_percep_queue,
++                    tts_audio_queue=tts_audio_output_queue,
++                    rnnt_text_queue=rnnt_text_queue,
++                )
+             _t_fuse = time.time()
+             _t_fusion_total += _t_fuse - _t_percep
+ 
+@@ -1440,6 +2120,14 @@ class NemotronVoicechatInferenceWrapper:
+                     request_id=request_id or self.request_id,
+                     generated_tokens=gen_text,
+                     current_step=t,
++                    capture_agent_logit_trace=bool(
++                        _trace_candidate
++                        and getattr(
++                            self.model_llm_interface,
++                            "_agent_logit_trace_topk",
++                            0,
++                        )
++                    ),
+                 )
+             elif use_cache:
+                 ans = self.model_llm_interface(
+@@ -1458,6 +2146,23 @@ class NemotronVoicechatInferenceWrapper:
+                     generated_tokens=gen_text,
+                     current_step=t,
+                 )
++            if _heartbeat:
++                self._publish_fc_async_heartbeat(
++                    fc_state,
++                    key="async_heartbeat",
++                    cycle_sotc_frame=_cycle_sotc_frame,
++                    phase=_heartbeat_phase,
++                    invocation=_heartbeat_invocation,
++                    async_step=async_steps,
++                    model_frame=t,
++                    stage="between_stages",
++                    state="idle",
++                    completed_stage="nano",
++                    live_audio_queue=live_audio_queue,
++                    perception_queue=_percep_queue,
++                    tts_audio_queue=tts_audio_output_queue,
++                    rnnt_text_queue=rnnt_text_queue,
++                )
+             _t_llm_total += time.time() - _t_fuse
+ 
+             # TTS KV-cache sync: run one TTS forward pass with PAD on EVERY async
+@@ -1469,6 +2174,7 @@ class NemotronVoicechatInferenceWrapper:
+             # produce the silence audio sent to the client.
+             if tts_state is not None:
+                 _t_tts_start = time.time()
++                _heartbeat_tts_stage = "eartts"
+                 try:
+                     _tts_code = tts_state["code"]
+                     _tts_pkv = tts_state["past_key_values"]
+@@ -1501,6 +2207,22 @@ class NemotronVoicechatInferenceWrapper:
+                     if self.use_vllm_eartts:
+                         _tts_inputs["request_id"] = request_id or self.request_id
+ 
++                    if _heartbeat:
++                        self._publish_fc_async_heartbeat(
++                            fc_state,
++                            key="async_heartbeat",
++                            cycle_sotc_frame=_cycle_sotc_frame,
++                            phase=_heartbeat_phase,
++                            invocation=_heartbeat_invocation,
++                            async_step=async_steps,
++                            model_frame=t,
++                            stage="eartts",
++                            state="started",
++                            live_audio_queue=live_audio_queue,
++                            perception_queue=_percep_queue,
++                            tts_audio_queue=tts_audio_output_queue,
++                            rnnt_text_queue=rnnt_text_queue,
++                        )
+                     _tts_code_new, _tts_pkv_new = self.model.tts_model.infer_codes_one_step(**_tts_inputs)
+ 
+                     # ====== TTS PAD-silence substitution — SITE 1 (FC async warmup) ======
+@@ -1554,14 +2276,84 @@ class NemotronVoicechatInferenceWrapper:
+                                     getattr(self.model.tts_model, 'codec_silence_tokens', None),
+                                 )
+                             _tts_code_len = torch.tensor([1], dtype=torch.long, device=self.device)
++                            _heartbeat_tts_stage = "codec_decode"
++                            if _heartbeat:
++                                self._publish_fc_async_heartbeat(
++                                    fc_state,
++                                    key="async_heartbeat",
++                                    cycle_sotc_frame=_cycle_sotc_frame,
++                                    phase=_heartbeat_phase,
++                                    invocation=_heartbeat_invocation,
++                                    async_step=async_steps,
++                                    model_frame=t,
++                                    stage="codec_decode",
++                                    state="started",
++                                    completed_stage="eartts",
++                                    live_audio_queue=live_audio_queue,
++                                    perception_queue=_percep_queue,
++                                    tts_audio_queue=tts_audio_output_queue,
++                                    rnnt_text_queue=rnnt_text_queue,
++                                )
+                             _tts_decoded_audio, _ = self.model.tts_model.audio_codec.decode(
+                                 _tts_new_codes, _tts_code_len, cache=_tts_codec_cache,
+                             )
++                            _heartbeat_tts_stage = "codec_cpu_copy"
++                            if _heartbeat:
++                                self._publish_fc_async_heartbeat(
++                                    fc_state,
++                                    key="async_heartbeat",
++                                    cycle_sotc_frame=_cycle_sotc_frame,
++                                    phase=_heartbeat_phase,
++                                    invocation=_heartbeat_invocation,
++                                    async_step=async_steps,
++                                    model_frame=t,
++                                    stage="codec_cpu_copy",
++                                    state="started",
++                                    completed_stage="codec_decode",
++                                    live_audio_queue=live_audio_queue,
++                                    perception_queue=_percep_queue,
++                                    tts_audio_queue=tts_audio_output_queue,
++                                    rnnt_text_queue=rnnt_text_queue,
++                                )
+                             _tts_chunk_cpu = _tts_decoded_audio.detach().cpu()
+                             _tts_silence_audio_chunks.append(_tts_chunk_cpu)
+                             if tts_audio_output_queue is not None:
+                                 tts_audio_output_queue.put(_tts_chunk_cpu)
++                    if _heartbeat:
++                        self._publish_fc_async_heartbeat(
++                            fc_state,
++                            key="async_heartbeat",
++                            cycle_sotc_frame=_cycle_sotc_frame,
++                            phase=_heartbeat_phase,
++                            invocation=_heartbeat_invocation,
++                            async_step=async_steps,
++                            model_frame=t,
++                            stage="between_stages",
++                            state="idle",
++                            completed_stage=_heartbeat_tts_stage,
++                            live_audio_queue=live_audio_queue,
++                            perception_queue=_percep_queue,
++                            tts_audio_queue=tts_audio_output_queue,
++                            rnnt_text_queue=rnnt_text_queue,
++                        )
+                 except Exception as _tts_exc:
++                    if _heartbeat:
++                        self._publish_fc_async_heartbeat(
++                            fc_state,
++                            key="async_heartbeat",
++                            cycle_sotc_frame=_cycle_sotc_frame,
++                            phase=_heartbeat_phase,
++                            invocation=_heartbeat_invocation,
++                            async_step=async_steps,
++                            model_frame=t,
++                            stage="stage_failed",
++                            state="failed",
++                            failed_stage=_heartbeat_tts_stage,
++                            live_audio_queue=live_audio_queue,
++                            perception_queue=_percep_queue,
++                            tts_audio_queue=tts_audio_output_queue,
++                            rnnt_text_queue=rnnt_text_queue,
++                        )
+                     logging.warning("[FC Async] TTS warmup step failed: %s", _tts_exc)
+                 _t_tts_total += time.time() - _t_tts_start
+ 
+@@ -1574,6 +2366,15 @@ class NemotronVoicechatInferenceWrapper:
+ 
+             predicted_token = ans["predicted_token"]
+             asr_predicted_token = ans["asr_predicted_token"]
++            if _trace_candidate:
++                _trace_raw_agent_token_id = int(
++                    torch.as_tensor(predicted_token).reshape(-1)[0].item()
++                )
++                _trace_raw_function_token_id = int(
++                    torch.as_tensor(ans.get("function_predicted_token", pad_id))
++                    .reshape(-1)[0]
++                    .item()
++                )
+ 
+             gen_text[:, t] = pad_id  # force PAD during FC async — prevents apology-token KV-cache contamination
+             gen_asr_text[:, t] = pad_id  # silence → no user speech
+@@ -1585,6 +2386,10 @@ class NemotronVoicechatInferenceWrapper:
+ 
+             # --- Forced injection phase ---
+             forced = fc_state.get("forced_function_tokens", [])
++            _trace_last_injected_position = bool(
++                _trace_candidate and forced and len(forced) == 1
++            )
++            awaiting_eotr_at_step = False
+             if forced:
+                 override_id = forced.pop(0)
+                 gen_function_text[:, t] = override_id
+@@ -1601,6 +2406,7 @@ class NemotronVoicechatInferenceWrapper:
+ 
+                 # --- Natural token monitoring ---
+                 func_tok_val = gen_function_text[0, t].item()
++                awaiting_eotr_at_step = bool(fc_state.get("awaiting_eotr", False))
+                 if func_tok_val == self._fc_sotc_id:
+                     fc_state["active"] = True
+                     fc_state["call_tokens"] = []
+@@ -1632,6 +2438,15 @@ class NemotronVoicechatInferenceWrapper:
+                         response_tokens = self._build_fc_response_tokens(tool_response_text)
+                         fc_state["forced_function_tokens"] = response_tokens
+                         fc_state["tool_response_num_tokens"] = len(response_tokens)
++                        fc_state["awaiting_eotr"] = True
++                        fc_state["eotr_observed"] = False
++                        fc_state["eotr_observed_frame"] = None
++                        fc_state["eotr_wait_steps"] = 0
++                        fc_state["eotr_timeout"] = False
++                        fc_state["eotr_unexpected_token_id"] = None
++                        fc_state["eotr_unexpected_token_frame"] = None
++                        fc_state["eotr_first_post_drain_token_id"] = None
++                        fc_state["eotr_first_post_drain_token_frame"] = None
+                         logging.info(f"[FC Async] Queued {len(response_tokens)} response tokens")
+                     elif self._fc_async_two_phase:
+                         fc_state["awaiting_response"] = True
+@@ -1649,11 +2464,104 @@ class NemotronVoicechatInferenceWrapper:
+                         async_steps += 1
+                         t += 1
+                         break
+-                elif self._fc_eotr_id is not None and func_tok_val == self._fc_eotr_id:
++                elif (
++                    fc_state.get("awaiting_eotr", False)
++                    and self._fc_eotr_id is not None
++                    and func_tok_val == self._fc_eotr_id
++                ):
++                    fc_state["awaiting_eotr"] = False
++                    fc_state["eotr_observed"] = True
++                    fc_state["eotr_observed_frame"] = t
++                    fc_state["eotr_observed_count"] = int(
++                        fc_state.get("eotr_observed_count", 0)
++                    ) + 1
+                     logging.info(f"[FC Async] EOTR predicted at async step {async_steps} (frame {t})")
+                 elif fc_state.get("active", False) and func_tok_val != pad_id:
+                     fc_state.setdefault("call_tokens", []).append(func_tok_val)
+ 
++                if awaiting_eotr_at_step:
++                    if int(fc_state.get("eotr_wait_steps", 0)) == 0:
++                        fc_state["eotr_first_post_drain_token_id"] = func_tok_val
++                        fc_state["eotr_first_post_drain_token_frame"] = t
++                    fc_state["eotr_wait_steps"] = int(
++                        fc_state.get("eotr_wait_steps", 0)
++                    ) + 1
++                    if func_tok_val != self._fc_eotr_id:
++                        fc_state["eotr_unexpected_token_id"] = func_tok_val
++                        fc_state["eotr_unexpected_token_frame"] = t
++
++            if _trace_candidate and (
++                _trace_last_injected_position or awaiting_eotr_at_step
++            ):
++                _trace_effective_agent_token_id = int(gen_text[0, t].item())
++                _trace_effective_function_token_id = int(
++                    gen_function_text[0, t].item()
++                )
++                _trace_record = {
++                        "phase": (
++                            "async_eotr"
++                            if awaiting_eotr_at_step
++                            else "last_injected_response"
++                        ),
++                        "model_frame": int(t),
++                        "raw_agent_token_id": _trace_raw_agent_token_id,
++                        "raw_agent_text": self._trace_token_text(
++                            _trace_raw_agent_token_id
++                        ),
++                        "effective_agent_token_id": _trace_effective_agent_token_id,
++                        "effective_agent_text": self._trace_token_text(
++                            _trace_effective_agent_token_id
++                        ),
++                        "agent_effective_reason": "fc_async_pad",
++                        "raw_function_token_id": _trace_raw_function_token_id,
++                        "raw_function_text": self._trace_token_text(
++                            _trace_raw_function_token_id
++                        ),
++                        "effective_function_token_id": _trace_effective_function_token_id,
++                        "effective_function_text": self._trace_token_text(
++                            _trace_effective_function_token_id
++                        ),
++                        "function_effective_reason": (
++                            "model_eotr"
++                            if awaiting_eotr_at_step
++                            else "forced_response_token"
++                        ),
++                        "previous_effective_agent_token_id": _trace_previous_agent_token_id,
++                        "previous_effective_function_token_id": (
++                            _trace_previous_function_token_id
++                        ),
++                        "post_fc_bos_latch_before": _trace_bos_latch_before,
++                        "post_fc_bos_latch_after": bool(
++                            self._post_fc_client_bos_requested
++                        ),
++                        "agent_open_before": _trace_agent_open_before,
++                        "agent_open_after": not self._get_agent_idle(stream_id),
++                        "fc_before": _trace_fc_before,
++                        "fc_after": {
++                            "active": bool(fc_state.get("active", False)),
++                            "injecting_response": bool(
++                                fc_state.get("injecting_response", False)
++                            ),
++                            "awaiting_eotr": bool(
++                                fc_state.get("awaiting_eotr", False)
++                            ),
++                            "forced_tokens": len(
++                                fc_state.get("forced_function_tokens") or []
++                            ),
++                        },
++                    }
++                _trace_agent_topk = self._trace_agent_topk(
++                    ans.get("agent_logit_trace"), _trace_raw_agent_token_id
++                )
++                if _trace_agent_topk is not None:
++                    _trace_record["agent_topk"] = _trace_agent_topk
++                    _trace_record["raw_agent_source"] = (
++                        "pad_pair_buffered"
++                        if _trace_agent_topk.get("no_model_position") is True
++                        else "model"
++                    )
++                self._append_post_fc_token_trace(_trace_record)
++
+             # RNNT decode on live audio frames (Triton server mode).
+             # Turn-taking is intentionally skipped here: the main thread monitors
+             # the rnnt_text_queue and sets abort_event when it detects persistent
+@@ -1661,6 +2569,22 @@ class NemotronVoicechatInferenceWrapper:
+             # loop would insert EOS/BOS tokens into gen_text and disrupt the tool
+             # call generation even when the user is not speaking.
+             if _live_mode and _got_real_audio_frame and has_rnnt and live_asr_emb_frame is not None:
++                if _heartbeat:
++                    self._publish_fc_async_heartbeat(
++                        fc_state,
++                        key="async_heartbeat",
++                        cycle_sotc_frame=_cycle_sotc_frame,
++                        phase=_heartbeat_phase,
++                        invocation=_heartbeat_invocation,
++                        async_step=async_steps,
++                        model_frame=t,
++                        stage="rnnt",
++                        state="started",
++                        live_audio_queue=live_audio_queue,
++                        perception_queue=_percep_queue,
++                        tts_audio_queue=tts_audio_output_queue,
++                        rnnt_text_queue=rnnt_text_queue,
++                    )
+                 # live_asr_emb_frame may be [B,1,D] or [B,D] — normalise to [B,D]
+                 _lf = live_asr_emb_frame.squeeze(1) if live_asr_emb_frame.dim() == 3 else live_asr_emb_frame
+                 if rnnt_partial_hypotheses is None:
+@@ -1680,6 +2604,23 @@ class NemotronVoicechatInferenceWrapper:
+                                 rnnt_text_queue.put_nowait(_fc_text)
+                             except Exception:
+                                 pass
++                if _heartbeat:
++                    self._publish_fc_async_heartbeat(
++                        fc_state,
++                        key="async_heartbeat",
++                        cycle_sotc_frame=_cycle_sotc_frame,
++                        phase=_heartbeat_phase,
++                        invocation=_heartbeat_invocation,
++                        async_step=async_steps,
++                        model_frame=t,
++                        stage="between_stages",
++                        state="idle",
++                        completed_stage="rnnt",
++                        live_audio_queue=live_audio_queue,
++                        perception_queue=_percep_queue,
++                        tts_audio_queue=tts_audio_output_queue,
++                        rnnt_text_queue=rnnt_text_queue,
++                    )
+ 
+             # Natural interrupt: the model's agent text head predicted a real
+             # token (non-PAD/BOS/EOS) while receiving real user audio.
+@@ -1707,13 +2648,28 @@ class NemotronVoicechatInferenceWrapper:
+             async_steps += 1
+             t += 1
+ 
+-            # Exit conditions: FC cycle complete (no more forced tokens, not in active call,
+-            # and not injecting response). EOTR is appended to forced tokens so the model
+-            # has the full context when the main loop resumes.
++            if (
++                fc_state.get("awaiting_eotr", False)
++                and int(fc_state.get("eotr_wait_steps", 0))
++                >= self._fc_eotr_wait_max_steps
++            ):
++                fc_state["eotr_timeout"] = True
++                logging.error(
++                    "[FC Async] EOTR was not predicted within %d steps after "
++                    "tool-response injection (frame %d); failing the cycle closed",
++                    self._fc_eotr_wait_max_steps,
++                    t,
++                )
++                break
++
++            # A response-bearing FC cycle is complete only after the model predicts
++            # the trained EOTR marker. The injected response tokens deliberately do
++            # not contain EOTR: training places loss on that model-owned boundary.
+             no_forced = not fc_state.get("forced_function_tokens", [])
+             not_active = not fc_state.get("active", False)
+             not_injecting = not fc_state.get("injecting_response", False)
+-            if no_forced and not_active and not_injecting:
++            not_awaiting_eotr = not fc_state.get("awaiting_eotr", False)
++            if no_forced and not_active and not_injecting and not_awaiting_eotr:
+                 if "tool_response_inject_start_wall" in fc_state:
+                     import time as _time
+                     fc_state["tool_response_inject_end_wall"] = _time.time()
+@@ -1768,6 +2724,49 @@ class NemotronVoicechatInferenceWrapper:
+             _t_llm_total, 100 * _t_llm_total / max(_t_total, 1e-9), 1000 * _t_llm_total / max(async_steps, 1),
+             _t_tts_total, 100 * _t_tts_total / max(_t_total, 1e-9), _n_tts_warmup_calls, 1000 * _t_tts_total / max(_n_tts_warmup_calls, 1),
+         )
++        if _heartbeat:
++            _heartbeat_aborted = (
++                (abort_event is not None and abort_event.is_set())
++                or (quit_async_event is not None and quit_async_event.is_set())
++            )
++            _heartbeat_failed = bool(
++                not _heartbeat_aborted
++                and (
++                    fc_state.get("eotr_timeout", False)
++                    or async_steps >= max_async_steps
++                    or t >= T_total
++                    or (
++                        _heartbeat_phase == "tool_response"
++                        and fc_state.get("eotr_observed") is not True
++                    )
++                    or (
++                        _heartbeat_phase == "tool_call"
++                        and not fc_state.get("awaiting_response", False)
++                        and not fc_state.get("natural_interrupt", False)
++                    )
++                )
++            )
++            if _heartbeat_aborted:
++                terminal_stage = "aborted"
++            elif _heartbeat_failed:
++                terminal_stage = "failed"
++            else:
++                terminal_stage = "complete"
++            self._publish_fc_async_heartbeat(
++                fc_state,
++                key="async_heartbeat",
++                cycle_sotc_frame=_cycle_sotc_frame,
++                phase=_heartbeat_phase,
++                invocation=_heartbeat_invocation,
++                async_step=async_steps,
++                model_frame=t,
++                stage=terminal_stage,
++                state=terminal_stage,
++                live_audio_queue=live_audio_queue,
++                perception_queue=_percep_queue,
++                tts_audio_queue=tts_audio_output_queue,
++                rnnt_text_queue=rnnt_text_queue,
++            )
+         return async_steps, dynamic_cache, tts_state, _tts_silence_audio_chunks, rnnt_partial_hypotheses
+ 
+     def _prepare_system_prompt_embeddings(
+@@ -2133,6 +3132,18 @@ class NemotronVoicechatInferenceWrapper:
+             tool_response_text = self._convert_tool_response_nums_to_text(tool_response_text)
+         return self.tokenizer.text_to_ids(tool_response_text)
+ 
++    @staticmethod
++    def _require_fc_eotr_completion(fc_state: dict) -> None:
++        """Reject a blocking FC response path that did not close on model EOTR."""
++        if (
++            fc_state.get("eotr_timeout", False)
++            or fc_state.get("awaiting_eotr", False)
++            or fc_state.get("eotr_observed") is not True
++        ):
++            raise RuntimeError(
++                "function tool-response cycle did not close on model-predicted EOTR"
++            )
++
+     def _apply_fc_state_machine(
+         self,
+         fc_state: dict,
+@@ -2176,6 +3187,25 @@ class NemotronVoicechatInferenceWrapper:
+ 
+         # --- Phase 2: monitor natural function head output ---
+         if func_tok_val == self._fc_sotc_id:
++            for key in (
++                "tool_response_inject_start_wall",
++                "tool_response_inject_start_frame",
++                "tool_response_inject_end_wall",
++                "tool_response_inject_end_frame",
++                "eotr_observed",
++                "eotr_observed_frame",
++                "eotr_wait_steps",
++                "eotr_timeout",
++                "eotr_unexpected_token_id",
++                "eotr_unexpected_token_frame",
++                "eotr_first_post_drain_token_id",
++                "eotr_first_post_drain_token_frame",
++                "eotr_feedback_token_id",
++                "eotr_feedback_frame",
++                "eotr_feedback_committed",
++            ):
++                fc_state.pop(key, None)
++            fc_state["awaiting_eotr"] = False
+             fc_state["active"] = True
+             fc_state["call_tokens"] = []
+             logging.info(f"FC: SOTC detected at frame {current_frame_idx}")
+@@ -2298,29 +3328,45 @@ class NemotronVoicechatInferenceWrapper:
+                        rnnt_partial_hypotheses=None,
+                        fc_state: dict | None = None,
+                        tool_response_text: str | None = None,
+-                       stream_id: Optional[int] = None):
++                       stream_id: Optional[int] = None,
++                       source_embeddings: Optional[torch.Tensor] = None,
++                       force_output_pad: bool = False,
++                       perception_frame_idx: Optional[int] = None):
+ 
+         # Set up effective request ID for vLLM streaming
+         effective_request_id = request_id or self.request_id
+ 
+-        start_time_one_step = time.time()
++        start_time_one_step = time.perf_counter()
+         use_cache = dynamic_cache is not None
+         batch_size = gen_text.shape[0]
++        effective_perception_frame_idx = (
++            frame_idx if perception_frame_idx is None else perception_frame_idx
++        )
+ 
+         pad_id = self.model.stt_model.text_pad_id
+         predicted_tokens = torch.full((batch_size, num_frames_per_chunk), pad_id, dtype=gen_text.dtype, device=gen_text.device)
+         asr_predicted_tokens = torch.full((batch_size, num_frames_per_chunk), pad_id, dtype=gen_text.dtype, device=gen_text.device)
+         function_predicted_tokens = torch.full((batch_size, num_frames_per_chunk), pad_id, dtype=gen_text.dtype, device=gen_text.device)
+ 
+-        # Do "perception" step outside the for-loop
+-        start_perception = time.time()
++        # Do "perception" step outside the for-loop.  A direct user-source
++        # transaction supplies already-embedded source tokens here; it must not
++        # advance perception or RNNT state.
++        start_perception = time.perf_counter()
+         asr_emb = None
+ 
+-        if self.use_perception_cache and perception_cache is not None and perception_cache.is_initialized():
++        if source_embeddings is not None:
++            if source_embeddings.dim() != 3:
++                raise ValueError("source_embeddings must have shape [B, T, H]")
++            if source_embeddings.shape[0] != batch_size:
++                raise ValueError("source_embeddings batch size does not match generation state")
++            if source_embeddings.shape[1] != num_frames_per_chunk:
++                raise ValueError("source_embeddings timeline length does not match requested positions")
++            source_encoded = source_embeddings.to(device=self.device, dtype=self.dtype)
++        elif self.use_perception_cache and perception_cache is not None and perception_cache.is_initialized():
+             # Cache-aware perception (also returns raw encoder embeddings for RNNT)
+             source_encoded, perception_cache, asr_emb = self.perception_cache_mgr.step(
+                 audio_input=audio_input,
+-                frame_idx=frame_idx,
++                frame_idx=effective_perception_frame_idx,
+                 num_frames_per_chunk=num_frames_per_chunk,
+                 perception_cache=perception_cache,
+             )
+@@ -2334,13 +3380,18 @@ class NemotronVoicechatInferenceWrapper:
+             )
+ 
+         torch.cuda.synchronize()
+-        time_perception = time.time() - start_perception
++        time_perception = time.perf_counter() - start_perception
+         logging.info(f"Time taken for perception: {time_perception:.3f}s")
+         source_encoded = source_encoded.to(self.dtype)
+         total_encoded_frames = source_encoded.shape[1]
+ 
+-        # Determine embedding position based on whether we're using cache
+-        if self.use_perception_cache and perception_cache is not None and perception_cache.is_initialized():
++        # Determine embedding position based on whether we're using cache.  A
++        # supplied source sequence already has one exact row per position.
++        if source_embeddings is not None:
++            embedding_position = 0
++            newest_frame_index = total_encoded_frames - 1
++            base_frame_index = 0
++        elif self.use_perception_cache and perception_cache is not None and perception_cache.is_initialized():
+             # With cache: we get exactly num_frames_per_chunk output frames
+             # Use all of them directly
+             embedding_position = 0
+@@ -2361,17 +3412,69 @@ class NemotronVoicechatInferenceWrapper:
+ 
+         new_input_embeds = []
+         new_codes_for_decode = []
++        raw_predicted_tokens = []
++        raw_asr_predicted_tokens = []
++        raw_function_predicted_tokens = []
++        function_logit_traces = []
++        time_stt_model_total = 0.0
++        time_tts_model_total = 0.0
++        eartts_reset_timing = None
++        eartts_idle_pad_bypassed_frames = []
+         for frame_offset in range(num_frames_per_chunk):
+             current_frame_idx = frame_idx + frame_offset
++            current_perception_frame_idx = effective_perception_frame_idx + frame_offset
+             current_frame_index = base_frame_index + frame_offset
+             current_frame_index = min(current_frame_index, total_encoded_frames - 1)
+             current_frame_embedding = source_encoded[:, current_frame_index:current_frame_index + 1, :]
+ 
++            _trace_enabled = bool(self._post_fc_token_trace_frames)
++            _trace_candidate = bool(
++                _trace_enabled
++                and (
++                    self._post_fc_client_bos_requested
++                    or current_frame_idx <= self._post_fc_token_trace_until_frame
++                )
++            )
++            if _trace_candidate:
++                _trace_previous_agent_token_id = (
++                    int(gen_text[0, current_frame_idx - 1].item())
++                    if current_frame_idx > 0
++                    else None
++                )
++                _trace_previous_function_token_id = (
++                    int(gen_function_text[0, current_frame_idx - 1].item())
++                    if gen_function_text is not None and current_frame_idx > 0
++                    else None
++                )
++                _trace_bos_latch_before = bool(self._post_fc_client_bos_requested)
++                _trace_agent_open_before = False
++                if rnnt_partial_hypotheses is not None:
++                    _trace_agent_flags = rnnt_partial_hypotheses.get("agent_speaking")
++                    _trace_agent_open_before = bool(
++                        _trace_agent_flags is not None
++                        and torch.as_tensor(_trace_agent_flags).reshape(-1)[0].item()
++                    )
++                _trace_fc_before = (
++                    {
++                        "active": bool(fc_state.get("active", False)),
++                        "injecting_response": bool(
++                            fc_state.get("injecting_response", False)
++                        ),
++                        "awaiting_eotr": bool(
++                            fc_state.get("awaiting_eotr", False)
++                        ),
++                        "forced_tokens": len(
++                            fc_state.get("forced_function_tokens") or []
++                        ),
++                    }
++                    if fc_state is not None
++                    else None
++                )
++
+             has_fc = gen_function_text is not None
+ 
+             # Build per-channel embeddings, then fuse — mirrors training's fusion_module usage
+             user_audio_emb = current_frame_embedding  # [B, 1, D]
+-            self._last_user_audio_emb = user_audio_emb.detach()
+ 
+             if current_frame_idx == 0 and not has_prompt:
+                 agent_text_emb = self._get_bos_embedding().unsqueeze(0)  # [1, 1, H]
+@@ -2413,8 +3516,14 @@ class NemotronVoicechatInferenceWrapper:
+                 user_text_embeds=user_text_emb,
+                 function_embeds=function_emb,
+             )
++            if source_embeddings is not None and current_input_emb.shape != (batch_size, 1, 4480):
++                raise RuntimeError(
++                    "VoiceChat fusion returned unexpected shape "
++                    f"{tuple(current_input_emb.shape)}; expected {(batch_size, 1, 4480)}"
++                )
++            self._last_user_audio_emb = user_audio_emb.detach()
+ 
+-            start_stt_model = time.time()
++            start_stt_model = time.perf_counter()
+ 
+             if use_cache or self.use_vllm_llm:
+                 if self.use_vllm_llm:
+@@ -2423,7 +3532,15 @@ class NemotronVoicechatInferenceWrapper:
+                         current_input_emb,
+                         request_id=effective_request_id,
+                         generated_tokens=gen_text,
+-                        current_step=current_frame_idx
++                        current_step=current_frame_idx,
++                        capture_agent_logit_trace=bool(
++                            _trace_candidate
++                            and getattr(
++                                self.model_llm_interface,
++                                "_agent_logit_trace_topk",
++                                0,
++                            )
++                        ),
+                     )
+                 else:
+                     ans = self.model_llm_interface(
+@@ -2444,11 +3561,32 @@ class NemotronVoicechatInferenceWrapper:
+                 )
+ 
+             torch.cuda.synchronize()
+-            time_stt_model = time.time() - start_stt_model
++            time_stt_model = time.perf_counter() - start_stt_model
++            time_stt_model_total += time_stt_model
+             logging.info(f"Time taken for stt_model: {time_stt_model:.3f}s")
+ 
++            # Qualification-only fault injection for the forward-only direct
++            # transaction contract. At this point Nano and
++            # _last_user_audio_emb have advanced, while EarTTS/context commit
++            # have not. A caller must treat this exception as session-fatal;
++            # there is deliberately no rollback attempt.
++            if (
++                source_embeddings is not None
++                and force_output_pad
++                and os.environ.get(
++                    "S2S_DIRECT_POSITION_DIAGNOSTIC_FAULT_AFTER_NANO", "0"
++                ).strip().lower() in {"1", "true", "yes", "on"}
++            ):
++                raise RuntimeError(
++                    "diagnostic direct-position fault after Nano advancement"
++                )
++
+             predicted_token = ans["predicted_token"]
+             asr_predicted_token = ans["asr_predicted_token"]
++            raw_predicted_tokens.append(int(torch.as_tensor(predicted_token).reshape(-1)[0].item()))
++            raw_asr_predicted_tokens.append(
++                int(torch.as_tensor(asr_predicted_token).reshape(-1)[0].item())
++            )
+ 
+             gen_text[:, current_frame_idx] = predicted_token
+             predicted_tokens[:, frame_offset] = predicted_token
+@@ -2457,12 +3595,144 @@ class NemotronVoicechatInferenceWrapper:
+             asr_predicted_tokens[:, frame_offset] = asr_predicted_token
+ 
+             if "function_predicted_token" in ans:
++                raw_function_predicted_tokens.append(
++                    int(torch.as_tensor(ans["function_predicted_token"]).reshape(-1)[0].item())
++                )
+                 function_predicted_tokens[:, frame_offset] = ans["function_predicted_token"]
+                 if gen_function_text is not None:
+                     gen_function_text[:, current_frame_idx] = ans["function_predicted_token"]
++            else:
++                raw_function_predicted_tokens.append(pad_id)
++
++            _function_effective_reason = "model"
++
++            # Direct user-source positions intentionally consume Nano while
++            # suppressing every generated channel.  Force the effective PADs
++            # before function, turn-taking, and EarTTS observe this position.
++            if force_output_pad:
++                gen_text[:, current_frame_idx] = pad_id
++                gen_asr_text[:, current_frame_idx] = pad_id
++                predicted_tokens[:, frame_offset] = pad_id
++                asr_predicted_tokens[:, frame_offset] = pad_id
++                function_predicted_tokens[:, frame_offset] = pad_id
++                if gen_function_text is not None:
++                    gen_function_text[:, current_frame_idx] = pad_id
++                if raw_function_predicted_tokens[-1] != pad_id:
++                    _function_effective_reason = "direct_hidden_pad"
++
++            # Client-owned turn mode has one authoritative response boundary:
++            # the explicit EOU that becomes an agent BOS below.  A function
++            # prediction before that boundary must remain diagnostic-only.
++            # Letting SOTC become effective here can enter FC async while the
++            # RNNT blank fence is still settling, freezing both model clocks
++            # before the client commit can be consumed.
++            if (
++                not force_output_pad
++                and getattr(self, '_external_user_eou_mode', False)
++                and rnnt_partial_hypotheses is not None
++                and gen_function_text is not None
++            ):
++                _agent_flags = rnnt_partial_hypotheses.get('agent_speaking')
++                _agent_open = bool(
++                    _agent_flags is not None
++                    and torch.as_tensor(_agent_flags).reshape(-1)[0].item()
++                )
++                _raw_function_token = int(
++                    torch.as_tensor(gen_function_text[:, current_frame_idx])
++                    .reshape(-1)[0]
++                    .item()
++                )
++                if not _agent_open:
++                    _boundary_eou_sotc = bool(
++                        getattr(self, '_external_user_eou_requested', False)
++                        and self._fc_sotc_id is not None
++                        and _raw_function_token == self._fc_sotc_id
++                    )
++                    if _boundary_eou_sotc:
++                        if self._post_fc_client_bos_requested:
++                            raise RuntimeError("post-FC client BOS was already pending")
++                        # Commit the boundary SOTC while the agent is idle. The
++                        # async FC path skips turn-taking, so remember that the
++                        # first ordinary post-FC position owns the single BOS.
++                        self._external_user_eou_requested = False
++                        self._transport_user_speech_seen = False
++                        self._transport_input_silent_frames = 0
++                        rnnt_partial_hypotheses['speech_confirmed'][:] = False
++                        rnnt_partial_hypotheses['nonblank_total'][:] = 0
++                        rnnt_partial_hypotheses['nonblank_consec'][:] = 0
++                        rnnt_partial_hypotheses['blank_count'][:] = 0
++                        rnnt_partial_hypotheses['y_sequence'] = []
++                        rnnt_partial_hypotheses['_punct_word_acc'] = []
++                        rnnt_partial_hypotheses['_punct_bias_val'] = 0.0
++                        rnnt_partial_hypotheses['pred_out'] = None
++                        rnnt_partial_hypotheses['pred_hidden'] = None
++                        self._post_fc_client_bos_requested = True
++                        self._post_fc_client_bos_requested_frame = current_frame_idx
++                        self._client_eou_sotc_committed_frame = current_frame_idx
++                        self._client_eou_sotc_committed_count += 1
++                        _function_effective_reason = "boundary_sotc_commit"
++                        logging.info(
++                            "[ClientTurn] Committed boundary SOTC while agent idle at t=%d",
++                            current_frame_idx,
++                        )
++                    else:
++                        function_predicted_tokens[:, frame_offset] = pad_id
++                        gen_function_text[:, current_frame_idx] = pad_id
++                    if not _boundary_eou_sotc and _raw_function_token != pad_id:
++                        _function_effective_reason = "pre_eou_guard"
++                        self._pre_eou_function_suppression_count += 1
++                        self._pre_eou_function_last_raw_token_id = _raw_function_token
++                        self._pre_eou_function_suppressed_frame = current_frame_idx
++                        logging.info(
++                            "[ClientTurn] Suppressed pre-EOU function token %d at t=%d",
++                            _raw_function_token,
++                            current_frame_idx,
++                        )
++                else:
++                    # Once the explicit boundary has opened the agent turn, the
++                    # function channel must remain PAD unless an FC cycle is
++                    # already active. A duplicated agent token here would be fed
++                    # back through the function embedding on the next position
++                    # and can truncate the spoken post-tool answer.
++                    _fc_guard_active = bool(
++                        fc_state is not None
++                        and (
++                            fc_state.get("active", False)
++                            or fc_state.get("awaiting_response", False)
++                            or fc_state.get("awaiting_eotr", False)
++                            or fc_state.get("forced_function_tokens")
++                            or fc_state.get("injecting_response", False)
++                        )
++                    )
++                    _opens_fc_cycle = bool(
++                        fc_state is not None
++                        and self._fc_sotc_id is not None
++                        and _raw_function_token == self._fc_sotc_id
++                    )
++                    if (
++                        not _fc_guard_active
++                        and not _opens_fc_cycle
++                        and _raw_function_token != pad_id
++                    ):
++                        function_predicted_tokens[:, frame_offset] = pad_id
++                        gen_function_text[:, current_frame_idx] = pad_id
++                        _function_effective_reason = "agent_open_guard"
++                        self._agent_open_function_suppression_count += 1
++                        self._agent_open_function_last_raw_token_id = _raw_function_token
++                        self._agent_open_function_suppressed_frame = current_frame_idx
++                        logging.info(
++                            "[ClientTurn] Suppressed agent-open function token %d at t=%d",
++                            _raw_function_token,
++                            current_frame_idx,
++                        )
+ 
+             # FC state machine: detect SOTC/EOTC on function channel, inject tool response
+-            if fc_state is not None and gen_function_text is not None:
++            if not force_output_pad and fc_state is not None and gen_function_text is not None:
++                _function_before_state_machine = int(
++                    torch.as_tensor(gen_function_text[:, current_frame_idx])
++                    .reshape(-1)[0]
++                    .item()
++                )
+                 self._apply_fc_state_machine(
+                     fc_state=fc_state,
+                     function_predicted_token=gen_function_text[:, current_frame_idx],
+@@ -2474,18 +3744,29 @@ class NemotronVoicechatInferenceWrapper:
+                     function_predicted_tokens=function_predicted_tokens,
+                     tool_response_text=tool_response_text,
+                 )
++                if int(
++                    torch.as_tensor(gen_function_text[:, current_frame_idx])
++                    .reshape(-1)[0]
++                    .item()
++                ) != _function_before_state_machine:
++                    _function_effective_reason = "function_state_machine"
+ 
+             # Detect when tool-response injection just finished so RNNT allows the post-TC BOS.
+-            if fc_state is not None:
++            if not force_output_pad and fc_state is not None:
+                 _injecting_now = bool(fc_state.get("forced_function_tokens")) or fc_state.get("injecting_response", False)
+                 if not _injecting_now and fc_state.get("_was_injecting", False):
+-                    self._post_tc_bos_exempt = True
+-                    logging.info("[FC] Injection complete → post-TC BOS exempt enabled")
++                    if getattr(self, '_external_user_eou_mode', False):
++                        # Client mode owns the post-FC BOS deterministically via
++                        # _post_fc_client_bos_requested.
++                        self._post_tc_bos_exempt = False
++                    else:
++                        self._post_tc_bos_exempt = True
++                        logging.info("[FC] Injection complete → post-TC BOS exempt enabled")
+                 fc_state["_was_injecting"] = _injecting_now
+ 
+             # Silence text channel while FC is active — prevents speech tokens from
+             # sub-steps after SOTC fires reaching the audio codec before FC async takes over.
+-            _fc_in_progress = (fc_state is not None and (
++            _fc_in_progress = (not force_output_pad and fc_state is not None and (
+                 fc_state.get("active", False) or
+                 fc_state.get("forced_function_tokens") or
+                 fc_state.get("injecting_response", False)
+@@ -2495,23 +3776,152 @@ class NemotronVoicechatInferenceWrapper:
+                 predicted_tokens[:, frame_offset] = pad_id
+ 
+             # Apply forced turn-taking. Skip when FC is in progress.
+-            if not _fc_in_progress:
++            if not force_output_pad and not _fc_in_progress:
+                 self._maybe_apply_forced_turn_taking(current_frame_idx, gen_text, gen_asr_text, rnnt_state=rnnt_partial_hypotheses)
+ 
+             predicted_tokens[:, frame_offset] = gen_text[:, current_frame_idx]
+ 
+             # RNNT-based EOU/BOU turn-taking (ga/eou approach: decode then turn-take same frame)
+-            if rnnt_partial_hypotheses is not None and asr_emb is not None:
++            if not force_output_pad and rnnt_partial_hypotheses is not None and asr_emb is not None:
+                 # asr_emb is always [B, T, D]: perception_cache.step() transposes internally
+                 rnnt_enc = asr_emb
                  emb_idx = frame_offset if (self.use_perception_cache and perception_cache is not None and perception_cache.is_initialized()) else current_frame_index
                  emb_idx = min(emb_idx, rnnt_enc.shape[1] - 1)
                  rnnt_frame = rnnt_enc[:, emb_idx, :]  # [B, D]
@@ -260,7 +2160,7 @@ index 6085e5562..0c5ab3a90 100755
 +                # The cache-aware encoder's first S2S chunk is a 10 ms bootstrap
 +                # alignment, not a complete 80 ms RNNT frame. Decoding it can
 +                # emit a full max-symbol burst unrelated to the input utterance.
-+                if current_frame_idx == 0:
++                if current_perception_frame_idx == 0:
 +                    _rnnt_is_blank = torch.ones(
 +                        rnnt_frame.shape[0], dtype=torch.bool, device=rnnt_frame.device
 +                    )
@@ -271,18 +2171,252 @@ index 6085e5562..0c5ab3a90 100755
                  if not _fc_in_progress:
                      self._apply_rnnt_turn_taking(current_frame_idx, gen_text, _rnnt_is_blank, rnnt_partial_hypotheses)
                  predicted_tokens[:, frame_offset] = gen_text[:, current_frame_idx]
-@@ -2546,6 +2731,10 @@ class NemotronVoicechatInferenceWrapper:
-                 code, past_key_values = self.model.tts_model.infer_codes_one_step(
-                         **inputs
-                 )
-+                capture_acoustic_codes = self._eartts_capture_dir is not None
-+                if capture_acoustic_codes:
-+                    raw_generated_code = code.detach().clone()
-+                    agent_idle_before = self._get_agent_idle(stream_id)
  
-                 torch.cuda.synchronize()
-                 time_tts_model = time.time() - start_tts_model
-@@ -2636,6 +2825,29 @@ class NemotronVoicechatInferenceWrapper:
++            if (
++                _trace_candidate
++                and current_frame_idx <= self._post_fc_token_trace_until_frame
++            ):
++                _trace_effective_agent_token_id = int(
++                    gen_text[0, current_frame_idx].item()
++                )
++                _trace_effective_function_token_id = (
++                    int(gen_function_text[0, current_frame_idx].item())
++                    if gen_function_text is not None
++                    else pad_id
++                )
++                _trace_raw_agent_token_id = raw_predicted_tokens[-1]
++                _trace_raw_function_token_id = raw_function_predicted_tokens[-1]
++                _trace_agent_flags = (
++                    rnnt_partial_hypotheses.get("agent_speaking")
++                    if rnnt_partial_hypotheses is not None
++                    else None
++                )
++                _trace_agent_open_after = bool(
++                    _trace_agent_flags is not None
++                    and torch.as_tensor(_trace_agent_flags).reshape(-1)[0].item()
++                )
++                _trace_forced_bos = (
++                    self._post_fc_client_bos_forced_frame == current_frame_idx
++                )
++                _trace_record = {
++                        "phase": "forced_bos" if _trace_forced_bos else "post_bos",
++                        "model_frame": int(current_frame_idx),
++                        "raw_agent_token_id": _trace_raw_agent_token_id,
++                        "raw_agent_text": self._trace_token_text(
++                            _trace_raw_agent_token_id
++                        ),
++                        "effective_agent_token_id": _trace_effective_agent_token_id,
++                        "effective_agent_text": self._trace_token_text(
++                            _trace_effective_agent_token_id
++                        ),
++                        "agent_effective_reason": (
++                            "post_fc_forced_bos"
++                            if _trace_forced_bos
++                            else (
++                                "model"
++                                if _trace_raw_agent_token_id
++                                == _trace_effective_agent_token_id
++                                else "turn_taking_override"
++                            )
++                        ),
++                        "raw_function_token_id": _trace_raw_function_token_id,
++                        "raw_function_text": self._trace_token_text(
++                            _trace_raw_function_token_id
++                        ),
++                        "effective_function_token_id": _trace_effective_function_token_id,
++                        "effective_function_text": self._trace_token_text(
++                            _trace_effective_function_token_id
++                        ),
++                        "function_effective_reason": _function_effective_reason,
++                        "previous_effective_agent_token_id": (
++                            _trace_previous_agent_token_id
++                        ),
++                        "previous_effective_function_token_id": (
++                            _trace_previous_function_token_id
++                        ),
++                        "post_fc_bos_latch_before": _trace_bos_latch_before,
++                        "post_fc_bos_latch_after": bool(
++                            self._post_fc_client_bos_requested
++                        ),
++                        "agent_open_before": _trace_agent_open_before,
++                        "agent_open_after": _trace_agent_open_after,
++                        "fc_before": _trace_fc_before,
++                        "fc_after": (
++                            {
++                                "active": bool(fc_state.get("active", False)),
++                                "injecting_response": bool(
++                                    fc_state.get("injecting_response", False)
++                                ),
++                                "awaiting_eotr": bool(
++                                    fc_state.get("awaiting_eotr", False)
++                                ),
++                                "forced_tokens": len(
++                                    fc_state.get("forced_function_tokens") or []
++                                ),
++                            }
++                            if fc_state is not None
++                            else None
++                        ),
++                    }
++                _trace_agent_topk = self._trace_agent_topk(
++                    ans.get("agent_logit_trace"), _trace_raw_agent_token_id
++                )
++                if _trace_agent_topk is not None:
++                    _trace_record["agent_topk"] = _trace_agent_topk
++                    _trace_record["raw_agent_source"] = (
++                        "pad_pair_buffered"
++                        if _trace_agent_topk.get("no_model_position") is True
++                        else "model"
++                    )
++                self._append_post_fc_token_trace(_trace_record)
++
++            if "function_logit_trace" in ans:
++                effective_function_token = (
++                    int(
++                        torch.as_tensor(gen_function_text[:, current_frame_idx])
++                        .reshape(-1)[0]
++                        .item()
++                    )
++                    if gen_function_text is not None
++                    else pad_id
++                )
++                trace = dict(ans["function_logit_trace"])
++                trace.update(
++                    {
++                        "model_frame": int(current_frame_idx),
++                        "raw_function_token_id": raw_function_predicted_tokens[-1],
++                        "effective_function_token_id": effective_function_token,
++                        "effective_token_reason": _function_effective_reason,
++                    }
++                )
++                function_logit_traces.append(trace)
++
+             if self.decode_audio:
+                 current_subword_id = gen_text[:, current_frame_idx].unsqueeze(-1)
+ 
+@@ -2529,7 +3939,6 @@ class NemotronVoicechatInferenceWrapper:
+                 if self.generation_config is None:
+                     raise RuntimeError("generation_config is not initialized. Ensure TTS warmup ran successfully.")
+ 
+-                start_tts_model = time.time()
+                 inputs = {
+                     "current_subword_id": current_subword_id,
+                     "prev_subword_id": prev_subword_id,
+@@ -2543,18 +3952,95 @@ class NemotronVoicechatInferenceWrapper:
+                 if self.use_vllm_eartts:
+                     inputs["request_id"] = effective_request_id
+ 
+-                code, past_key_values = self.model.tts_model.infer_codes_one_step(
+-                        **inputs
++                capture_acoustic_codes = self._eartts_capture_dir is not None
++                current_token_id = int(current_subword_id.reshape(-1)[0].item())
++                agent_idle_before = self._get_agent_idle(stream_id)
++                bypass_eligible = getattr(
++                    self, "_eartts_idle_pad_bypass_eligible", None
+                 )
++                bypass_transition = getattr(
++                    self, "_eartts_idle_pad_bypass_transition", None
++                )
++                bypass_idle_pad = False
++                if callable(bypass_eligible) or callable(bypass_transition):
++                    if not callable(bypass_eligible) or not callable(bypass_transition):
++                        raise RuntimeError("EarTTS idle-PAD bypass hooks are incomplete")
++                    bypass_idle_pad = bool(
++                        bypass_eligible(
++                            enabled=True,
++                            decode_audio=bool(self.decode_audio),
++                            use_vllm_eartts=bool(self.use_vllm_eartts),
++                            ordinary_pcm=audio_input is not None,
++                            source_embeddings_supplied=source_embeddings is not None,
++                            force_output_pad=bool(force_output_pad),
++                            current_token=current_token_id,
++                            pad_token=int(self.model.tts_model.text_pad_id),
++                            agent_idle=bool(agent_idle_before),
++                            fc_state=fc_state,
++                            acoustic_capture_enabled=bool(capture_acoustic_codes),
++                        )
++                    )
+ 
+-                torch.cuda.synchronize()
+-                time_tts_model = time.time() - start_tts_model
+-                logging.info(f"Time taken for tts_model: {time_tts_model:.3f}s")
+-
+-                new_codes_for_decode.append(code.clone())
++                if bypass_idle_pad:
++                    decoder_code, preserved_code, preserved_past_key_values = (
++                        bypass_transition(
++                            recurrent_code=code,
++                            past_key_values=past_key_values,
++                            codec_silence_tokens=self.model.tts_model.codec_silence_tokens,
++                        )
++                    )
++                    if preserved_code is not code or preserved_past_key_values is not past_key_values:
++                        raise RuntimeError(
++                            "EarTTS idle-PAD bypass changed recurrent state identity"
++                        )
++                    eartts_idle_pad_bypassed_frames.append(int(current_frame_idx))
++                    self._eartts_idle_pad_bypass_total = int(
++                        getattr(self, "_eartts_idle_pad_bypass_total", 0)
++                    ) + 1
++                    logging.info(
++                        "Bypassed EarTTS idle PAD at frame %d; decoder receives qualified silence",
++                        current_frame_idx,
++                    )
++                else:
++                    start_tts_model = time.perf_counter()
++                    code, past_key_values = self.model.tts_model.infer_codes_one_step(
++                            **inputs
++                    )
++                    decoder_code = code
++                    if capture_acoustic_codes:
++                        raw_generated_code = code.detach().clone()
++
++                    torch.cuda.synchronize()
++                    time_tts_model = time.perf_counter() - start_tts_model
++                    time_tts_model_total += time_tts_model
++                    logging.info(f"Time taken for tts_model: {time_tts_model:.3f}s")
++
++                    if current_token_id == int(self.model.tts_model.text_bos_id):
++                        reset_timing = getattr(
++                            self.model.tts_model, "_reset_on_bos_last_timing_ms", None
++                        )
++                        if isinstance(reset_timing, dict):
++                            reset_request_id = reset_timing.get("request_id")
++                            if str(reset_request_id) != str(effective_request_id):
++                                raise RuntimeError(
++                                    "EarTTS BOS reset timing belongs to another request"
++                                )
++                            reset_total_ms = float(reset_timing.get("reset_total_ms", 0.0))
++                            eartts_reset_timing = {
++                                "schema": 1,
++                                "request_id": str(reset_request_id),
++                                "reset_count": int(reset_timing.get("reset_count", 0)),
++                                "abort_call_ms": float(reset_timing.get("abort_call_ms", 0.0)),
++                                "prefill_call_ms": float(reset_timing.get("prefill_call_ms", 0.0)),
++                                "reset_total_ms": reset_total_ms,
++                            }
++
++                new_codes_for_decode.append(decoder_code.clone())
+                 # Update sliding-window buffer (only needed for fallback decode when codec_cache is off)
+                 if audio_toks_buffer is not None:
+-                    audio_toks_buffer = torch.cat([audio_toks_buffer[:, 1:], code], dim=1)
++                    audio_toks_buffer = torch.cat(
++                        [audio_toks_buffer[:, 1:], decoder_code], dim=1
++                    )
+ 
+                 # now that we've saved audio_toks_buffer for audio decoding purposes,
+                 # we can potentially overwrite the audio token with silence tokens (for feeding to the audio token predictor)
+@@ -2593,7 +4079,8 @@ class NemotronVoicechatInferenceWrapper:
+                 _tail_done = (_ratio > 0
+                               and not self._get_agent_idle(stream_id)
+                               and _p > _ratio * _c)
+-                if (self.model.cfg.get('inference_force_speech_silence_on_pad', None)
++                if (not bypass_idle_pad
++                        and self.model.cfg.get('inference_force_speech_silence_on_pad', None)
+                         and (self._get_agent_idle(stream_id) or _tail_done)):
+                     silence_codes = self.model.tts_model.codec_silence_tokens.view(1, 1, -1).expand(code.shape)
+                     code = torch.where(
+@@ -2636,12 +4123,35 @@ class NemotronVoicechatInferenceWrapper:
                      # worst case is a stale flag for one frame.
                      pass
  
@@ -312,7 +2446,144 @@ index 6085e5562..0c5ab3a90 100755
          # exit for-loop & do audio decoding non-autoregressively (if decode_audio is True)
          if self.decode_audio:
              samples_per_audio_output_frame = self._samples_per_audio_output_frame()
-@@ -2793,6 +3005,8 @@ class NemotronVoicechatInferenceWrapper:
+             logging.debug(f"\nDecoding audio for {frame_idx}-th frame  ({num_frames_per_chunk=})")
+ 
+-            start_time_decode = time.time()
++            start_time_decode = time.perf_counter()
+             with fp32_precision(), torch.no_grad():
+                 if codec_cache is not None and new_codes_for_decode:
+                     # Incremental decode: feed only the num_frames_per_chunk new tokens
+@@ -2675,7 +4185,7 @@ class NemotronVoicechatInferenceWrapper:
+                     logging.debug(f"   Sliding-window decode: extracted {decoded_audio_new.shape} from {decoded_audio.shape}")
+ 
+             torch.cuda.synchronize()
+-            time_audio_codec = time.time() - start_time_decode
++            time_audio_codec = time.perf_counter() - start_time_decode
+             logging.info(f"Time taken for audio_codec: {time_audio_codec:.3f}s")
+ 
+         else:
+@@ -2721,9 +4231,88 @@ class NemotronVoicechatInferenceWrapper:
+ 
+         torch.cuda.synchronize()
+ 
+-        time_for_one_step = time.time() - start_time_one_step
++        time_for_one_step = time.perf_counter() - start_time_one_step
+         logging.info(f'frame {frame_idx}: Time taken for one step: {time_for_one_step:.3f}s')
+ 
++        perception_ms = float(time_perception * 1000.0)
++        nano_interface_ms = float(time_stt_model_total * 1000.0)
++        eartts_total_ms = float(time_tts_model_total * 1000.0)
++        if eartts_reset_timing is not None:
++            non_reset_remainder_ms = (
++                eartts_total_ms - eartts_reset_timing["reset_total_ms"]
++            )
++            if non_reset_remainder_ms < -0.05:
++                raise RuntimeError("EarTTS reset timing exceeds the enclosing call")
++            if non_reset_remainder_ms < 0.0:
++                non_reset_remainder_ms = 0.0
++            eartts_reset_timing["eartts_non_reset_remainder_ms"] = float(
++                non_reset_remainder_ms
++            )
++        codec_call_ms = float(time_audio_codec * 1000.0)
++        wrapper_total_ms = float(time_for_one_step * 1000.0)
++        named_stage_sum_ms = float(
++            perception_ms + nano_interface_ms + eartts_total_ms + codec_call_ms
++        )
++        wrapper_residual_ms = float(wrapper_total_ms - named_stage_sum_ms)
++        accounting_epsilon_ms = 0.05
++        if wrapper_residual_ms < -accounting_epsilon_ms:
++            raise RuntimeError("model stage timings exceed the wrapper total")
++        if wrapper_residual_ms < 0.0:
++            wrapper_residual_ms = 0.0
++        bypass_installed = bool(
++            callable(getattr(self, "_eartts_idle_pad_bypass_eligible", None))
++            and callable(getattr(self, "_eartts_idle_pad_bypass_transition", None))
++        )
++        stage_timings_ms = {
++            'schema': 2,
++            'measurement': 'host_intervals_between_existing_cuda_syncs',
++            'frame_start': int(frame_idx),
++            'frame_end': int(frame_idx + num_frames_per_chunk - 1),
++            'positions': int(num_frames_per_chunk),
++            'perception_ms': perception_ms,
++            # This interval includes the PAD-pair interface. Some fast calls
++            # return a buffered result without advancing a Nano model position.
++            'nano_interface_ms': nano_interface_ms,
++            'eartts_total_ms': eartts_total_ms,
++            'eartts_reset': eartts_reset_timing,
++            'eartts_idle_pad_bypass': {
++                'schema': 1,
++                'enabled': bypass_installed,
++                'mode': (
++                    'bypassed'
++                    if eartts_idle_pad_bypassed_frames
++                    else ('enabled_no_skip' if bypass_installed else 'disabled')
++                ),
++                'reason': (
++                    'ordinary_pcm_agent_idle_effective_pad_fc_quiescent'
++                    if eartts_idle_pad_bypassed_frames
++                    else None
++                ),
++                'skipped_positions': len(eartts_idle_pad_bypassed_frames),
++                'skipped_frames': list(eartts_idle_pad_bypassed_frames),
++                'cumulative_skipped_positions': int(
++                    getattr(self, '_eartts_idle_pad_bypass_total', 0)
++                ),
++                'recurrent_state': (
++                    'preserved_input_identity'
++                    if eartts_idle_pad_bypassed_frames
++                    else None
++                ),
++                'decoder_code': (
++                    'codec_silence_tokens_clone'
++                    if eartts_idle_pad_bypassed_frames
++                    else None
++                ),
++            },
++            # The persistent CPU codec is one frame pipelined: frame F waits
++            # for F-1 while submitting F.
++            'codec_call_ms': codec_call_ms,
++            'codec_pipeline': 'waits_for_previous_frame_and_submits_current',
++            'named_stage_sum_ms': named_stage_sum_ms,
++            'wrapper_residual_ms': wrapper_residual_ms,
++            'wrapper_total_ms': wrapper_total_ms,
++        }
++
+         result = {
+             'predicted_text_tokens': predicted_tokens,
+             'asr_predicted_text_tokens': asr_predicted_tokens,
+@@ -2738,6 +4327,7 @@ class NemotronVoicechatInferenceWrapper:
+             'perception_cache': perception_cache,
+             'codec_cache': codec_cache,
+             'rnnt_partial_hypotheses': rnnt_partial_hypotheses,
++            'stage_timings_ms': stage_timings_ms,
+         }
+         if self.model.stt_model.function_head is not None:
+             result['function_predicted_text_tokens'] = function_predicted_tokens
+@@ -2747,8 +4337,22 @@ class NemotronVoicechatInferenceWrapper:
+                 fc_ids = [t for t in fc_tok_ids_b.tolist() if t != pad_id]
+                 fc_text_strs.append(self.tokenizer.ids_to_text(fc_ids) if fc_ids else "")
+             result['function_predicted_text_strs'] = fc_text_strs
++        if function_logit_traces:
++            result['function_logit_trace'] = function_logit_traces
+         if fc_state is not None:
+             result['fc_state'] = fc_state
++        if source_embeddings is not None:
++            direct_source_diagnostics = {
++                'source_shape': list(source_encoded.shape),
++                'source_dtype': str(source_encoded.dtype),
++                'raw_text_tokens': raw_predicted_tokens,
++                'raw_asr_tokens': raw_asr_predicted_tokens,
++                'raw_function_tokens': raw_function_predicted_tokens,
++                'effective_output_forced_pad': bool(force_output_pad),
++            }
++            if function_logit_traces:
++                direct_source_diagnostics['function_logit_trace'] = function_logit_traces
++            result['direct_source_diagnostics'] = direct_source_diagnostics
+         return result
+ 
+     def abort_request(self, request_id: Optional[str]) -> bool:
+@@ -2793,6 +4397,8 @@ class NemotronVoicechatInferenceWrapper:
          """
          if not self.model_cfg.get("force_turn_taking", False):
              return
@@ -321,7 +2592,7 @@ index 6085e5562..0c5ab3a90 100755
  
          threshold        = self.model_cfg.get("force_turn_taking_threshold", 40)
          pad_window_steps = self.model_cfg.get("force_turn_taking_pad_window", 25)
-@@ -3016,6 +3230,8 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3016,6 +4622,8 @@ class NemotronVoicechatInferenceWrapper:
          """Apply RNNT blank/non-blank counts to trigger agent BOS (EOU) or EOS (BOU)."""
          if not self.model_cfg.get("force_turn_taking", False):
              return
@@ -330,7 +2601,108 @@ index 6085e5562..0c5ab3a90 100755
  
          asr_eou         = int(self.model_cfg.get("rnnt_eou_frames",
                                self.model_cfg.get("asr_eou", 15)))
-@@ -3083,8 +3299,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3073,6 +4681,100 @@ class NemotronVoicechatInferenceWrapper:
+             agent_speaking = rnnt_state['agent_speaking'][b].item()
+             current_tok = gen_text[b, t].item()
+ 
++            # Tool-free client sessions can arm a separate blank-fence latch.
++            # The RNNT step has already updated blank_count before this method
++            # runs, so the same position may become BOS only after it proves the
++            # complete qualified fence.  The function guard intentionally
++            # cannot see this latch.
++            _blank_fence_target = getattr(
++                self, '_external_user_eou_blank_fence_target', None
++            )
++            if _blank_fence_target is not None:
++                if not getattr(self, '_external_user_eou_mode', False):
++                    raise RuntimeError("blank-fence client BOS pending outside client EOU mode")
++                if getattr(self, '_external_user_eou_requested', False):
++                    raise RuntimeError("blank-fence and legacy client EOU requests overlapped")
++                if getattr(self, '_post_fc_client_bos_requested', False):
++                    raise RuntimeError("blank-fence and post-FC client BOS requests overlapped")
++                if agent_speaking:
++                    raise RuntimeError("blank-fence client BOS pending while agent turn is open")
++                if blank_cnt >= int(_blank_fence_target):
++                    if blank_cnt != int(_blank_fence_target):
++                        raise RuntimeError(
++                            "RNNT blank count advanced beyond the armed client EOU fence"
++                        )
++                    gen_text[b, t] = bos_id
++                    rnnt_state['speech_confirmed'][b] = False
++                    rnnt_state['nonblank_total'][b] = 0
++                    rnnt_state['nonblank_consec'][b] = 0
++                    rnnt_state['blank_count'][b] = 0
++                    rnnt_state['y_sequence'] = []
++                    rnnt_state['_punct_word_acc'] = []
++                    rnnt_state['_punct_bias_val'] = 0.0
++                    rnnt_state['pred_out'] = None
++                    rnnt_state['pred_hidden'] = None
++                    rnnt_state['agent_speaking'][b] = True
++                    rnnt_state['first_turn'][b] = False
++                    if 'user_first_turn' in rnnt_state:
++                        rnnt_state['user_first_turn'][b] = False
++                    rnnt_state['forced_bos'][b] = True
++                    if '_turn_text_tokens' not in rnnt_state:
++                        rnnt_state['_turn_text_tokens'] = {}
++                    rnnt_state['_turn_text_tokens'][b] = 0
++                    self._external_user_eou_blank_fence_target = None
++                    self._external_user_eou_blank_fence_last = {
++                        'frame': int(t),
++                        'blank_count_at_check': int(blank_cnt),
++                        'target_blank_frames': int(_blank_fence_target),
++                        'chosen_token_id': int(bos_id),
++                    }
++                    self._transport_user_speech_seen = False
++                    self._transport_input_silent_frames = 0
++                    logging.info(
++                        "[ClientTurn] Fused RNNT blank fence %d with agent BOS at t=%d",
++                        blank_cnt,
++                        t,
++                    )
++                    return
++
++            # A boundary SOTC consumes the client EOU without opening the
++            # assistant turn. Once the async tool cycle has drained, this first
++            # ordinary model position owns the one client-forced answer BOS.
++            if getattr(self, '_post_fc_client_bos_requested', False):
++                if not getattr(self, '_external_user_eou_mode', False):
++                    raise RuntimeError("post-FC client BOS pending outside client EOU mode")
++                if agent_speaking:
++                    raise RuntimeError("post-FC client BOS pending while agent turn is open")
++                if self._post_tc_bos_exempt:
++                    raise RuntimeError("client post-FC BOS and server BOS exemption overlapped")
++                gen_text[b, t] = bos_id
++                rnnt_state['speech_confirmed'][b] = False
++                rnnt_state['nonblank_total'][b] = 0
++                rnnt_state['nonblank_consec'][b] = 0
++                rnnt_state['blank_count'][b] = 0
++                rnnt_state['y_sequence'] = []
++                rnnt_state['_punct_word_acc'] = []
++                rnnt_state['_punct_bias_val'] = 0.0
++                rnnt_state['pred_out'] = None
++                rnnt_state['pred_hidden'] = None
++                rnnt_state['agent_speaking'][b] = True
++                rnnt_state['first_turn'][b] = False
++                if 'user_first_turn' in rnnt_state:
++                    rnnt_state['user_first_turn'][b] = False
++                rnnt_state['forced_bos'][b] = True
++                if '_turn_text_tokens' not in rnnt_state:
++                    rnnt_state['_turn_text_tokens'] = {}
++                rnnt_state['_turn_text_tokens'][b] = 0
++                self._post_fc_client_bos_requested = False
++                self._post_fc_client_bos_forced_frame = t
++                self._post_fc_client_bos_forced_count += 1
++                if self._post_fc_token_trace_frames:
++                    self._post_fc_token_trace_until_frame = (
++                        t + self._post_fc_token_trace_frames - 1
++                    )
++                logging.info("[ClientTurn] Forced single post-FC agent BOS at t=%d", t)
++                return
++
+             # Self-play suppression: block LLM-native BOS when agent finished speaking
+             # and user hasn't started. MUST run before the BOS-detection block below
+             # (which sets agent_speaking=True, making a post-detection check unreachable).
+@@ -3083,8 +4785,7 @@ class NemotronVoicechatInferenceWrapper:
              _is_forced_bos = (_forced_bos_flags is not None and _forced_bos_flags[b].item())
              if _forced_bos_flags is not None:
                  rnnt_state['forced_bos'][b] = False  # consume flag each frame
@@ -340,7 +2712,7 @@ index 6085e5562..0c5ab3a90 100755
                      and self.model_cfg.get("rnnt_self_play_suppression", False)):
                  if self._post_tc_bos_exempt:
                      self._post_tc_bos_exempt = False
-@@ -3093,9 +3308,24 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3093,9 +4794,24 @@ class NemotronVoicechatInferenceWrapper:
                  else:
                      gen_text[b, t] = self.model.stt_model.text_pad_id
                      logging.debug(f"RNNT self-play suppression t={t}: LLM BOS suppressed (no user speech)")
@@ -368,7 +2740,7 @@ index 6085e5562..0c5ab3a90 100755
                  agent_speaking = True
                  rnnt_state['agent_speaking'][b] = True
                  rnnt_state['first_turn'][b] = False
-@@ -3109,7 +3339,14 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3109,7 +4825,14 @@ class NemotronVoicechatInferenceWrapper:
                      if '_turn_text_tokens' not in rnnt_state:
                          rnnt_state['_turn_text_tokens'] = {}
                      rnnt_state['_turn_text_tokens'][b] = 0
@@ -384,7 +2756,7 @@ index 6085e5562..0c5ab3a90 100755
                  agent_speaking = False
                  rnnt_state['agent_speaking'][b] = False
                  rnnt_state['speech_confirmed'][b] = False
-@@ -3117,6 +3354,26 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3117,6 +4840,26 @@ class NemotronVoicechatInferenceWrapper:
                  speech_confirmed = False
                  nonblank_total = 0
  
@@ -411,10 +2783,37 @@ index 6085e5562..0c5ab3a90 100755
              noise_reset_frames = int(self.model_cfg.get("nonblank_reset_after_silence", 10))
              if blank_cnt >= noise_reset_frames and not speech_confirmed and not agent_speaking:
                  rnnt_state['nonblank_total'][b] = 0
-@@ -3126,8 +3383,45 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3126,8 +4869,74 @@ class NemotronVoicechatInferenceWrapper:
                  rnnt_state['speech_confirmed'][b] = True
                  speech_confirmed = True
  
++            # In client-owned turn mode, the explicit commit is the only user
++            # end-of-turn authority. Consume it on the next serialized model
++            # position so Nano, EarTTS, function state, and transport all see
++            # the ordinary agent-BOS edge.
++            if (getattr(self, '_external_user_eou_requested', False)
++                    and not agent_speaking):
++                gen_text[b, t] = bos_id
++                rnnt_state['speech_confirmed'][b] = False
++                rnnt_state['nonblank_total'][b] = 0
++                rnnt_state['nonblank_consec'][b] = 0
++                rnnt_state['blank_count'][b] = 0
++                rnnt_state['y_sequence'] = []
++                rnnt_state['_punct_word_acc'] = []
++                rnnt_state['_punct_bias_val'] = 0.0
++                rnnt_state['pred_out'] = None
++                rnnt_state['pred_hidden'] = None
++                rnnt_state['agent_speaking'][b] = True
++                rnnt_state['first_turn'][b] = False
++                if 'user_first_turn' in rnnt_state:
++                    rnnt_state['user_first_turn'][b] = False
++                rnnt_state['forced_bos'][b] = True
++                self._external_user_eou_requested = False
++                self._transport_user_speech_seen = False
++                self._transport_input_silent_frames = 0
++                logging.info("[ClientTurn] Explicit user EOU forced agent BOS at t=%d", t)
++                return
++
 +            # A live transport has direct PCM activity. Use a full EOU-sized
 +            # quiet window as a conservative backstop when RNNT decoded too few
 +            # non-blank frames to confirm a short utterance.
@@ -434,7 +2833,8 @@ index 6085e5562..0c5ab3a90 100755
 +                # backstop, but require at least one RNNT nonblank as evidence.
 +                and nonblank_total >= max(1, transport_min_rnnt_tokens)
 +            )
-+            if transport_eou and blank_cnt >= effective_eou and not agent_speaking:
++            if (not getattr(self, '_external_user_eou_mode', False)
++                    and transport_eou and blank_cnt >= effective_eou and not agent_speaking):
 +                rnnt_state['speech_confirmed'][b] = True
 +                speech_confirmed = True
 +                logging.info(
@@ -452,13 +2852,14 @@ index 6085e5562..0c5ab3a90 100755
 +            first_turn_fallback_silence = int(
 +                self.model_cfg.get("first_turn_fallback_silence_frames", effective_eou)
 +            )
-+            if (first_turn_fallback > 0 and first_turn and t >= first_turn_fallback
++            if (not getattr(self, '_external_user_eou_mode', False)
++                    and first_turn_fallback > 0 and first_turn and t >= first_turn_fallback
 +                    and speech_confirmed and blank_cnt >= first_turn_fallback_silence
 +                    and not (agent_window == bos_id).any()):
                  gen_text[b, t] = bos_id
                  rnnt_state['speech_confirmed'][b] = False
                  rnnt_state['nonblank_total'][b] = 0
-@@ -3135,6 +3429,8 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3135,11 +4944,14 @@ class NemotronVoicechatInferenceWrapper:
                  rnnt_state['first_turn'][b] = False
                  if 'user_first_turn' in rnnt_state:
                      rnnt_state['user_first_turn'][b] = False
@@ -467,7 +2868,14 @@ index 6085e5562..0c5ab3a90 100755
                  logging.info(f"RNNT first-turn fallback t={t}: agent BOS (no EOU in {first_turn_fallback} frames)")
                  return
  
-@@ -3148,6 +3444,8 @@ class NemotronVoicechatInferenceWrapper:
+             # EOU: N blank frames after confirmed speech → inject agent BOS
+-            if blank_cnt >= effective_eou and speech_confirmed and not agent_speaking:
++            if (not getattr(self, '_external_user_eou_mode', False)
++                    and blank_cnt >= effective_eou and speech_confirmed and not agent_speaking):
+                 if not (agent_window == bos_id).any() and current_tok != bos_id:
+                     gen_text[b, t] = bos_id
+                     rnnt_state['speech_confirmed'][b] = False
+@@ -3148,6 +4960,8 @@ class NemotronVoicechatInferenceWrapper:
                      rnnt_state['first_turn'][b] = False
                      if 'user_first_turn' in rnnt_state:
                          rnnt_state['user_first_turn'][b] = False
@@ -476,7 +2884,7 @@ index 6085e5562..0c5ab3a90 100755
                      logging.info(
                          f"RNNT EOU t={t}: agent BOS (blank_cnt={blank_cnt}, "
                          f"nonblank_total={nonblank_total}, density={rolling_density:.3f}, user_first_turn→False)"
-@@ -3158,7 +3456,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3158,7 +4972,7 @@ class NemotronVoicechatInferenceWrapper:
  
              force_eos_frames = int(self.model_cfg.get("force_eos_after_frames", 0))
              if (force_eos_frames > 0 and agent_speaking and not speech_confirmed
@@ -485,7 +2893,7 @@ index 6085e5562..0c5ab3a90 100755
                  if blank_cnt >= force_eos_frames:
                      gen_text[b, t] = eos_id
                      rnnt_state['agent_speaking'][b] = False
-@@ -3189,19 +3487,29 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3189,19 +5003,29 @@ class NemotronVoicechatInferenceWrapper:
                      rnnt_state['agent_speaking'][b] = False
                      return
  
@@ -520,7 +2928,7 @@ index 6085e5562..0c5ab3a90 100755
                      self._agent_eos_just_fired = True
                      if self._max_response_redirect_tokens:
                          self._redirect_tokens_queue = list(self._max_response_redirect_tokens)
-@@ -3210,19 +3518,13 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3210,19 +5034,13 @@ class NemotronVoicechatInferenceWrapper:
                          _cnt, self._max_agent_response_frames,
                      )
                      return
@@ -541,7 +2949,7 @@ index 6085e5562..0c5ab3a90 100755
                  _pad_id_r = self.model.stt_model.text_pad_id
                  # Count non-PAD, non-BOS, non-EOS text tokens produced this turn.
                  if '_turn_text_tokens' not in rnnt_state:
-@@ -3247,7 +3549,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3247,7 +5065,7 @@ class NemotronVoicechatInferenceWrapper:
  
              # Barge-in: N consecutive non-blank frames while agent speaking → EOS
              if nonblank_cnt >= user_bos_frames and agent_speaking:
@@ -550,11 +2958,36 @@ index 6085e5562..0c5ab3a90 100755
                      gen_text[b, t] = eos_id
                      rnnt_state['nonblank_consec'][b] = 0
                      rnnt_state['nonblank_total'][b] = 0
-@@ -3262,6 +3564,37 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3259,9 +5077,128 @@ class NemotronVoicechatInferenceWrapper:
+                     )
+ 
+     def _reset_rnnt_turn_taking_state(self):
++        # New transport sessions have no open agent turn.  This wrapper-level
++        # fallback is consulted before a new per-stream S2SStreamingState is
++        # allocated (notably by direct-position preflight), so carrying False
++        # across an aborted/non-terminal response would poison the next stream.
++        self._agent_idle = True
          self._agent_eos_just_fired = False
          self._redirect_tokens_queue = []
          self._post_tc_bos_exempt = False
 +        self._external_agent_eos_requested = False
++        self._external_user_eou_requested = False
++        self._external_user_eou_mode = False
++        self._pre_eou_function_suppression_count = 0
++        self._pre_eou_function_last_raw_token_id = None
++        self._pre_eou_function_suppressed_frame = None
++        self._agent_open_function_suppression_count = 0
++        self._agent_open_function_last_raw_token_id = None
++        self._agent_open_function_suppressed_frame = None
++        self._client_eou_sotc_committed_frame = None
++        self._client_eou_sotc_committed_count = 0
++        self._post_fc_client_bos_requested = False
++        self._post_fc_client_bos_requested_frame = None
++        self._post_fc_client_bos_forced_frame = None
++        self._post_fc_client_bos_forced_count = 0
++        self._external_user_eou_blank_fence_target = None
++        self._external_user_eou_blank_fence_last = None
++        self._reset_post_fc_token_trace()
 +        self._transport_input_activity_available = False
 +        self._transport_user_speech_seen = False
 +        self._transport_input_silent_frames = 0
@@ -563,12 +2996,78 @@ index 6085e5562..0c5ab3a90 100755
 +        """Request an EOS on the next active RNNT turn-taking step."""
 +        self._external_agent_eos_requested = True
 +
++    def set_external_user_eou_mode(self, enabled: bool) -> None:
++        """Select explicit client commits as the sole user EOU authority."""
++        self._external_user_eou_mode = bool(enabled)
++        if enabled:
++            self._pre_eou_function_suppression_count = 0
++            self._pre_eou_function_last_raw_token_id = None
++            self._pre_eou_function_suppressed_frame = None
++            self._agent_open_function_suppression_count = 0
++            self._agent_open_function_last_raw_token_id = None
++            self._agent_open_function_suppressed_frame = None
++            self._client_eou_sotc_committed_frame = None
++            self._client_eou_sotc_committed_count = 0
++            self._post_fc_client_bos_requested = False
++            self._post_fc_client_bos_requested_frame = None
++            self._post_fc_client_bos_forced_frame = None
++            self._post_fc_client_bos_forced_count = 0
++            self._external_user_eou_blank_fence_target = None
++            self._external_user_eou_blank_fence_last = None
++            self._reset_post_fc_token_trace()
++        if not enabled:
++            self._external_user_eou_requested = False
++            self._agent_open_function_suppression_count = 0
++            self._agent_open_function_last_raw_token_id = None
++            self._agent_open_function_suppressed_frame = None
++            self._client_eou_sotc_committed_frame = None
++            self._client_eou_sotc_committed_count = 0
++            self._post_fc_client_bos_requested = False
++            self._post_fc_client_bos_requested_frame = None
++            self._post_fc_client_bos_forced_frame = None
++            self._post_fc_client_bos_forced_count = 0
++            self._external_user_eou_blank_fence_target = None
++            self._external_user_eou_blank_fence_last = None
++            self._reset_post_fc_token_trace()
++
++    def request_user_eou(self) -> None:
++        """Request an agent BOS on the next idle-agent model position."""
++        if not self._external_user_eou_mode:
++            raise RuntimeError("external user EOU mode is not enabled")
++        if self._external_user_eou_blank_fence_target is not None:
++            raise RuntimeError("blank-fence client EOU request is already pending")
++        if self._post_fc_client_bos_requested:
++            raise RuntimeError("post-FC client BOS request is already pending")
++        self._external_user_eou_requested = True
++
++    def request_user_eou_at_blank_fence(self, target_blank_frames: int) -> None:
++        """Fuse the qualified final RNNT blank with BOS in a tool-free session."""
++        if not self._external_user_eou_mode:
++            raise RuntimeError("external user EOU mode is not enabled")
++        target = int(target_blank_frames)
++        if target < 1:
++            raise ValueError("client EOU blank fence must be positive")
++        if self._external_user_eou_requested:
++            raise RuntimeError("legacy client EOU request is already pending")
++        if self._post_fc_client_bos_requested:
++            raise RuntimeError("post-FC client BOS request is already pending")
++        if self._external_user_eou_blank_fence_target is not None:
++            raise RuntimeError("blank-fence client EOU request is already pending")
++        self._external_user_eou_blank_fence_target = target
++        self._external_user_eou_blank_fence_last = None
++
++    def cancel_user_eou_at_blank_fence(self) -> None:
++        """Discard an armed blank-fence request after a failed settlement."""
++        self._external_user_eou_blank_fence_target = None
++        self._external_user_eou_blank_fence_last = None
++
 +    def cancel_agent_eos_request(self) -> None:
 +        """Discard a transport EOS request when its session ends before use."""
 +        self._external_agent_eos_requested = False
 +
 +    def reset_transport_session_state(self) -> None:
 +        """Clear wrapper-global turn state at an external session boundary."""
++        self._eartts_idle_pad_bypass_total = 0
 +        self._reset_rnnt_turn_taking_state()
 +
 +    def observe_transport_user_activity(self, active: bool, stream_id=None) -> None:
@@ -588,16 +3087,687 @@ index 6085e5562..0c5ab3a90 100755
  
      @torch.no_grad()
      def inference_realtime_streaming(self, audio_path: str, num_frames_per_chunk: int = None, request_id: Optional[str] = None, pad_audio_to_sec: Optional[float] = None, pad_silence_ratio: Optional[float] = None, pad_audio_by_sec: Optional[float] = None, system_prompt: Optional[str] = None, tool_executor_fn: Optional[callable] = None):
-@@ -4175,4 +4508,3 @@ def main():
+@@ -3663,6 +5600,7 @@ class NemotronVoicechatInferenceWrapper:
+                             realtime_audio=rt_audio_ctx,
+                             request_id=stream_request_id,
+                         )
++                        self._require_fc_eotr_completion(fc_state)
+                         fc_total_async_steps += async_steps_p2
+                         logging.info(
+                             "[FC Async] Phase 2 completed: %d steps (total async: %d)",
+@@ -4175,4 +6113,3 @@ def main():
  
  if __name__ == "__main__":
      sys.exit(main())
 -
+diff --git a/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py b/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py
+index ffc266585..da90ca639 100644
+--- a/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py
++++ b/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import hashlib
+ import json
+ import os
+ import urllib.request
+@@ -853,6 +854,10 @@ out center {limit};
+ 		request_id = self._request_id_for_stream(stream_ids[0])
+ 		
+ 		context, _ = self.context_manager.get_context(stream_ids)
++		# Timing evidence is current-invocation only. Function-call background
++		# branches below can return without running infer_one_step or updating the
++		# context, so clear the prior frame before any such branch is reachable.
++		context.last_step_stage_timings = None
+ 
+ 		# Initialize FC state on first audio frame if not already done via prefill
+ 		if bos_flags[0] and context.fc_state is None:
+@@ -963,7 +968,24 @@ out center {limit};
+ 				_res_early = bg.get("result", {})
+ 				_was_aborted_early = _res_early.get("aborted", False) if _res_early else False
+ 				_quit_to_normal_early = _res_early.get("quit_to_normal", False) if _res_early else False
+-				_any_interrupt_early = _was_aborted_early or _quit_to_normal_early
++				_natural_interrupt_early = (
++					_res_early.get("natural_interrupt", False) if _res_early else False
++				)
++				_fc_failed_early = bool(
++					_res_early
++					and (
++						_res_early.get("failed", False)
++						or (
++							not _was_aborted_early
++							and not _quit_to_normal_early
++							and not _natural_interrupt_early
++							and not _res_early.get("fc_complete", False)
++						)
++					)
++				)
++				_any_interrupt_early = (
++					_was_aborted_early or _quit_to_normal_early or _fc_failed_early
++				)
+ 
+ 				# Flush any remaining ack audio from the queue, but only if FC
+ 				# completed normally (not interrupted).
+@@ -994,9 +1016,10 @@ out center {limit};
+ 				res = bg["result"]
+ 				was_aborted = _was_aborted_early
+ 				quit_to_normal = _quit_to_normal_early
+-				natural_interrupt = res.get("natural_interrupt", False) if res else False
++				natural_interrupt = _natural_interrupt_early
++				fc_failed = _fc_failed_early
+ 
+-				if not was_aborted and not quit_to_normal and not natural_interrupt and res and "async_steps" in res:
++				if not was_aborted and not quit_to_normal and not natural_interrupt and not fc_failed and res and "async_steps" in res:
+ 					# Normal completion: apply FC context updates so the main thread
+ 					# can resume generating the verbal response.
+ 					async_steps = res["async_steps"]
+@@ -1013,9 +1036,25 @@ out center {limit};
+ 						context.past_key_values = tts_state_out["past_key_values"]
+ 						context.codec_cache = tts_state_out.get("codec_cache", context.codec_cache)
+ 					context.frame_idx += async_steps
++					_terminal_function_frame = res.get("terminal_function_frame")
++					_terminal_function_token_id = res.get("terminal_function_token_id")
++					if (
++						context.gen_function_text is None
++						or _terminal_function_frame != context.frame_idx - 1
++						or _terminal_function_token_id != self.s2s_model._fc_eotr_id
++					):
++						raise RuntimeError(
++							"completed FC background result has invalid terminal EOTR feedback"
++						)
++					context.gen_function_text[0, _terminal_function_frame] = (
++						_terminal_function_token_id
++					)
++					context.fc_state["eotr_feedback_committed"] = True
+ 					logging.info(
+-						"[FC Async NB] Context advanced by %d async steps, TTS codec state restored",
++						"[FC Async NB] Context advanced by %d async steps, terminal EOTR "
++						"feedback committed at frame %d, TTS codec state restored",
+ 						async_steps,
++						_terminal_function_frame,
+ 					)
+ 
+ 				# Drain any remaining RNNT text from the queue and apply final hypothesis.
+@@ -1080,6 +1119,9 @@ out center {limit};
+ 							"completed_calls": [],
+ 							"forced_function_tokens": [],
+ 							"injecting_response": False,
++							"awaiting_eotr": False,
++							"eotr_observed": False,
++							"eotr_timeout": False,
+ 						})
+ 					context.tool_response_text = None
+ 					reset_fn = getattr(self.s2s_model, "_reset_rnnt_turn_taking_state", None)
+@@ -1088,8 +1130,8 @@ out center {limit};
+ 					# Fall through to infer_one_step — fc_state is clean, EOS signals
+ 					# agent stopped, vLLM keeps full conversation context, turn-taking
+ 					# handles BOS when user finishes speaking (EOU) → agent answers.
+-				elif was_aborted:
+-					# Legacy abort path (abort_event fired) — kept for non-vLLM mode.
++				elif was_aborted or fc_failed:
++					# Legacy abort or fail-closed incomplete/failed FC path.
+ 					if res and "async_steps" in res:
+ 						_async_steps_ab = res["async_steps"]
+ 						_upd_cache_ab = res.get("updated_cache")
+@@ -1112,7 +1154,7 @@ out center {limit};
+ 						if _eos_id is not None and context.frame_idx > 0:
+ 							context.gen_text[0, context.frame_idx - 1] = _eos_id
+ 						logging.info(
+-							"[FC Async] Aborted — applied context (%d async steps), "
++							"[FC Async] Aborted/failed — applied context (%d async steps), "
+ 							"EOS inserted at frame %d for stream %d",
+ 							_async_steps_ab, context.frame_idx - 1, stream_id,
+ 						)
+@@ -1123,6 +1165,9 @@ out center {limit};
+ 							"completed_calls": [],
+ 							"forced_function_tokens": [],
+ 							"injecting_response": False,
++							"awaiting_eotr": False,
++							"eotr_observed": False,
++							"eotr_timeout": False,
+ 						})
+ 					context.tool_response_text = None
+ 					self._abort_stream_request(stream_id)
+@@ -1174,6 +1219,9 @@ out center {limit};
+ 							"completed_calls": [],
+ 							"forced_function_tokens": [],
+ 							"injecting_response": False,
++							"awaiting_eotr": False,
++							"eotr_observed": False,
++							"eotr_timeout": False,
+ 						})
+ 					context.tool_response_text = None
+ 					reset_fn = getattr(self.s2s_model, "_reset_rnnt_turn_taking_state", None)
+@@ -1193,7 +1241,10 @@ out center {limit};
+ 					else:
+ 						context.tool_response_text = None
+ 					logging.info("[FC Async NB] Background thread done, resuming normal flow for stream %d", stream_id)
+-					# Fall through to normal processing for this frame.
++					# End this model tick at the completed function-cycle boundary. Falling
++					# through here lets the same call immediately predict another SOTC before
++					# the transport can acknowledge the result that was just applied.
++					return
+ 
+ 			else:
+ 				# Thread still running — drain at most one frame's worth of TTS
+@@ -1338,6 +1389,7 @@ out center {limit};
+ 			fc_state=context.fc_state,
+ 			tool_response_text=context.tool_response_text,
+ 			stream_id=stream_ids[0] if stream_ids else None,
++			perception_frame_idx=context.perception_frame_idx,
+ 		)
+ 		step_wall_end = time.time()
+ 
+@@ -1379,7 +1431,12 @@ out center {limit};
+ 
+ 		# FC interruption PAD override: after quit-to-normal, override both
+ 		# Persist updated cache & clean finished streams
+-		self.context_manager.update_context(stream_ids, result, self.num_frames_per_chunk)
++		self.context_manager.update_context(
++			stream_ids,
++			result,
++			self.num_frames_per_chunk,
++			perception_num_frames=self.num_frames_per_chunk,
++		)
+ 
+ 		# Append this chunk's TTS audio BEFORE the FC silence insertion
+ 		# so the SOTC chunk's speech is ordered correctly in the output.
+@@ -1608,6 +1665,7 @@ out center {limit};
+ 									abort_event=abort_event,
+ 									quit_async_event=quit_async_event,
+ 									stream_id=stream_id,
++									cycle_sotc_frame=sotc_frame,
+ 									)
+ 
+ 							# Two-phase async FC: the first LLM run above generated the
+@@ -1774,6 +1832,7 @@ out center {limit};
+ 											abort_event=abort_event,
+ 											quit_async_event=quit_async_event,
+ 											stream_id=stream_id,
++											cycle_sotc_frame=sotc_frame,
+ 											)
+ 									tts_chunks = tts_chunks + tts_chunks_p2
+ 									async_steps += async_steps_p2
+@@ -1786,6 +1845,60 @@ out center {limit};
+ 						bg_result["aborted"] = abort_event is not None and abort_event.is_set()
+ 						bg_result["quit_to_normal"] = quit_async_event is not None and quit_async_event.is_set()
+ 						bg_result["natural_interrupt"] = fc_state.get("natural_interrupt", False)
++						_terminal_function_frame = sotc_frame + async_steps
++						_terminal_function_token_id = None
++						if 0 <= _terminal_function_frame < gen_function_text.shape[1]:
++							_terminal_function_token_id = int(
++								gen_function_text[0, _terminal_function_frame].item()
++							)
++						bg_result["terminal_function_frame"] = _terminal_function_frame
++						bg_result["terminal_function_token_id"] = _terminal_function_token_id
++						fc_state["eotr_feedback_frame"] = _terminal_function_frame
++						fc_state["eotr_feedback_token_id"] = _terminal_function_token_id
++						fc_state["eotr_feedback_committed"] = False
++						bg_result["fc_complete"] = bool(
++							not fc_state.get("active", False)
++							and not fc_state.get("awaiting_response", False)
++							and not fc_state.get("forced_function_tokens")
++							and not fc_state.get("injecting_response", False)
++							and not fc_state.get("awaiting_eotr", False)
++							and fc_state.get("eotr_observed") is True
++							and not fc_state.get("eotr_timeout", False)
++							and _terminal_function_frame == fc_state.get("eotr_observed_frame")
++							and _terminal_function_token_id == s2s_model._fc_eotr_id
++							and fc_state.get("tool_response_inject_end_frame") is not None
++						)
++						if getattr(s2s_model, "_fc_async_heartbeat_enabled", False):
++							_previous_heartbeat = fc_state.get("async_heartbeat")
++							_terminal_phase = (
++								_previous_heartbeat.get("phase", "tool_response")
++								if isinstance(_previous_heartbeat, dict)
++								else "tool_response"
++							)
++							_terminal_invocation = (
++								_previous_heartbeat.get("invocation", 2)
++								if isinstance(_previous_heartbeat, dict)
++								else 2
++							)
++							_terminal_state = (
++								"aborted"
++								if bg_result["aborted"] or bg_result["quit_to_normal"]
++								else "complete" if bg_result["fc_complete"] else "failed"
++							)
++							s2s_model._publish_fc_async_heartbeat(
++								fc_state,
++								key="async_heartbeat",
++								cycle_sotc_frame=sotc_frame,
++								phase=_terminal_phase,
++								invocation=_terminal_invocation,
++								async_step=async_steps,
++								model_frame=_terminal_function_frame,
++								stage=_terminal_state,
++								state=_terminal_state,
++								live_audio_queue=live_audio_queue,
++								tts_audio_queue=tts_audio_output_queue,
++								rnnt_text_queue=rnnt_text_queue,
++							)
+ 					except Exception as _exc:
+ 						logging.error("[FC Async NB] Background thread failed: %s: %s",
+ 									  type(_exc).__name__, _exc, exc_info=True)
+@@ -1794,6 +1907,46 @@ out center {limit};
+ 						bg_result["tts_state_out"] = tts_state
+ 						bg_result["tts_audio_chunks"] = []
+ 						bg_result["rnnt_hyps_out"] = rnnt_hyps
++						bg_result["failed"] = True
++						bg_result["fc_complete"] = False
++						if getattr(s2s_model, "_fc_async_heartbeat_enabled", False):
++							_previous_heartbeat = fc_state.get("async_heartbeat")
++							_failed_stage = (
++								_previous_heartbeat.get("stage")
++								if isinstance(_previous_heartbeat, dict)
++								else None
++							)
++							s2s_model._publish_fc_async_heartbeat(
++								fc_state,
++								key="async_heartbeat",
++								cycle_sotc_frame=sotc_frame,
++								phase=(
++									_previous_heartbeat.get("phase", "tool_call")
++									if isinstance(_previous_heartbeat, dict)
++									else "tool_call"
++								),
++								invocation=(
++									_previous_heartbeat.get("invocation", 1)
++									if isinstance(_previous_heartbeat, dict)
++									else 1
++								),
++								async_step=(
++									_previous_heartbeat.get("async_step")
++									if isinstance(_previous_heartbeat, dict)
++									else None
++								),
++								model_frame=(
++									_previous_heartbeat.get("model_frame")
++									if isinstance(_previous_heartbeat, dict)
++									else None
++								),
++								stage="failed",
++								state="failed",
++								failed_stage=_failed_stage,
++								live_audio_queue=live_audio_queue,
++								tts_audio_queue=tts_audio_output_queue,
++								rnnt_text_queue=rnnt_text_queue,
++							)
+ 
+ 				_bg_thread = threading.Thread(
+ 					target=_fc_async_thread_fn,
+@@ -1899,7 +2052,10 @@ out center {limit};
+ 				tts_state=_tts_state_for_async,
+ 				rnnt_partial_hypotheses=context.rnnt_partial_hypotheses,
+ 				stream_id=stream_id,
++				cycle_sotc_frame=sotc_frame,
+ 			)
++			if tool_resp:
++				self.s2s_model._require_fc_eotr_completion(context.fc_state)
+ 			eotc_wall = time.time()
+ 			if updated_cache is not None:
+ 				context.dynamic_cache = updated_cache
+@@ -2018,7 +2174,9 @@ out center {limit};
+ 						tts_state=_tts_state_p2,
+ 						rnnt_partial_hypotheses=context.rnnt_partial_hypotheses,
+ 						stream_id=stream_ids[0] if stream_ids else None,
++						cycle_sotc_frame=sotc_frame,
+ 					)
++					self.s2s_model._require_fc_eotr_completion(context.fc_state)
+ 					if updated_cache is not None:
+ 						context.dynamic_cache = updated_cache
+ 					if _rnnt_hyps_p2 is not None:
+@@ -2220,6 +2378,276 @@ out center {limit};
+ 			  f"total={1000*(t_prefill-t0):.1f}ms, has_prompt={self._stream_has_prompt}")
+ 		return self._stream_has_prompt
+ 
++	@staticmethod
++	def _direct_request_state(interface, request_id: str) -> dict:
++		"""Return scalar vLLM continuation state without changing the request."""
++		engine = getattr(interface, "engine", None)
++		requests = getattr(engine, "requests", None)
++		request = requests.get(request_id) if hasattr(requests, "get") else None
++		status = getattr(getattr(request, "status", None), "value", None)
++		generated = getattr(request, "generated_tokens", None)
++		return {
++			"exists": request is not None,
++			"status": status,
++			"generated_tokens": len(generated) if generated is not None else None,
++			"iterator_id": id(getattr(request, "generation_iterator", None)),
++			"backend_request_id": getattr(request, "backend_request_id", request_id),
++			"backend_generation": int(getattr(request, "backend_generation", 0)),
++		}
++
++	@staticmethod
++	def _validate_direct_request_continuity(name: str, prior: dict, current: dict) -> None:
++		"""Reject direct positions that cross a vLLM request generation."""
++		if current["status"] != "active":
++			raise RuntimeError(f"{name} request left active state during direct position")
++		if current["iterator_id"] != prior["iterator_id"]:
++			raise RuntimeError(f"{name} request iterator changed during direct position")
++		if current["backend_request_id"] != prior["backend_request_id"]:
++			raise RuntimeError(f"{name} backend request changed during direct position")
++		if current["backend_generation"] != prior["backend_generation"]:
++			raise RuntimeError(f"{name} backend generation changed during direct position")
++
++	def _direct_position_preflight(self, stream_id: int, source_token_id: int) -> dict:
++		"""Validate every observable direct-position owner before mutation."""
++		if self.num_frames_per_chunk != 1 or self.batch_size != 1:
++			raise RuntimeError("direct source positions require a batch-one 80 ms pipeline")
++		if not isinstance(source_token_id, int) or isinstance(source_token_id, bool):
++			raise TypeError("source_token_id must be an integer")
++		slot = self.context_manager.streamidx2slotidx.get(stream_id)
++		if slot is None:
++			raise RuntimeError("direct source position requires an already-prefilled stream")
++		context = self.context_manager.slot_contexts[slot]
++		if context is None:
++			raise RuntimeError("direct source position has no live slot context")
++		if context.frame_idx + 2 > context.gen_text.shape[1]:
++			raise RuntimeError("context has no room for source plus explicit-EOU position")
++
++		wrapper = self.s2s_model
++		if not (getattr(wrapper, "use_vllm_llm", False)
++				and getattr(wrapper, "use_vllm_eartts", False)
++				and getattr(wrapper, "decode_audio", False)):
++			raise RuntimeError("diagnostic direct positions require Nano and EarTTS vLLM")
++		if not getattr(wrapper, "_external_user_eou_mode", False):
++			raise RuntimeError("direct positions require external user EOU mode")
++		# Do not call wrapper._get_agent_idle() here: its configured streaming
++		# getter is get_or_create_state(), so a rejected preflight would allocate
++		# S2SStreamingState and violate the zero-delta rejection contract.
++		state = self._state_pool.get(stream_id)
++		if state is not None and hasattr(state, "is_agent_idle"):
++			agent_idle = bool(state.is_agent_idle())
++		elif state is not None and hasattr(state, "agent_idle"):
++			agent_idle = bool(state.agent_idle)
++		else:
++			agent_idle = bool(getattr(wrapper, "_agent_idle", True))
++		if not agent_idle:
++			raise RuntimeError("direct position rejected while the agent response is open")
++		if stream_id in self._fc_async_bg:
++			raise RuntimeError("direct position rejected while FC background work is open")
++		fc_state = context.fc_state or {}
++		if any((
++			fc_state.get("active", False),
++			fc_state.get("awaiting_response", False),
++			fc_state.get("injecting_response", False),
++			fc_state.get("awaiting_eotr", False),
++			fc_state.get("forced_function_tokens"),
++		)):
++			raise RuntimeError("direct position rejected while function state is open")
++		if context.tool_response_text or context.tool_response_queue:
++			raise RuntimeError("direct position rejected with queued tool response state")
++
++		latches = {
++			"external_user_eou_requested": bool(getattr(wrapper, "_external_user_eou_requested", False)),
++			"external_agent_eos_requested": bool(getattr(wrapper, "_external_agent_eos_requested", False)),
++			"agent_eos_just_fired": bool(getattr(wrapper, "_agent_eos_just_fired", False)),
++			"post_tc_bos_exempt": bool(getattr(wrapper, "_post_tc_bos_exempt", False)),
++			"post_fc_client_bos": bool(getattr(wrapper, "_post_fc_client_bos_requested", False)),
++			"redirect_tokens": len(getattr(wrapper, "_redirect_tokens_queue", ()) or ()),
++		}
++		if any(latches.values()):
++			raise RuntimeError(f"direct position rejected with pending wrapper edge: {latches}")
++
++		if os.environ.get("VOICECHAT_NANO_PAD_PAIR", "0").strip().lower() in {
++			"1", "true", "yes", "on",
++		}:
++			raise RuntimeError("direct position prototype requires Nano PAD-pair disabled")
++		request_id = self._request_id_for_stream(stream_id)
++		nano_interface = wrapper.model_llm_interface
++		tts_interface = wrapper.model.tts_model.tts_model
++		nano_engine = getattr(nano_interface, "engine", None)
++		pad_states = getattr(nano_engine, "_voicechat_pad_pair_states", {})
++		pad_state = pad_states.get(request_id) if hasattr(pad_states, "get") else None
++		if pad_state is not None and pad_state.get("pending") is not None:
++			raise RuntimeError("direct position rejected with a buffered Nano PAD draft")
++
++		nano_request = self._direct_request_state(nano_interface, request_id)
++		tts_request = self._direct_request_state(tts_interface, request_id)
++		for name, request in (("nano", nano_request), ("eartts", tts_request)):
++			if not request["exists"] or request["status"] != "active":
++				raise RuntimeError(f"direct position requires an active {name} request")
++			if request["generated_tokens"] is None:
++				raise RuntimeError(f"direct position cannot read {name} request position")
++
++		vocab_size = int(wrapper.model.stt_model.embed_tokens.weight.shape[0])
++		if source_token_id < 0 or source_token_id >= vocab_size:
++			raise ValueError(f"source_token_id outside vocabulary: {source_token_id}")
++		source_token = torch.tensor([source_token_id], device=wrapper.device, dtype=torch.long)
++		source_embedding = wrapper.model.stt_model.embed_tokens(source_token).to(
++			device=wrapper.device, dtype=wrapper.dtype
++		).unsqueeze(1)
++		if tuple(source_embedding.shape) != (1, 1, 4480) or source_embedding.dtype != torch.bfloat16:
++			raise RuntimeError(
++				"direct source embedding must be BF16 [1, 1, 4480], got "
++				f"{tuple(source_embedding.shape)} {source_embedding.dtype}"
++			)
++
++		return {
++			"context": context,
++			"slot": slot,
++			"request_id": request_id,
++			"source_embedding": source_embedding,
++			"nano_request": nano_request,
++			"eartts_request": tts_request,
++			"pad_state_id": id(pad_state),
++			"perception_cache_id": id(context.perception_cache),
++			"perception_frame_idx": context.perception_frame_idx,
++			"rnnt_state_id": id(context.rnnt_partial_hypotheses),
++			"fc_state_id": id(context.fc_state),
++			"state_id": id(state),
++			"state_audio_samples": int(state.audio_buffer.shape[-1]) if state is not None else 0,
++			"display_lengths": (
++				len(state.output_text_str),
++				len(state.output_asr_text_str),
++				len(state.output_function_text_str),
++				len(state.output_words),
++			) if state is not None else (0, 0, 0, 0),
++			"latches": latches,
++		}
++
++	@torch.no_grad()
++	def inject_user_source_position(self, stream_id: int, source_token_id: int) -> dict:
++		"""Advance one hidden user-source position across Nano, EarTTS, and context.
++
++		All validation completes before the first mutable owner (`_last_user_audio_emb`)
++		or vLLM continuation is touched.  Exceptions after `infer_one_step` begins are
++		not recoverable and the caller must terminate the stream.
++		"""
++		before = self._direct_position_preflight(stream_id, source_token_id)
++		context = before["context"]
++		frame_idx = context.frame_idx
++		pad_id = int(self.s2s_model.model.stt_model.text_pad_id)
++		previous = {
++			# At model position zero, the live context has no committed prior row.
++			# The wrapper's trained first-position convention is an explicit PAD
++			# feedback token, not an accidental read from the array's final cell.
++			"agent": int(context.gen_text[0, frame_idx - 1].item()) if frame_idx else pad_id,
++			"asr": int(context.gen_asr_text[0, frame_idx - 1].item()) if frame_idx else pad_id,
++			"function": (
++				int(context.gen_function_text[0, frame_idx - 1].item())
++				if frame_idx and context.gen_function_text is not None
++				else (pad_id if context.gen_function_text is not None else None)
++			),
++		}
++		result = self.s2s_model.infer_one_step(
++			audio_input=None,
++			num_frames_per_chunk=1,
++			frame_idx=frame_idx,
++			gen_text=context.gen_text,
++			audio_toks_buffer=context.audio_toks_buffer,
++			input_embeds_history=context.input_embeds_history,
++			dynamic_cache=context.dynamic_cache,
++			past_key_values=context.past_key_values,
++			code=context.code,
++			subword_mask=context.subword_mask,
++			gen_asr_text=context.gen_asr_text,
++			gen_function_text=context.gen_function_text,
++			request_id=before["request_id"],
++			perception_cache=context.perception_cache,
++			# This flag selects the wrapper's explicit first-position PAD
++			# feedback path when frame_idx == 0. It does not add another system
++			# prompt; that request was already prefilled by start().
++			has_prompt=(frame_idx == 0),
++			codec_cache=context.codec_cache,
++			rnnt_partial_hypotheses=context.rnnt_partial_hypotheses,
++			fc_state=context.fc_state,
++			tool_response_text=context.tool_response_text,
++			stream_id=stream_id,
++			source_embeddings=before["source_embedding"],
++			force_output_pad=True,
++			perception_frame_idx=context.perception_frame_idx,
++		)
++		self.context_manager.update_context(
++			[stream_id], result, 1, perception_num_frames=0
++		)
++
++		after_nano = self._direct_request_state(
++			self.s2s_model.model_llm_interface, before["request_id"]
++		)
++		after_tts = self._direct_request_state(
++			self.s2s_model.model.tts_model.tts_model, before["request_id"]
++		)
++		if after_nano["generated_tokens"] != before["nano_request"]["generated_tokens"] + 1:
++			raise RuntimeError("Nano request did not advance exactly one direct position")
++		if after_tts["generated_tokens"] != before["eartts_request"]["generated_tokens"] + 1:
++			raise RuntimeError("EarTTS request did not advance exactly one direct position")
++		for name, prior, current in (
++			("Nano", before["nano_request"], after_nano),
++			("EarTTS", before["eartts_request"], after_tts),
++		):
++			self._validate_direct_request_continuity(name, prior, current)
++		if context.frame_idx != frame_idx + 1:
++			raise RuntimeError("pipeline context did not advance exactly one direct position")
++		if context.perception_frame_idx != before["perception_frame_idx"]:
++			raise RuntimeError("direct position unexpectedly advanced perception timeline")
++		if int(context.gen_text[0, frame_idx].item()) != pad_id:
++			raise RuntimeError("direct position did not commit agent PAD")
++		if int(context.gen_asr_text[0, frame_idx].item()) != pad_id:
++			raise RuntimeError("direct position did not commit ASR PAD")
++		if (context.gen_function_text is not None
++				and int(context.gen_function_text[0, frame_idx].item()) != pad_id):
++			raise RuntimeError("direct position did not commit function PAD")
++		if id(context.perception_cache) != before["perception_cache_id"]:
++			raise RuntimeError("direct position unexpectedly replaced perception cache")
++		if id(context.rnnt_partial_hypotheses) != before["rnnt_state_id"]:
++			raise RuntimeError("direct position unexpectedly replaced RNNT state")
++		if id(context.fc_state) != before["fc_state_id"]:
++			raise RuntimeError("direct position unexpectedly replaced function state")
++		state = self._state_pool.get(stream_id)
++		if state is not None:
++			display_lengths = (
++				len(state.output_text_str), len(state.output_asr_text_str),
++				len(state.output_function_text_str), len(state.output_words),
++			)
++			if display_lengths != before["display_lengths"]:
++				raise RuntimeError("direct position leaked into display state")
++			if int(state.audio_buffer.shape[-1]) != before["state_audio_samples"]:
++				raise RuntimeError("direct position leaked decoded audio")
++
++		return {
++			"frame_idx_before": frame_idx,
++			"frame_idx_after": context.frame_idx,
++			"perception_frame_idx": context.perception_frame_idx,
++			"source_token_id": source_token_id,
++			"previous_feedback": previous,
++			"nano_position_before": before["nano_request"]["generated_tokens"],
++			"nano_position_after": after_nano["generated_tokens"],
++			"eartts_position_before": before["eartts_request"]["generated_tokens"],
++			"eartts_position_after": after_tts["generated_tokens"],
++			"effective_token_id": pad_id,
++			"effective_subword_mask": bool(context.subword_mask[0, frame_idx].item()),
++			"perception_cache_unchanged": True,
++			"rnnt_state_unchanged": True,
++			"function_state_unchanged": True,
++			"decoded_audio_samples_discarded": int(result["decoded_audio_new"].numel()),
++			"decoded_audio_fingerprint": {
++				"shape": list(result["decoded_audio_new"].shape),
++				"dtype": str(result["decoded_audio_new"].dtype),
++				"sha256": hashlib.sha256(
++					result["decoded_audio_new"].detach().float().cpu().contiguous().numpy().tobytes()
++				).hexdigest(),
++			},
++			"model": result.get("direct_source_diagnostics", {}),
++		}
++
+ 	_WARMUP_FALLBACK_PROMPT = "Mock system prompt for warmup."
+ 
+ 	def warmup(self, system_prompt: str | None = None) -> None:
+diff --git a/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py b/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py
+index 645c02b1d..c18f9b1ef 100644
+--- a/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py
++++ b/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py
+@@ -29,6 +29,7 @@ if TYPE_CHECKING:
+ @dataclass
+ class StreamingRealtimeContext:
+ 	frame_idx: int
++	perception_frame_idx: int
+ 	gen_text: torch.Tensor
+ 	gen_asr_text: torch.Tensor
+ 	gen_function_text: Optional[torch.Tensor]
+@@ -45,6 +46,8 @@ class StreamingRealtimeContext:
+ 	tool_response_text: Optional[str] = None
+ 	tool_response_queue: Optional[List[str]] = None
+ 	fc_timing: Optional[Dict[str, Any]] = None
++	function_logit_trace: Optional[List[Dict[str, Any]]] = None
++	last_step_stage_timings: Optional[Dict[str, Any]] = None
+ 	rt_audio_signal: Optional[torch.Tensor] = None
+ 	rt_audio_total_frames: int = 0
+ 	rt_audio_buffer_size_samples: int = 0
+@@ -158,6 +161,7 @@ class S2SContextManager:
+ 
+ 		return StreamingRealtimeContext(
+ 			frame_idx=0,
++			perception_frame_idx=0,
+ 			gen_text=gen_text,
+ 			gen_asr_text=gen_asr_text,
+ 			gen_function_text=gen_function_text,
+@@ -209,6 +213,7 @@ class S2SContextManager:
+ 		stream_ids: List[int],
+ 		step_result: Dict[str, Any],
+ 		num_frames: int,
++		perception_num_frames: Optional[int] = None,
+ 	) -> None:
+ 		"""Persist model outputs back into the cached context."""
+ 		if len(stream_ids) == 0:
+@@ -258,6 +263,9 @@ class S2SContextManager:
+ 			context.gen_function_text[:, start_idx:end_idx] = func_token_slice.to(context.gen_function_text.device)
+ 
+ 		context.frame_idx = end_idx
++		context.perception_frame_idx += (
++			num_frames if perception_num_frames is None else perception_num_frames
++		)
+ 
+ 		if step_result.get("dynamic_cache") is not None:
+ 			context.dynamic_cache = step_result["dynamic_cache"]
+@@ -277,6 +285,11 @@ class S2SContextManager:
+ 			context.codec_cache = step_result["codec_cache"]
+ 		if "rnnt_partial_hypotheses" in step_result:
+ 			context.rnnt_partial_hypotheses = step_result["rnnt_partial_hypotheses"]
++		context.function_logit_trace = step_result.get("function_logit_trace")
++		stage_timings = step_result.get("stage_timings_ms")
++		context.last_step_stage_timings = (
++			dict(stage_timings) if isinstance(stage_timings, dict) else None
++		)
+ 
+ 	def reset_slots(self, stream_ids: List[int], eos_flags: List[bool]) -> None:
+ 		"""Release contexts for streams that signalled end-of-stream."""
 diff --git a/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py b/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
-index b7764fbd6..d9b2953ba 100644
+index b7764fbd6..506b4b981 100644
 --- a/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
 +++ b/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
-@@ -76,6 +76,7 @@ class LLMStreamingEngine:
+@@ -56,6 +56,8 @@ class RequestState:
+     status: StreamStatus
+     generated_tokens: list
+     generation_iterator: Optional[AsyncGenerator] = None
++    backend_request_id: Optional[str] = None
++    backend_generation: int = 0
+ 
+ 
+ class LLMStreamingEngine:
+@@ -76,6 +78,7 @@ class LLMStreamingEngine:
          dtype: str = "bfloat16",
          skip_tokenizer_init: bool = False,
          device_id: int = None,
@@ -605,7 +3775,7 @@ index b7764fbd6..d9b2953ba 100644
          **sampling_kwargs
      ):
          """
-@@ -87,6 +88,7 @@ class LLMStreamingEngine:
+@@ -87,6 +90,7 @@ class LLMStreamingEngine:
              gpu_memory_utilization: GPU memory utilization ratio (default: 0.8)
              trust_remote_code: Whether to trust remote code (default: True)
              dtype: Data type for embeddings (default: "bfloat16")
@@ -613,7 +3783,7 @@ index b7764fbd6..d9b2953ba 100644
              **sampling_kwargs: Additional sampling parameters (max_tokens, temperature, top_p, top_k, seed, stop, stop_token_ids, ignore_eos)
          """
          self.model_path = model_path
-@@ -96,6 +98,7 @@ class LLMStreamingEngine:
+@@ -96,12 +100,18 @@ class LLMStreamingEngine:
          self.dtype = dtype
          self.skip_tokenizer_init = skip_tokenizer_init
          self.device_id = device_id
@@ -621,7 +3791,54 @@ index b7764fbd6..d9b2953ba 100644
  
          # Engine state
          self.engine: Optional[AsyncLLM] = None
-@@ -147,7 +150,8 @@ class LLMStreamingEngine:
+ 
+         # Request state tracking - supports multiple concurrent requests
+         self.requests: Dict[str, RequestState] = {}
++        # Logical request IDs are part of the Speech pipeline contract.  EarTTS
++        # may opt into never-reused physical IDs for the underlying AsyncLLM so
++        # cleanup from an older async generator cannot abort its replacement.
++        self._unique_backend_request_ids = False
++        self._backend_request_generation = 0
+ 
+         # Default sampling parameters
+         default_sampling = {
+@@ -119,6 +129,35 @@ class LLMStreamingEngine:
+ 
+         logging.info(f"LLMStreamingEngine initialized for model: {model_path}")
+ 
++    def _allocate_backend_request_id(self, request_id: str) -> tuple[str, int]:
++        if not self._unique_backend_request_ids:
++            return request_id, 0
++        self._backend_request_generation += 1
++        generation = self._backend_request_generation
++        return f"{request_id}__eartts_generation_{generation}", generation
++
++    def resolve_backend_request_id(self, request_id: str) -> str:
++        """Resolve a logical Speech request to its active AsyncLLM request."""
++        state = self.requests.get(request_id)
++        if not self._unique_backend_request_ids:
++            return request_id
++        if state is None:
++            raise RuntimeError(
++                f"Unique backend request has no logical state for {request_id}"
++            )
++        if (
++            not isinstance(state.backend_request_id, str)
++            or not state.backend_request_id
++            or state.backend_request_id == request_id
++            or isinstance(state.backend_generation, bool)
++            or not isinstance(state.backend_generation, int)
++            or state.backend_generation < 1
++        ):
++            raise RuntimeError(
++                f"Unique backend request identity is invalid for {request_id}"
++            )
++        return state.backend_request_id
++
+     async def initialize(self):
+         """Initialize the vLLM engine with custom input specifications."""
+         if self.engine is not None:
+@@ -147,7 +186,8 @@ class LLMStreamingEngine:
              mamba_ssm_cache_dtype="float32",
              dtype=self.dtype,
              skip_tokenizer_init=self.skip_tokenizer_init,
@@ -631,7 +3848,183 @@ index b7764fbd6..d9b2953ba 100644
          )
  
          # please custom input/output specs in model config file
-@@ -488,4 +492,4 @@ def create_engine(engine_type: str = "llm", **kwargs) -> LLMStreamingEngine:
+@@ -192,18 +232,47 @@ class LLMStreamingEngine:
+         # Check if request already exists
+         if request_id in self.requests:
+             existing_state = self.requests[request_id]
+-            if existing_state.status == StreamStatus.ACTIVE:
++            if self._unique_backend_request_ids:
++                logging.warning(
++                    "Logical request %s already has backend generation %s; "
++                    "retiring it before replacement.",
++                    request_id,
++                    existing_state.backend_generation,
++                )
++                if not await self.abort_generation(request_id):
++                    raise RuntimeError(
++                        f"Could not retire backend generation for {request_id}"
++                    )
++                if request_id in self.requests:
++                    raise RuntimeError(
++                        f"Retired backend generation remains registered for {request_id}"
++                    )
++            elif existing_state.status == StreamStatus.ACTIVE:
+                 logging.warning(f"Request {request_id} is already active. Aborting it first.")
+                 await self.abort_generation(request_id)
+ 
+-        logging.info(f"Starting generation session with request_id: {request_id}")
++        backend_request_id, backend_generation = self._allocate_backend_request_id(
++            request_id
++        )
++        if self._unique_backend_request_ids:
++            logging.info(
++                "Starting generation session with logical request_id: %s, backend "
++                "request_id: %s, generation: %d",
++                request_id,
++                backend_request_id,
++                backend_generation,
++            )
++        else:
++            logging.info(f"Starting generation session with request_id: {request_id}")
+ 
+         # Create new request state
+         self.requests[request_id] = RequestState(
+             request_id=request_id,
+             status=StreamStatus.ACTIVE,
+             generated_tokens=[],
+-            generation_iterator=None  # Will be created on first generate_next_token call
++            generation_iterator=None,  # Will be created on first generate_next_token call
++            backend_request_id=backend_request_id,
++            backend_generation=backend_generation,
+         )
+         return True
+ 
+@@ -225,6 +294,7 @@ class LLMStreamingEngine:
+             raise RuntimeError(f"Request {request_id} not found. Call start_generation() first.")
+ 
+         request_state = self.requests[request_id]
++        backend_request_id = self.resolve_backend_request_id(request_id)
+ 
+         if request_state.status != StreamStatus.ACTIVE:
+             logging.warning(f"Generation not active for request {request_id} (status: {request_state.status})")
+@@ -264,14 +334,14 @@ class LLMStreamingEngine:
+                 request_state.generation_iterator = self.engine.generate(
+                     inputs,
+                     self.sampling_params,
+-                    request_id=request_id
++                    request_id=backend_request_id
+                 )
+ 
+             # If this is not the first call, append the current embedding for processing
+             elif request_state.generation_iterator is not None and len(request_state.generated_tokens) > 0:
+                 try:
+                     await self.engine.append_request(
+-                        request_id=request_id,
++                        request_id=backend_request_id,
+                         custom_inputs=custom_inputs
+                     )
+                 except ValueError as e:
+@@ -348,6 +418,30 @@ class LLMStreamingEngine:
+ 
+         request_state = self.requests[request_id]
+ 
++        if self._unique_backend_request_ids:
++            try:
++                backend_request_id = self.resolve_backend_request_id(request_id)
++                generation_iterator = request_state.generation_iterator
++                if request_state.status == StreamStatus.ACTIVE:
++                    await self.engine.abort(backend_request_id)
++                if generation_iterator is not None:
++                    await generation_iterator.aclose()
++                request_state.status = StreamStatus.ABORTED
++                del self.requests[request_id]
++                logging.info(
++                    "Aborted generation for logical request %s (backend %s)",
++                    request_id,
++                    backend_request_id,
++                )
++                return True
++            except Exception as e:
++                logging.error(
++                    "Error aborting unique backend generation for request %s: %s",
++                    request_id,
++                    e,
++                )
++                return False
++
+         if request_state.status != StreamStatus.ACTIVE:
+             logging.info(f"Request {request_id} is {request_state.status.value}, cleaning up state")
+             # Just remove the state, no need to abort
+@@ -395,23 +489,36 @@ class LLMStreamingEngine:
+                 return {"error": f"Request {request_id} not found"}
+ 
+             request_state = self.requests[request_id]
+-            return {
++            status = {
+                 "request_id": request_id,
+                 "status": request_state.status.value,
+                 "tokens_generated": len(request_state.generated_tokens),
+                 "latest_tokens": request_state.generated_tokens[-5:] if request_state.generated_tokens else []
+             }
++            if self._unique_backend_request_ids:
++                status.update(
++                    backend_request_id=request_state.backend_request_id,
++                    backend_generation=request_state.backend_generation,
++                )
++            return status
+         else:
+             # Return summary of all requests
++            requests = {
++                rid: {
++                    "status": state.status.value,
++                    "tokens_generated": len(state.generated_tokens)
++                }
++                for rid, state in self.requests.items()
++            }
++            if self._unique_backend_request_ids:
++                for rid, state in self.requests.items():
++                    requests[rid].update(
++                        backend_request_id=state.backend_request_id,
++                        backend_generation=state.backend_generation,
++                    )
+             return {
+                 "total_requests": len(self.requests),
+-                "requests": {
+-                    rid: {
+-                        "status": state.status.value,
+-                        "tokens_generated": len(state.generated_tokens)
+-                    }
+-                    for rid, state in self.requests.items()
+-                }
++                "requests": requests,
+             }
+ 
+     async def __aenter__(self):
+@@ -431,6 +538,9 @@ class EARTTSStreamingEngine(LLMStreamingEngine):
+     """
+     def __init__(self, **kwargs):
+         super().__init__(**kwargs)
++        self._unique_backend_request_ids = os.environ.get(
++            "VOICECHAT_EARTTS_PREPARED_EPOCH", "0"
++        ).strip().lower() in {"1", "true", "yes", "on"}
+         guidance_scale = self._read_guidance_scale_from_config()
+         default_sampling = {
+             "max_tokens": 100000, # Set very high to prevent stopping - use abort to stop explicitly
+@@ -440,7 +550,12 @@ class EARTTSStreamingEngine(LLMStreamingEngine):
+             "guidance_scale": guidance_scale,
+         }
+         self.sampling_params = SamplingParams(**default_sampling)
+-        logging.info(f"EARTTSStreamingEngine initialized (guidance_scale={guidance_scale}).")
++        logging.info(
++            "EARTTSStreamingEngine initialized (guidance_scale=%s, "
++            "unique_backend_request_ids=%s).",
++            guidance_scale,
++            self._unique_backend_request_ids,
++        )
+ 
+     def _read_guidance_scale_from_config(self) -> float:
+         """Read guidance_scale from the converted vLLM model's config.json."""
+@@ -488,4 +603,4 @@ def create_engine(engine_type: str = "llm", **kwargs) -> LLMStreamingEngine:
      elif engine_type == "llm":
          return LLMStreamingEngine(**kwargs)
      else:

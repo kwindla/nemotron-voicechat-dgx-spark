@@ -40,11 +40,6 @@ def parse_args() -> argparse.Namespace:
         default=REPO_ROOT / "config/qualified-candidate-1.json",
     )
     parser.add_argument("--work-root", type=Path, required=True)
-    parser.add_argument(
-        "--asr-model",
-        type=Path,
-        help="Local Parakeet model used by the required EarTTS component gate.",
-    )
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--preflight-only", action="store_true")
     return parser.parse_args()
@@ -188,7 +183,6 @@ def main() -> None:
     evaluation = [path.expanduser().resolve() for path in args.evaluation_root]
     selection = args.selection.expanduser().resolve()
     fixtures = args.fixture_root.expanduser().resolve()
-    asr_model = args.asr_model.expanduser().resolve() if args.asr_model else None
     work = args.work_root.expanduser().resolve()
     if work.exists() and not work.is_dir():
         raise SystemExit(f"work root is not a directory: {work}")
@@ -232,9 +226,6 @@ def main() -> None:
             )
         )
         return
-    if asr_model is None:
-        raise SystemExit("--asr-model is required for the EarTTS component gate")
-
     fp32 = work / "fp32"
     _run_stage(
         work,
@@ -415,8 +406,6 @@ def main() -> None:
                 str(skeleton),
                 "--eartts-vllm-path",
                 str(eartts_final),
-                "--asr-model",
-                str(asr_model),
                 "--output-dir",
                 str(output),
                 *graph_flag,

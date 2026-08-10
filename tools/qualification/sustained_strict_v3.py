@@ -17,6 +17,20 @@ from typing import Any
 import numpy as np
 import websockets
 
+from nemotron_voicechat_runtime.tool_freshness_contract import (
+    evaluate_tool_cycle_cardinality,
+    evaluate_tool_response_channels,
+    tool_definition,
+    tool_result,
+)
+from nemotron_voicechat_runtime.tool_freshness_fixture import (
+    TOOL_ONLY_PROMPTS as TOOL_ONLY_TYPED_PROMPTS,
+)
+from nemotron_voicechat_runtime.tool_freshness_fixture import (
+    TOOL_RESULT_ORDINALS,
+    TOOL_VERIFICATION_WORDS,
+)
+
 FRAME_SECONDS = 0.08
 INPUT_RATE = 16_000
 OUTPUT_RATE = 22_050
@@ -30,6 +44,18 @@ DEFAULT_TYPED_PROMPTS = (
     "What codeword did I ask you to remember?",
     "Use the get_current_utc_time tool and state its exact result.",
 )
+
+
+def typed_prompts(mode: str) -> tuple[str, ...]:
+    if mode == "mixed":
+        return DEFAULT_TYPED_PROMPTS
+    if mode == "tool-only":
+        return TOOL_ONLY_TYPED_PROMPTS
+    raise ValueError(f"unsupported typed prompt mode: {mode}")
+
+
+def prompt_expects_tool(mode: str, prompt: str) -> bool:
+    return mode == "tool-only" or "get_current_utc_time" in prompt
 
 
 def typed_prompt_index(
@@ -170,12 +196,17 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     typed: dict[str, dict[str, Any]] = {}
     typed_job_by_turn: dict[str, str] = {}
     expected_tool_result_by_turn: dict[str, str] = {}
+    expected_text_semantic_by_turn: dict[str, bool] = {}
     responses: list[dict[str, Any]] = []
+    eotr_observations: list[dict[str, Any]] = []
+    last_eotr_observed_count = 0
     active_response: dict[str, Any] | None = None
     receiver_done = asyncio.Event()
     session_closed: dict[str, Any] | None = None
     typed_answer_events: dict[str, asyncio.Event] = {}
     serialized_typed_error: dict[str, str] | None = None
+    prompt_mode = str(getattr(args, "typed_prompt_mode", "mixed"))
+    prompt_sequence = typed_prompts(prompt_mode)
 
     async with websockets.connect(
         args.url,
@@ -189,15 +220,11 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         if created.get("protocol") != {"name": "voicechat.realtime", "version": 3}:
             raise RuntimeError(f"unexpected protocol: {created.get('protocol')}")
         capabilities = created.get("capabilities", {})
+        if capabilities.get("input_turn_detection") != "client_smart_turn_v1":
+            raise RuntimeError("server did not advertise client Smart Turn v1")
         if not capabilities.get("typed_input"):
             raise RuntimeError("server did not advertise typed input")
-        tools = [
-            {
-                "name": "get_current_utc_time",
-                "description": "Get the current clock time in UTC.",
-                "parameters": {"type": "object", "properties": {}, "required": []},
-            }
-        ]
+        tools = [tool_definition(prompt_mode)]
         await websocket.send(
             json.dumps(
                 {
@@ -218,7 +245,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 break
 
         async def receiver() -> None:
-            nonlocal active_response, session_closed
+            nonlocal active_response, last_eotr_observed_count, session_closed
             try:
                 async for raw in websocket:
                     event = json.loads(raw)
@@ -227,6 +254,36 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     kind = event.get("type")
                     if kind == "voicechat.metrics":
                         metrics.append(event)
+                        fc = (event.get("turn_state") or {}).get("function_calling") or {}
+                        observed_count = int(fc.get("eotr_observed_count") or 0)
+                        if (
+                            observed_count > last_eotr_observed_count
+                            and fc.get("eotr_feedback_committed") is True
+                        ):
+                            eotr_observations.append(
+                                {
+                                    "turn_id": event.get("turn_id"),
+                                    "transport_frame": event.get("transport_frame"),
+                                    "observed_count": observed_count,
+                                    "observed": fc.get("eotr_observed"),
+                                    "observed_frame": fc.get("eotr_observed_frame"),
+                                    "wait_steps": fc.get("eotr_wait_steps"),
+                                    "timeout": fc.get("eotr_timeout"),
+                                    "eotr_token_id": fc.get("eotr_token_id"),
+                                    "first_post_drain_token_id": fc.get(
+                                        "eotr_first_post_drain_token_id"
+                                    ),
+                                    "first_post_drain_token_frame": fc.get(
+                                        "eotr_first_post_drain_token_frame"
+                                    ),
+                                    "unexpected_token_id": fc.get("eotr_unexpected_token_id"),
+                                    "unexpected_token_frame": fc.get("eotr_unexpected_token_frame"),
+                                    "feedback_token_id": fc.get("eotr_feedback_token_id"),
+                                    "feedback_frame": fc.get("eotr_feedback_frame"),
+                                    "feedback_committed": fc.get("eotr_feedback_committed"),
+                                }
+                            )
+                            last_eotr_observed_count = observed_count
                     elif kind == "input_text.accepted":
                         typed.setdefault(event["job_id"], {})["accepted"] = True
                     elif kind == "input_text.injection_started":
@@ -259,9 +316,23 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     elif kind == "response.output_audio.delta" and active_response is not None:
                         active_response["audio"].append(base64.b64decode(event["delta"]))
                     elif kind == "response.function_call_arguments.done":
-                        now = time.strftime("%H:%M UTC", time.gmtime())
+                        if prompt_mode == "tool-only":
+                            output_index = len(expected_tool_result_by_turn) % len(
+                                TOOL_VERIFICATION_WORDS
+                            )
+                            expected_result, semantic_required, output = tool_result(
+                                prompt_mode,
+                                verification_word=TOOL_VERIFICATION_WORDS[output_index],
+                                ordinal_word=TOOL_RESULT_ORDINALS[output_index],
+                            )
+                        else:
+                            expected_result, semantic_required, output = tool_result(
+                                prompt_mode,
+                                now=time.strftime("%H:%M UTC", time.gmtime()),
+                            )
                         if isinstance(event.get("turn_id"), str):
-                            expected_tool_result_by_turn[event["turn_id"]] = now
+                            expected_tool_result_by_turn[event["turn_id"]] = expected_result
+                            expected_text_semantic_by_turn[event["turn_id"]] = semantic_required
                         await websocket.send(
                             json.dumps(
                                 {
@@ -269,12 +340,13 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                                     "item": {
                                         "type": "function_call_output",
                                         "call_id": event["call_id"],
-                                        "output": json.dumps({"timezone": "UTC", "spoken": now}),
+                                        "output": json.dumps(output),
                                     },
                                 }
                             )
                         )
                     elif kind == "response.done" and active_response is not None:
+                        active_response["done_reason"] = event.get("reason")
                         active_response["job_id"] = resolve_response_job_id(
                             active_response, typed_job_by_turn
                         )
@@ -289,6 +361,11 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                         )
                         active_response["expected_response_any"] = (
                             [expected_tool_result] if expected_tool_result else []
+                        )
+                        active_response["expected_text_semantic_required"] = bool(
+                            expected_text_semantic_by_turn.get(
+                                active_response.get("turn_id"), False
+                            )
                         )
                         if active_response.get("job_id") in typed:
                             response_job_id = active_response["job_id"]
@@ -330,8 +407,10 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     job_id = f"qual-serialized-{prompt_index}-{uuid.uuid4().hex[:8]}"
                     answer_event = asyncio.Event()
                     typed_answer_events[job_id] = answer_event
+                    prompt = prompt_sequence[prompt_index % len(prompt_sequence)]
                     typed[job_id] = {
-                        "text": DEFAULT_TYPED_PROMPTS[prompt_index % len(DEFAULT_TYPED_PROMPTS)],
+                        "text": prompt,
+                        "expected_tool_call": prompt_expects_tool(prompt_mode, prompt),
                         "requested_frame": sent_frames,
                     }
                     await websocket.send(
@@ -372,9 +451,13 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                         else typed_prompt_index(index, prompt_interval, max_typed_prompts)
                     )
                     if prompt_index is not None:
-                        prompt = DEFAULT_TYPED_PROMPTS[prompt_index % len(DEFAULT_TYPED_PROMPTS)]
+                        prompt = prompt_sequence[prompt_index % len(prompt_sequence)]
                         job_id = f"qual-{index}-{uuid.uuid4().hex[:8]}"
-                        typed[job_id] = {"text": prompt, "requested_frame": index}
+                        typed[job_id] = {
+                            "text": prompt,
+                            "expected_tool_call": prompt_expects_tool(prompt_mode, prompt),
+                            "requested_frame": index,
+                        }
                         await websocket.send(
                             json.dumps(
                                 {"type": "input_text.request", "job_id": job_id, "text": prompt}
@@ -452,7 +535,23 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         close_reason=close_reason,
         expect_limit=limit_expected,
     )
+    tool_response_checks, observed_tool_response_gate = evaluate_tool_response_channels(
+        responses, metrics, eotr_observations
+    )
+    requested_tool_prompts = sum(item.get("expected_tool_call") is True for item in typed.values())
+    tool_prompt_requested = requested_tool_prompts > 0
+    tool_cycle_cardinality = evaluate_tool_cycle_cardinality(
+        requested_tool_prompts=requested_tool_prompts,
+        tool_response_checks=tool_response_checks,
+        metrics=metrics,
+    )
+    tool_response_channel_gate = (
+        observed_tool_response_gate and tool_cycle_cardinality["passed"]
+        if tool_prompt_requested
+        else True
+    )
     report = {
+        "report_kind": "sustained_strict_v3",
         "passed": (
             not unexpected_errors
             and source_completion_ok
@@ -460,10 +559,11 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             and len(typed_completed) >= max(1, len(typed) - 1)
             and unanswered_jobs <= allowed_unanswered
             and len(responses) >= len(answered_jobs)
-            and queue.get("passed") is True
+            and (not args.require_queue or queue.get("passed") is True)
             and metric_sequence_complete
             and session_closed is not None
             and serialized_typed_error is None
+            and tool_response_channel_gate
         ),
         "duration_seconds": args.duration_seconds,
         "source_frames": total_frames,
@@ -472,12 +572,20 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "metric_sequence_complete": metric_sequence_complete,
         "server_timing": timing_stats(server_steps),
         "queue": queue,
+        "queue_required": args.require_queue,
         "typed_jobs": typed,
+        "typed_prompt_mode": prompt_mode,
+        "typed_prompt_sequence": list(prompt_sequence),
         "typed_completed": len(typed_completed),
         "typed_answered": len(answered_jobs),
         "typed_unanswered": unanswered_jobs,
         "allowed_unanswered_at_fp32_base_rate": allowed_unanswered,
         "responses": responses,
+        "eotr_observations": eotr_observations,
+        "tool_response_checks": tool_response_checks,
+        "tool_prompt_requested": tool_prompt_requested,
+        "tool_cycle_cardinality": tool_cycle_cardinality,
+        "tool_response_channel_gate": tool_response_channel_gate,
         "errors": errors,
         "unexpected_errors": unexpected_errors,
         "expected_session_limit_error_count": expected_limit_error_count,
@@ -508,9 +616,16 @@ def main() -> None:
         help="stop injecting typed turns after N prompts while paced audio continues",
     )
     parser.add_argument("--serialize-typed-turns", action="store_true")
+    parser.add_argument("--typed-prompt-mode", choices=("mixed", "tool-only"), default="mixed")
     parser.add_argument("--typed-settle-seconds", type=float, default=2.0)
     parser.add_argument("--typed-response-timeout-seconds", type=float, default=40.0)
     parser.add_argument("--drain-seconds", type=float, default=30)
+    parser.add_argument(
+        "--require-queue",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="require the sustained queue-health gate (disable only for focused structural probes)",
+    )
     parser.add_argument(
         "--expect-session-limit", action=argparse.BooleanOptionalAction, default=True
     )
@@ -519,6 +634,7 @@ def main() -> None:
         result = asyncio.run(run(args))
     except Exception as exc:
         result = {
+            "report_kind": "sustained_strict_v3",
             "passed": False,
             "errors": [{"type": type(exc).__name__, "message": str(exc)}],
         }

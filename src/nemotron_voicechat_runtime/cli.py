@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import signal
 import socket
@@ -16,6 +17,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+import wave
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +30,16 @@ from .artifacts import (
     host_facts,
     load_config,
     require_free_space,
+    sha256_file,
+)
+from .provenance import valid_runtime_image_id
+from .public_runtime_identity import (
+    PUBLIC_RUNTIME_PAYLOAD_LABEL,
+    PUBLIC_RUNTIME_RECIPE_LABEL,
+    PUBLIC_RUNTIME_SOURCE_LABEL,
+    public_runtime_payload_sha256,
+    public_runtime_recipe_sha256,
+    public_runtime_source_sha256,
 )
 
 BOT_SOURCE_ROOT = REPO_ROOT / "src/nemotron_voicechat_pipecat"
@@ -56,6 +68,29 @@ def _image_exists(image: str) -> bool:
         ).returncode
         == 0
     )
+
+
+def _runtime_image_matches_checkout(image: str) -> bool:
+    """Require a tagged image to contain the exact current runtime build inputs."""
+
+    try:
+        inspected = json.loads(
+            subprocess.run(
+                ["docker", "image", "inspect", image],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+        )
+        labels = inspected[0].get("Config", {}).get("Labels") or {}
+        expected = {
+            PUBLIC_RUNTIME_SOURCE_LABEL: public_runtime_source_sha256(REPO_ROOT),
+            PUBLIC_RUNTIME_PAYLOAD_LABEL: public_runtime_payload_sha256(REPO_ROOT),
+            PUBLIC_RUNTIME_RECIPE_LABEL: public_runtime_recipe_sha256(REPO_ROOT),
+        }
+        return all(labels.get(name) == value for name, value in expected.items())
+    except (OSError, IndexError, KeyError, json.JSONDecodeError, subprocess.CalledProcessError):
+        return False
 
 
 def _container_exists(name: str) -> bool:
@@ -113,6 +148,8 @@ def _bootstrap_ready(config: dict[str, Any], layout: Layout) -> tuple[bool, str]
         return False, "artifact state does not match checked-in configuration"
     if not _image_exists(config["image"]["runtime"]):
         return False, "public runtime image has not been built"
+    if not _runtime_image_matches_checkout(config["image"]["runtime"]):
+        return False, "public runtime image does not match this checkout"
     if not layout.state_file.is_file():
         return False, "bootstrap did not finish its final state commit"
     try:
@@ -292,7 +329,9 @@ def _download_artifacts(args: argparse.Namespace, layout: Layout) -> None:
 
 def _build_image(config: dict[str, Any], layout: Layout, *, offline: bool, no_cache: bool) -> None:
     image = config["image"]["runtime"]
-    if _image_exists(image) and not no_cache:
+    image_exists = _image_exists(image)
+    image_matches = image_exists and _runtime_image_matches_checkout(image)
+    if image_matches and not no_cache:
         print(f"[resume] runtime image exists: {image}")
         _run(
             [
@@ -302,27 +341,57 @@ def _build_image(config: dict[str, Any], layout: Layout, *, offline: bool, no_ca
             ],
             cwd=REPO_ROOT,
         )
-        return
-    if offline:
-        raise RuntimeError(
-            f"offline bootstrap cannot build missing image {image}; "
-            "complete one online bootstrap first"
+    else:
+        if offline:
+            reason = "missing" if not image_exists else "stale"
+            raise RuntimeError(
+                f"offline bootstrap cannot build {reason} image {image}; "
+                "complete one online bootstrap first"
+            )
+        environment = os.environ.copy()
+        environment["VOICECHAT_RUNTIME_IMAGE"] = image
+        environment["VOICECHAT_BUILD_CACHE"] = str(layout.cache / "build")
+        if no_cache:
+            environment["VOICECHAT_BUILD_NO_CACHE"] = "1"
+        _run(
+            [str(REPO_ROOT / "container/build-public-runtime.sh")],
+            cwd=REPO_ROOT,
+            env=environment,
         )
-    environment = os.environ.copy()
-    environment["VOICECHAT_RUNTIME_IMAGE"] = image
-    environment["VOICECHAT_BUILD_CACHE"] = str(layout.cache / "build")
-    if no_cache:
-        environment["VOICECHAT_BUILD_NO_CACHE"] = "1"
-    _run([str(REPO_ROOT / "container/build-public-runtime.sh")], cwd=REPO_ROOT, env=environment)
 
 
-def _source_conversion_asr_model(value: str | None) -> Path:
-    if value is None:
-        raise RuntimeError("--convert-from-source requires --asr-model PATH for the EarTTS gate")
-    path = Path(value).expanduser().resolve()
-    if not path.is_file():
-        raise RuntimeError(f"ASR checkpoint is not a regular file: {path}")
-    return path
+def _ensure_asr_evaluator(config: dict[str, Any], *, offline: bool, no_cache: bool) -> str:
+    """Build or audit the qualification-only ASR image and return its immutable ID."""
+
+    asr_image = config["image"]["asr_evaluator"]
+    if _image_exists(asr_image) and not no_cache:
+        print(f"[resume] ASR evaluator image exists: {asr_image}")
+    else:
+        if offline:
+            raise RuntimeError(
+                f"offline bootstrap cannot build missing image {asr_image}; "
+                "complete one online bootstrap first"
+            )
+        environment = os.environ.copy()
+        environment["VOICECHAT_ASR_EVALUATOR_IMAGE"] = asr_image
+        if no_cache:
+            environment["VOICECHAT_BUILD_NO_CACHE"] = "1"
+        _run(
+            [str(REPO_ROOT / "container/build-asr-evaluator.sh")],
+            cwd=REPO_ROOT,
+            env=environment,
+        )
+    image_id = subprocess.run(
+        ["docker", "image", "inspect", "--format", "{{.Id}}", asr_image],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    _run(
+        [str(REPO_ROOT / "container/audit-asr-evaluator.sh"), image_id],
+        cwd=REPO_ROOT,
+    )
+    return image_id
 
 
 def _link_or_copy(source: str, destination: str) -> str:
@@ -362,14 +431,257 @@ def _canonical_json_sha256(payload: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+_ASR_NUMBER_EQUIVALENTS = {
+    "zero": "0",
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+    "twelve": "12",
+    "eighteen": "18",
+    "nineteen": "19",
+    "twenty": "20",
+}
+
+
+def _asr_normalize(text: str) -> list[str]:
+    normalized = []
+    for token in re.findall(r"[a-z0-9]+", (text or "").lower()):
+        token = _ASR_NUMBER_EQUIVALENTS.get(token, token)
+        normalized.append(str(int(token)) if token.isdigit() else token)
+    return normalized
+
+
+def _asr_word_error_rate(reference: str, hypothesis: str) -> float:
+    expected = _asr_normalize(reference)
+    actual = _asr_normalize(hypothesis)
+    if not expected:
+        return 0.0 if not actual else 1.0
+    previous = list(range(len(actual) + 1))
+    for index, expected_token in enumerate(expected, 1):
+        current = [index]
+        for offset, actual_token in enumerate(actual, 1):
+            current.append(
+                min(
+                    current[-1] + 1,
+                    previous[offset] + 1,
+                    previous[offset - 1] + (expected_token != actual_token),
+                )
+            )
+        previous = current
+    return previous[-1] / len(expected)
+
+
+def _asr_provenance_contract() -> dict[str, Any]:
+    manifest_path = REPO_ROOT / "config/nemotron-asr-en-0.6b.json"
+    backend_path = REPO_ROOT / "src/nemotron_voicechat_asr_evaluator/backend.py"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    inference = manifest["inference"]
+    return {
+        "backend": inference["backend"],
+        "backend_path": "/opt/voicechat-asr/nemotron_voicechat_asr_evaluator/backend.py",
+        "backend_sha256": sha256_file(backend_path),
+        "manifest_sha256": sha256_file(manifest_path),
+        "model_id": manifest["model_id"],
+        "hf_revision": manifest["revision"],
+        "snapshot_sha256": manifest["snapshot_sha256"],
+        "decoder": {
+            "strategy": "greedy",
+            "stopping": "encoder_exhaustion",
+            "num_lookahead_tokens": inference["num_lookahead_tokens"],
+            "attention_implementation": "sdpa",
+            "streaming": False,
+        },
+        "deterministic_algorithms": True,
+        "cublas_workspace_config": ":4096:8",
+        "float32_matmul_precision": "highest",
+        "cuda_matmul_tf32": False,
+        "cudnn_tf32": False,
+        "trust_remote_code": False,
+        "network_required": False,
+    }
+
+
+def _validated_external_asr_report(
+    work: Path, report_path: Path, source_dir: Path, evaluator_image_id: str
+) -> dict[str, Any]:
+    """Re-derive the source-conversion ASR evidence from its report and retained WAVs."""
+
+    work = work.resolve()
+    report_path = report_path.resolve()
+    source_dir = source_dir.resolve()
+    if work not in report_path.parents or work not in source_dir.parents:
+        raise RuntimeError("external ASR evidence path escapes the conversion workspace")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    source_report_path = source_dir / "report.json"
+    if (
+        report.get("passed") is not True
+        or report.get("pending_external_asr") is not False
+        or report.get("pre_asr_report_sha256") != sha256_file(source_report_path)
+    ):
+        raise RuntimeError(f"invalid finalized ASR report: {report_path}")
+    provenance = report.get("external_asr") or {}
+    if not valid_runtime_image_id(evaluator_image_id):
+        raise RuntimeError("external ASR evaluator ID is not immutable")
+    contract = _asr_provenance_contract()
+    if provenance.get("evaluator_image_id") != evaluator_image_id or any(
+        provenance.get(key) != value for key, value in contract.items()
+    ):
+        raise RuntimeError(f"ASR provenance does not identify the audited evaluator: {report_path}")
+
+    source_report = json.loads(source_report_path.read_text(encoding="utf-8"))
+    inputs = source_report.get("asr_inputs") or {}
+    diagnostics = (report.get("offline_diagnostic") or {}).get("external_asr") or {}
+    results = {"streaming": provenance, "offline": diagnostics}
+    input_records: dict[str, Any] = {}
+    for name in ("streaming", "offline"):
+        expected = inputs.get(name) or {}
+        wav = (source_dir / str(expected.get("path") or "")).resolve()
+        if wav.parent != source_dir.resolve() or not wav.is_file():
+            raise RuntimeError(f"ASR WAV is missing or escapes its source directory: {wav}")
+        observed = {"bytes": wav.stat().st_size, "sha256": sha256_file(wav)}
+        if observed != {"bytes": expected.get("bytes"), "sha256": expected.get("sha256")}:
+            raise RuntimeError(f"ASR WAV identity changed after transcription: {wav}")
+        result = results[name]
+        if (
+            result.get("input_bytes") != observed["bytes"]
+            or result.get("input_sha256") != observed["sha256"]
+        ):
+            raise RuntimeError(f"ASR result does not identify its input WAV: {wav}")
+        with wave.open(str(wav), "rb") as source:
+            if (
+                source.getnchannels() != 1
+                or source.getsampwidth() != 2
+                or source.getframerate() != 16_000
+                or source.getnframes() <= 0
+                or source.getcomptype() != "NONE"
+            ):
+                raise RuntimeError(f"ASR evidence WAV is not PCM16 mono 16 kHz: {wav}")
+        input_records[name] = {"path": str(wav.relative_to(work)), **observed}
+
+    reference = str((source_report.get("fixture") or {}).get("reference_text") or "")
+    max_wer = (source_report.get("external_asr") or {}).get("max_wer")
+    transcript = provenance.get("transcript")
+    if (
+        not reference
+        or isinstance(max_wer, bool)
+        or not isinstance(max_wer, (int, float))
+        or not 0 <= max_wer <= 1
+        or not isinstance(transcript, str)
+    ):
+        raise RuntimeError(f"invalid ASR scoring inputs: {report_path}")
+    rederived_wer = _asr_word_error_rate(reference, transcript)
+    rederived_passed = bool(
+        transcript.strip() and rederived_wer <= max_wer and "5" in _asr_normalize(transcript)
+    )
+    if (
+        not rederived_passed
+        or report.get("passed") is not True
+        or provenance.get("passed") is not True
+        or provenance.get("max_wer") != max_wer
+        or provenance.get("wer") != rederived_wer
+    ):
+        raise RuntimeError(
+            f"external ASR verdict does not rederive from retained evidence: {report_path}"
+        )
+    return {
+        "report": str(report_path.relative_to(work)),
+        "report_sha256": sha256_file(report_path),
+        "pre_asr_report": str(source_report_path.relative_to(work)),
+        "pre_asr_report_sha256": sha256_file(source_report_path),
+        "inputs": input_records,
+        "external_asr": provenance,
+    }
+
+
+def _finalize_source_asr_stage(work: Path, evaluator_image_id: str) -> dict[str, Any]:
+    """Run or resume external ASR as its own content-addressed conversion stage."""
+
+    marker_path = work / "external-asr/stage.json"
+    names = ("eartts-eager", "eartts-graph")
+    if marker_path.is_file():
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        recorded_sha = marker.pop("sha256", None)
+        if _canonical_json_sha256(marker) != recorded_sha:
+            raise RuntimeError(f"corrupt external ASR stage marker: {marker_path}")
+        if marker.get("evaluator_image_id") != evaluator_image_id:
+            raise RuntimeError("external ASR stage was produced by a different evaluator image")
+        derived = {
+            name: _validated_external_asr_report(
+                work, work / f"external-asr/{name}.json", work / f"gates/{name}", evaluator_image_id
+            )
+            for name in names
+        }
+        if marker.get("reports") != derived:
+            raise RuntimeError("external ASR stage evidence no longer matches retained files")
+        print("[resume] external ASR stage", flush=True)
+        return derived
+
+    outputs = work / "external-asr"
+    outputs.mkdir(parents=True, exist_ok=True)
+    derived: dict[str, Any] = {}
+    for name in names:
+        report_path = outputs / f"{name}.json"
+        source_dir = work / f"gates/{name}"
+        if not report_path.exists():
+            _run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--gpus",
+                    "all",
+                    "--ipc",
+                    "host",
+                    "--network",
+                    "none",
+                    "-e",
+                    f"VOICECHAT_ASR_EVALUATOR_IMAGE_ID={evaluator_image_id}",
+                    "-v",
+                    f"{REPO_ROOT}:/workspace/project:ro",
+                    "-v",
+                    f"{work}:/work",
+                    evaluator_image_id,
+                    "python3",
+                    "-P",
+                    "/workspace/project/tools/qualification/finalize_eartts_component_asr.py",
+                    "--output-dir",
+                    f"/work/gates/{name}",
+                    "--report-out",
+                    f"/work/external-asr/{name}.json",
+                ]
+            )
+        derived[name] = _validated_external_asr_report(
+            work, report_path, source_dir, evaluator_image_id
+        )
+    marker = {
+        "schema": 1,
+        "stage": "external-asr",
+        "evaluator_image_id": evaluator_image_id,
+        "reports": derived,
+    }
+    marker["sha256"] = _canonical_json_sha256(marker)
+    atomic_json(marker_path, marker)
+    return derived
+
+
 def _activate_converted_release(
-    layout: Layout, converted: Path, expected_release_sha: str
+    layout: Layout,
+    converted: Path,
+    expected_release_sha: str,
+    expected_asr_image_id: str,
 ) -> dict[str, Any]:
     """Atomically activate reproduced files after full signed-release verification."""
 
     from .bootstrap_download import verify_release
 
-    report_path = converted / "reproduction.json"
+    report_path = converted.parent / "external-asr/reproduction.json"
     if not report_path.is_file():
         raise RuntimeError(f"source conversion report is missing: {report_path}")
     report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -382,13 +694,29 @@ def _activate_converted_release(
     unsigned_report.pop("sha256")
     if _canonical_json_sha256(unsigned_report) != recorded_report_sha:
         raise RuntimeError("source conversion report failed its self-hash")
+    if report.get("asr_evaluator_image_id") != expected_asr_image_id:
+        raise RuntimeError("source conversion report has the wrong ASR evaluator identity")
+    expected_asr = report.get("component_gates_external_asr")
+    if not isinstance(expected_asr, dict) or set(expected_asr) != {
+        "eartts-eager",
+        "eartts-graph",
+    }:
+        raise RuntimeError("source conversion report is missing external ASR evidence")
+    work = converted.parent
+    for name, expected in expected_asr.items():
+        observed = _validated_external_asr_report(
+            work,
+            work / str(expected.get("report") or ""),
+            work / f"gates/{name}",
+            expected_asr_image_id,
+        )
+        if observed != expected:
+            raise RuntimeError(f"source conversion ASR evidence changed for {name}")
     for component in ("nano", "eartts"):
         if not (converted / component).is_dir():
             raise RuntimeError(f"source conversion output is missing {component}")
 
-    temporary = Path(
-        tempfile.mkdtemp(prefix=".source-converted-release-", dir=layout.artifacts)
-    )
+    temporary = Path(tempfile.mkdtemp(prefix=".source-converted-release-", dir=layout.artifacts))
     candidate = temporary / "release"
     backup = temporary / "downloaded-release"
     try:
@@ -418,8 +746,7 @@ def _activate_converted_release(
         shutil.rmtree(temporary, ignore_errors=True)
 
     print(
-        "[conversion] activated reproduced Nano and EarTTS after full signed-release "
-        "verification",
+        "[conversion] activated reproduced Nano and EarTTS after full signed-release verification",
         flush=True,
     )
     return {
@@ -429,9 +756,11 @@ def _activate_converted_release(
 
 
 def _convert_from_source(
-    args: argparse.Namespace, config: dict[str, Any], layout: Layout
+    args: argparse.Namespace,
+    config: dict[str, Any],
+    layout: Layout,
+    asr_image_id: str,
 ) -> dict[str, Any]:
-    asr_model = _source_conversion_asr_model(args.asr_model)
     remaining = config["deployment"]["minimum_conversion_remaining_gib"]
     output_estimate = config["deployment"]["conversion_output_estimate_gib"]
     activation_copy = _tree_copy_gib(
@@ -456,6 +785,7 @@ def _convert_from_source(
             raise
     work = layout.cache / "conversion"
     work.mkdir(parents=True, exist_ok=True)
+    (work / "external-asr").mkdir(exist_ok=True)
     image = config["image"]["runtime"]
     command = [
         "docker",
@@ -477,8 +807,6 @@ def _convert_from_source(
         f"{corpus}:/corpus:ro",
         "-v",
         f"{work}:/work",
-        "-v",
-        f"{asr_model}:/models/asr:ro",
         image,
         "python3",
         "/workspace/project/tools/conversion/reproduce_release_artifacts.py",
@@ -496,14 +824,22 @@ def _convert_from_source(
         "/corpus/evaluation/0",
         "--work-root",
         "/work",
-        "--asr-model",
-        "/models/asr",
     ]
     _run(command)
+    finalized = _finalize_source_asr_stage(work, asr_image_id)
+    base_reproduction_path = work / "release/reproduction.json"
+    reproduction_path = work / "external-asr/reproduction.json"
+    reproduction = json.loads(base_reproduction_path.read_text(encoding="utf-8"))
+    reproduction.pop("sha256", None)
+    reproduction["asr_evaluator_image_id"] = asr_image_id
+    reproduction["component_gates_external_asr"] = finalized
+    reproduction["sha256"] = _canonical_json_sha256(reproduction)
+    atomic_json(reproduction_path, reproduction)
     return _activate_converted_release(
         layout,
         work / "release",
         config["artifacts"]["release"]["release_sha256"],
+        asr_image_id,
     )
 
 
@@ -528,7 +864,8 @@ def command_bootstrap(args: argparse.Namespace) -> int:
     _build_image(config, layout, offline=args.offline, no_cache=args.no_cache)
     conversion_state: dict[str, Any] = {"artifact_materialization": "downloaded"}
     if args.convert_from_source:
-        conversion_state = _convert_from_source(args, config, layout)
+        asr_image_id = _ensure_asr_evaluator(config, offline=args.offline, no_cache=args.no_cache)
+        conversion_state = _convert_from_source(args, config, layout, asr_image_id)
     image_id = subprocess.run(
         ["docker", "image", "inspect", "--format", "{{.Id}}", config["image"]["runtime"]],
         check=True,
@@ -555,17 +892,38 @@ def model_container_command(
     model_port: int,
     *,
     trace_pad_pair: bool = False,
+    trace_post_fc_tokens: int = 0,
+    trace_post_fc_agent_logits: int = 0,
+    trace_fc_async_heartbeat: bool = False,
+    runtime_image_id: str | None = None,
 ) -> list[str]:
     environment = config["runtime"]["environment"] | {
         "HF_HOME": "/models/huggingface",
         "HUGGINGFACE_HUB_CACHE": "/models/huggingface/hub",
+        # Make diagnostic and release evidence self-identifying. Docker does
+        # not expose the originating image tag from inside a running container.
+        "VOICECHAT_RUNTIME_IMAGE": config["image"]["runtime"],
         # Transformers materializes trusted local model code in a dynamic-module
         # cache even in offline mode. Keep downloaded assets read-only while
         # giving that derived, per-container state an ephemeral writable home.
         "HF_MODULES_CACHE": "/tmp/voicechat-hf-modules",
     }
+    if runtime_image_id is not None:
+        environment["VOICECHAT_RUNTIME_IMAGE_ID"] = runtime_image_id
     if trace_pad_pair:
         environment["VOICECHAT_NANO_PAD_PAIR_TRACE"] = "1"
+    if not 0 <= trace_post_fc_tokens <= 32:
+        raise ValueError("trace_post_fc_tokens must be from 0 through 32")
+    if trace_post_fc_tokens:
+        environment["S2S_POST_FC_TOKEN_TRACE_FRAMES"] = str(trace_post_fc_tokens)
+    if not 0 <= trace_post_fc_agent_logits <= 20:
+        raise ValueError("trace_post_fc_agent_logits must be from 0 through 20")
+    if trace_post_fc_agent_logits and not trace_post_fc_tokens:
+        raise ValueError("trace_post_fc_agent_logits requires a nonzero post-FC token trace")
+    if trace_post_fc_agent_logits:
+        environment["S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK"] = str(trace_post_fc_agent_logits)
+    if trace_fc_async_heartbeat:
+        environment["S2S_FC_ASYNC_HEARTBEAT"] = "1"
     command = [
         "docker",
         "run",
@@ -845,12 +1203,20 @@ def command_up(args: argparse.Namespace) -> int:
     signal.signal(signal.SIGTERM, terminate)
     signal.signal(signal.SIGUSR1, request_bot_restart)
     try:
+        bootstrap_state = json.loads(layout.state_file.read_text(encoding="utf-8"))
+        runtime_image_id = bootstrap_state.get("runtime_image_id")
+        if not valid_runtime_image_id(runtime_image_id):
+            raise RuntimeError("bootstrap state has no immutable runtime image ID")
         model = subprocess.Popen(
             model_container_command(
                 config,
                 layout,
                 model_port,
                 trace_pad_pair=args.trace_pad_pair,
+                trace_post_fc_tokens=args.trace_post_fc_tokens,
+                trace_post_fc_agent_logits=args.trace_post_fc_agent_logits,
+                trace_fc_async_heartbeat=getattr(args, "trace_fc_async_heartbeat", False),
+                runtime_image_id=runtime_image_id,
             )
         )
         health = _wait_health(
@@ -1077,18 +1443,14 @@ def command_test(args: argparse.Namespace) -> int:
     status = _run(command, cwd=REPO_ROOT).returncode
     if status:
         return status
-    required = {"--asr-model": args.asr_model}
-    missing = [flag for flag, value in required.items() if value is None]
-    if missing:
-        raise RuntimeError(f"live qualification requires {' and '.join(missing)}")
+    asr_image_id = _ensure_asr_evaluator(config, offline=False, no_cache=False)
     manifest = Path(args.fixture_manifest).expanduser().resolve() if args.fixture_manifest else None
     if manifest is not None and not manifest.is_file():
         raise RuntimeError(f"fixture manifest does not exist: {manifest}")
     browser_mic = (
         Path(args.browser_mic_wav).expanduser().resolve() if args.browser_mic_wav else None
     )
-    asr_model = Path(args.asr_model).expanduser().resolve()
-    for name, path in (("browser microphone WAV", browser_mic), ("ASR model", asr_model)):
+    for name, path in (("browser microphone WAV", browser_mic),):
         if path is not None and not path.is_file():
             raise RuntimeError(f"{name} does not exist: {path}")
     output = (
@@ -1108,8 +1470,8 @@ def command_test(args: argparse.Namespace) -> int:
             str(layout.traces),
             "--output",
             str(output),
-            "--asr-model",
-            str(asr_model),
+            "--asr-evaluator-image",
+            asr_image_id,
             "--runtime-image",
             config["image"]["runtime"],
             "--duration-seconds",
@@ -1162,7 +1524,6 @@ def parser() -> argparse.ArgumentParser:
     bootstrap = subparsers.add_parser("bootstrap")
     bootstrap.add_argument("--offline", action="store_true")
     bootstrap.add_argument("--convert-from-source", action="store_true")
-    bootstrap.add_argument("--asr-model")
     bootstrap.add_argument("--no-cache", action="store_true", help="force the final release build")
     bootstrap.set_defaults(handler=command_bootstrap)
     subparsers.add_parser("doctor").set_defaults(handler=command_doctor)
@@ -1180,6 +1541,25 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="capture diagnostic-only Nano pair-scheduler decisions in model traces",
     )
+    up.add_argument(
+        "--trace-post-fc-tokens",
+        type=int,
+        default=0,
+        metavar="FRAMES",
+        help="capture the forced BOS and a bounded post-FC raw/effective token window",
+    )
+    up.add_argument(
+        "--trace-post-fc-agent-logits",
+        type=int,
+        default=0,
+        metavar="TOP_K",
+        help="capture bounded agent-head top-k values on post-FC token-trace positions",
+    )
+    up.add_argument(
+        "--trace-fc-async-heartbeat",
+        action="store_true",
+        help="publish FC async stage heartbeats and enable SIGUSR1 all-thread dumps",
+    )
     up.set_defaults(handler=command_up)
     restart_bot = subparsers.add_parser(
         "restart-bot", help="restart Pipecat without restarting the model container"
@@ -1192,7 +1572,6 @@ def parser() -> argparse.ArgumentParser:
     test.add_argument("--live", action="store_true")
     test.add_argument("--fixture-manifest", type=Path)
     test.add_argument("--browser-mic-wav", type=Path)
-    test.add_argument("--asr-model", type=Path)
     test.add_argument("--duration-seconds", type=float, default=1200)
     test.add_argument("--restart-cycles", type=int, default=3)
     test.add_argument("--model-port", type=int)

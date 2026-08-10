@@ -1,6 +1,9 @@
 ARG NATIVE_IMAGE=nemotron-voicechat-public-vllm-native:0.17.1-b31e9326a-fi065
 FROM ${NATIVE_IMAGE}
 
+ARG VOICECHAT_SOURCE_SHA256
+ARG VOICECHAT_PAYLOAD_SHA256
+ARG VOICECHAT_RECIPE_SHA256
 ARG NATIVE_VLLM_REVISION=b31e9326a7d9394aab8c767f8ebe225c65594b60
 ARG VOICECHAT_VLLM_REVISION=237ba3cafc14d514551539ad980f17d40d273dfa
 ARG SPEECH_REVISION=911ec674ab40f04302ef33672be4179f45a7310f
@@ -73,6 +76,8 @@ RUN git clone --filter=blob:none https://github.com/NVIDIA-NeMo/Speech.git /opt/
     && git -C /opt/Speech diff -- \
       nemo/collections/speechlm2/inference/model_wrappers/model_factory.py \
       nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py \
+      nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py \
+      nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py \
       nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py \
       | cmp - /tmp/speech.patch
 
@@ -87,6 +92,7 @@ RUN python3 -m venv --copies /opt/pocket-tts \
 
 COPY pyproject.toml README.md /opt/project/
 COPY src /opt/project/src
+COPY --from=voicechat_recipe_snapshot recipe-snapshot.json /opt/project/build-recipe/recipe-snapshot.json
 RUN python3 -m pip install --no-deps /opt/project \
     && /opt/pocket-tts/bin/python -m pip install --no-deps /opt/project
 
@@ -94,6 +100,9 @@ RUN test -z "${VLLM_ALLOW_INSECURE_SERIALIZATION:-}" \
     && python3 -m compileall -q /opt/project/src /opt/Speech/nemo/collections/speechlm2
 
 LABEL org.opencontainers.image.source="https://github.com/pipecat-ai/nemotron-voicechat-dgx-spark" \
+      ai.pipecat.voicechat.project-source-sha256="${VOICECHAT_SOURCE_SHA256}" \
+      ai.pipecat.voicechat.project-payload-sha256="${VOICECHAT_PAYLOAD_SHA256}" \
+      ai.pipecat.voicechat.build-recipe-sha256="${VOICECHAT_RECIPE_SHA256}" \
       ai.pipecat.voicechat.base="nvcr.io/nvidia/pytorch:25.12-py3@sha256:1dc787f5c6264fcc1c99809f99b84823e73ed4588d5a581b94290fc2a8fecff8" \
       ai.pipecat.voicechat.native-vllm="b31e9326a7d9394aab8c767f8ebe225c65594b60" \
       ai.pipecat.voicechat.voicechat-vllm="237ba3cafc14d514551539ad980f17d40d273dfa" \
