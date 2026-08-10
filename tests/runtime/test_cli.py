@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from nemotron_voicechat_runtime.artifacts import Layout, PC2A_ENVIRONMENT, load_config
+from nemotron_voicechat_runtime.artifacts import PC2A_ENVIRONMENT, Layout, load_config
 from nemotron_voicechat_runtime.cli import (
     _activate_converted_release,
     _asr_provenance_contract,
@@ -22,9 +22,9 @@ from nemotron_voicechat_runtime.cli import (
     _owned_pipecat_process,
     _process_start_time,
     _remove_stale_conversion_activations,
-    _tree_copy_gib,
     _runtime_image_matches_checkout,
     _stop_stack,
+    _tree_copy_gib,
     _validated_external_asr_report,
     _wait_ports_available,
     command_bootstrap,

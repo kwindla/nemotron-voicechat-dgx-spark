@@ -117,7 +117,7 @@ def reports(tmp_path: Path, module, *, semantic: bool = False):
     retained_decoder = old_provenance_dir / "legacy-transcribe-sustained.py"
     retained_decoder.write_bytes(
         subprocess.check_output(
-            ("git", "show", "HEAD:tools/qualification/transcribe_sustained.py")
+            ("git", "show", module.LEGACY_DECODER_GIT_BLOB)
         )
     )
     docker_argv = [
