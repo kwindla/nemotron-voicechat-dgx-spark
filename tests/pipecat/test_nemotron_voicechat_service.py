@@ -31,7 +31,11 @@ from nemotron_voicechat_pipecat import events
 from nemotron_voicechat_pipecat import llm as llm_module
 from nemotron_voicechat_pipecat.llm import NemotronVoicechatLLMService
 from nemotron_voicechat_pipecat.text_input import VoicechatTypedInputFrame
-from nemotron_voicechat_runtime.protocol import FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS
+from nemotron_voicechat_pipecat.tool_results import VoicechatLLMContext
+from nemotron_voicechat_runtime.protocol import (
+    FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS,
+    FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+)
 
 
 class RecordingService(NemotronVoicechatLLMService):
@@ -770,6 +774,69 @@ async def test_typed_input_waits_for_startup_dropped_turn_commit():
 
 
 @pytest.mark.asyncio
+async def test_pre_context_typed_input_queues_without_blocking_context_frame():
+    """An overtaking typed frame cannot blockade the initial context behind itself."""
+    service = RecordingService(system_instruction="Be concise.")
+    service._session_ready.set()
+    service._audio_send_task = object()
+
+    await asyncio.wait_for(
+        service._request_typed_input(
+            VoicechatTypedInputFrame(text="early typed", job_id="job-early")
+        ),
+        timeout=0.05,
+    )
+
+    assert [item.job_id for item in service._pending_typed_requests] == ["job-early"]
+    assert service._audio_queue.empty()
+    await service._handle_context(LLMContext(messages=[]))
+
+    request = await service._audio_queue.get()
+    assert request["type"] == "input_text.request"
+    assert request["job_id"] == "job-early"
+    assert request["text"] == "early typed"
+    assert service._pending_typed_requests == []
+
+
+@pytest.mark.asyncio
+async def test_pending_typed_flush_rechecks_readiness_for_every_item(monkeypatch):
+    service = RecordingService()
+    mark_live_input_ready(service)
+    service._pending_typed_requests = [
+        VoicechatTypedInputFrame(text="first", job_id="job-first"),
+        VoicechatTypedInputFrame(text="second", job_id="job-second"),
+    ]
+    admitted = []
+
+    async def admit(frame):
+        admitted.append(frame.job_id)
+        service._function_epoch_active = True
+
+    monkeypatch.setattr(service, "_admit_typed_input", admit)
+    await service._flush_pending_typed_inputs()
+
+    assert admitted == ["job-first"]
+    assert [item.job_id for item in service._pending_typed_requests] == ["job-second"]
+
+
+@pytest.mark.asyncio
+async def test_disconnect_reports_and_discards_pending_typed_input(monkeypatch):
+    service = RecordingService()
+    summaries = []
+    monkeypatch.setattr(llm_module.logger, "warning", summaries.append)
+    await service._request_typed_input(
+        VoicechatTypedInputFrame(text="never admitted", job_id="job-dropped")
+    )
+
+    await service._disconnect()
+
+    assert service._pending_typed_requests == []
+    assert len(summaries) == 1
+    assert "reason=disconnect" in summaries[0]
+    assert "typed_requests=1" in summaries[0]
+
+
+@pytest.mark.asyncio
 async def test_session_updates_are_serialized_through_distinct_ready_acks(monkeypatch):
     service = RecordingService()
     sends = []
@@ -858,6 +925,38 @@ async def test_session_updated_must_confirm_protocol_v3():
 
 
 @pytest.mark.asyncio
+async def test_concise_tool_result_capability_is_advertised_then_confirmed():
+    service = RecordingService()
+    await service._handle_server_event(
+        {
+            "type": "session.created",
+            "protocol": {"name": events.PROTOCOL_NAME, "version": events.PROTOCOL_VERSION},
+            "capabilities": {
+                "input_turn_detection": "client_smart_turn_v1",
+                "function_output_model_output": {
+                    "mode": FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+                },
+            },
+            "session": {"id": "session-1"},
+        }
+    )
+    assert service._function_output_model_output_advertised is True
+
+    await service._handle_server_event(
+        {
+            "type": "session.updated",
+            "session": {
+                "protocol_version": events.PROTOCOL_VERSION,
+                "capabilities": {
+                    "function_output_model_output": FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+                },
+            },
+        }
+    )
+    assert service._function_output_model_output_negotiated is True
+
+
+@pytest.mark.asyncio
 async def test_rejected_text_input_does_not_leak_downstream():
     service = RecordingService()
 
@@ -871,7 +970,7 @@ async def test_rejected_text_input_does_not_leak_downstream():
 async def test_typed_input_is_committed_byte_exactly_once_when_injection_starts():
     service = RecordingService()
     service._context = LLMContext(messages=[])
-    service._context_ready.set()
+    mark_live_input_ready(service)
     text = "  Keep these spaces.  "
     await service._request_typed_input(VoicechatTypedInputFrame(text=text, job_id="job-1"))
     request = await service._audio_queue.get()
@@ -914,7 +1013,7 @@ async def test_typed_request_waits_behind_open_microphone_commit_in_one_fifo():
 @pytest.mark.asyncio
 async def test_typed_request_waits_for_function_applied_before_held_microphone():
     service = RecordingService()
-    service._context_ready.set()
+    mark_live_input_ready(service)
     service._function_epoch_active = True
     service._function_epoch_call_id = "call-1"
     await service._request_typed_input(VoicechatTypedInputFrame(text="typed", job_id="job-typed"))
@@ -1316,6 +1415,55 @@ async def test_tool_result_sent_once_from_context_update():
             "call_id": "call_1",
         }
     )
+
+
+@pytest.mark.asyncio
+async def test_negotiated_concise_tool_result_is_sent_once_then_discarded():
+    service = RecordingService()
+    service._seen_function_calls.add("call_1")
+    service._function_epoch_active = True
+    service._function_epoch_call_id = "call_1"
+    service._function_output_model_output_negotiated = True
+    context = VoicechatLLMContext(
+        messages=[
+            {
+                "role": "tool",
+                "tool_call_id": "call_1",
+                "content": '{"timezone":"UTC","iso_utc":"full"}',
+            }
+        ]
+    )
+    context.set_voicechat_model_output("call_1", "It is currently four o'clock.")
+    service._context = context
+
+    await service._process_completed_function_calls(send_new_results=True)
+
+    assert service.sent[0]["item"] == {
+        "type": "function_call_output",
+        "call_id": "call_1",
+        "output": '{"timezone":"UTC","iso_utc":"full"}',
+        "model_output": "It is currently four o'clock.",
+    }
+    assert context.voicechat_model_output("call_1") is None
+
+
+@pytest.mark.asyncio
+async def test_unadvertised_peer_falls_back_to_full_tool_result():
+    service = RecordingService()
+    service._function_epoch_active = True
+    service._function_epoch_call_id = "call_1"
+    context = VoicechatLLMContext(messages=[])
+    context.set_voicechat_model_output("call_1", "concise")
+    service._context = context
+
+    await service._send_tool_result("call_1", "full", model_output="concise")
+
+    assert service.sent[0]["item"] == {
+        "type": "function_call_output",
+        "call_id": "call_1",
+        "output": "full",
+    }
+    assert context.voicechat_model_output("call_1") is None
 
 
 @pytest.mark.asyncio

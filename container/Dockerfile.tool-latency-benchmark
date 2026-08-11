@@ -1,0 +1,12 @@
+ARG RUNTIME_IMAGE=pipecat-ai/nemotron-voicechat-dgx-spark:local
+FROM ${RUNTIME_IMAGE}
+
+ARG BENCHMARK_PATCH_SHA256
+ARG RUNTIME_IMAGE_ID
+COPY tools/benchmark/install_vllm_tool_latency_ledger.py /opt/voicechat-benchmark/install_vllm_tool_latency_ledger.py
+RUN python3 /opt/voicechat-benchmark/install_vllm_tool_latency_ledger.py \
+    && python3 -m compileall -q /usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py
+
+LABEL ai.pipecat.voicechat.diagnostic="tool-call-latency-benchmark" \
+      ai.pipecat.voicechat.benchmark-base-image-id="${RUNTIME_IMAGE_ID}" \
+      ai.pipecat.voicechat.benchmark-patch-sha256="${BENCHMARK_PATCH_SHA256}"

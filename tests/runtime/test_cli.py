@@ -41,6 +41,8 @@ def test_checked_in_config_materializes_frozen_runtime_contract() -> None:
     config = load_config()
     environment = config["runtime"]["environment"]
     assert all(environment[name] == value for name, value in PRODUCTION_ENVIRONMENT.items())
+    assert environment["VOICECHAT_FC_FAST_TOOL_GRACE_MS"] == "100"
+    assert environment["VOICECHAT_FC_ALWAYS_ACKNOWLEDGE_TOOLS"] == ""
     assert config["artifacts"]["release"]["repository"] == (
         "pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark"
     )
@@ -311,6 +313,23 @@ def test_model_command_enables_fc_async_heartbeat_only_when_requested(
     assert "S2S_FC_ASYNC_HEARTBEAT=1" in traced
 
 
+def test_model_command_enables_fc_async_benchmark_only_when_requested(
+    tmp_path: Path,
+) -> None:
+    config = load_config()
+    layout = Layout(tmp_path / "cache", tmp_path / "traces")
+
+    ordinary = " ".join(model_container_command(config, layout, 9876))
+    traced = " ".join(
+        model_container_command(
+            config, layout, 9876, trace_fc_async_benchmark=True
+        )
+    )
+
+    assert "S2S_FC_ASYNC_BENCHMARK" not in ordinary
+    assert "S2S_FC_ASYNC_BENCHMARK=1" in traced
+
+
 def test_cli_exposes_stable_foreground_commands() -> None:
     cli = parser()
     assert cli.parse_args(["bootstrap", "--offline"]).offline is True
@@ -330,6 +349,7 @@ def test_cli_exposes_stable_foreground_commands() -> None:
             "--trace-post-fc-agent-logits",
             "20",
             "--trace-fc-async-heartbeat",
+            "--trace-fc-async-benchmark",
         ]
     )
     assert up.port == 9000
@@ -338,6 +358,7 @@ def test_cli_exposes_stable_foreground_commands() -> None:
     assert up.trace_pad_pair is True
     assert up.trace_post_fc_tokens == 9
     assert up.trace_fc_async_heartbeat is True
+    assert up.trace_fc_async_benchmark is True
     assert cli.parse_args(["restart-bot"]).timeout == 45.0
     assert cli.parse_args(["test", "--live"]).live is True
     assert cli.parse_args(["down"]).command == "down"

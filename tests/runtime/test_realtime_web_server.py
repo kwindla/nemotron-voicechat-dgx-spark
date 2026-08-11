@@ -827,9 +827,10 @@ class RealtimeWebServerTest(unittest.TestCase):
             )
         )
 
-        output, token_count = validate_function_output(engine, '{"value":18}')
-        self.assertEqual(output, '{"value":18}')
-        self.assertEqual(token_count, 37)
+        validated = validate_function_output(engine, '{"value":18}')
+        self.assertEqual(validated.output, '{"value":18}')
+        self.assertEqual(validated.injection_tokens, 37)
+        self.assertEqual(validated.injection_output, '{"value":18}')
         self.assertEqual(seen[-1], '<TOOL_RESPONSE>[{"value":eighteen}]</TOOL_RESPONSE>')
         with self.assertRaisesRegex(ValueError, "must be a string"):
             validate_function_output(engine, {"value": 18})
@@ -837,6 +838,25 @@ class RealtimeWebServerTest(unittest.TestCase):
             validate_function_output(engine, "x" * 16_385)
         with self.assertRaisesRegex(ValueError, "129 tokens; maximum is 128"):
             validate_function_output(engine, "too-many")
+
+        concise = validate_function_output(
+            engine,
+            "full-output-too-many",
+            model_output="short",
+            model_output_negotiated=True,
+        )
+        self.assertEqual(concise.output_tokens, 129)
+        self.assertEqual(concise.model_output_tokens, 37)
+        self.assertEqual(concise.injection_output, "short")
+        with self.assertRaisesRegex(ValueError, "was not negotiated"):
+            validate_function_output(engine, "full", model_output="short")
+        with self.assertRaisesRegex(ValueError, "non-empty string"):
+            validate_function_output(
+                engine,
+                "full",
+                model_output="  ",
+                model_output_negotiated=True,
+            )
 
     def test_function_output_recovery_is_paced_until_background_clears(self) -> None:
         busy = SimpleNamespace(turn_state={"function_calling": {"background_active": True}})
@@ -2390,6 +2410,23 @@ class RealtimeWebServerTest(unittest.TestCase):
         self.assertIn("+\t\t\t\t\treturn", boundary)
         self.assertNotIn("+\t\t\t\t\tself.infer_one_step", boundary)
 
+    def test_source_patch_bounds_committed_mode_fc_interrupt_and_reset(self) -> None:
+        patch = (
+            RUNTIME_ROOT / "patches" / "nemotron-voicechat-rnnt-turn-taking.patch"
+        ).read_text()
+
+        interrupt = patch.index("def interrupt_fc_async(")
+        reset_helper = patch.index("def _terminate_fc_async_for_reset(", interrupt)
+        reset = patch.index("def reset_session(", reset_helper)
+        block = patch[interrupt:reset]
+        self.assertIn('bg.get("quit_async_event")', block)
+        self.assertIn("thread.join(timeout)", block)
+        self.assertIn("thread.is_alive()", block)
+        self.assertIn('result.get("quit_to_normal") is not True', block)
+        self.assertIn('bg.get("abort_event")', block)
+        self.assertLess(reset_helper, reset)
+        self.assertIn("self._terminate_fc_async_for_reset()", patch[reset : reset + 300])
+
     def test_audio_delivery_is_bounded_by_tokenized_response_and_tail(self) -> None:
         self.assertFalse(response_audio_is_deliverable({}))
         self.assertFalse(
@@ -2586,6 +2623,58 @@ class RealtimeWebServerTest(unittest.TestCase):
         pipeline = SimpleNamespace(s2s_model=wrapper, _fc_async_bg={7: object()})
         self.assertFalse(clear_stale_agent_eos_latch(pipeline, 7))
         self.assertTrue(wrapper._agent_eos_just_fired)
+
+    def test_engine_interrupts_unpublished_function_through_pipeline_hook(self) -> None:
+        pipeline = SimpleNamespace(
+            interrupt_fc_async=mock.Mock(
+                return_value={
+                    "schema": 1,
+                    "requested": True,
+                    "reason": "client_turn_start",
+                    "quit_to_normal": True,
+                    "async_steps": 3,
+                }
+            )
+        )
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.pipeline = pipeline
+        engine.stream_id = 9
+
+        evidence = engine.interrupt_unpublished_function_cycle(0.75)
+
+        pipeline.interrupt_fc_async.assert_called_once_with(9, 0.75)
+        self.assertTrue(evidence["requested"])
+        self.assertTrue(evidence["quit_to_normal"])
+
+    def test_engine_abort_resets_background_without_synthetic_model_tick(self) -> None:
+        class Wrapper:
+            def reset_transport_session_state(self) -> None:
+                pass
+
+        class Pipeline:
+            def __init__(self) -> None:
+                self.s2s_model = Wrapper()
+                self._fc_async_bg = {4: object()}
+                self.reset_calls = 0
+
+            def reset_session(self) -> None:
+                self.reset_calls += 1
+                self._fc_async_bg.clear()
+
+        pipeline = Pipeline()
+        engine = VoiceChatEngine(pipeline)
+        engine.stream_id = 4
+        engine.started = True
+        engine.frame_index = 10
+        with mock.patch.object(
+            engine, "process", side_effect=AssertionError("synthetic model tick")
+        ) as process:
+            engine.abort()
+
+        process.assert_not_called()
+        self.assertEqual(pipeline.reset_calls, 1)
+        self.assertFalse(engine.started)
+        self.assertIsNone(engine.cleanup_failure)
 
     def test_eartts_step_snapshot_waits_for_completed_function_worker_boundary(
         self,

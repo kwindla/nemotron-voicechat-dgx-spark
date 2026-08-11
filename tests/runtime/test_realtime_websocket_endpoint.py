@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import tempfile
 import time
@@ -393,7 +394,23 @@ class DeferredToolTimeoutFakeEngine(PreparedEpochFakeEngine):
         self.invalidations: list[str] = []
         self.tool_results: list[str] = []
         self._tool_started = False
+        self.publication_delay = 0.01
+        self.unpublished_interrupts = 0
+        self.function_worker_finished = False
         self.wrapper._build_fc_response_tokens = lambda value: list(value.encode())
+
+    def interrupt_unpublished_function_cycle(self, _timeout_seconds=5.0):
+        self.unpublished_interrupts += 1
+        return {
+            "schema": 1,
+            "requested": True,
+            "reason": "client_turn_start",
+            "quit_to_normal": True,
+            "async_steps": 1,
+        }
+
+    def function_cycle_quiescent(self):
+        return self.unpublished_interrupts > 0 and self.function_worker_finished
 
     def invalidate_eartts_epoch(self, reason: str) -> dict:
         self.invalidations.append(reason)
@@ -432,8 +449,11 @@ class DeferredToolTimeoutFakeEngine(PreparedEpochFakeEngine):
         handler = next(iter(self.tools.values()))
 
         def invoke_after_publication() -> None:
-            time.sleep(0.01)
-            self.tool_results.append(handler({}))
+            time.sleep(self.publication_delay)
+            try:
+                self.tool_results.append(handler({}))
+            finally:
+                self.function_worker_finished = True
 
         Thread(target=invoke_after_publication, daemon=True).start()
         return result
@@ -490,16 +510,21 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
             time.sleep(0.01)
         self.fail(f"trace did not emit {event_name}")
 
-    def configure(self, websocket, *, tools=None):
+    def configure(self, websocket, *, tools=None, model_output=False):
+        session = {
+            "protocol_version": 3,
+            "instructions": "Be brief.",
+            "tools": [] if tools is None else tools,
+        }
+        if model_output:
+            session["capabilities"] = {
+                "function_output_model_output": "client_authored_v1"
+            }
         websocket.send_json(
             {
                 "type": "session.update",
                 "event_id": "config-1",
-                "session": {
-                    "protocol_version": 3,
-                    "instructions": "Be brief.",
-                    "tools": [] if tools is None else tools,
-                },
+                "session": session,
             }
         )
         updated = websocket.receive_json()
@@ -550,6 +575,43 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
         self.assertEqual(completed["reason"], "session_update_initial")
         self.assertEqual(completed["start_evidence"]["schema"], 1)
         self.assertEqual(completed["start_evidence"]["timings_ms"]["total"], 0.7)
+
+    def test_unnegotiated_model_output_is_rejected_before_tool_submission(self) -> None:
+        temporary, _engine, client = self.make_client(
+            function_template_path=Path("/unused/test-template.jinja")
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {
+                    "type": "conversation.item.create",
+                    "event_id": "unnegotiated-model-output",
+                    "item": {
+                        "type": "function_call_output",
+                        "call_id": "call-unknown",
+                        "output": "full",
+                        "model_output": "concise",
+                    },
+                }
+            )
+            error = websocket.receive_json()
+            self.assertEqual(error["error"]["code"], "invalid_function_call_output")
+            self.assertIn("not negotiated", error["error"]["message"])
 
     def test_identical_pre_frame_update_reacks_without_restart(self) -> None:
         temporary, engine, client = self.make_client()
@@ -1036,6 +1098,164 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                     "RuntimeError" if invalidation_failure else None,
                 )
 
+    def test_deferred_tool_closes_turn_and_barge_cancels_before_publication(self) -> None:
+        engine = DeferredToolTimeoutFakeEngine()
+        engine.publication_delay = 0.2
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "first-start",
+                    "client_turn_id": 1,
+                }
+            )
+            first_started, _events = receive_until(
+                websocket, "input_audio_buffer.turn_started"
+            )
+            first_turn_id = first_started["turn_id"]
+            websocket.send_json(audio_event("first-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "first-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            committed, commit_events = receive_until(
+                websocket, "input_audio_buffer.committed"
+            )
+            self.assertEqual(committed["turn_id"], first_turn_id)
+
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "barge-start",
+                    "client_turn_id": 2,
+                }
+            )
+            second_started, turn_events = receive_until(
+                websocket, "input_audio_buffer.turn_started", limit=30
+            )
+            self.assertNotEqual(second_started["turn_id"], first_turn_id)
+            lifecycle = commit_events + turn_events
+            self.assertIn(
+                "conversation.item.input_audio_transcription.completed",
+                [event["type"] for event in lifecycle],
+            )
+
+            websocket.send_json(audio_event("barge-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            self.assertEqual(engine.unpublished_interrupts, 1)
+            time.sleep(engine.publication_delay + 0.05)
+            websocket.send_json(audio_event("barge-reconcile"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed")
+
+        trace_events = self.trace_events(temporary)
+        self.assertEqual(
+            len(
+                [
+                    event
+                    for event in trace_events
+                    if event["event"] == "unpublished_function_cycle_interrupt"
+                ]
+            ),
+            1,
+        )
+        self.assertEqual(
+            len(
+                [
+                    event
+                    for event in trace_events
+                    if event["event"] == "function_call_publication_suppressed"
+                ]
+            ),
+            1,
+        )
+        self.assertEqual(
+            len(
+                [
+                    event
+                    for event in trace_events
+                    if event["event"] == "deferred_bos_superseded_by_client_turn"
+                ]
+            ),
+            1,
+        )
+
+    def test_typed_finished_is_immediate_readiness_barrier_during_deferred_tool(self) -> None:
+        engine = DeferredToolTimeoutFakeEngine()
+        engine.publication_delay = 0.2
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            typed_input=True,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {"type": "input_text.request", "job_id": "typed-tool", "text": "Use it"}
+            )
+            receive_until(websocket, "input_text.injection_finished", limit=100)
+
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "immediate-after-typed",
+                    "client_turn_id": 2,
+                }
+            )
+            started, events = receive_until(
+                websocket, "input_audio_buffer.turn_started", limit=30
+            )
+            self.assertEqual(started["client_event_id"], "immediate-after-typed")
+            self.assertEqual(started["client_turn_id"], 2)
+            self.assertNotIn("error", [event["type"] for event in events])
+
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed")
+
+        self.assertEqual(engine.unpublished_interrupts, 1)
+
     def test_deferred_tool_recovery_timeout_clears_epoch_and_closes(self) -> None:
         engine = DeferredToolTimeoutFakeEngine()
         temporary, engine, client = self.make_client(
@@ -1067,7 +1287,11 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
             client.websocket_connect("/v1/realtime") as websocket,
         ):
             websocket.receive_json()
-            self.configure(websocket, tools=tools)
+            updated = self.configure(websocket, tools=tools, model_output=True)
+            self.assertEqual(
+                updated["session"]["capabilities"]["function_output_model_output"],
+                "client_authored_v1",
+            )
             websocket.send_json(
                 {
                     "type": "input_audio_buffer.turn_start",
@@ -1096,6 +1320,7 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                         "type": "function_call_output",
                         "call_id": function_call["call_id"],
                         "output": '{"spoken":"ordinary words"}',
+                        "model_output": "Short answer.",
                     },
                 }
             )
@@ -1104,6 +1329,22 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
             self.assertTrue(error["error"]["fatal"])
 
         self.assertEqual(engine.invalidations, ["function_output_apply_timeout"])
+        self.assertEqual(engine.tool_results, ["Short answer."])
+        received = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "function_call_output_received"
+        )
+        self.assertEqual(received["injection_source"], "model_output")
+        self.assertEqual(received["model_output_tokens"], received["injection_tokens"])
+        self.assertEqual(
+            received["output_sha256"],
+            hashlib.sha256(b'{"spoken":"ordinary words"}').hexdigest(),
+        )
+        self.assertEqual(
+            received["model_output_sha256"],
+            hashlib.sha256(b"Short answer.").hexdigest(),
+        )
         terminated = [
             event
             for event in self.trace_events(temporary)

@@ -25,10 +25,10 @@ _PROCESS_WS_URL = os.getenv("NEMOTRON_VOICECHAT_WS_URL")
 from loguru import logger
 from pipecat.adapters.schemas.function_schema import FunctionSchema
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
-from pipecat.frames.frames import LLMRunFrame
+from pipecat.frames.frames import ErrorFrame, LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker
-from pipecat.processors.aggregators.llm_context import LLMContext
+from pipecat.processors.frameworks.rtvi.processor import RTVIProcessor
 from pipecat.runner.types import RunnerArguments, SmallWebRTCRunnerArguments
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.transports.base_transport import BaseTransport, TransportParams
@@ -38,6 +38,7 @@ from pipecat.workers.runner import WorkerRunner
 from .aggregators import create_voicechat_context_aggregators
 from .llm import NemotronVoicechatLLMService
 from .text_input import VoicechatTypedInputRouter
+from .tool_results import VoicechatLLMContext, VoicechatToolResult
 
 SYSTEM_INSTRUCTION = """You are a helpful voice assistant in a live conversation.
 Keep answers concise, natural, and easy to understand when spoken aloud.
@@ -46,15 +47,46 @@ available tool as a substitute for an unrelated or unavailable capability. After
 tool returns, state its result accurately and continue the conversation normally."""
 
 
+class VoicechatReadyRTVIProcessor(RTVIProcessor):
+    """Publish browser bot-ready only after the model session can accept input."""
+
+    def __init__(self, service: NemotronVoicechatLLMService):
+        super().__init__()
+        self._voicechat_service = service
+
+    async def set_client_ready(self):
+        """Serialize every later RTVI message behind model input readiness."""
+        try:
+            await self._voicechat_service.wait_for_live_input_ready()
+        except TimeoutError:
+            readiness = self._voicechat_service.live_input_readiness_status()
+            message = (
+                "Voicechat model input did not become ready: "
+                + " ".join(f"{key}={value}" for key, value in readiness.items())
+            )
+            logger.error(message)
+            await self._send_error_frame(ErrorFrame(error=message, fatal=True))
+            await self._voicechat_service.abort_live_input_startup()
+            return
+        await super().set_client_ready()
+
+    async def set_bot_ready(self, about=None):
+        await self._voicechat_service.wait_for_live_input_ready()
+        await super().set_bot_ready(about=about)
+
+
 async def get_current_utc_time(params: FunctionCallParams):
     """Get the current time in UTC."""
     now = datetime.now(UTC)
     await params.result_callback(
-        {
-            "timezone": "UTC",
-            "iso_utc": now.isoformat(),
-            "spoken": now.strftime("%H:%M UTC"),
-        }
+        VoicechatToolResult(
+            output={
+                "timezone": "UTC",
+                "iso_utc": now.isoformat(),
+                "spoken": now.strftime("%H:%M UTC"),
+            },
+            model_output=f"It is currently {now.strftime('%H:%M UTC')}.",
+        )
     )
 
 
@@ -95,7 +127,7 @@ def create_pipeline(
 ):
     """Build the server-turn-driven realtime pipeline and shared context."""
     tools = create_tools()
-    context = LLMContext(messages=[], tools=tools)
+    context = VoicechatLLMContext(messages=[], tools=tools)
     user_aggregator, assistant_aggregator = create_voicechat_context_aggregators(context)
     typed_input = VoicechatTypedInputRouter()
     service = NemotronVoicechatLLMService(
@@ -132,6 +164,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
             enable_usage_metrics=True,
         ),
         idle_timeout_secs=runner_args.pipeline_idle_timeout_secs,
+        rtvi_processor=VoicechatReadyRTVIProcessor(service),
     )
 
     @transport.event_handler("on_client_connected")

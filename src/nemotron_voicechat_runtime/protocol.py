@@ -15,6 +15,8 @@ PROTOCOL_NAME = "voicechat.realtime"
 PROTOCOL_VERSION = 3
 FUNCTION_OUTPUT_MAX_BYTES = 16 * 1024
 FUNCTION_OUTPUT_MAX_TOKENS = 128
+FUNCTION_OUTPUT_MODEL_OUTPUT_MODE = "client_authored_v1"
+FUNCTION_OUTPUT_MODEL_OUTPUT_TARGET_TOKENS = 20
 FUNCTION_OUTPUT_RECOVERY_MAX_FRAMES = 256
 FUNCTION_OUTPUT_RECOVERY_FRAME_SECONDS = 0.08
 FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS = 30.0
@@ -41,6 +43,12 @@ def protocol_capabilities(
         "function_call_timeout_seconds": function_call_timeout_seconds,
         "function_output_max_bytes": FUNCTION_OUTPUT_MAX_BYTES,
         "function_output_max_tokens": FUNCTION_OUTPUT_MAX_TOKENS,
+        "function_output_model_output": {
+            "mode": FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+            "max_bytes": FUNCTION_OUTPUT_MAX_BYTES,
+            "max_tokens": FUNCTION_OUTPUT_MAX_TOKENS,
+            "target_tokens": FUNCTION_OUTPUT_MODEL_OUTPUT_TARGET_TOKENS,
+        },
         "function_output_recovery_max_frames": FUNCTION_OUTPUT_RECOVERY_MAX_FRAMES,
         "function_output_ack_timeout_seconds": FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS,
         "max_function_calls_per_response": MAX_FUNCTION_CALLS_PER_RESPONSE,
@@ -222,6 +230,18 @@ class RealtimeProtocolSession:
             turn_id=self._turn_id if turn_id is None else turn_id,
         )
 
+    def finish_committed_input_turn(
+        self, current_text: str, *, decoded_token_count: int = 0
+    ) -> list[dict[str, Any]]:
+        """Close a settled client turn before deferred tool recovery.
+
+        Tool-aware explicit EOU may produce SOTC instead of agent BOS. In that
+        case the input lifecycle is nevertheless complete and must not remain
+        open until the eventual post-function BOS.
+        """
+
+        return self._finish_turn(current_text, decoded_token_count=decoded_token_count)
+
     def _new_turn(self) -> dict[str, Any]:
         self._turn_index += 1
         self._turn_id = f"turn_{self.session_id}_{self._turn_index}"
@@ -298,12 +318,12 @@ class RealtimeProtocolSession:
         self._turn_correlation = None
         return events
 
-    def _start_response(self) -> dict[str, Any] | None:
+    def _start_response(self, *, turn_id: str | None = None) -> dict[str, Any] | None:
         if self._response_open:
             return None
         self._response_index += 1
         self._response_id = f"response_{self.session_id}_{self._response_index}"
-        self._response_turn_id = self._turn_id
+        self._response_turn_id = self._turn_id if turn_id is None else turn_id
         self._response_open = True
         self._response_audio_started = False
         self._response_text = ""
@@ -460,8 +480,15 @@ class RealtimeProtocolSession:
         call_id: str,
         name: str,
         arguments: str,
+        turn_id: str | None = None,
     ) -> list[dict[str, Any]]:
-        created = self._start_response()
+        if (
+            self._response_open
+            and turn_id is not None
+            and self._response_turn_id != turn_id
+        ):
+            raise ValueError("function call turn does not own the active response")
+        created = self._start_response(turn_id=turn_id)
         events = [created] if created is not None else []
         event = self._event(
             "response.function_call_arguments.done",

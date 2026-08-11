@@ -1,5 +1,5 @@
 diff --git a/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py b/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
-index bb28de0c0..df5b59c74 100644
+index bb28de0c0..7092eb208 100644
 --- a/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
 +++ b/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
 @@ -34,6 +34,7 @@ Usage Example:
@@ -389,8 +389,12 @@ index bb28de0c0..df5b59c74 100644
              # Use provided generated_tokens or create empty tensor
              batch_size = text_logits.shape[0]
              if generated_tokens is None:
-@@ -569,6 +895,10 @@ class VllmLLMModel(ModelInterface):
+@@ -567,8 +893,14 @@ class VllmLLMModel(ModelInterface):
+             "is_finished": is_finished,
+             "request_id": request_id
          }
++        if result and result.benchmark_timing is not None:
++            ans["nano_engine_benchmark"] = dict(result.benchmark_timing)
          if result and result.custom_outputs and "function_tokens" in result.custom_outputs:
              ans["function_predicted_token"] = result.custom_outputs["function_tokens"]
 +        if self._function_logit_trace_topk:
@@ -401,7 +405,7 @@ index bb28de0c0..df5b59c74 100644
  
  
 diff --git a/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py b/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
-index 6085e5562..ee43125c6 100755
+index 6085e5562..9cd1d4b08 100755
 --- a/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
 +++ b/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
 @@ -29,7 +29,9 @@ import argparse
@@ -414,7 +418,7 @@ index 6085e5562..ee43125c6 100755
  from typing import Optional, Tuple
  from nemo.utils import logging
  from jiwer import wer
-@@ -245,6 +247,44 @@ class NemotronVoicechatInferenceWrapper:
+@@ -245,6 +247,52 @@ class NemotronVoicechatInferenceWrapper:
          # After tool-response injection completes, exempt the next agent BOS from
          # self-play suppression so the post-TC verbal response is not silenced.
          self._post_tc_bos_exempt: bool = False
@@ -456,10 +460,18 @@ index 6085e5562..ee43125c6 100755
 +        self._fc_async_heartbeat_enabled = os.environ.get(
 +            "S2S_FC_ASYNC_HEARTBEAT", "0"
 +        ).strip().lower() in {"1", "true", "yes", "on"}
++        benchmark_value = os.environ.get("S2S_FC_ASYNC_BENCHMARK", "0").strip().lower()
++        if benchmark_value not in {"0", "1", "false", "true", "no", "yes", "off", "on"}:
++            raise ValueError("S2S_FC_ASYNC_BENCHMARK must be a boolean")
++        self._fc_async_benchmark_enabled = benchmark_value in {"1", "true", "yes", "on"}
++        self._fc_async_benchmark_lock = (
++            threading.Lock() if self._fc_async_benchmark_enabled else None
++        )
++        self._fc_async_benchmark_pending = [] if self._fc_async_benchmark_enabled else None
  
          # vLLM configuration
          self.engine_type = model_cfg.get("engine_type", "native")
-@@ -291,6 +331,17 @@ class NemotronVoicechatInferenceWrapper:
+@@ -291,6 +339,17 @@ class NemotronVoicechatInferenceWrapper:
          self._use_perception_cudagraph = use_perception_cudagraph
          self._pad_and_drop_preencoded = bool(model_cfg.get("pad_and_drop_preencoded", False))
  
@@ -477,7 +489,7 @@ index 6085e5562..ee43125c6 100755
          self._initialize_model()
  
          logging.info("NemotronVoicechatInferenceWrapper initialized successfully.")
-@@ -298,6 +349,129 @@ class NemotronVoicechatInferenceWrapper:
+@@ -298,6 +357,129 @@ class NemotronVoicechatInferenceWrapper:
          logging.info(f"{self.model.stt_model.perception.encoder._cfg = }")
          logging.info(f"{self.model.stt_model.perception.encoder.streaming_cfg = }")
  
@@ -607,7 +619,7 @@ index 6085e5562..ee43125c6 100755
      @staticmethod
      def _resolve_dtype(compute_dtype):
          if isinstance(compute_dtype, torch.dtype):
-@@ -645,6 +819,19 @@ class NemotronVoicechatInferenceWrapper:
+@@ -645,6 +827,19 @@ class NemotronVoicechatInferenceWrapper:
              if unexpected_tts:
                  logging.info(f"  {len(unexpected_tts)} unexpected TTS keys")
  
@@ -627,7 +639,7 @@ index 6085e5562..ee43125c6 100755
              if self.use_vllm_eartts:
                  # gonna convert and load vllm eartts engine
                  # Use object.__setattr__ to bypass PyTorch's module registration
-@@ -681,7 +868,28 @@ class NemotronVoicechatInferenceWrapper:
+@@ -681,7 +876,28 @@ class NemotronVoicechatInferenceWrapper:
              logging.info("  Native LLM deleted")
  
          # Setup model
@@ -657,7 +669,7 @@ index 6085e5562..ee43125c6 100755
          self.model.eval()
  
          # Convert only the S2S components to the configured dtype, not the TTS model
-@@ -854,6 +1062,17 @@ class NemotronVoicechatInferenceWrapper:
+@@ -854,6 +1070,17 @@ class NemotronVoicechatInferenceWrapper:
                  repetition_penalty=self.repetition_penalty,
                  temperature=self.temperature,
                  text_pad_id=stt.text_pad_id,
@@ -675,7 +687,7 @@ index 6085e5562..ee43125c6 100755
              )
  
              logging.info("VllmLLMModel interface created")
-@@ -888,6 +1107,11 @@ class NemotronVoicechatInferenceWrapper:
+@@ -888,6 +1115,11 @@ class NemotronVoicechatInferenceWrapper:
          self._fc_async_enabled = bool(self.model_cfg.get("fc_async_enabled", False))
          self._fc_async_two_phase = bool(self.model_cfg.get("fc_async_two_phase", False))
          self._fc_async_api_latency_sec = float(self.model_cfg.get("fc_async_api_latency_sec", 0.0))
@@ -687,7 +699,7 @@ index 6085e5562..ee43125c6 100755
          # When False (default), async FC always feeds silence to the LLM — no real or cached audio.
          # When True, real audio frames are used if available, falling back to last cached audio.
          self._fc_async_use_real_audio = bool(self.model_cfg.get("fc_async_use_real_audio", False))
-@@ -905,6 +1129,11 @@ class NemotronVoicechatInferenceWrapper:
+@@ -905,6 +1137,11 @@ class NemotronVoicechatInferenceWrapper:
  
          # Turn-taking source: "rnnt" (default) or "asr_head"
          self._turn_taking_source = str(self.model_cfg.get("turn_taking_source", "rnnt")).lower()
@@ -699,7 +711,7 @@ index 6085e5562..ee43125c6 100755
          # rnnt_eou_frames: number of consecutive 80 ms frames with NO new RNNT
          # tokens (i.e. silence) before EOU is declared.  On EOU the agent BOS
          # token is force-inserted so the agent starts speaking.
-@@ -1127,6 +1356,9 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1127,6 +1364,9 @@ class NemotronVoicechatInferenceWrapper:
          buffer_size_samples: int,
          emb_queue: "queue.Queue",
          stop_event: "threading.Event",
@@ -709,7 +721,7 @@ index 6085e5562..ee43125c6 100755
      ) -> None:
          """Background thread: encode live audio frames as they arrive from the
          Triton execute() calls (one 80ms frame per queue entry) and put
-@@ -1135,6 +1367,21 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1135,6 +1375,21 @@ class NemotronVoicechatInferenceWrapper:
          Unlike ``_perception_background_worker``, there is no wall-clock gate —
          frames arrive exactly when Triton delivers them (every ~80ms in production).
          """
@@ -731,7 +743,7 @@ index 6085e5562..ee43125c6 100755
          perception_stream = torch.cuda.Stream(device=self.device)
          # Keep the rolling buffer on GPU so _update_audio_buffer doesn't
          # hit a device mismatch when new_audio arrives on self.device.
-@@ -1142,14 +1389,58 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1142,14 +1397,58 @@ class NemotronVoicechatInferenceWrapper:
          fill = buffer_fill
  
          while not stop_event.is_set():
@@ -790,7 +802,7 @@ index 6085e5562..ee43125c6 100755
              new_audio = new_audio.to(self.device, dtype=self.dtype)
              buf, fill, current_buf = self._update_audio_buffer(buf, fill, new_audio, buffer_size_samples)
              buf_len = torch.tensor([current_buf.shape[1]], dtype=torch.long, device=self.device)
-@@ -1161,6 +1452,21 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1161,6 +1460,21 @@ class NemotronVoicechatInferenceWrapper:
                          input_signal_length=buf_len,
                          return_encoder_emb=True,
                      )
@@ -812,7 +824,7 @@ index 6085e5562..ee43125c6 100755
              perception_stream.synchronize()
  
              source_encoded = source_encoded.to(self.dtype)
-@@ -1173,7 +1479,263 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1173,7 +1487,285 @@ class NemotronVoicechatInferenceWrapper:
              else:
                  asr_emb_frame = None
  
@@ -1023,6 +1035,28 @@ index 6085e5562..ee43125c6 100755
 +            self._post_fc_token_trace_sequence = 0
 +            self._post_fc_token_trace_pending = []
 +
++    def _append_fc_async_benchmark(self, record: dict) -> None:
++        if not self._fc_async_benchmark_enabled:
++            return
++        with self._fc_async_benchmark_lock:
++            self._fc_async_benchmark_pending.append(dict(record))
++            if len(self._fc_async_benchmark_pending) > 8:
++                del self._fc_async_benchmark_pending[:-8]
++
++    def drain_fc_async_benchmark(self) -> list[dict]:
++        if not self._fc_async_benchmark_enabled:
++            return []
++        with self._fc_async_benchmark_lock:
++            records = self._fc_async_benchmark_pending
++            self._fc_async_benchmark_pending = []
++        return records
++
++    def _reset_fc_async_benchmark(self) -> None:
++        if not self._fc_async_benchmark_enabled:
++            return
++        with self._fc_async_benchmark_lock:
++            self._fc_async_benchmark_pending = []
++
 +    def _trace_token_text(self, token_id: int) -> str:
 +        try:
 +            return self.tokenizer.ids_to_text([int(token_id)])
@@ -1076,7 +1110,7 @@ index 6085e5562..ee43125c6 100755
  
      def _run_fc_async_steps(
          self,
-@@ -1200,6 +1762,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1200,6 +1792,7 @@ class NemotronVoicechatInferenceWrapper:
          abort_event: "threading.Event | None" = None,
          quit_async_event: "threading.Event | None" = None,
          stream_id: "int | None" = None,
@@ -1084,7 +1118,7 @@ index 6085e5562..ee43125c6 100755
      ) -> tuple[int, dict | None]:
          """
          Run LLM steps at full speed during function calling.
-@@ -1275,6 +1838,29 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1275,6 +1868,47 @@ class NemotronVoicechatInferenceWrapper:
          async_steps = 0
          t = current_frame_idx + 1  # start from next position after SOTC
          rt_real_count = 0  # track how many real audio frames were used (for logging)
@@ -1094,6 +1128,24 @@ index 6085e5562..ee43125c6 100755
 +        )
 +        _heartbeat_phase = "tool_response" if tool_response_text else "tool_call"
 +        _heartbeat_invocation = 2 if tool_response_text else 1
++        _benchmark = bool(self._fc_async_benchmark_enabled)
++        _benchmark_phase_start = time.perf_counter() if _benchmark else None
++        _benchmark_positions = [] if _benchmark else None
++        _benchmark_stage_totals = (
++            {
++                "embed_ms": 0.0,
++                "perception_poll_ms": 0.0,
++                "fusion_ms": 0.0,
++                "nano_interface_ms": 0.0,
++                "eartts_infer_ms": 0.0,
++                "codec_decode_ms": 0.0,
++                "codec_cpu_copy_ms": 0.0,
++                "rnnt_ms": 0.0,
++                "perception_join_ms": 0.0,
++            }
++            if _benchmark else None
++        )
++        _benchmark_truncated = False
 +        if _heartbeat:
 +            fc_state.pop("async_heartbeat", None)
 +            fc_state.pop("async_perception_heartbeat", None)
@@ -1114,7 +1166,7 @@ index 6085e5562..ee43125c6 100755
  
          # Phase 2 re-entry: if tool_response_text is provided AND we are NOT in
          # an active call (i.e. call was already generated in a previous invocation),
-@@ -1288,6 +1874,15 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1288,6 +1922,15 @@ class NemotronVoicechatInferenceWrapper:
              response_tokens = self._build_fc_response_tokens(tool_response_text)
              fc_state["forced_function_tokens"] = response_tokens
              fc_state["injecting_response"] = True
@@ -1130,7 +1182,42 @@ index 6085e5562..ee43125c6 100755
              fc_state.setdefault("tool_response_inject_start_wall", _time.time())
              fc_state.setdefault("tool_response_inject_start_frame", current_frame_idx + 1)
              fc_state["tool_response_num_tokens"] = len(response_tokens)
-@@ -1327,7 +1922,11 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1314,6 +1957,34 @@ class NemotronVoicechatInferenceWrapper:
+         _n_rnnt_steps = 0
+         _ack_idx = 0  # index into acknowledgement_tokens; advances each TTS step
+ 
++        def _benchmark_store_position() -> None:
++            nonlocal _benchmark_truncated
++            if not _benchmark or _benchmark_position.get("_stored") is True:
++                return
++            finished = time.perf_counter()
++            named_keys = (
++                "embed_ms",
++                "perception_poll_ms",
++                "fusion_ms",
++                "nano_interface_ms",
++                "eartts_infer_ms",
++                "codec_decode_ms",
++                "codec_cpu_copy_ms",
++                "rnnt_ms",
++            )
++            named_sum = sum(_benchmark_position[key] for key in named_keys)
++            total_ms = (finished - _benchmark_step_start) * 1000.0
++            _benchmark_position["named_sum_ms"] = named_sum
++            _benchmark_position["total_ms"] = total_ms
++            _benchmark_position["residual_ms"] = total_ms - named_sum
++            _benchmark_position["_stored"] = True
++            if len(_benchmark_positions) < 512:
++                item = dict(_benchmark_position)
++                item.pop("_stored")
++                _benchmark_positions.append(item)
++            else:
++                _benchmark_truncated = True
++
+         # Start background perception thread so LLM never blocks on audio encoding.
+         # Two modes:
+         #  - realtime_audio (offline sim): wall-clock gated, reads from pre-loaded tensor
+@@ -1327,7 +1998,11 @@ class NemotronVoicechatInferenceWrapper:
              _percep_queue = queue.Queue()
              _percep_stop = threading.Event()
              _percep_thread = threading.Thread(
@@ -1143,7 +1230,7 @@ index 6085e5562..ee43125c6 100755
                  args=(
                      live_audio_queue,
                      live_audio_buffer if live_audio_buffer is not None
-@@ -1336,6 +1935,9 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1336,6 +2011,9 @@ class NemotronVoicechatInferenceWrapper:
                      live_buffer_size_samples,
                      _percep_queue,
                      _percep_stop,
@@ -1153,7 +1240,7 @@ index 6085e5562..ee43125c6 100755
                  ),
                  daemon=True,
              )
-@@ -1353,6 +1955,22 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1353,6 +2031,22 @@ class NemotronVoicechatInferenceWrapper:
          _live_mode = live_audio_queue is not None
  
          while async_steps < max_async_steps and t < T_total:
@@ -1176,10 +1263,29 @@ index 6085e5562..ee43125c6 100755
              # Check for interrupt signal from the main thread (user spoke during FC).
              if abort_event is not None and abort_event.is_set():
                  logging.info(
-@@ -1382,6 +2000,34 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1381,6 +2075,52 @@ class NemotronVoicechatInferenceWrapper:
+                 break
  
              _step_start = time.time()
- 
++            _benchmark_step_start = time.perf_counter() if _benchmark else None
++            _benchmark_position = None
++            if _benchmark:
++                _benchmark_position = {
++                    "schema": 1,
++                    "async_step": int(async_steps),
++                    "nano_position": int(t),
++                    "monotonic_s": _benchmark_step_start,
++                    "embed_ms": 0.0,
++                    "perception_poll_ms": 0.0,
++                    "fusion_ms": 0.0,
++                    "nano_interface_ms": 0.0,
++                    "nano_engine": None,
++                    "eartts_infer_ms": 0.0,
++                    "codec_decode_ms": 0.0,
++                    "codec_cpu_copy_ms": 0.0,
++                    "rnnt_ms": 0.0,
++                }
++
 +            _trace_enabled = bool(self._post_fc_token_trace_frames)
 +            _trace_forced_before = fc_state.get("forced_function_tokens") or []
 +            _trace_candidate = bool(
@@ -1207,11 +1313,10 @@ index 6085e5562..ee43125c6 100755
 +                    "awaiting_eotr": bool(fc_state.get("awaiting_eotr", False)),
 +                    "forced_tokens": len(fc_state.get("forced_function_tokens") or []),
 +                }
-+
+ 
              agent_text_emb = self.model.stt_model.embed_tokens(
                  gen_text[:, t - 1]
-             ).unsqueeze(1).to(dtype=self.dtype)
-@@ -1394,6 +2040,23 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1394,8 +2134,31 @@ class NemotronVoicechatInferenceWrapper:
              function_emb = self.model.stt_model.embed_tokens(
                  gen_function_text[:, t - 1]
              ).unsqueeze(1).to(dtype=self.dtype)
@@ -1234,8 +1339,32 @@ index 6085e5562..ee43125c6 100755
 +                )
              _t_embed = time.time()
              _t_embed_total += _t_embed - _step_start
++            if _benchmark:
++                _benchmark_stage = time.perf_counter()
++                _benchmark_position["embed_ms"] = (
++                    _benchmark_stage - _benchmark_step_start
++                ) * 1000.0
++                _benchmark_stage_totals["embed_ms"] += _benchmark_position["embed_ms"]
  
-@@ -1431,6 +2094,23 @@ class NemotronVoicechatInferenceWrapper:
+             # Non-blocking: pick up the latest perception embedding if available.
+             # In live mode, queue entries are (user_audio_emb, asr_emb_frame) tuples.
+@@ -1424,6 +2187,15 @@ class NemotronVoicechatInferenceWrapper:
+                 fallback_audio_emb = user_audio_emb.detach()
+             _t_percep = time.time()
+             _t_perception_total += _t_percep - _t_embed
++            if _benchmark:
++                _benchmark_next = time.perf_counter()
++                _benchmark_position["perception_poll_ms"] = (
++                    _benchmark_next - _benchmark_stage
++                ) * 1000.0
++                _benchmark_stage_totals["perception_poll_ms"] += _benchmark_position[
++                    "perception_poll_ms"
++                ]
++                _benchmark_stage = _benchmark_next
+ 
+             fused_emb = self.fusion_module(
+                 agent_text_embeds=agent_text_emb,
+@@ -1431,8 +2203,34 @@ class NemotronVoicechatInferenceWrapper:
                  user_text_embeds=user_text_emb,
                  function_embeds=function_emb,
              )
@@ -1258,8 +1387,19 @@ index 6085e5562..ee43125c6 100755
 +                )
              _t_fuse = time.time()
              _t_fusion_total += _t_fuse - _t_percep
++            if _benchmark:
++                _benchmark_next = time.perf_counter()
++                _benchmark_position["fusion_ms"] = (
++                    _benchmark_next - _benchmark_stage
++                ) * 1000.0
++                _benchmark_stage_totals["fusion_ms"] += _benchmark_position[
++                    "fusion_ms"
++                ]
++                _benchmark_stage = _benchmark_next
  
-@@ -1440,6 +2120,14 @@ class NemotronVoicechatInferenceWrapper:
+             if self.use_vllm_llm:
+                 ans = self.model_llm_interface(
+@@ -1440,6 +2238,14 @@ class NemotronVoicechatInferenceWrapper:
                      request_id=request_id or self.request_id,
                      generated_tokens=gen_text,
                      current_step=t,
@@ -1274,7 +1414,7 @@ index 6085e5562..ee43125c6 100755
                  )
              elif use_cache:
                  ans = self.model_llm_interface(
-@@ -1458,6 +2146,23 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1458,7 +2264,34 @@ class NemotronVoicechatInferenceWrapper:
                      generated_tokens=gen_text,
                      current_step=t,
                  )
@@ -1296,9 +1436,20 @@ index 6085e5562..ee43125c6 100755
 +                    rnnt_text_queue=rnnt_text_queue,
 +                )
              _t_llm_total += time.time() - _t_fuse
++            if _benchmark:
++                _benchmark_next = time.perf_counter()
++                _benchmark_position["nano_interface_ms"] = (
++                    _benchmark_next - _benchmark_stage
++                ) * 1000.0
++                _benchmark_position["nano_engine"] = ans.get("nano_engine_benchmark")
++                _benchmark_stage_totals["nano_interface_ms"] += _benchmark_position[
++                    "nano_interface_ms"
++                ]
++                _benchmark_stage = _benchmark_next
  
              # TTS KV-cache sync: run one TTS forward pass with PAD on EVERY async
-@@ -1469,6 +2174,7 @@ class NemotronVoicechatInferenceWrapper:
+             # LLM step so that past_key_values stays aligned with frame_idx.
+@@ -1469,6 +2302,7 @@ class NemotronVoicechatInferenceWrapper:
              # produce the silence audio sent to the client.
              if tts_state is not None:
                  _t_tts_start = time.time()
@@ -1306,7 +1457,7 @@ index 6085e5562..ee43125c6 100755
                  try:
                      _tts_code = tts_state["code"]
                      _tts_pkv = tts_state["past_key_values"]
-@@ -1501,6 +2207,22 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1501,7 +2335,32 @@ class NemotronVoicechatInferenceWrapper:
                      if self.use_vllm_eartts:
                          _tts_inputs["request_id"] = request_id or self.request_id
  
@@ -1326,10 +1477,20 @@ index 6085e5562..ee43125c6 100755
 +                            tts_audio_queue=tts_audio_output_queue,
 +                            rnnt_text_queue=rnnt_text_queue,
 +                        )
++                    _benchmark_tts_start = time.perf_counter() if _benchmark else None
                      _tts_code_new, _tts_pkv_new = self.model.tts_model.infer_codes_one_step(**_tts_inputs)
++                    if _benchmark:
++                        _benchmark_tts_end = time.perf_counter()
++                        _benchmark_position["eartts_infer_ms"] = (
++                            _benchmark_tts_end - _benchmark_tts_start
++                        ) * 1000.0
++                        _benchmark_stage_totals["eartts_infer_ms"] += (
++                            _benchmark_position["eartts_infer_ms"]
++                        )
  
                      # ====== TTS PAD-silence substitution — SITE 1 (FC async warmup) ======
-@@ -1554,14 +2276,84 @@ class NemotronVoicechatInferenceWrapper:
+                     # This is the TTS warmup that runs once per async-loop step during
+@@ -1554,14 +2413,102 @@ class NemotronVoicechatInferenceWrapper:
                                      getattr(self.model.tts_model, 'codec_silence_tokens', None),
                                  )
                              _tts_code_len = torch.tensor([1], dtype=torch.long, device=self.device)
@@ -1351,9 +1512,18 @@ index 6085e5562..ee43125c6 100755
 +                                    tts_audio_queue=tts_audio_output_queue,
 +                                    rnnt_text_queue=rnnt_text_queue,
 +                                )
++                            _benchmark_codec_start = time.perf_counter() if _benchmark else None
                              _tts_decoded_audio, _ = self.model.tts_model.audio_codec.decode(
                                  _tts_new_codes, _tts_code_len, cache=_tts_codec_cache,
                              )
++                            if _benchmark:
++                                _benchmark_codec_end = time.perf_counter()
++                                _benchmark_position["codec_decode_ms"] = (
++                                    _benchmark_codec_end - _benchmark_codec_start
++                                ) * 1000.0
++                                _benchmark_stage_totals["codec_decode_ms"] += (
++                                    _benchmark_position["codec_decode_ms"]
++                                )
 +                            _heartbeat_tts_stage = "codec_cpu_copy"
 +                            if _heartbeat:
 +                                self._publish_fc_async_heartbeat(
@@ -1372,7 +1542,16 @@ index 6085e5562..ee43125c6 100755
 +                                    tts_audio_queue=tts_audio_output_queue,
 +                                    rnnt_text_queue=rnnt_text_queue,
 +                                )
++                            _benchmark_copy_start = time.perf_counter() if _benchmark else None
                              _tts_chunk_cpu = _tts_decoded_audio.detach().cpu()
++                            if _benchmark:
++                                _benchmark_copy_end = time.perf_counter()
++                                _benchmark_position["codec_cpu_copy_ms"] = (
++                                    _benchmark_copy_end - _benchmark_copy_start
++                                ) * 1000.0
++                                _benchmark_stage_totals["codec_cpu_copy_ms"] += (
++                                    _benchmark_position["codec_cpu_copy_ms"]
++                                )
                              _tts_silence_audio_chunks.append(_tts_chunk_cpu)
                              if tts_audio_output_queue is not None:
                                  tts_audio_output_queue.put(_tts_chunk_cpu)
@@ -1414,7 +1593,12 @@ index 6085e5562..ee43125c6 100755
                      logging.warning("[FC Async] TTS warmup step failed: %s", _tts_exc)
                  _t_tts_total += time.time() - _t_tts_start
  
-@@ -1574,6 +2366,15 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1570,10 +2517,20 @@ class NemotronVoicechatInferenceWrapper:
+                     "[FC Async] vLLM sequence finished at step %d (frame %d), exiting async loop",
+                     async_steps, t,
+                 )
++                _benchmark_store_position()
+                 break
  
              predicted_token = ans["predicted_token"]
              asr_predicted_token = ans["asr_predicted_token"]
@@ -1430,7 +1614,7 @@ index 6085e5562..ee43125c6 100755
  
              gen_text[:, t] = pad_id  # force PAD during FC async — prevents apology-token KV-cache contamination
              gen_asr_text[:, t] = pad_id  # silence → no user speech
-@@ -1585,6 +2386,10 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1585,6 +2542,10 @@ class NemotronVoicechatInferenceWrapper:
  
              # --- Forced injection phase ---
              forced = fc_state.get("forced_function_tokens", [])
@@ -1441,7 +1625,7 @@ index 6085e5562..ee43125c6 100755
              if forced:
                  override_id = forced.pop(0)
                  gen_function_text[:, t] = override_id
-@@ -1601,6 +2406,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1601,6 +2562,7 @@ class NemotronVoicechatInferenceWrapper:
  
                  # --- Natural token monitoring ---
                  func_tok_val = gen_function_text[0, t].item()
@@ -1449,7 +1633,7 @@ index 6085e5562..ee43125c6 100755
                  if func_tok_val == self._fc_sotc_id:
                      fc_state["active"] = True
                      fc_state["call_tokens"] = []
-@@ -1632,6 +2438,15 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1632,6 +2594,15 @@ class NemotronVoicechatInferenceWrapper:
                          response_tokens = self._build_fc_response_tokens(tool_response_text)
                          fc_state["forced_function_tokens"] = response_tokens
                          fc_state["tool_response_num_tokens"] = len(response_tokens)
@@ -1465,7 +1649,17 @@ index 6085e5562..ee43125c6 100755
                          logging.info(f"[FC Async] Queued {len(response_tokens)} response tokens")
                      elif self._fc_async_two_phase:
                          fc_state["awaiting_response"] = True
-@@ -1649,11 +2464,104 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1641,19 +2612,114 @@ class NemotronVoicechatInferenceWrapper:
+                             "[FC Async] Two-phase: Phase 1 complete (call generated). "
+                             "Exiting async to await tool execution."
+                         )
++                        _benchmark_store_position()
+                         async_steps += 1
+                         t += 1
+                         break
+                     else:
+                         logging.info("[FC Async] No tool_response_text, exiting async after EOTC")
++                        _benchmark_store_position()
                          async_steps += 1
                          t += 1
                          break
@@ -1571,10 +1765,11 @@ index 6085e5562..ee43125c6 100755
              # RNNT decode on live audio frames (Triton server mode).
              # Turn-taking is intentionally skipped here: the main thread monitors
              # the rnnt_text_queue and sets abort_event when it detects persistent
-@@ -1661,6 +2569,22 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1661,6 +2727,23 @@ class NemotronVoicechatInferenceWrapper:
              # loop would insert EOS/BOS tokens into gen_text and disrupt the tool
              # call generation even when the user is not speaking.
              if _live_mode and _got_real_audio_frame and has_rnnt and live_asr_emb_frame is not None:
++                _benchmark_rnnt_start = time.perf_counter() if _benchmark else None
 +                if _heartbeat:
 +                    self._publish_fc_async_heartbeat(
 +                        fc_state,
@@ -1594,7 +1789,7 @@ index 6085e5562..ee43125c6 100755
                  # live_asr_emb_frame may be [B,1,D] or [B,D] — normalise to [B,D]
                  _lf = live_asr_emb_frame.squeeze(1) if live_asr_emb_frame.dim() == 3 else live_asr_emb_frame
                  if rnnt_partial_hypotheses is None:
-@@ -1680,6 +2604,23 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1680,6 +2763,32 @@ class NemotronVoicechatInferenceWrapper:
                                  rnnt_text_queue.put_nowait(_fc_text)
                              except Exception:
                                  pass
@@ -1615,10 +1810,19 @@ index 6085e5562..ee43125c6 100755
 +                        tts_audio_queue=tts_audio_output_queue,
 +                        rnnt_text_queue=rnnt_text_queue,
 +                    )
++                if _benchmark:
++                    _benchmark_position["rnnt_ms"] = (
++                        time.perf_counter() - _benchmark_rnnt_start
++                    ) * 1000.0
++                    _benchmark_stage_totals["rnnt_ms"] += _benchmark_position[
++                        "rnnt_ms"
++                    ]
++
++            _benchmark_store_position()
  
              # Natural interrupt: the model's agent text head predicted a real
              # token (non-PAD/BOS/EOS) while receiving real user audio.
-@@ -1707,13 +2648,28 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1707,13 +2816,28 @@ class NemotronVoicechatInferenceWrapper:
              async_steps += 1
              t += 1
  
@@ -1651,10 +1855,56 @@ index 6085e5562..ee43125c6 100755
                  if "tool_response_inject_start_wall" in fc_state:
                      import time as _time
                      fc_state["tool_response_inject_end_wall"] = _time.time()
-@@ -1768,6 +2724,49 @@ class NemotronVoicechatInferenceWrapper:
+@@ -1726,8 +2850,13 @@ class NemotronVoicechatInferenceWrapper:
+ 
+         # Stop background perception thread
+         if _percep_thread is not None:
++            _benchmark_join_start = time.perf_counter() if _benchmark else None
+             _percep_stop.set()
+             _percep_thread.join(timeout=2.0)
++            if _benchmark:
++                _benchmark_stage_totals["perception_join_ms"] = (
++                    time.perf_counter() - _benchmark_join_start
++                ) * 1000.0
+             if _percep_thread.is_alive():
+                 logging.warning("[FC Async] Perception thread did not stop in time")
+ 
+@@ -1768,6 +2897,81 @@ class NemotronVoicechatInferenceWrapper:
              _t_llm_total, 100 * _t_llm_total / max(_t_total, 1e-9), 1000 * _t_llm_total / max(async_steps, 1),
              _t_tts_total, 100 * _t_tts_total / max(_t_total, 1e-9), _n_tts_warmup_calls, 1000 * _t_tts_total / max(_n_tts_warmup_calls, 1),
          )
++        if _benchmark:
++            _benchmark_phase_end = time.perf_counter()
++            _benchmark_named_sum = sum(_benchmark_stage_totals.values())
++            _benchmark_wall_ms = (
++                _benchmark_phase_end - _benchmark_phase_start
++            ) * 1000.0
++            self._append_fc_async_benchmark(
++                {
++                    "schema": 1,
++                    "cycle_sotc_frame": int(_cycle_sotc_frame),
++                    "phase": _heartbeat_phase,
++                    "invocation": int(_heartbeat_invocation),
++                    "request_id": str(request_id or self.request_id),
++                    "phase_start_monotonic_s": _benchmark_phase_start,
++                    "phase_end_monotonic_s": _benchmark_phase_end,
++                    "wall_ms": _benchmark_wall_ms,
++                    "positions_count": int(async_steps),
++                    "positions_retained": len(_benchmark_positions),
++                    "positions_truncated": bool(_benchmark_truncated),
++                    "nano_position_start": int(current_frame_idx + 1),
++                    "nano_position_end": int(t - 1),
++                    "real_audio_frames": int(rt_real_count),
++                    "perception_calls": int(_n_perception_calls),
++                    "rnnt_steps": int(_n_rnnt_steps),
++                    "tts_calls": int(_n_tts_warmup_calls),
++                    "eotr_wait_steps": int(fc_state.get("eotr_wait_steps", 0)),
++                    "stage_totals_ms": dict(_benchmark_stage_totals),
++                    "named_sum_ms": _benchmark_named_sum,
++                    "residual_ms": _benchmark_wall_ms - _benchmark_named_sum,
++                    "positions": _benchmark_positions,
++                }
++            )
 +        if _heartbeat:
 +            _heartbeat_aborted = (
 +                (abort_event is not None and abort_event.is_set())
@@ -1701,7 +1951,7 @@ index 6085e5562..ee43125c6 100755
          return async_steps, dynamic_cache, tts_state, _tts_silence_audio_chunks, rnnt_partial_hypotheses
  
      def _prepare_system_prompt_embeddings(
-@@ -2133,6 +3132,18 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2133,6 +3337,18 @@ class NemotronVoicechatInferenceWrapper:
              tool_response_text = self._convert_tool_response_nums_to_text(tool_response_text)
          return self.tokenizer.text_to_ids(tool_response_text)
  
@@ -1720,7 +1970,7 @@ index 6085e5562..ee43125c6 100755
      def _apply_fc_state_machine(
          self,
          fc_state: dict,
-@@ -2176,6 +3187,25 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2176,6 +3392,25 @@ class NemotronVoicechatInferenceWrapper:
  
          # --- Phase 2: monitor natural function head output ---
          if func_tok_val == self._fc_sotc_id:
@@ -1746,7 +1996,7 @@ index 6085e5562..ee43125c6 100755
              fc_state["active"] = True
              fc_state["call_tokens"] = []
              logging.info(f"FC: SOTC detected at frame {current_frame_idx}")
-@@ -2298,29 +3328,45 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2298,29 +3533,45 @@ class NemotronVoicechatInferenceWrapper:
                         rnnt_partial_hypotheses=None,
                         fc_state: dict | None = None,
                         tool_response_text: str | None = None,
@@ -1798,7 +2048,7 @@ index 6085e5562..ee43125c6 100755
                  num_frames_per_chunk=num_frames_per_chunk,
                  perception_cache=perception_cache,
              )
-@@ -2334,13 +3380,18 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2334,13 +3585,18 @@ class NemotronVoicechatInferenceWrapper:
              )
  
          torch.cuda.synchronize()
@@ -1820,7 +2070,7 @@ index 6085e5562..ee43125c6 100755
              # With cache: we get exactly num_frames_per_chunk output frames
              # Use all of them directly
              embedding_position = 0
-@@ -2361,17 +3412,69 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2361,17 +3617,69 @@ class NemotronVoicechatInferenceWrapper:
  
          new_input_embeds = []
          new_codes_for_decode = []
@@ -1891,7 +2141,7 @@ index 6085e5562..ee43125c6 100755
  
              if current_frame_idx == 0 and not has_prompt:
                  agent_text_emb = self._get_bos_embedding().unsqueeze(0)  # [1, 1, H]
-@@ -2413,8 +3516,14 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2413,8 +3721,14 @@ class NemotronVoicechatInferenceWrapper:
                  user_text_embeds=user_text_emb,
                  function_embeds=function_emb,
              )
@@ -1907,7 +2157,7 @@ index 6085e5562..ee43125c6 100755
  
              if use_cache or self.use_vllm_llm:
                  if self.use_vllm_llm:
-@@ -2423,7 +3532,15 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2423,7 +3737,15 @@ class NemotronVoicechatInferenceWrapper:
                          current_input_emb,
                          request_id=effective_request_id,
                          generated_tokens=gen_text,
@@ -1924,7 +2174,7 @@ index 6085e5562..ee43125c6 100755
                      )
                  else:
                      ans = self.model_llm_interface(
-@@ -2444,11 +3561,32 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2444,11 +3766,32 @@ class NemotronVoicechatInferenceWrapper:
                  )
  
              torch.cuda.synchronize()
@@ -1958,7 +2208,7 @@ index 6085e5562..ee43125c6 100755
  
              gen_text[:, current_frame_idx] = predicted_token
              predicted_tokens[:, frame_offset] = predicted_token
-@@ -2457,12 +3595,144 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2457,12 +3800,144 @@ class NemotronVoicechatInferenceWrapper:
              asr_predicted_tokens[:, frame_offset] = asr_predicted_token
  
              if "function_predicted_token" in ans:
@@ -2104,7 +2354,7 @@ index 6085e5562..ee43125c6 100755
                  self._apply_fc_state_machine(
                      fc_state=fc_state,
                      function_predicted_token=gen_function_text[:, current_frame_idx],
-@@ -2474,18 +3744,29 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2474,18 +3949,29 @@ class NemotronVoicechatInferenceWrapper:
                      function_predicted_tokens=function_predicted_tokens,
                      tool_response_text=tool_response_text,
                  )
@@ -2138,7 +2388,7 @@ index 6085e5562..ee43125c6 100755
                  fc_state.get("active", False) or
                  fc_state.get("forced_function_tokens") or
                  fc_state.get("injecting_response", False)
-@@ -2495,23 +3776,152 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2495,23 +3981,152 @@ class NemotronVoicechatInferenceWrapper:
                  predicted_tokens[:, frame_offset] = pad_id
  
              # Apply forced turn-taking. Skip when FC is in progress.
@@ -2294,7 +2544,7 @@ index 6085e5562..ee43125c6 100755
              if self.decode_audio:
                  current_subword_id = gen_text[:, current_frame_idx].unsqueeze(-1)
  
-@@ -2529,7 +3939,6 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2529,7 +4144,6 @@ class NemotronVoicechatInferenceWrapper:
                  if self.generation_config is None:
                      raise RuntimeError("generation_config is not initialized. Ensure TTS warmup ran successfully.")
  
@@ -2302,7 +2552,7 @@ index 6085e5562..ee43125c6 100755
                  inputs = {
                      "current_subword_id": current_subword_id,
                      "prev_subword_id": prev_subword_id,
-@@ -2543,18 +3952,95 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2543,18 +4157,95 @@ class NemotronVoicechatInferenceWrapper:
                  if self.use_vllm_eartts:
                      inputs["request_id"] = effective_request_id
  
@@ -2406,7 +2656,7 @@ index 6085e5562..ee43125c6 100755
  
                  # now that we've saved audio_toks_buffer for audio decoding purposes,
                  # we can potentially overwrite the audio token with silence tokens (for feeding to the audio token predictor)
-@@ -2593,7 +4079,8 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2593,7 +4284,8 @@ class NemotronVoicechatInferenceWrapper:
                  _tail_done = (_ratio > 0
                                and not self._get_agent_idle(stream_id)
                                and _p > _ratio * _c)
@@ -2416,7 +2666,7 @@ index 6085e5562..ee43125c6 100755
                          and (self._get_agent_idle(stream_id) or _tail_done)):
                      silence_codes = self.model.tts_model.codec_silence_tokens.view(1, 1, -1).expand(code.shape)
                      code = torch.where(
-@@ -2636,12 +4123,35 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2636,12 +4328,35 @@ class NemotronVoicechatInferenceWrapper:
                      # worst case is a stale flag for one frame.
                      pass
  
@@ -2453,7 +2703,7 @@ index 6085e5562..ee43125c6 100755
              with fp32_precision(), torch.no_grad():
                  if codec_cache is not None and new_codes_for_decode:
                      # Incremental decode: feed only the num_frames_per_chunk new tokens
-@@ -2675,7 +4185,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2675,7 +4390,7 @@ class NemotronVoicechatInferenceWrapper:
                      logging.debug(f"   Sliding-window decode: extracted {decoded_audio_new.shape} from {decoded_audio.shape}")
  
              torch.cuda.synchronize()
@@ -2462,7 +2712,7 @@ index 6085e5562..ee43125c6 100755
              logging.info(f"Time taken for audio_codec: {time_audio_codec:.3f}s")
  
          else:
-@@ -2721,9 +4231,88 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2721,9 +4436,88 @@ class NemotronVoicechatInferenceWrapper:
  
          torch.cuda.synchronize()
  
@@ -2552,7 +2802,7 @@ index 6085e5562..ee43125c6 100755
          result = {
              'predicted_text_tokens': predicted_tokens,
              'asr_predicted_text_tokens': asr_predicted_tokens,
-@@ -2738,6 +4327,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2738,6 +4532,7 @@ class NemotronVoicechatInferenceWrapper:
              'perception_cache': perception_cache,
              'codec_cache': codec_cache,
              'rnnt_partial_hypotheses': rnnt_partial_hypotheses,
@@ -2560,7 +2810,7 @@ index 6085e5562..ee43125c6 100755
          }
          if self.model.stt_model.function_head is not None:
              result['function_predicted_text_tokens'] = function_predicted_tokens
-@@ -2747,8 +4337,22 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2747,8 +4542,22 @@ class NemotronVoicechatInferenceWrapper:
                  fc_ids = [t for t in fc_tok_ids_b.tolist() if t != pad_id]
                  fc_text_strs.append(self.tokenizer.ids_to_text(fc_ids) if fc_ids else "")
              result['function_predicted_text_strs'] = fc_text_strs
@@ -2583,7 +2833,7 @@ index 6085e5562..ee43125c6 100755
          return result
  
      def abort_request(self, request_id: Optional[str]) -> bool:
-@@ -2793,6 +4397,8 @@ class NemotronVoicechatInferenceWrapper:
+@@ -2793,6 +4602,8 @@ class NemotronVoicechatInferenceWrapper:
          """
          if not self.model_cfg.get("force_turn_taking", False):
              return
@@ -2592,7 +2842,7 @@ index 6085e5562..ee43125c6 100755
  
          threshold        = self.model_cfg.get("force_turn_taking_threshold", 40)
          pad_window_steps = self.model_cfg.get("force_turn_taking_pad_window", 25)
-@@ -3016,6 +4622,8 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3016,6 +4827,8 @@ class NemotronVoicechatInferenceWrapper:
          """Apply RNNT blank/non-blank counts to trigger agent BOS (EOU) or EOS (BOU)."""
          if not self.model_cfg.get("force_turn_taking", False):
              return
@@ -2601,7 +2851,7 @@ index 6085e5562..ee43125c6 100755
  
          asr_eou         = int(self.model_cfg.get("rnnt_eou_frames",
                                self.model_cfg.get("asr_eou", 15)))
-@@ -3073,6 +4681,100 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3073,6 +4886,100 @@ class NemotronVoicechatInferenceWrapper:
              agent_speaking = rnnt_state['agent_speaking'][b].item()
              current_tok = gen_text[b, t].item()
  
@@ -2702,7 +2952,7 @@ index 6085e5562..ee43125c6 100755
              # Self-play suppression: block LLM-native BOS when agent finished speaking
              # and user hasn't started. MUST run before the BOS-detection block below
              # (which sets agent_speaking=True, making a post-detection check unreachable).
-@@ -3083,8 +4785,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3083,8 +4990,7 @@ class NemotronVoicechatInferenceWrapper:
              _is_forced_bos = (_forced_bos_flags is not None and _forced_bos_flags[b].item())
              if _forced_bos_flags is not None:
                  rnnt_state['forced_bos'][b] = False  # consume flag each frame
@@ -2712,7 +2962,7 @@ index 6085e5562..ee43125c6 100755
                      and self.model_cfg.get("rnnt_self_play_suppression", False)):
                  if self._post_tc_bos_exempt:
                      self._post_tc_bos_exempt = False
-@@ -3093,9 +4794,24 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3093,9 +4999,24 @@ class NemotronVoicechatInferenceWrapper:
                  else:
                      gen_text[b, t] = self.model.stt_model.text_pad_id
                      logging.debug(f"RNNT self-play suppression t={t}: LLM BOS suppressed (no user speech)")
@@ -2740,7 +2990,7 @@ index 6085e5562..ee43125c6 100755
                  agent_speaking = True
                  rnnt_state['agent_speaking'][b] = True
                  rnnt_state['first_turn'][b] = False
-@@ -3109,7 +4825,14 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3109,7 +5030,14 @@ class NemotronVoicechatInferenceWrapper:
                      if '_turn_text_tokens' not in rnnt_state:
                          rnnt_state['_turn_text_tokens'] = {}
                      rnnt_state['_turn_text_tokens'][b] = 0
@@ -2756,7 +3006,7 @@ index 6085e5562..ee43125c6 100755
                  agent_speaking = False
                  rnnt_state['agent_speaking'][b] = False
                  rnnt_state['speech_confirmed'][b] = False
-@@ -3117,6 +4840,26 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3117,6 +5045,26 @@ class NemotronVoicechatInferenceWrapper:
                  speech_confirmed = False
                  nonblank_total = 0
  
@@ -2783,7 +3033,7 @@ index 6085e5562..ee43125c6 100755
              noise_reset_frames = int(self.model_cfg.get("nonblank_reset_after_silence", 10))
              if blank_cnt >= noise_reset_frames and not speech_confirmed and not agent_speaking:
                  rnnt_state['nonblank_total'][b] = 0
-@@ -3126,8 +4869,74 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3126,8 +5074,74 @@ class NemotronVoicechatInferenceWrapper:
                  rnnt_state['speech_confirmed'][b] = True
                  speech_confirmed = True
  
@@ -2859,7 +3109,7 @@ index 6085e5562..ee43125c6 100755
                  gen_text[b, t] = bos_id
                  rnnt_state['speech_confirmed'][b] = False
                  rnnt_state['nonblank_total'][b] = 0
-@@ -3135,11 +4944,14 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3135,11 +5149,14 @@ class NemotronVoicechatInferenceWrapper:
                  rnnt_state['first_turn'][b] = False
                  if 'user_first_turn' in rnnt_state:
                      rnnt_state['user_first_turn'][b] = False
@@ -2875,7 +3125,7 @@ index 6085e5562..ee43125c6 100755
                  if not (agent_window == bos_id).any() and current_tok != bos_id:
                      gen_text[b, t] = bos_id
                      rnnt_state['speech_confirmed'][b] = False
-@@ -3148,6 +4960,8 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3148,6 +5165,8 @@ class NemotronVoicechatInferenceWrapper:
                      rnnt_state['first_turn'][b] = False
                      if 'user_first_turn' in rnnt_state:
                          rnnt_state['user_first_turn'][b] = False
@@ -2884,7 +3134,7 @@ index 6085e5562..ee43125c6 100755
                      logging.info(
                          f"RNNT EOU t={t}: agent BOS (blank_cnt={blank_cnt}, "
                          f"nonblank_total={nonblank_total}, density={rolling_density:.3f}, user_first_turn→False)"
-@@ -3158,7 +4972,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3158,7 +5177,7 @@ class NemotronVoicechatInferenceWrapper:
  
              force_eos_frames = int(self.model_cfg.get("force_eos_after_frames", 0))
              if (force_eos_frames > 0 and agent_speaking and not speech_confirmed
@@ -2893,7 +3143,7 @@ index 6085e5562..ee43125c6 100755
                  if blank_cnt >= force_eos_frames:
                      gen_text[b, t] = eos_id
                      rnnt_state['agent_speaking'][b] = False
-@@ -3189,19 +5003,29 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3189,19 +5208,29 @@ class NemotronVoicechatInferenceWrapper:
                      rnnt_state['agent_speaking'][b] = False
                      return
  
@@ -2928,7 +3178,7 @@ index 6085e5562..ee43125c6 100755
                      self._agent_eos_just_fired = True
                      if self._max_response_redirect_tokens:
                          self._redirect_tokens_queue = list(self._max_response_redirect_tokens)
-@@ -3210,19 +5034,13 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3210,19 +5239,13 @@ class NemotronVoicechatInferenceWrapper:
                          _cnt, self._max_agent_response_frames,
                      )
                      return
@@ -2949,7 +3199,7 @@ index 6085e5562..ee43125c6 100755
                  _pad_id_r = self.model.stt_model.text_pad_id
                  # Count non-PAD, non-BOS, non-EOS text tokens produced this turn.
                  if '_turn_text_tokens' not in rnnt_state:
-@@ -3247,7 +5065,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3247,7 +5270,7 @@ class NemotronVoicechatInferenceWrapper:
  
              # Barge-in: N consecutive non-blank frames while agent speaking → EOS
              if nonblank_cnt >= user_bos_frames and agent_speaking:
@@ -2958,7 +3208,7 @@ index 6085e5562..ee43125c6 100755
                      gen_text[b, t] = eos_id
                      rnnt_state['nonblank_consec'][b] = 0
                      rnnt_state['nonblank_total'][b] = 0
-@@ -3259,9 +5077,128 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3259,9 +5282,129 @@ class NemotronVoicechatInferenceWrapper:
                      )
  
      def _reset_rnnt_turn_taking_state(self):
@@ -3068,6 +3318,7 @@ index 6085e5562..ee43125c6 100755
 +    def reset_transport_session_state(self) -> None:
 +        """Clear wrapper-global turn state at an external session boundary."""
 +        self._eartts_idle_pad_bypass_total = 0
++        self._reset_fc_async_benchmark()
 +        self._reset_rnnt_turn_taking_state()
 +
 +    def observe_transport_user_activity(self, active: bool, stream_id=None) -> None:
@@ -3087,7 +3338,7 @@ index 6085e5562..ee43125c6 100755
  
      @torch.no_grad()
      def inference_realtime_streaming(self, audio_path: str, num_frames_per_chunk: int = None, request_id: Optional[str] = None, pad_audio_to_sec: Optional[float] = None, pad_silence_ratio: Optional[float] = None, pad_audio_by_sec: Optional[float] = None, system_prompt: Optional[str] = None, tool_executor_fn: Optional[callable] = None):
-@@ -3663,6 +5600,7 @@ class NemotronVoicechatInferenceWrapper:
+@@ -3663,6 +5806,7 @@ class NemotronVoicechatInferenceWrapper:
                              realtime_audio=rt_audio_ctx,
                              request_id=stream_request_id,
                          )
@@ -3095,13 +3346,13 @@ index 6085e5562..ee43125c6 100755
                          fc_total_async_steps += async_steps_p2
                          logging.info(
                              "[FC Async] Phase 2 completed: %d steps (total async: %d)",
-@@ -4175,4 +6113,3 @@ def main():
+@@ -4175,4 +6319,3 @@ def main():
  
  if __name__ == "__main__":
      sys.exit(main())
 -
 diff --git a/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py b/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py
-index ffc266585..da90ca639 100644
+index ffc266585..d0c68f965 100644
 --- a/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py
 +++ b/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py
 @@ -12,6 +12,7 @@
@@ -3112,7 +3363,58 @@ index ffc266585..da90ca639 100644
  import json
  import os
  import urllib.request
-@@ -853,6 +854,10 @@ out center {limit};
+@@ -27,7 +28,7 @@ import librosa
+ from typing import List, Optional
+ from torch import Tensor
+ import soundfile as sf
+-from omegaconf import DictConfig
++from omegaconf import DictConfig, ListConfig
+ import math
+ 
+ from nemo.collections.asr.inference.streaming.framing.request import Frame
+@@ -49,6 +50,23 @@ from nemo.utils import logging
+ 
+ import concurrent.futures
+ 
++
++def _normalize_fc_always_acknowledge_tools(value):
++	if value is None:
++		return frozenset()
++	if isinstance(value, str):
++		value = [name.strip() for name in value.split(",") if name.strip()]
++	elif isinstance(value, ListConfig):
++		value = list(value)
++	elif not isinstance(value, (list, tuple)):
++		raise TypeError("fc_always_acknowledge_tools must be a string or sequence")
++	if any(not isinstance(name, str) or not name.strip() for name in value):
++		raise TypeError("fc_always_acknowledge_tools must contain nonempty tool names")
++	names = [name.strip() for name in value]
++	if len(names) != len(set(names)):
++		raise ValueError("fc_always_acknowledge_tools contains duplicate tool names")
++	return frozenset(names)
++
+ _CITY_COORDS: dict = json.loads(
+     (Path(__file__).parent / "data" / "city_coords.json").read_text()
+ )
+@@ -387,6 +405,17 @@ class StreamingS2SPipeline(S2SPipelineInterface):
+ 		# response decoding (period 3) are fast and not subject to this limit.
+ 		# Note: total wall time for the API is reminder_duration + fc_tool_timeout_sec.
+ 		self._fc_tool_timeout_sec: float = float(getattr(s2s_cfg, "fc_tool_timeout_sec", 15.0))
++		_fast_grace = getattr(s2s_cfg, "fc_fast_tool_grace_ms", 0.0)
++		if isinstance(_fast_grace, bool) or not isinstance(_fast_grace, (int, float)):
++			raise TypeError("fc_fast_tool_grace_ms must be a finite number")
++		self._fc_fast_tool_grace_ms = float(_fast_grace)
++		if not math.isfinite(self._fc_fast_tool_grace_ms):
++			raise ValueError("fc_fast_tool_grace_ms must be finite")
++		if not 0.0 <= self._fc_fast_tool_grace_ms <= 1000.0:
++			raise ValueError("fc_fast_tool_grace_ms must be between zero and 1000")
++		self._fc_always_acknowledge_tools = _normalize_fc_always_acknowledge_tools(
++			getattr(s2s_cfg, "fc_always_acknowledge_tools", None)
++		)
+ 
+ 		# ------------------------------------------------------------------
+ 		# Non-blocking FC async state (per stream).
+@@ -853,6 +882,10 @@ out center {limit};
  		request_id = self._request_id_for_stream(stream_ids[0])
  		
  		context, _ = self.context_manager.get_context(stream_ids)
@@ -3123,7 +3425,7 @@ index ffc266585..da90ca639 100644
  
  		# Initialize FC state on first audio frame if not already done via prefill
  		if bos_flags[0] and context.fc_state is None:
-@@ -963,7 +968,24 @@ out center {limit};
+@@ -963,7 +996,24 @@ out center {limit};
  				_res_early = bg.get("result", {})
  				_was_aborted_early = _res_early.get("aborted", False) if _res_early else False
  				_quit_to_normal_early = _res_early.get("quit_to_normal", False) if _res_early else False
@@ -3149,7 +3451,7 @@ index ffc266585..da90ca639 100644
  
  				# Flush any remaining ack audio from the queue, but only if FC
  				# completed normally (not interrupted).
-@@ -994,9 +1016,10 @@ out center {limit};
+@@ -994,9 +1044,10 @@ out center {limit};
  				res = bg["result"]
  				was_aborted = _was_aborted_early
  				quit_to_normal = _quit_to_normal_early
@@ -3162,7 +3464,7 @@ index ffc266585..da90ca639 100644
  					# Normal completion: apply FC context updates so the main thread
  					# can resume generating the verbal response.
  					async_steps = res["async_steps"]
-@@ -1013,9 +1036,25 @@ out center {limit};
+@@ -1013,9 +1064,25 @@ out center {limit};
  						context.past_key_values = tts_state_out["past_key_values"]
  						context.codec_cache = tts_state_out.get("codec_cache", context.codec_cache)
  					context.frame_idx += async_steps
@@ -3189,7 +3491,7 @@ index ffc266585..da90ca639 100644
  					)
  
  				# Drain any remaining RNNT text from the queue and apply final hypothesis.
-@@ -1080,6 +1119,9 @@ out center {limit};
+@@ -1080,16 +1147,17 @@ out center {limit};
  							"completed_calls": [],
  							"forced_function_tokens": [],
  							"injecting_response": False,
@@ -3198,8 +3500,10 @@ index ffc266585..da90ca639 100644
 +							"eotr_timeout": False,
  						})
  					context.tool_response_text = None
- 					reset_fn = getattr(self.s2s_model, "_reset_rnnt_turn_taking_state", None)
-@@ -1088,8 +1130,8 @@ out center {limit};
+-					reset_fn = getattr(self.s2s_model, "_reset_rnnt_turn_taking_state", None)
+-					if callable(reset_fn):
+-						reset_fn()
++					self._reset_rnnt_after_fc_interrupt()
  					# Fall through to infer_one_step — fc_state is clean, EOS signals
  					# agent stopped, vLLM keeps full conversation context, turn-taking
  					# handles BOS when user finishes speaking (EOU) → agent answers.
@@ -3210,7 +3514,7 @@ index ffc266585..da90ca639 100644
  					if res and "async_steps" in res:
  						_async_steps_ab = res["async_steps"]
  						_upd_cache_ab = res.get("updated_cache")
-@@ -1112,7 +1154,7 @@ out center {limit};
+@@ -1112,7 +1180,7 @@ out center {limit};
  						if _eos_id is not None and context.frame_idx > 0:
  							context.gen_text[0, context.frame_idx - 1] = _eos_id
  						logging.info(
@@ -3219,7 +3523,7 @@ index ffc266585..da90ca639 100644
  							"EOS inserted at frame %d for stream %d",
  							_async_steps_ab, context.frame_idx - 1, stream_id,
  						)
-@@ -1123,6 +1165,9 @@ out center {limit};
+@@ -1123,6 +1191,9 @@ out center {limit};
  							"completed_calls": [],
  							"forced_function_tokens": [],
  							"injecting_response": False,
@@ -3229,7 +3533,7 @@ index ffc266585..da90ca639 100644
  						})
  					context.tool_response_text = None
  					self._abort_stream_request(stream_id)
-@@ -1174,6 +1219,9 @@ out center {limit};
+@@ -1174,11 +1245,12 @@ out center {limit};
  							"completed_calls": [],
  							"forced_function_tokens": [],
  							"injecting_response": False,
@@ -3238,8 +3542,14 @@ index ffc266585..da90ca639 100644
 +							"eotr_timeout": False,
  						})
  					context.tool_response_text = None
- 					reset_fn = getattr(self.s2s_model, "_reset_rnnt_turn_taking_state", None)
-@@ -1193,7 +1241,10 @@ out center {limit};
+-					reset_fn = getattr(self.s2s_model, "_reset_rnnt_turn_taking_state", None)
+-					if callable(reset_fn):
+-						reset_fn()
++					self._reset_rnnt_after_fc_interrupt()
+ 					# Fall through to infer_one_step — gen_text already has the
+ 					# first response token written by the background thread.
+ 					# vLLM session kept alive (no _abort_stream_request) so the model
+@@ -1193,7 +1265,10 @@ out center {limit};
  					else:
  						context.tool_response_text = None
  					logging.info("[FC Async NB] Background thread done, resuming normal flow for stream %d", stream_id)
@@ -3251,7 +3561,7 @@ index ffc266585..da90ca639 100644
  
  			else:
  				# Thread still running — drain at most one frame's worth of TTS
-@@ -1338,6 +1389,7 @@ out center {limit};
+@@ -1338,6 +1413,7 @@ out center {limit};
  			fc_state=context.fc_state,
  			tool_response_text=context.tool_response_text,
  			stream_id=stream_ids[0] if stream_ids else None,
@@ -3259,7 +3569,7 @@ index ffc266585..da90ca639 100644
  		)
  		step_wall_end = time.time()
  
-@@ -1379,7 +1431,12 @@ out center {limit};
+@@ -1379,7 +1455,12 @@ out center {limit};
  
  		# FC interruption PAD override: after quit-to-normal, override both
  		# Persist updated cache & clean finished streams
@@ -3273,7 +3583,16 @@ index ffc266585..da90ca639 100644
  
  		# Append this chunk's TTS audio BEFORE the FC silence insertion
  		# so the SOTC chunk's speech is ordered correctly in the output.
-@@ -1608,6 +1665,7 @@ out center {limit};
+@@ -1578,7 +1659,7 @@ out center {limit};
+ 					abort_event, quit_async_event, reminder_tokens,
+ 					on_hold_token_map, generic_on_hold_token_list,
+ 					timeout_fallback_tokens, error_401_tokens, error_401_redirect_tokens,
+-					tool_timeout_sec,
++					tool_timeout_sec, fast_tool_grace_ms, always_acknowledge_tools,
+ 				):
+ 					try:
+ 						import torch as _torch
+@@ -1608,6 +1689,7 @@ out center {limit};
  									abort_event=abort_event,
  									quit_async_event=quit_async_event,
  									stream_id=stream_id,
@@ -3281,7 +3600,165 @@ index ffc266585..da90ca639 100644
  									)
  
  							# Two-phase async FC: the first LLM run above generated the
-@@ -1774,6 +1832,7 @@ out center {limit};
+@@ -1620,6 +1702,7 @@ out center {limit};
+ 							# TTS during forced-token injection produces silence (agent
+ 							# text = PAD), so we do NOT pass tts_audio_output_queue here.
+ 							if fc_state.pop("awaiting_response", False):
++								fc_state.pop("tool_wait_evidence", None)
+ 								call_text = fc_state.get("last_call_text", "")
+ 								phase2_start_t = fc_state.pop("phase1_end_t", sotc_frame + async_steps)
+ 								fc_state_obj = get_state_fn(stream_id)
+@@ -1675,15 +1758,46 @@ out center {limit};
+ 												break
+ 											time.sleep(min(0.05, _remaining))
+ 											_remaining -= 0.05
++										return _n_samples
+ 
+ 								tool_response = None
++								_tool_started_monotonic = time.monotonic()
++								_tool_completion = {}
++								_grace_expired_monotonic = None
++								_tool_completed_before_reminder = False
++								_reminder_started_monotonic = None
++								_reminder_ended_monotonic = None
++								_reminder_samples = 0
++								_reminder_text = None
++								_reminder_variant_sha256 = None
++								_fast_path = False
++								_always_acknowledge = _tool_name in always_acknowledge_tools
++								_policy = (
++									"always_acknowledge"
++									if _always_acknowledge
++									else "fast_grace" if fast_tool_grace_ms > 0.0 else "disabled"
++								)
+ 								if _tts_for_reminder is not None and not _aborted:
+ 									# Run tool in background so audio plays concurrently
+ 									with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _exec:
+-										_fut = _exec.submit(execute_tool_fn, call_text)
++										def _invoke_tool():
++											try:
++												return execute_tool_fn(call_text)
++											finally:
++												_tool_completion["monotonic_s"] = time.monotonic()
++
++										_fut = _exec.submit(_invoke_tool)
++										if fast_tool_grace_ms > 0.0 and not _always_acknowledge:
++											try:
++												tool_response = _fut.result(
++													timeout=fast_tool_grace_ms / 1000.0
++												)
++												_fast_path = True
++											except concurrent.futures.TimeoutError:
++												_grace_expired_monotonic = time.monotonic()
+ 
+ 										# Layer 1 — per-tool reminder
+-										if _reminder_tok:
++										if not _fast_path and _reminder_tok:
+ 											logging.info("[FC Reminder] Layer 1: per-tool='%s' (%d tokens)", _tool_name, len(_reminder_tok))
+ 											# Decode chosen tokens back to text and post to UI so the
+ 											# browser can display the reminder inline (same channel as
+@@ -1692,11 +1806,19 @@ out center {limit};
+ 											# server buffering needed.
+ 											try:
+ 												_l1_text = s2s_model.tokenizer.ids_to_text(_reminder_tok).replace("</s>", "").replace("<s>", "").strip()
++												_reminder_text = _l1_text or None
+ 												if _l1_text:
+ 													self._post_ui_event("ack", _l1_text, phase="layer1")
+ 											except Exception as _e:
++												_reminder_text = "(decode failed)"
+ 												logging.debug("[UI-Callback] Layer 1 decode failed: %r", _e)
+-											_play(_reminder_tok)
++											_reminder_variant_sha256 = hashlib.sha256(
++												json.dumps(list(_reminder_tok), separators=(",", ":")).encode("utf-8")
++											).hexdigest()
++											_tool_completed_before_reminder = _fut.done()
++											_reminder_started_monotonic = time.monotonic()
++											_reminder_samples = int(_play(_reminder_tok) or 0)
++											_reminder_ended_monotonic = time.monotonic()
+ 
+ 										# Layer 2 — generic messages (up to 2, with 1s gap between)
+ 										_generic_pool = (
+@@ -1704,7 +1826,7 @@ out center {limit};
+ 											if generic_on_hold_token_list else []
+ 										)
+ 										_played_generic = 0
+-										for _gen_tok in _generic_pool:
++										for _gen_tok in (() if _fast_path else _generic_pool):
+ 											if _fut.done() or (abort_event is not None and abort_event.is_set()):
+ 												break
+ 											time.sleep(1.0)
+@@ -1721,20 +1843,26 @@ out center {limit};
+ 											_played_generic += 1
+ 
+ 										# Layer 3 — tool still running after all messages: wait silently
+-										if not _fut.done():
++										if not _fast_path and not _fut.done():
+ 											logging.warning("[FC Reminder] Layer 3: tool still running after on-hold messages — waiting silently")
+ 
+ 										# Final wait — up to tool_timeout_sec after all messages
+-										try:
+-											tool_response = _fut.result(timeout=tool_timeout_sec)
+-										except concurrent.futures.TimeoutError:
+-											logging.warning("[FC Reminder] Tool timed out after %ss — using canned error response", tool_timeout_sec)
+-											tool_response = json.dumps({
+-												"error": "timeout",
+-												"message": "I'm sorry, that's taking longer than expected.",
+-											})
++										if not _fast_path:
++											try:
++												tool_response = _fut.result(timeout=tool_timeout_sec)
++											except concurrent.futures.TimeoutError:
++												logging.warning("[FC Reminder] Tool timed out after %ss — using canned error response", tool_timeout_sec)
++												tool_response = json.dumps({
++													"error": "timeout",
++													"message": "I'm sorry, that's taking longer than expected.",
++												})
+ 								else:
+-									tool_response = execute_tool_fn(call_text)
++									try:
++										tool_response = execute_tool_fn(call_text)
++									finally:
++										_tool_completion["monotonic_s"] = time.monotonic()
++									if fast_tool_grace_ms > 0.0 and not _always_acknowledge:
++										_fast_path = True
+ 
+ 								# 401 / auth error branch
+ 								if _response_is_401(tool_response):
+@@ -1747,6 +1875,33 @@ out center {limit};
+ 										"message": "Authentication failed. Please try again later.",
+ 									})
+ 								if tool_response:
++									_phase2_started_monotonic = time.monotonic()
++									_tool_completed_monotonic = _tool_completion.get(
++										"monotonic_s", _phase2_started_monotonic
++									)
++									fc_state["tool_wait_evidence"] = {
++										"schema": 1,
++										"tool_name": _tool_name or "",
++										"policy": _policy,
++										"grace_ms": float(fast_tool_grace_ms),
++										"tool_started_monotonic_s": _tool_started_monotonic,
++										"tool_completed_monotonic_s": _tool_completed_monotonic,
++										"grace_expired_monotonic_s": _grace_expired_monotonic,
++										"tool_completed_before_reminder": bool(
++											_tool_completed_before_reminder
++										),
++										"reminder_text": _reminder_text,
++										"reminder_variant_sha256": _reminder_variant_sha256,
++										"reminder_tokens": len(_reminder_tok or []),
++										"reminder_started_monotonic_s": _reminder_started_monotonic,
++										"reminder_ended_monotonic_s": _reminder_ended_monotonic,
++										"reminder_samples": _reminder_samples,
++										"phase2_started_monotonic_s": _phase2_started_monotonic,
++										"result_available_to_phase2_ms": (
++											_phase2_started_monotonic - _tool_completed_monotonic
++										) * 1000.0,
++										"fast_path": bool(_fast_path),
++									}
+ 									wrapped_response = f"<TOOL_RESPONSE>[{tool_response}]</TOOL_RESPONSE>"
+ 									fc_state_obj.output_function_text_str += f"[INJECTED_RESPONSE] {wrapped_response}\n"
+ 									if fc_convert:
+@@ -1774,6 +1929,7 @@ out center {limit};
  											abort_event=abort_event,
  											quit_async_event=quit_async_event,
  											stream_id=stream_id,
@@ -3289,7 +3766,7 @@ index ffc266585..da90ca639 100644
  											)
  									tts_chunks = tts_chunks + tts_chunks_p2
  									async_steps += async_steps_p2
-@@ -1786,6 +1845,60 @@ out center {limit};
+@@ -1786,6 +1942,60 @@ out center {limit};
  						bg_result["aborted"] = abort_event is not None and abort_event.is_set()
  						bg_result["quit_to_normal"] = quit_async_event is not None and quit_async_event.is_set()
  						bg_result["natural_interrupt"] = fc_state.get("natural_interrupt", False)
@@ -3350,7 +3827,7 @@ index ffc266585..da90ca639 100644
  					except Exception as _exc:
  						logging.error("[FC Async NB] Background thread failed: %s: %s",
  									  type(_exc).__name__, _exc, exc_info=True)
-@@ -1794,6 +1907,46 @@ out center {limit};
+@@ -1794,6 +2004,46 @@ out center {limit};
  						bg_result["tts_state_out"] = tts_state
  						bg_result["tts_audio_chunks"] = []
  						bg_result["rnnt_hyps_out"] = rnnt_hyps
@@ -3397,7 +3874,16 @@ index ffc266585..da90ca639 100644
  
  				_bg_thread = threading.Thread(
  					target=_fc_async_thread_fn,
-@@ -1899,7 +2052,10 @@ out center {limit};
+@@ -1835,6 +2085,8 @@ out center {limit};
+ 						error_401_tokens=self._fc_401_error_tokens,
+ 						error_401_redirect_tokens=self._fc_401_redirect_tokens,
+ 						tool_timeout_sec=self._fc_tool_timeout_sec,
++						fast_tool_grace_ms=self._fc_fast_tool_grace_ms,
++						always_acknowledge_tools=self._fc_always_acknowledge_tools,
+ 						rnnt_text_queue=_rnnt_text_queue,
+ 						abort_event=_abort_event,
+ 						quit_async_event=_quit_async_event,
+@@ -1899,7 +2151,10 @@ out center {limit};
  				tts_state=_tts_state_for_async,
  				rnnt_partial_hypotheses=context.rnnt_partial_hypotheses,
  				stream_id=stream_id,
@@ -3408,7 +3894,7 @@ index ffc266585..da90ca639 100644
  			eotc_wall = time.time()
  			if updated_cache is not None:
  				context.dynamic_cache = updated_cache
-@@ -2018,7 +2174,9 @@ out center {limit};
+@@ -2018,7 +2273,9 @@ out center {limit};
  						tts_state=_tts_state_p2,
  						rnnt_partial_hypotheses=context.rnnt_partial_hypotheses,
  						stream_id=stream_ids[0] if stream_ids else None,
@@ -3418,7 +3904,7 @@ index ffc266585..da90ca639 100644
  					if updated_cache is not None:
  						context.dynamic_cache = updated_cache
  					if _rnnt_hyps_p2 is not None:
-@@ -2220,6 +2378,276 @@ out center {limit};
+@@ -2220,6 +2477,276 @@ out center {limit};
  			  f"total={1000*(t_prefill-t0):.1f}ms, has_prompt={self._stream_has_prompt}")
  		return self._stream_has_prompt
  
@@ -3695,6 +4181,86 @@ index ffc266585..da90ca639 100644
  	_WARMUP_FALLBACK_PROMPT = "Mock system prompt for warmup."
  
  	def warmup(self, system_prompt: str | None = None) -> None:
+@@ -2698,8 +3225,79 @@ out center {limit};
+ 	# Session helpers (extend S2SPipelineInterface)
+ 	# ------------------------------------------------------------------
+ 
++	def interrupt_fc_async(self, stream_id: int, timeout_sec: float = 5.0) -> dict:
++		"""Stop one unpublished FC worker through its existing quit channel.
++
++		Client-committed turn mode does not run the RNNT auto-turn-taking edge
++		that normally sets ``quit_async_event``.  The realtime server uses this
++		hook at its accepted client-side BOU edge, before a function call has
++		been published.  Joining here makes the ownership transfer explicit;
++		the next ordinary model position still performs the existing context
++		reconciliation in ``inner_generate_step``.
++		"""
++		if isinstance(timeout_sec, bool) or not isinstance(timeout_sec, (int, float)):
++			raise TypeError("FC async interrupt timeout must be a finite number")
++		timeout = float(timeout_sec)
++		if not math.isfinite(timeout) or timeout <= 0:
++			raise ValueError("FC async interrupt timeout must be positive and finite")
++		bg = self._fc_async_bg.get(stream_id)
++		if not isinstance(bg, dict):
++			return {"schema": 1, "requested": False, "reason": "background_missing"}
++		quit_event = bg.get("quit_async_event")
++		thread = bg.get("thread")
++		if not isinstance(quit_event, threading.Event) or not isinstance(thread, threading.Thread):
++			raise RuntimeError("FC async background has invalid interrupt ownership")
++		already_set = quit_event.is_set()
++		quit_event.set()
++		thread.join(timeout)
++		if thread.is_alive():
++			raise RuntimeError("FC async worker did not stop within the interrupt bound")
++		result = bg.get("result")
++		if not isinstance(result, dict) or result.get("quit_to_normal") is not True:
++			raise RuntimeError("FC async worker stopped without committed-mode quit evidence")
++		return {
++			"schema": 1,
++			"requested": True,
++			"reason": "already_requested" if already_set else "client_turn_start",
++			"quit_to_normal": True,
++			"async_steps": int(result.get("async_steps", 0)),
++		}
++
++	def _reset_rnnt_after_fc_interrupt(self) -> None:
++		"""Reset turn-taking state without dropping the transport's EOU authority."""
++		wrapper = self.s2s_model
++		external_user_eou_mode = bool(getattr(wrapper, "_external_user_eou_mode", False))
++		reset_fn = getattr(wrapper, "_reset_rnnt_turn_taking_state", None)
++		if callable(reset_fn):
++			reset_fn()
++		if external_user_eou_mode:
++			mode_fn = getattr(wrapper, "set_external_user_eou_mode", None)
++			if not callable(mode_fn):
++				raise RuntimeError(
++					"FC interrupt reset cannot restore external user EOU mode"
++				)
++			mode_fn(True)
++
++	def _terminate_fc_async_for_reset(self, timeout_sec: float = 5.0) -> None:
++		"""Abort and join every FC worker before discarding session state."""
++		for stream_id, bg in list(self._fc_async_bg.items()):
++			if not isinstance(bg, dict):
++				raise RuntimeError("FC async background has invalid reset ownership")
++			abort_event = bg.get("abort_event")
++			thread = bg.get("thread")
++			if not isinstance(abort_event, threading.Event) or not isinstance(thread, threading.Thread):
++				raise RuntimeError("FC async background has invalid reset controls")
++			abort_event.set()
++			thread.join(timeout_sec)
++			if thread.is_alive():
++				raise RuntimeError(
++					f"FC async worker for stream {stream_id} did not stop during reset"
++				)
++		self._fc_async_bg.clear()
++
+ 	def reset_session(self) -> None:
+ 		"""Reset feature buffer and ContextManager together."""
++		self._terminate_fc_async_for_reset()
+ 		for stream_id in list(self.context_manager.streamidx2slotidx.keys()):
+ 			self._abort_stream_request(stream_id)
+ 		self.bufferer.reset()
 diff --git a/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py b/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py
 index 645c02b1d..c18f9b1ef 100644
 --- a/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py
@@ -3755,10 +4321,26 @@ index 645c02b1d..c18f9b1ef 100644
  	def reset_slots(self, stream_ids: List[int], eos_flags: List[bool]) -> None:
  		"""Release contexts for streams that signalled end-of-stream."""
 diff --git a/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py b/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
-index b7764fbd6..506b4b981 100644
+index b7764fbd6..e288bb353 100644
 --- a/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
 +++ b/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
-@@ -56,6 +56,8 @@ class RequestState:
+@@ -21,6 +21,7 @@ import os
+ import json
+ import torch
+ import asyncio
++import time
+ from typing import Optional, Dict, Any, AsyncGenerator, Tuple
+ from dataclasses import dataclass
+ from enum import Enum
+@@ -47,6 +48,7 @@ class GenerationResult:
+     custom_outputs: Optional[Dict[str, torch.Tensor]] = None
+     finish_reason: Optional[str] = None
+     total_tokens: int = 0
++    benchmark_timing: Optional[Dict[str, Any]] = None
+ 
+ 
+ @dataclass
+@@ -56,6 +58,8 @@ class RequestState:
      status: StreamStatus
      generated_tokens: list
      generation_iterator: Optional[AsyncGenerator] = None
@@ -3767,7 +4349,7 @@ index b7764fbd6..506b4b981 100644
  
  
  class LLMStreamingEngine:
-@@ -76,6 +78,7 @@ class LLMStreamingEngine:
+@@ -76,6 +80,7 @@ class LLMStreamingEngine:
          dtype: str = "bfloat16",
          skip_tokenizer_init: bool = False,
          device_id: int = None,
@@ -3775,7 +4357,7 @@ index b7764fbd6..506b4b981 100644
          **sampling_kwargs
      ):
          """
-@@ -87,6 +90,7 @@ class LLMStreamingEngine:
+@@ -87,6 +92,7 @@ class LLMStreamingEngine:
              gpu_memory_utilization: GPU memory utilization ratio (default: 0.8)
              trust_remote_code: Whether to trust remote code (default: True)
              dtype: Data type for embeddings (default: "bfloat16")
@@ -3783,11 +4365,15 @@ index b7764fbd6..506b4b981 100644
              **sampling_kwargs: Additional sampling parameters (max_tokens, temperature, top_p, top_k, seed, stop, stop_token_ids, ignore_eos)
          """
          self.model_path = model_path
-@@ -96,12 +100,18 @@ class LLMStreamingEngine:
+@@ -96,12 +102,22 @@ class LLMStreamingEngine:
          self.dtype = dtype
          self.skip_tokenizer_init = skip_tokenizer_init
          self.device_id = device_id
 +        self.enforce_eager = enforce_eager
++        benchmark_value = os.environ.get("S2S_FC_ASYNC_BENCHMARK", "0").strip().lower()
++        if benchmark_value not in {"0", "1", "false", "true", "no", "yes", "off", "on"}:
++            raise ValueError("S2S_FC_ASYNC_BENCHMARK must be a boolean")
++        self._fc_async_benchmark_enabled = benchmark_value in {"1", "true", "yes", "on"}
  
          # Engine state
          self.engine: Optional[AsyncLLM] = None
@@ -3802,7 +4388,7 @@ index b7764fbd6..506b4b981 100644
  
          # Default sampling parameters
          default_sampling = {
-@@ -119,6 +129,35 @@ class LLMStreamingEngine:
+@@ -119,6 +135,35 @@ class LLMStreamingEngine:
  
          logging.info(f"LLMStreamingEngine initialized for model: {model_path}")
  
@@ -3838,7 +4424,7 @@ index b7764fbd6..506b4b981 100644
      async def initialize(self):
          """Initialize the vLLM engine with custom input specifications."""
          if self.engine is not None:
-@@ -147,7 +186,8 @@ class LLMStreamingEngine:
+@@ -147,7 +192,8 @@ class LLMStreamingEngine:
              mamba_ssm_cache_dtype="float32",
              dtype=self.dtype,
              skip_tokenizer_init=self.skip_tokenizer_init,
@@ -3848,7 +4434,7 @@ index b7764fbd6..506b4b981 100644
          )
  
          # please custom input/output specs in model config file
-@@ -192,18 +232,47 @@ class LLMStreamingEngine:
+@@ -192,18 +238,47 @@ class LLMStreamingEngine:
          # Check if request already exists
          if request_id in self.requests:
              existing_state = self.requests[request_id]
@@ -3899,7 +4485,7 @@ index b7764fbd6..506b4b981 100644
          )
          return True
  
-@@ -225,6 +294,7 @@ class LLMStreamingEngine:
+@@ -225,6 +300,7 @@ class LLMStreamingEngine:
              raise RuntimeError(f"Request {request_id} not found. Call start_generation() first.")
  
          request_state = self.requests[request_id]
@@ -3907,24 +4493,122 @@ index b7764fbd6..506b4b981 100644
  
          if request_state.status != StreamStatus.ACTIVE:
              logging.warning(f"Generation not active for request {request_id} (status: {request_state.status})")
-@@ -264,14 +334,14 @@ class LLMStreamingEngine:
+@@ -235,6 +311,9 @@ class LLMStreamingEngine:
+         if self.engine is None:
+             raise RuntimeError("Engine not initialized")
+ 
++        benchmark_enabled = self._fc_async_benchmark_enabled
++        benchmark_total_start = time.perf_counter() if benchmark_enabled else None
++        benchmark_copy_start = time.perf_counter() if benchmark_enabled else None
+         custom_inputs = {}
+         max_length = 1
+         for i, spec in enumerate(self.custom_input_specs):
+@@ -245,6 +324,37 @@ class LLMStreamingEngine:
+                 raise ValueError(f"Input tensor dimension mismatch for {spec.name}: expected {spec.dim}, got {input_tensors[i].shape[-1]}")
+             custom_inputs[spec.name] = input_tensors[i].to(dtype=getattr(torch, input_dtype)).cpu()
+             max_length = max(max_length, input_tensors[i].shape[0])
++        benchmark_copy_ms = (
++            (time.perf_counter() - benchmark_copy_start) * 1000.0
++            if benchmark_enabled else None
++        )
++
++        benchmark_submit_ms = 0.0 if benchmark_enabled else None
++        benchmark_wait_ms = None
++        benchmark_action = None
++
++        def benchmark_record(parse_start: Optional[float]) -> Optional[Dict[str, Any]]:
++            if not benchmark_enabled:
++                return None
++            now = time.perf_counter()
++            parse_ms = (now - parse_start) * 1000.0 if parse_start is not None else 0.0
++            total_ms = (now - benchmark_total_start) * 1000.0
++            named_ms = benchmark_copy_ms + benchmark_submit_ms + benchmark_wait_ms + parse_ms
++            return {
++                "schema": 1,
++                "request_id": request_id,
++                "backend_request_id": backend_request_id,
++                "backend_generation": int(request_state.backend_generation),
++                "position": len(request_state.generated_tokens),
++                "action": benchmark_action,
++                "input_copy_ms": benchmark_copy_ms,
++                "submit_ms": benchmark_submit_ms,
++                "output_wait_ms": benchmark_wait_ms,
++                "parse_ms": parse_ms,
++                "named_sum_ms": named_ms,
++                "total_ms": total_ms,
++                "residual_ms": total_ms - named_ms,
++            }
+ 
+         try:
+             # If this is the first call, initialize the generation
+@@ -261,19 +371,31 @@ class LLMStreamingEngine:
+                 logging.info(f"Initializing generation for request {request_id} with first embedding")
+ 
+                 # Start generation
++                benchmark_submit_start = time.perf_counter() if benchmark_enabled else None
                  request_state.generation_iterator = self.engine.generate(
                      inputs,
                      self.sampling_params,
 -                    request_id=request_id
 +                    request_id=backend_request_id
                  )
++                if benchmark_enabled:
++                    benchmark_action = "initial_submit"
++                    benchmark_submit_ms = (
++                        time.perf_counter() - benchmark_submit_start
++                    ) * 1000.0
  
              # If this is not the first call, append the current embedding for processing
              elif request_state.generation_iterator is not None and len(request_state.generated_tokens) > 0:
                  try:
++                    benchmark_submit_start = time.perf_counter() if benchmark_enabled else None
                      await self.engine.append_request(
 -                        request_id=request_id,
 +                        request_id=backend_request_id,
                          custom_inputs=custom_inputs
                      )
++                    if benchmark_enabled:
++                        benchmark_action = "append"
++                        benchmark_submit_ms = (
++                            time.perf_counter() - benchmark_submit_start
++                        ) * 1000.0
                  except ValueError as e:
-@@ -348,6 +418,30 @@ class LLMStreamingEngine:
+                     if "not found" in str(e):
+                         logging.warning(f"Request {request_id} was removed from vLLM engine. Marking as finished.")
+@@ -283,7 +405,13 @@ class LLMStreamingEngine:
+                         raise RuntimeError(f"Error appending to request {request_id}: {e}")
+ 
+             # Get next output from the generation
++            benchmark_wait_start = time.perf_counter() if benchmark_enabled else None
+             output = await request_state.generation_iterator.__anext__()
++            if benchmark_enabled:
++                benchmark_wait_ms = (
++                    time.perf_counter() - benchmark_wait_start
++                ) * 1000.0
++            benchmark_parse_start = time.perf_counter() if benchmark_enabled else None
+ 
+             # Extract new tokens
+             current_tokens = output.outputs[0].token_ids
+@@ -306,14 +434,16 @@ class LLMStreamingEngine:
+                         custom_outputs=output.outputs[0].custom_outputs if hasattr(output.outputs[0], 'custom_outputs') else None,
+                         is_finished=True,
+                         finish_reason=finish_reason,
+-                        total_tokens=len(request_state.generated_tokens)
++                        total_tokens=len(request_state.generated_tokens),
++                        benchmark_timing=benchmark_record(benchmark_parse_start),
+                     )
+                 else:
+                     return GenerationResult(
+                         token_id=latest_token,
+                         custom_outputs=output.outputs[0].custom_outputs if hasattr(output.outputs[0], 'custom_outputs') else None,
+                         is_finished=False,
+-                        total_tokens=len(request_state.generated_tokens)
++                        total_tokens=len(request_state.generated_tokens),
++                        benchmark_timing=benchmark_record(benchmark_parse_start),
+                     )
+             else:
+                 # No new tokens generated
+@@ -348,6 +478,30 @@ class LLMStreamingEngine:
  
          request_state = self.requests[request_id]
  
@@ -3955,7 +4639,7 @@ index b7764fbd6..506b4b981 100644
          if request_state.status != StreamStatus.ACTIVE:
              logging.info(f"Request {request_id} is {request_state.status.value}, cleaning up state")
              # Just remove the state, no need to abort
-@@ -395,23 +489,36 @@ class LLMStreamingEngine:
+@@ -395,23 +549,36 @@ class LLMStreamingEngine:
                  return {"error": f"Request {request_id} not found"}
  
              request_state = self.requests[request_id]
@@ -4000,7 +4684,7 @@ index b7764fbd6..506b4b981 100644
              }
  
      async def __aenter__(self):
-@@ -431,6 +538,9 @@ class EARTTSStreamingEngine(LLMStreamingEngine):
+@@ -431,6 +598,9 @@ class EARTTSStreamingEngine(LLMStreamingEngine):
      """
      def __init__(self, **kwargs):
          super().__init__(**kwargs)
@@ -4010,7 +4694,7 @@ index b7764fbd6..506b4b981 100644
          guidance_scale = self._read_guidance_scale_from_config()
          default_sampling = {
              "max_tokens": 100000, # Set very high to prevent stopping - use abort to stop explicitly
-@@ -440,7 +550,12 @@ class EARTTSStreamingEngine(LLMStreamingEngine):
+@@ -440,7 +610,12 @@ class EARTTSStreamingEngine(LLMStreamingEngine):
              "guidance_scale": guidance_scale,
          }
          self.sampling_params = SamplingParams(**default_sampling)
@@ -4024,7 +4708,7 @@ index b7764fbd6..506b4b981 100644
  
      def _read_guidance_scale_from_config(self) -> float:
          """Read guidance_scale from the converted vLLM model's config.json."""
-@@ -488,4 +603,4 @@ def create_engine(engine_type: str = "llm", **kwargs) -> LLMStreamingEngine:
+@@ -488,4 +663,4 @@ def create_engine(engine_type: str = "llm", **kwargs) -> LLMStreamingEngine:
      elif engine_type == "llm":
          return LLMStreamingEngine(**kwargs)
      else:

@@ -55,11 +55,15 @@ from pipecat.services.settings import LLMSettings, assert_given
 from pipecat.utils.time import time_now_iso8601
 from websockets.asyncio.client import connect as websocket_connect
 
-from nemotron_voicechat_runtime.protocol import FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS
+from nemotron_voicechat_runtime.protocol import (
+    FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS,
+    FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+)
 
 from . import events
 from .adapter import NemotronVoicechatLLMAdapter
 from .text_input import VoicechatTypedInputFrame
+from .tool_results import VoicechatLLMContext
 
 
 class _SentenceBuffer:
@@ -182,6 +186,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._liveness_task: asyncio.Task | None = None
         self._session_created = asyncio.Event()
         self._session_ready = asyncio.Event()
+        self._live_input_ready_event = asyncio.Event()
         self._session_update_lock = asyncio.Lock()
         self._context_ready = asyncio.Event()
         self._session_closed = asyncio.Event()
@@ -204,6 +209,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._typed_jobs: dict[str, str] = {}
         self._typed_context_commits: set[str] = set()
         self._pending_typed_requests: list[VoicechatTypedInputFrame] = []
+        self._pending_typed_flush_lock = asyncio.Lock()
 
         self._response_id: str | None = None
         self._response_open = False
@@ -211,12 +217,15 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._sentence_buffer = _SentenceBuffer()
         self._user_id = ""
         self._session_id: str | None = None
+        self._function_output_model_output_advertised = False
+        self._function_output_model_output_negotiated = False
         self._client_turn_sequence = 0
         self._active_client_turn_id: int | None = None
         self._pre_ready_dropped_turn_id: int | None = None
         self._pre_ready_audio_chunks_dropped = 0
         self._pre_ready_audio_bytes_dropped = 0
         self._pre_ready_turns_dropped = 0
+        self._pre_ready_typed_requests_dropped = 0
         self._pre_ready_drop_summary_emitted = False
         self._turn_barrier_event_ids: dict[tuple[str, int], str] = {}
         self._turn_barrier_timeout_secs = turn_barrier_ack_timeout_secs
@@ -336,6 +345,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             )
             await self._update_session_and_wait()
             self._audio_send_task = self.create_task(self._audio_send_loop())
+            await self._activate_live_input_if_ready()
             self._liveness_task = self.create_task(self._liveness_loop())
         except Exception as exc:  # noqa: BLE001 - surface transport/library failures
             await self.push_error(
@@ -350,6 +360,9 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             return
         self._disconnecting = True
         self._input_failed = True
+        self._live_input_ready_event.clear()
+        self._pre_ready_typed_requests_dropped += len(self._pending_typed_requests)
+        self._pending_typed_requests.clear()
         self._emit_pre_ready_drop_summary(reason="disconnect")
         self._reset_pre_ready_drop_state()
         for task in self._turn_barrier_timeout_tasks.values():
@@ -420,12 +433,47 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         if not isinstance(tools, list):
             tools = []
         self._session_ready.clear()
-        await self._send(events.session_update(instructions=instruction, tools=tools))
+        await self._send(
+            events.session_update(
+                instructions=instruction,
+                tools=tools,
+                function_output_model_output=(
+                    FUNCTION_OUTPUT_MODEL_OUTPUT_MODE
+                    if self._function_output_model_output_advertised
+                    else None
+                ),
+            )
+        )
 
     async def _wait_for_model_ready(self) -> None:
         await asyncio.wait_for(
             self._session_ready.wait(), timeout=self._model_ready_timeout_secs
         )
+
+    async def wait_for_live_input_ready(self) -> None:
+        """Wait until the model handshake, context, and send loop are all ready."""
+        await asyncio.wait_for(
+            self._live_input_ready_event.wait(), timeout=self._model_ready_timeout_secs
+        )
+
+    def live_input_readiness_status(self) -> dict[str, bool]:
+        """Return bounded readiness evidence safe for client-facing diagnostics."""
+        return {
+            "session_ready": self._session_ready.is_set(),
+            "context_ready": self._context_ready.is_set(),
+            "audio_send_task": self._audio_send_task is not None,
+        }
+
+    async def abort_live_input_startup(self) -> None:
+        """Close a model session whose browser readiness gate failed."""
+        await self._disconnect()
+
+    async def _activate_live_input_if_ready(self) -> None:
+        if not self._live_input_ready():
+            return
+        self._live_input_ready_event.set()
+        self._emit_pre_ready_drop_summary(reason="model_ready")
+        await self._flush_pending_typed_inputs()
 
     async def _update_session_and_wait(self) -> None:
         async with self._session_update_lock:
@@ -433,7 +481,6 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             await self._wait_for_model_ready()
 
     async def _request_typed_input(self, frame: VoicechatTypedInputFrame) -> None:
-        await self._context_ready.wait()
         if (
             frame.job_id in self._typed_jobs
             or frame.job_id in self._typed_context_commits
@@ -441,8 +488,11 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         ):
             await self.push_error(error_msg=f"Duplicate Voicechat typed job ID: {frame.job_id}")
             return
+        if self._input_failed:
+            return
         if (
-            self._active_client_turn_id is not None
+            not self._live_input_ready()
+            or self._active_client_turn_id is not None
             or self._pre_ready_dropped_turn_id is not None
             or self._function_epoch_active
         ):
@@ -459,15 +509,18 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             self._typed_jobs.pop(frame.job_id, None)
 
     async def _flush_pending_typed_inputs(self) -> None:
-        if (
-            self._active_client_turn_id is not None
-            or self._pre_ready_dropped_turn_id is not None
-            or self._function_epoch_active
-        ):
-            return
-        pending, self._pending_typed_requests = self._pending_typed_requests, []
-        for frame in pending:
-            await self._admit_typed_input(frame)
+        async with self._pending_typed_flush_lock:
+            while self._pending_typed_requests:
+                if (
+                    self._input_failed
+                    or not self._live_input_ready()
+                    or self._active_client_turn_id is not None
+                    or self._pre_ready_dropped_turn_id is not None
+                    or self._function_epoch_active
+                ):
+                    return
+                frame = self._pending_typed_requests.pop(0)
+                await self._admit_typed_input(frame)
 
     async def _handle_context(self, context: LLMContext):
         first_context = self._context is None
@@ -511,8 +564,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             if self._session_ready.is_set() and not self._audio_sent and settings_changed:
                 await self._update_session_and_wait()
             self._context_ready.set()
-            if self._live_input_ready():
-                self._emit_pre_ready_drop_summary(reason="model_ready")
+            await self._activate_live_input_if_ready()
         else:
             await self._process_completed_function_calls(send_new_results=True)
 
@@ -846,7 +898,9 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
 
     def _emit_pre_ready_drop_summary(self, *, reason: str) -> None:
         if self._pre_ready_drop_summary_emitted or not (
-            self._pre_ready_audio_chunks_dropped or self._pre_ready_turns_dropped
+            self._pre_ready_audio_chunks_dropped
+            or self._pre_ready_turns_dropped
+            or self._pre_ready_typed_requests_dropped
         ):
             return
         if self._pre_ready_dropped_turn_id is not None and reason != "disconnect":
@@ -855,7 +909,8 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             "voicechat.pre_ready_input_dropped "
             f"reason={reason} chunks={self._pre_ready_audio_chunks_dropped} "
             f"bytes={self._pre_ready_audio_bytes_dropped} "
-            f"turns={self._pre_ready_turns_dropped}"
+            f"turns={self._pre_ready_turns_dropped} "
+            f"typed_requests={self._pre_ready_typed_requests_dropped}"
         )
         self._pre_ready_drop_summary_emitted = True
 
@@ -864,6 +919,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._pre_ready_audio_chunks_dropped = 0
         self._pre_ready_audio_bytes_dropped = 0
         self._pre_ready_turns_dropped = 0
+        self._pre_ready_typed_requests_dropped = 0
         self._pre_ready_drop_summary_emitted = False
 
     async def _liveness_loop(self):
@@ -914,11 +970,30 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             capabilities = event.get("capabilities") or {}
             if capabilities.get("input_turn_detection") != "client_smart_turn_v1":
                 raise events.ProtocolError("server does not support client Smart Turn v1")
+            model_output_capability = capabilities.get("function_output_model_output")
+            self._function_output_model_output_advertised = bool(
+                isinstance(model_output_capability, dict)
+                and model_output_capability.get("mode")
+                == FUNCTION_OUTPUT_MODEL_OUTPUT_MODE
+            )
             self._session_created.set()
         elif event_type == "session.updated":
             session = event.get("session") or {}
             if session.get("protocol_version") != events.PROTOCOL_VERSION:
                 raise events.ProtocolError("session.updated did not confirm protocol v3")
+            negotiated = (session.get("capabilities") or {}).get(
+                "function_output_model_output"
+            )
+            if self._function_output_model_output_advertised:
+                if negotiated != FUNCTION_OUTPUT_MODEL_OUTPUT_MODE:
+                    raise events.ProtocolError(
+                        "session.updated did not negotiate concise tool results"
+                    )
+                self._function_output_model_output_negotiated = True
+            elif negotiated is not None:
+                raise events.ProtocolError(
+                    "session.updated negotiated an unadvertised concise tool-result capability"
+                )
             self._session_ready.set()
         elif event_type == "input_text.accepted":
             await self._typed_input_accepted(event)
@@ -1268,7 +1343,11 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
                 if async_payload.kind != "final":
                     continue
                 if send_new_results:
-                    await self._send_tool_result(async_payload.tool_call_id, async_payload.result)
+                    await self._send_tool_result(
+                        async_payload.tool_call_id,
+                        async_payload.result,
+                        model_output=self._model_output_for_call(async_payload.tool_call_id),
+                    )
                 self._completed_tool_calls.add(async_payload.tool_call_id)
                 continue
             if not isinstance(message, dict) or message.get("content") == "IN_PROGRESS":
@@ -1282,14 +1361,37 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
                         error_msg=f"Ignoring result for unknown Voicechat call_id={call_id}"
                     )
                 else:
-                    await self._send_tool_result(call_id, message.get("content"))
+                    await self._send_tool_result(
+                        call_id,
+                        message.get("content"),
+                        model_output=self._model_output_for_call(call_id),
+                    )
             self._completed_tool_calls.add(call_id)
 
-    async def _send_tool_result(self, call_id: str, result: Any):
+    def _model_output_for_call(self, call_id: str) -> str | None:
+        if isinstance(self._context, VoicechatLLMContext):
+            return self._context.voicechat_model_output(call_id)
+        return None
+
+    async def _send_tool_result(
+        self, call_id: str, result: Any, *, model_output: str | None = None
+    ):
         if call_id != self._function_epoch_call_id:
             raise events.ProtocolError("tool result does not match the active function epoch")
         output = result if isinstance(result, str) else json.dumps(result)
-        await self._send(events.function_call_output(call_id, output))
+        await self._send(
+            events.function_call_output(
+                call_id,
+                output,
+                model_output=(
+                    model_output
+                    if self._function_output_model_output_negotiated
+                    else None
+                ),
+            )
+        )
+        if isinstance(self._context, VoicechatLLMContext):
+            self._context.discard_voicechat_model_output(call_id)
         if self._function_output_ack_timeout_task is not None:
             self._function_output_ack_timeout_task.cancel()
         self._function_output_ack_timeout_task = asyncio.create_task(
