@@ -590,3 +590,11 @@ clock; a future pairing candidate must be gated on the arrival clock.
   kernel and wrapper classes), (2) run pairing's wedge-closure decision as
   a design-only reliability track in parallel, (3) Step 5 selection only
   after at least one row turns `measured`.
+
+- **2026-08-13 — Step 5 prerequisite phase opened.** Per the closed
+  Step 4 recommendation: track 1 (W8 graph-path reproducibility
+  root-cause, preregistered hypothesis discrimination with a
+  benign-nondeterminism vs real-defect classification rule) delegated;
+  track 2 (pairing wedge-closure design-only study) queued behind it.
+  Step 5 candidate selection remains gated until a ranking row turns
+  `measured`.
