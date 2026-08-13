@@ -302,8 +302,18 @@ first).
   elevating the Step 5 structural fix; the capture-off full L1 rendition
   passed the K=12 arrival gate (worst window 936.8 ms) despite 84%
   over-80 server frames — arrival cadence smooths relative to server
-  steps. ASR gate-1/gate-2 adjudication and the session manifest in
-  progress.
+  steps. **Adjudication (final):** Gate 2 PASS (zero no-text watchdog
+  interference in retained traces); I1 replacement PASS (evaluator: "Two
+  plus two is four."); Gate 1 FAIL campaign-wide per the preregistered
+  rule — audio-complete renditions: L1 1/2, L2 2/2, capture-off-L1 0/1.
+  The text-vs-audio divergence was demonstrated in both directions:
+  L2-1's browser transcript mismatched while its audio was complete
+  (text-channel flush artifact), and capture-off-L1's text was exact
+  while its audio truncated — text evidence alone misjudges both. 35-file
+  manifest sealed (`manifest.sha256`, self-hash `b62222f4…`); evaluator
+  image digest recorded. Step 2 is COMPLETE; Step 3's reserve decision is
+  a product trade (fixed reserves cannot clean long renditions) and
+  Step 4 profiling opens next.
 
 - **2026-08-13 — Step 2 CODE-COMPLETE (review round 4: PASS).** All deltas
   closed within the recorded threat model and verified with fresh probes
