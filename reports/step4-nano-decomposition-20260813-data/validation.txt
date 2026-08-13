@@ -1,0 +1,59 @@
+Step 4d validation — 2026-08-13 UTC
+
+Task-scoped Ruff:
+  .venv/bin/ruff check tools/benchmark/nano_interface_decomposition.py tests/runtime/test_nano_interface_decomposition.py
+  PASS — All checks passed.
+
+Task-scoped unit tests:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -q tests/runtime/test_nano_interface_decomposition.py
+  PASS — 6 passed in 0.65s.
+
+Qualification anchors:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/qualification/stratified_latency_analyzer.py verify-anchors --output reports/step4-nano-decomposition-20260813-data/validation-anchors.json
+  PASS — 67 anchors.
+
+Full suite excluding browser_e2e:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -q -m 'not browser_e2e'
+  First run: 1 transient failure, 1166 passed, 15 skipped, 3 deselected,
+    28 subtests passed. Failure was the existing asynchronous abort-count poll in
+    RealtimeWebSocketEndpointTest.test_deferred_tool_timeout_is_fatal_even_if_epoch_invalidation_fails.
+  Isolated rerun: PASS — 1 passed, 2 subtests passed in 0.29s.
+  Final full run: PASS — 1166 passed, 15 skipped, 3 deselected, 29 subtests
+    passed in 33.16s.
+
+Patch whitespace:
+  git diff --check -- reports/step4-nano-decomposition-20260813.md tools/benchmark/nano_interface_decomposition.py tests/runtime/test_nano_interface_decomposition.py
+  PASS.
+
+Step 4d closure round — 2026-08-13 UTC
+
+Task-scoped Ruff:
+  .venv/bin/ruff check tools/benchmark/nano_interface_decomposition.py tests/runtime/test_nano_interface_decomposition.py
+  PASS — All checks passed.
+
+Task-scoped unit tests:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -q tests/runtime/test_nano_interface_decomposition.py
+  PASS — 8 passed in 0.88s.
+
+Qualification anchors:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/qualification/stratified_latency_analyzer.py verify-anchors --output reports/step4-nano-decomposition-20260813-data/validation-anchors.json
+  PASS — 67/67 anchors.
+
+Full suite excluding browser_e2e:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -q -m 'not browser_e2e'
+  PASS — 1168 passed, 15 skipped, 3 deselected, 29 subtests passed in
+    33.54s.
+
+Canonical retained-data recomputation:
+  Re-analyze all 60 attempt-2 SQLite exports and summarize against the retained
+  exact-output gate; compare object-for-object with the canonical saved JSON.
+  PASS — analysis and summary are equivalent; timing blocks 10/10;
+    exact-output passed=false; decision INCOMPLETE.
+
+Artifact SHA-256 verification:
+  (cd reports/step4-nano-decomposition-20260813-data && sha256sum -c artifacts.sha256)
+  PASS — 334/334 manifest entries verified.
+
+Patch whitespace:
+  git diff --no-index --check /dev/null <each Step 4d source/test/report file>
+  PASS.

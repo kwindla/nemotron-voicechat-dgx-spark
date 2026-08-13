@@ -1,0 +1,18 @@
+{
+  "bootstrap_resamples": 10000,
+  "bootstrap_seed": 20260813,
+  "content_token_rule": "predicted_token > 12",
+  "exact_output_measured_blocks": 30,
+  "kind": "step4d_nano_decomposition_preregistration",
+  "max_call_index": 686,
+  "nsight_measured_blocks": 10,
+  "pad_token_id": 12,
+  "pairs": [
+    {"content_call": 45, "pad_call": 46},
+    {"content_call": 326, "pad_call": 327},
+    {"content_call": 685, "pad_call": 686}
+  ],
+  "schema": 1,
+  "uncertainty_unit": "independent causal replay block",
+  "warmup_blocks_per_phase": 2
+}

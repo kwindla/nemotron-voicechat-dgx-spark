@@ -1,0 +1,102 @@
+[NeMo W 2026-08-13 18:35:33 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:323: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+", " ", text)
+    
+[NeMo W 2026-08-13 18:35:33 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:324: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+\.\s+", ".", text)
+    
+[NeMo W 2026-08-13 18:35:35 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:300: SyntaxWarning: invalid escape sequence '\('
+      m = re.match('([su]([0-9]{1,2})p?) \(([0-9]{1,2}) bit\)$', token)
+    
+[NeMo W 2026-08-13 18:35:35 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:301: SyntaxWarning: invalid escape sequence '\('
+      m2 = re.match('([su]([0-9]{1,2})p?)( \(default\))?$', token)
+    
+[NeMo W 2026-08-13 18:35:35 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:310: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(flt)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-13 18:35:35 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:314: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(dbl)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-13 18:35:35 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:170: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+      warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+    
+[NeMo I 2026-08-13 18:35:38 nemo_logging:393] Triton available & CUDA detected. Using Triton kernel for batch_matmul.
+[NeMo W 2026-08-13 18:35:38 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/whisper_normalizer/basic.py:97: SyntaxWarning: invalid escape sequence '\X'
+      """
+    
+INFO 08-13 18:35:40 [__init__.py:224] Automatically detected platform cuda.
+[NeMo I 2026-08-13 18:35:42 nemo_logging:393] LLMStreamingEngine initialized for model: /models/derived/nano
+[NeMo I 2026-08-13 18:35:42 nemo_logging:393] Initializing vLLM engine (this may take a moment)...
+[NeMo I 2026-08-13 18:35:42 nemo_logging:393] Initializing vLLM engine...
+ERROR 08-13 18:35:42 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+ERROR 08-13 18:35:42 [__init__.py:57] Traceback (most recent call last):
+ERROR 08-13 18:35:42 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+ERROR 08-13 18:35:42 [__init__.py:57]     func = plugin.load()
+ERROR 08-13 18:35:42 [__init__.py:57]            ^^^^^^^^^^^^^
+ERROR 08-13 18:35:42 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+ERROR 08-13 18:35:42 [__init__.py:57]     module = import_module(match.group('module'))
+ERROR 08-13 18:35:42 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-13 18:35:42 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+ERROR 08-13 18:35:42 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+ERROR 08-13 18:35:42 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-13 18:35:42 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+ERROR 08-13 18:35:42 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+ERROR 08-13 18:35:42 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ERROR 08-13 18:35:42 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+INFO 08-13 18:35:42 [arg_utils.py:535] HF_HUB_OFFLINE is True, replace model_id [/models/derived/nano] to model_path [/models/derived/nano]
+Traceback (most recent call last):
+  File "/workspace/project/tools/benchmark/nano_interface_decomposition.py", line 783, in <module>
+    main()
+  File "/workspace/project/tools/benchmark/nano_interface_decomposition.py", line 768, in main
+    payload = run_component(args)
+              ^^^^^^^^^^^^^^^^^^^
+  File "/workspace/project/tools/benchmark/nano_interface_decomposition.py", line 294, in run_component
+    model = _load_model(args)
+            ^^^^^^^^^^^^^^^^^
+  File "/workspace/project/tools/benchmark/nano_interface_decomposition.py", line 253, in _load_model
+    return create_model(
+           ^^^^^^^^^^^^^
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py", line 1485, in create_model
+    return VllmLLMModel(
+           ^^^^^^^^^^^^^
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py", line 373, in __init__
+    self._run_async(self.engine.initialize())
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py", line 937, in _run_async
+    return self._loop.run_until_complete(coro)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/Speech/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py", line 201, in initialize
+    vllm_config = engine_args.create_engine_config()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/engine/arg_utils.py", line 1226, in create_engine_config
+    model_config = self.create_model_config()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/engine/arg_utils.py", line 1085, in create_model_config
+    return ModelConfig(
+           ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+    s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+  File "/usr/local/lib/python3.12/dist-packages/vllm/config/model.py", line 526, in __post_init__
+    hf_config = get_config(
+                ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/transformers_utils/config.py", line 603, in get_config
+    config_dict, config = config_parser.parse(
+                          ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/transformers_utils/config.py", line 145, in parse
+    config = AutoConfig.from_pretrained(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/models/auto/configuration_auto.py", line 1302, in from_pretrained
+    config_class = get_class_from_dynamic_module(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 569, in get_class_from_dynamic_module
+    final_module = get_cached_module_file(
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 396, in get_cached_module_file
+    create_dynamic_module(full_submodule)
+  File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 75, in create_dynamic_module
+    init_hf_modules()
+  File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 60, in init_hf_modules
+    os.makedirs(HF_MODULES_CACHE, exist_ok=True)
+  File "<frozen os>", line 225, in makedirs
+OSError: [Errno 30] Read-only file system: '/models/huggingface/modules'

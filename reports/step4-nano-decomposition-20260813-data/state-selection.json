@@ -1,0 +1,111 @@
+{
+  "capture_calls": 1172,
+  "capture_manifest_sha256": "55d9e815ec235a588b0aa6eacb4a97a2d5a77f19aa00954d0c2e205d4108d1aa",
+  "capture_metadata_sha256": "7f4eecced31a79b0504ef5ddb5720461fd86939d1bbd4d38c97baffe4d5f5471",
+  "capture_root": "/home/khkramer/.cache/nemotron-voicechat/conversion-corpus/evaluation/0",
+  "kind": "step4d_nano_matched_state_selection",
+  "max_replayed_call": 686,
+  "pairs": [
+    {
+      "content": {
+        "call_index": 45,
+        "current_step": 45,
+        "expected_token": 1046,
+        "file": "nano-call-000045.pt",
+        "sha256": "4504dc68c6de534a2f1e9e70a33de48ae7e7d7652db948d3ad51fe4b02684fea"
+      },
+      "decode_steps": 1,
+      "input_contract": {
+        "decode_steps": 1,
+        "input_embed_dtype": "torch.bfloat16",
+        "input_embed_shape": [
+          1,
+          1,
+          4480
+        ],
+        "prompt_token_ids": null
+      },
+      "pad": {
+        "call_index": 46,
+        "current_step": 46,
+        "expected_token": 12,
+        "file": "nano-call-000046.pt",
+        "sha256": "44db1da01a77558bf472efcc93ff62c16ceaa7c00c3c233ce20fec0d5c3df542"
+      },
+      "pair": 1,
+      "request_id": "1",
+      "sequence_epoch": 0
+    },
+    {
+      "content": {
+        "call_index": 326,
+        "current_step": 326,
+        "expected_token": 1046,
+        "file": "nano-call-000326.pt",
+        "sha256": "9c8246e75dea73cd0378e187d56588657530cb2be33d81e1f1bb6513d493f63c"
+      },
+      "decode_steps": 1,
+      "input_contract": {
+        "decode_steps": 1,
+        "input_embed_dtype": "torch.bfloat16",
+        "input_embed_shape": [
+          1,
+          1,
+          4480
+        ],
+        "prompt_token_ids": null
+      },
+      "pad": {
+        "call_index": 327,
+        "current_step": 327,
+        "expected_token": 12,
+        "file": "nano-call-000327.pt",
+        "sha256": "5a136ada55a2d61202d2bf8ec4621076580a02cfbf62838aa2a871d40d168d64"
+      },
+      "pair": 2,
+      "request_id": "1",
+      "sequence_epoch": 0
+    },
+    {
+      "content": {
+        "call_index": 685,
+        "current_step": 685,
+        "expected_token": 1046,
+        "file": "nano-call-000685.pt",
+        "sha256": "5545684267d3c4457a42c94d58a14b9170ac34f06f5d307d6f76aac9f26b0258"
+      },
+      "decode_steps": 1,
+      "input_contract": {
+        "decode_steps": 1,
+        "input_embed_dtype": "torch.bfloat16",
+        "input_embed_shape": [
+          1,
+          1,
+          4480
+        ],
+        "prompt_token_ids": null
+      },
+      "pad": {
+        "call_index": 686,
+        "current_step": 686,
+        "expected_token": 12,
+        "file": "nano-call-000686.pt",
+        "sha256": "27ea43d1e7fdc22db6a20f8a65ce152776fa2753ce7590eed78147d8af011fb3"
+      },
+      "pair": 3,
+      "request_id": "1",
+      "sequence_epoch": 0
+    }
+  ],
+  "rules": {
+    "boundary": "last lexical state immediately followed by PAD",
+    "causal_replay": "every call from zero through max_replayed_call",
+    "content": "predicted_token > 12",
+    "controls_excluded": [
+      1,
+      2
+    ],
+    "pad": "predicted_token == 12"
+  },
+  "schema": 1
+}

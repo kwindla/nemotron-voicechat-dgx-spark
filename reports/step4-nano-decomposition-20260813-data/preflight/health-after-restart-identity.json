@@ -1,0 +1,110 @@
+{
+  "status": "ready",
+  "model": "ready",
+  "active_client": false,
+  "checkpoint": {
+    "kind": "public_checkpoint_production_candidate_1",
+    "repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+    "revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+    "model_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+    "nano_sha256": "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99",
+    "eartts_sha256": "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e",
+    "nano_runtime_optimization": {
+      "skip_custom_text_logits": true,
+      "sampling_contract": {
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "repetition_penalty": 1.0
+      },
+      "retained_custom_outputs": [
+        "function_tokens",
+        "function_logits"
+      ],
+      "vllm_temperature": 0.0
+    },
+    "fixed_stage_optimizations": {
+      "perception_dtype": "bf16",
+      "cyclic_gc_guard": true,
+      "cpu_codec": {
+        "mode": "process",
+        "checkpoint_root": "/models/voicechat",
+        "threads": 2,
+        "cpus": [
+          5,
+          6
+        ],
+        "pointwise_linear": true,
+        "persistent": true,
+        "worker": {
+          "status": "ready",
+          "pid": 4341,
+          "threads": 2,
+          "cpus": [
+            5,
+            6
+          ],
+          "depthwise_replacements": 18,
+          "pointwise_replacements": 38,
+          "checkpoint": {
+            "layout": "public_combined",
+            "path": "/models/voicechat/model.safetensors",
+            "source_prefix": "tts_model.audio_codec.",
+            "tensor_count": 214
+          }
+        },
+        "warmup_worker_ms": 58.5473719984293
+      },
+      "vllm_delta_output": [
+        "eartts"
+      ],
+      "eartts_decode_pad_silence": true,
+      "eartts_idle_pad_bypass": true,
+      "eartts_prepared_epoch": true,
+      "eartts_unique_backend_request_ids": true,
+      "eartts_reset_on_bos": true,
+      "nano_pad_pair_control_barrier": false
+    }
+  },
+  "nano_pad_pair": {
+    "enabled": false,
+    "eligible": true,
+    "pad_token_id": 12,
+    "conditional": false,
+    "control_barrier": false,
+    "full_graph": false,
+    "requests": {}
+  },
+  "typed_input": {
+    "ready": true,
+    "pid": 4711,
+    "socket": "/tmp/voicechat-pocket.sock",
+    "language": "english_2026-04",
+    "voice": "alba",
+    "status": "ready",
+    "package_version": "2.1.0",
+    "sample_rate": 16000,
+    "cpus": [
+      7,
+      8,
+      9,
+      15
+    ],
+    "threads": 4,
+    "seed": 0,
+    "seed_scheme": "sha256-text-plus-base-v1",
+    "assets": {
+      "snapshots/d29db7978e464fb90cb3359ee0c69a273b9142cc/languages/english_2026-04/model.safetensors": {
+        "bytes": 219029196,
+        "sha256": "be9c6b4876d3f30740a8225dfcaa2e43dc4aeb753c15272735bee16bbb4abb0a"
+      },
+      "snapshots/d29db7978e464fb90cb3359ee0c69a273b9142cc/languages/english_2026-04/tokenizer.model": {
+        "bytes": 59339,
+        "sha256": "d461765ae179566678c93091c5fa6f2984c31bbe990bf1aa62d92c64d91bc3f6"
+      },
+      "snapshots/e041936c75475d350b405bc870bcf7c22da4e9e6/languages/english_2026-04/embeddings/alba.safetensors": {
+        "bytes": 6194424,
+        "sha256": "69c32db63ca56843d994f81f343f62e0bf2d73f7e4c9bc73e44bb1110b1d8845"
+      }
+    }
+  }
+}

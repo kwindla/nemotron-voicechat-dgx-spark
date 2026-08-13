@@ -6017,6 +6017,159 @@ def create_app(
         function_call_budget = FunctionCallBudget()
         deferred_client_input = DeferredClientInputQueue()
         last_model_result: StepResult | None = None
+        terminal_cleanup_task: asyncio.Task[None] | None = None
+        terminal_origin_task: asyncio.Task[Any] | None = None
+
+        def clear_current_task_cancellation() -> None:
+            current = asyncio.current_task()
+            if current is not None:
+                while current.cancelling():
+                    current.uncancel()
+
+        async def drain_cancellation_safe(future: asyncio.Future[Any]) -> Any:
+            """Drain protected work even when this task is directly cancelled."""
+
+            clear_current_task_cancellation()
+            while not future.done():
+                try:
+                    await asyncio.shield(future)
+                except asyncio.CancelledError:
+                    clear_current_task_cancellation()
+            return future.result()
+
+        async def run_session_cleanup(
+            *,
+            terminal_events: list[dict[str, Any]] | None = None,
+            terminal_close_code: int = 1011,
+            prepare_terminal_events: (
+                Callable[[], Awaitable[list[dict[str, Any]]]] | None
+            ) = None,
+        ) -> None:
+            """Own model teardown and terminal publication independently of callers."""
+
+            nonlocal active_typed, typed_task
+            try:
+                if active_typed is not None:
+                    active_typed.cancel_event.set()
+                try:
+                    tool_bridge.close()
+                except Exception as exc:
+                    trace.event(
+                        "tool_bridge_cleanup_error",
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                if (
+                    typed_task is not None
+                    and typed_task is not terminal_origin_task
+                    and not typed_task.done()
+                ):
+                    try:
+                        await asyncio.wait_for(asyncio.shield(typed_task), timeout=3.0)
+                    except TimeoutError:
+                        typed_task.cancel()
+                        await asyncio.gather(typed_task, return_exceptions=True)
+                    except (Exception, asyncio.CancelledError) as exc:
+                        trace.event(
+                            "typed_task_cleanup_error",
+                            error=f"{type(exc).__name__}: {exc}",
+                        )
+                if prepare_terminal_events is not None:
+                    try:
+                        terminal_events = await prepare_terminal_events()
+                    except (Exception, asyncio.CancelledError) as exc:
+                        trace.event(
+                            "terminal_event_preparation_error",
+                            error=f"{type(exc).__name__}: {exc}",
+                        )
+                abort_call = functools.partial(engine.abort)
+                abort_future = loop.run_in_executor(model_executor, abort_call)
+                try:
+                    await drain_cancellation_safe(abort_future)
+                except Exception as exc:
+                    trace.event(
+                        "model_abort_cleanup_error",
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                if terminal_events is not None:
+                    try:
+                        async with send_lock:
+                            for event in terminal_events:
+                                await websocket.send_json(event)
+                    except (Exception, asyncio.CancelledError) as exc:
+                        trace.event(
+                            "terminal_publication_error",
+                            error=f"{type(exc).__name__}: {exc}",
+                        )
+                    finally:
+                        try:
+                            await websocket.close(
+                                code=terminal_close_code,
+                                reason=close_reason,
+                            )
+                        except Exception:
+                            pass
+            finally:
+                try:
+                    trace.close(close_reason)
+                finally:
+                    active_client.release()
+
+        def start_terminal_cleanup(
+            reason: str,
+            *,
+            events: list[dict[str, Any]] | None = None,
+            close_code: int = 1011,
+            prepare_events: Callable[[], Awaitable[list[dict[str, Any]]]] | None = None,
+        ) -> asyncio.Task[None]:
+            """End input ownership and transfer teardown to one uncancelled task."""
+
+            nonlocal close_reason, terminal_cleanup_task, terminal_origin_task
+            if terminal_cleanup_task is not None:
+                return terminal_cleanup_task
+            close_reason = reason
+            terminal_origin_task = asyncio.current_task()
+            terminal_session.set()
+            trace.event("terminal_session_claimed", reason=reason)
+            terminal_cleanup_task = asyncio.create_task(
+                run_session_cleanup(
+                    terminal_events=events,
+                    terminal_close_code=close_code,
+                    prepare_terminal_events=prepare_events,
+                ),
+                name=f"voicechat-terminal-cleanup-{session_id}",
+            )
+            return terminal_cleanup_task
+
+        async def terminate_model_session(
+            reason: str,
+            *,
+            events: list[dict[str, Any]] | None = None,
+            close_code: int = 1011,
+            prepare_events: Callable[[], Awaitable[list[dict[str, Any]]]] | None = None,
+        ) -> None:
+            """Publish a fatal boundary only after cancellation-safe model abort."""
+
+            task = start_terminal_cleanup(
+                reason,
+                events=events,
+                close_code=close_code,
+                prepare_events=prepare_events,
+            )
+            current = asyncio.current_task()
+            if current is typed_task and terminal_origin_task is not current:
+                trace.event(
+                    "terminal_cleanup_wait_skipped",
+                    reason=reason,
+                    owner_reason=close_reason,
+                    task="typed_input",
+                )
+                return
+            await asyncio.shield(task)
+
+        async def await_cleanup_cancellation_safe(task: asyncio.Task[None]) -> None:
+            """Wait through endpoint cancellation until transferred cleanup finishes."""
+
+            await drain_cancellation_safe(task)
 
         def select_gate_preroll(*, reason: str) -> list[GatePrerollEntry]:
             selection = gate_preroll.drain_onset_suffix(
@@ -6110,24 +6263,24 @@ def create_app(
                         model_frames=engine.frame_index,
                         max_model_frames=max_session_model_frames,
                     )
-                    async with send_lock:
-                        await websocket.send_json(
+                    await terminate_model_session(
+                        "session_position_limit",
+                        events=[
                             protocol.error(
                                 "session_position_limit",
                                 limit_event["error"]["message"],
                                 fatal=True,
                                 model_frames=engine.frame_index,
                                 max_model_frames=max_session_model_frames,
-                            )
-                        )
-                        for event in protocol.close_events(
-                            "session_position_limit",
-                            cumulative_user_text=last_user_text,
-                            status="failed",
-                        ):
-                            await websocket.send_json(event)
-                    close_reason = "session_position_limit"
-                    await websocket.close(code=1000, reason=close_reason)
+                            ),
+                            *protocol.close_events(
+                                "session_position_limit",
+                                cumulative_user_text=last_user_text,
+                                status="failed",
+                            ),
+                        ],
+                        close_code=1000,
+                    )
                     raise SessionTerminated
                 result = await model_call(
                     engine.process,
@@ -6251,24 +6404,24 @@ def create_app(
                             model_frames=engine.frame_index,
                             max_model_frames=max_session_model_frames,
                         )
-                        async with send_lock:
-                            await websocket.send_json(
+                        await terminate_model_session(
+                            "session_position_limit",
+                            events=[
                                 protocol.error(
                                     "session_position_limit",
                                     limit_event["error"]["message"],
                                     fatal=True,
                                     model_frames=engine.frame_index,
                                     max_model_frames=max_session_model_frames,
-                                )
-                            )
-                            for event in protocol.close_events(
-                                "session_position_limit",
-                                cumulative_user_text=last_user_text,
-                                status="failed",
-                            ):
-                                await websocket.send_json(event)
-                        close_reason = "session_position_limit"
-                        await websocket.close(code=1000, reason=close_reason)
+                                ),
+                                *protocol.close_events(
+                                    "session_position_limit",
+                                    cumulative_user_text=last_user_text,
+                                    status="failed",
+                                ),
+                            ],
+                            close_code=1000,
+                        )
                         raise SessionTerminated
                     result = await model_call(
                         engine.process,
@@ -6375,22 +6528,36 @@ def create_app(
                         before_send=observe_settlement,
                     )
             except UserEouSettlementFailure as exc:
-                invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
-                if callable(invalidate_epoch):
-                    await model_call(invalidate_epoch, "settlement_failed")
-                close_reason = exc.code
-                async with send_lock:
-                    await websocket.send_json(
+                failure_code = exc.code
+                failure_message = str(exc)
+                failure_evidence = exc.evidence
+                cancel_blank_fence = latch_armed and not settlement.fused_terminal_bos
+                latch_armed = False
+
+                async def prepare_failure_event() -> list[dict[str, Any]]:
+                    if cancel_blank_fence:
+                        engine.cancel_user_eou_at_blank_fence()
+                    invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
+                    if callable(invalidate_epoch):
+                        try:
+                            await model_call(invalidate_epoch, "settlement_failed")
+                        except (Exception, asyncio.CancelledError):
+                            pass
+                    return [
                         protocol.error(
-                            exc.code,
-                            str(exc),
+                            failure_code,
+                            failure_message,
                             fatal=True,
                             source=source,
                             job_id=job_id,
-                            settlement=exc.evidence,
+                            settlement=failure_evidence,
                         )
-                    )
-                await websocket.close(code=1011, reason=close_reason)
+                    ]
+
+                await terminate_model_session(
+                    failure_code,
+                    prepare_events=prepare_failure_event,
+                )
                 raise SessionTerminated from exc
             finally:
                 if latch_armed and not settlement.fused_terminal_bos:
@@ -6454,47 +6621,50 @@ def create_app(
             message: str,
             call_id: str,
             client_event_id: str | None = None,
+            wait_for_cleanup: bool = True,
         ) -> bool:
-            """Invalidate and close a deferred BOS contract without fail-open awaits."""
+            """Transfer a deferred-BOS failure to the common terminal owner."""
 
-            nonlocal pending_bos_settlement, close_reason
+            nonlocal pending_bos_settlement
             pending = pending_bos_settlement
             pending_bos_settlement = None
             if pending is None:
                 return False
-            invalidation_error: str | None = None
-            invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
-            if callable(invalidate_epoch):
-                try:
-                    await model_call(invalidate_epoch, code)
-                except (Exception, asyncio.CancelledError) as exc:
-                    invalidation_error = type(exc).__name__
-            trace.event(
-                "pending_bos_expectation_terminated",
-                code=code,
-                call_id=call_id,
-                epoch_invalidation_error=invalidation_error,
-                settlement=pending.evidence(),
-            )
-            try:
-                async with send_lock:
-                    await websocket.send_json(
-                        protocol.error(
-                            code,
-                            message,
-                            fatal=True,
-                            client_event_id=client_event_id,
-                            call_id=call_id,
-                            settlement=pending.evidence(),
-                            epoch_invalidation_error=invalidation_error,
-                        )
+            settlement_evidence = pending.evidence()
+
+            async def prepare_failure_event() -> list[dict[str, Any]]:
+                invalidation_error: str | None = None
+                invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
+                if callable(invalidate_epoch):
+                    try:
+                        await model_call(invalidate_epoch, code)
+                    except (Exception, asyncio.CancelledError) as exc:
+                        invalidation_error = type(exc).__name__
+                trace.event(
+                    "pending_bos_expectation_terminated",
+                    code=code,
+                    call_id=call_id,
+                    epoch_invalidation_error=invalidation_error,
+                    settlement=settlement_evidence,
+                )
+                return [
+                    protocol.error(
+                        code,
+                        message,
+                        fatal=True,
+                        client_event_id=client_event_id,
+                        call_id=call_id,
+                        settlement=settlement_evidence,
+                        epoch_invalidation_error=invalidation_error,
                     )
-            finally:
-                close_reason = code
-                try:
-                    await websocket.close(code=1011, reason=close_reason)
-                finally:
-                    terminal_session.set()
+                ]
+
+            task = start_terminal_cleanup(
+                code,
+                prepare_events=prepare_failure_event,
+            )
+            if wait_for_cleanup:
+                await asyncio.shield(task)
             return True
 
         async def cancel_response_to_terminal(reason: str) -> None:
@@ -6515,16 +6685,16 @@ def create_app(
                 )
                 if not protocol.response_open:
                     return
-            async with send_lock:
-                await websocket.send_json(
+            await terminate_model_session(
+                "response_cancel_timeout",
+                events=[
                     protocol.error(
                         "response_cancel_timeout",
                         "Cancelled response did not reach its acoustic terminal",
                         fatal=True,
                     )
-                )
-            close_reason = "response_cancel_timeout"
-            await websocket.close(code=1011, reason=close_reason)
+                ],
+            )
             raise SessionTerminated
 
         async def inject_trailing_silence(job: ActiveTypedInput) -> None:
@@ -6613,21 +6783,31 @@ def create_app(
                     job_id=job.job_id,
                     error=f"{type(exc).__name__}: {exc}",
                 )
-                try:
-                    async with send_lock:
-                        await websocket.send_json(
+                if fatal_after_mutation:
+                    start_terminal_cleanup(
+                        "typed_input_failed_after_mutation",
+                        events=[
                             protocol.error(
                                 "typed_input_failed",
                                 str(exc),
-                                fatal=fatal_after_mutation,
+                                fatal=True,
                                 client_event_id=job.job_id,
                             )
-                        )
-                        if fatal_after_mutation:
-                            close_reason = "typed_input_failed_after_mutation"
-                            await websocket.close(code=1011, reason=close_reason)
-                except Exception:
-                    pass
+                        ],
+                    )
+                else:
+                    try:
+                        async with send_lock:
+                            await websocket.send_json(
+                                protocol.error(
+                                    "typed_input_failed",
+                                    str(exc),
+                                    fatal=False,
+                                    client_event_id=job.job_id,
+                                )
+                            )
+                    except Exception:
+                        pass
             finally:
                 # Once model mutation begins the typed turn is non-cancellable.
                 if (
@@ -6683,13 +6863,14 @@ def create_app(
                 # following client turn cannot observe stale typed ownership.
                 if active_typed is job:
                     active_typed = None
-                try:
-                    async with send_lock:
-                        await websocket.send_json(
-                            protocol.typed_input_finished(job.job_id, disposition)
-                        )
-                except Exception:
-                    pass
+                if not fatal_after_mutation:
+                    try:
+                        async with send_lock:
+                            await websocket.send_json(
+                                protocol.typed_input_finished(job.job_id, disposition)
+                            )
+                    except Exception:
+                        pass
                 trace.event(
                     "typed_input_injection_finished",
                     job_id=job.job_id,
@@ -6724,16 +6905,15 @@ def create_app(
                     turn_id=function_turn_id,
                     response_id=protocol.response_id,
                 )
-                async with send_lock:
-                    for event in function_call_loop_terminal_events(
+                start_terminal_cleanup(
+                    "function_call_loop_limit",
+                    events=function_call_loop_terminal_events(
                         protocol,
                         call_id=call.call_id,
                         attempt=attempt,
                         limit=function_call_budget.limit,
-                    ):
-                        await websocket.send_json(event)
-                close_reason = "function_call_loop_limit"
-                await websocket.close(code=1011, reason=close_reason)
+                    ),
+                )
                 raise SessionTerminated
             if client_turn_detection:
                 if function_cycle_call_id is not None:
@@ -6788,6 +6968,7 @@ def create_app(
                     code="function_call_output_timeout",
                     message="Function cycle timed out before its terminal BOS",
                     call_id=call.call_id,
+                    wait_for_cleanup=False,
                 )
                 return
             if matched_cycle:
@@ -6885,17 +7066,17 @@ def create_app(
                     "input_audio_buffer.commit",
                 }:
                     if not deferred_client_input.append(body, message_bytes):
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "deferred_input_overflow",
+                            events=[protocol.error(
                                 "deferred_input_overflow",
                                 "Client sent too much input during a function cycle",
                                 fatal=True,
                                 client_event_id=client_event_id,
                                 call_id=function_cycle_call_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "deferred_input_overflow"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     trace.event(
                         "client_input_deferred_for_function",
@@ -7018,16 +7199,15 @@ def create_app(
                             continue
                     if candidate_tools:
                         if function_template_path is None:
-                            await websocket.send_json(
-                                protocol.error(
+                            await terminate_model_session(
+                                "function_calling_unavailable",
+                                events=[protocol.error(
                                     "function_calling_unavailable",
                                     "Function-calling template is unavailable",
                                     fatal=True,
                                     client_event_id=client_event_id,
-                                )
+                                )],
                             )
-                            close_reason = "function_calling_unavailable"
-                            await websocket.close(code=1011, reason=close_reason)
                             return
                         candidate_prompt = render_tool_system_prompt(
                             function_template_path,
@@ -7252,31 +7432,28 @@ def create_app(
                             client_event_id=client_event_id,
                         )
                         if not terminated:
-                            async with send_lock:
-                                await websocket.send_json(
-                                    protocol.error(
+                            await terminate_model_session(
+                                "function_output_apply_timeout",
+                                events=[protocol.error(
                                         "function_output_apply_timeout",
                                         "Function output did not leave post-FC recovery",
                                         fatal=True,
                                         client_event_id=client_event_id,
                                         call_id=call_id,
-                                    )
-                                )
-                            close_reason = "function_output_apply_timeout"
-                            await websocket.close(code=1011, reason=close_reason)
+                                    )],
+                            )
                         return
                     if function_cycle_call_id != call_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "function_cycle_mismatch",
+                            events=[protocol.error(
                                 "function_cycle_mismatch",
                                 "Applied function output did not match active cycle",
                                 fatal=True,
                                 call_id=call_id,
                                 active_call_id=function_cycle_call_id,
-                            )
+                            )],
                         )
-                        close_reason = "function_cycle_mismatch"
-                        await websocket.close(code=1011, reason=close_reason)
                         return
                     await websocket.send_json(protocol.function_call_output_applied(call_id))
                     function_cycle_call_id = None
@@ -7302,28 +7479,28 @@ def create_app(
                         )
                         continue
                     if not isinstance(client_event_id, str) or not client_event_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_event_id",
+                            events=[protocol.error(
                                 "invalid_event_id",
                                 "Client turn barriers require a non-empty event_id",
                                 fatal=True,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_event_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     client_turn_id = body.get("client_turn_id")
                     if not isinstance(client_turn_id, int) or client_turn_id < 1:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_client_turn_id",
+                            events=[protocol.error(
                                 "invalid_client_turn_id",
                                 "client_turn_id must be a positive integer",
                                 fatal=True,
                                 client_event_id=client_event_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_client_turn_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     if client_turn_id in started_client_turns:
                         await websocket.send_json(
@@ -7335,17 +7512,17 @@ def create_app(
                         )
                         continue
                     if open_client_turn_id is not None or active_typed is not None:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "input_turn_conflict",
+                            events=[protocol.error(
                                 "input_turn_conflict",
                                 "A different input turn is already active",
                                 fatal=True,
                                 client_event_id=client_event_id,
                                 client_turn_id=client_turn_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "input_turn_conflict"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     # Freeze real onset audio before synthetic cancellation
                     # steps can advance or clear RNNT evidence.  A function
@@ -7447,28 +7624,28 @@ def create_app(
                         )
                         continue
                     if not isinstance(client_event_id, str) or not client_event_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_event_id",
+                            events=[protocol.error(
                                 "invalid_event_id",
                                 "Client turn barriers require a non-empty event_id",
                                 fatal=True,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_event_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     client_turn_id = body.get("client_turn_id")
                     if not isinstance(client_turn_id, int) or client_turn_id < 1:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_client_turn_id",
+                            events=[protocol.error(
                                 "invalid_client_turn_id",
                                 "client_turn_id must be a positive integer",
                                 fatal=True,
                                 client_event_id=client_event_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_client_turn_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     if client_turn_id in completed_client_turns:
                         await websocket.send_json(
@@ -7480,18 +7657,18 @@ def create_app(
                         )
                         continue
                     if client_turn_id != open_client_turn_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "input_turn_conflict",
+                            events=[protocol.error(
                                 "input_turn_conflict",
                                 "Commit does not match the open client turn",
                                 fatal=True,
                                 client_event_id=client_event_id,
                                 client_turn_id=client_turn_id,
                                 open_client_turn_id=open_client_turn_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "input_turn_conflict"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     raw_diagnostics = body.get("diagnostics")
                     client_diagnostics = {
@@ -7813,34 +7990,33 @@ def create_app(
         except WebSocketDisconnect:
             pass
         except Exception as exc:
-            try:
-                await websocket.send_json(
+            await terminate_model_session(
+                "internal_error",
+                events=[
                     protocol.error(
                         "internal_error",
                         f"{type(exc).__name__}: {exc}",
                         fatal=True,
-                    )
-                )
-                await websocket.send_json(
-                    protocol.session_closed("internal_error", status="failed")
-                )
-                close_reason = "internal_error"
-                await websocket.close(code=1011, reason=close_reason)
-            except Exception:
-                pass
+                    ),
+                    protocol.session_closed("internal_error", status="failed"),
+                ],
+            )
         finally:
-            if active_typed is not None:
-                active_typed.cancel_event.set()
-            if typed_task is not None and not typed_task.done():
-                try:
-                    await asyncio.wait_for(typed_task, timeout=3.0)
-                except TimeoutError:
-                    typed_task.cancel()
-                    await asyncio.gather(typed_task, return_exceptions=True)
-            tool_bridge.close()
-            await model_call(engine.abort)
-            trace.close(close_reason)
-            active_client.release()
+            if terminal_cleanup_task is None:
+                if active_typed is not None:
+                    active_typed.cancel_event.set()
+                if typed_task is not None and not typed_task.done():
+                    try:
+                        await asyncio.wait_for(typed_task, timeout=3.0)
+                    except TimeoutError:
+                        typed_task.cancel()
+                        await asyncio.gather(typed_task, return_exceptions=True)
+                tool_bridge.close()
+                await model_call(engine.abort)
+                trace.close(close_reason)
+                active_client.release()
+            else:
+                await await_cleanup_cancellation_safe(terminal_cleanup_task)
 
     return app
 
