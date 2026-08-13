@@ -545,3 +545,30 @@ The Target-2 gate (worst 12-frame window mean ≤ 80 ms, max single gap
 The gate accepts the safe bursty scheduler and rejects the starving
 sequential one, as required. Caveat: the pair-era row uses the server-emit
 clock; a future pairing candidate must be gated on the arrival clock.
+
+## Follow-ups outside this plan's scope
+
+- **Deferred-tool-timeout test race (needs its own correctness ticket).**
+  `test_deferred_tool_timeout_is_fatal_even_if_epoch_invalidation_fails`
+  (`tests/runtime/test_realtime_websocket_endpoint.py`, committed in
+  `79cd152d`) patches a 30 ms function timeout and then polls for
+  asynchronous abort completion; the failing signature is
+  `engine.abort_count == 0` in the `invalidation_failure=False` subcase.
+  Throughout Steps 0–4 it failed intermittently on full-suite runs in a
+  collection-order-dependent way (observed independently by at least five
+  review/implementation sessions, always passing on isolated rerun — the
+  attribution analysis in `docs/reviews/step1-evidence-review-r1.md`
+  confirmed it predates and is untouched by this plan's changes). On
+  2026-08-13, during the Step 4a/4b round, it failed **in isolation** for
+  the first time, so the race is drifting worse, not staying benign. The
+  follow-up must determine whether the race is test-only (polling window
+  too tight for a legitimately asynchronous abort) or a real
+  abort-delivery liveness gap in the deferred-tool timeout path, and fix
+  whichever it is; until then it remains a known flake that must never be
+  "fixed" by loosening the assertion without that determination.
+- Already recorded in the implementation log, listed here for
+  discoverability: the qualification validator's installed-layout config
+  path resolution bug (worked around by a hash-verified read-only mount;
+  proper fix is searching `/opt/project/config`), and documenting the
+  launcher-injected `VOICECHAT_RUNTIME_IMAGE`/`_ID` env keys as
+  non-managed so qualification runs need not strip them ad hoc.
