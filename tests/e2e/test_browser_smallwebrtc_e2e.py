@@ -34,6 +34,7 @@ from step2_live_fixture_driver import (
     RTVI_QUIESCENCE_WINDOW_MS,
     RTVI_TRANSCRIPT_IDENTITY,
     RTVI_WALL_CLOCK_SKEW_TOLERANCE_S,
+    STEP4C_SUMMARY_SCHEMA,
     SUMMARY_SCHEMA,
     FixtureSpec,
     Step2PathReservation,
@@ -46,6 +47,7 @@ from step2_live_fixture_driver import (
     load_browser_artifact,
     parse_fixture_plan,
     parse_rtvi_quiescence_window_ms,
+    parse_step4c_fixture_plan,
     plan_document,
     read_playout_trace,
     resolve_step2_paths,
@@ -58,6 +60,7 @@ from step2_live_fixture_driver import (
     validate_marker,
     validate_rtvi_message_clocks,
     validate_rtvi_quiescence_window_ms,
+    validate_step4c_summary,
     wait_for_interruption_deadline,
     wait_for_playout_trace_publication,
 )
@@ -502,9 +505,7 @@ class _BrowserPlayoutTraceSink:
             path.parent.mkdir(parents=True, exist_ok=True)
             self._stream = path.open("x", encoding="utf-8")
         else:
-            descriptor = reservation.open_child(
-                path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
-            )
+            descriptor = reservation.open_child(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             self._stream = os.fdopen(descriptor, "w", encoding="utf-8")
         self.path = path
         self.capture_enabled = capture_enabled
@@ -716,6 +717,7 @@ async def _teardown_step2_session(
     artifact: Path,
     capture_enabled: bool,
     artifact_loader: Any = load_browser_artifact,
+    expected_fixtures: tuple[FixtureSpec, ...] | None = None,
     reservation: Step2PathReservation | None = None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None, list[str]]:
     """Attempt every teardown boundary and retain each independent failure."""
@@ -742,11 +744,24 @@ async def _teardown_step2_session(
     if artifact_exists:
         try:
             if reservation is None:
-                validation = artifact_loader(artifact, capture_enabled=capture_enabled)
+                validation = artifact_loader(
+                    artifact,
+                    capture_enabled=capture_enabled,
+                    **(
+                        {"expected_fixtures": expected_fixtures}
+                        if expected_fixtures is not None
+                        else {}
+                    ),
+                )
             else:
                 validation = artifact_loader(
                     artifact,
                     capture_enabled=capture_enabled,
+                    **(
+                        {"expected_fixtures": expected_fixtures}
+                        if expected_fixtures is not None
+                        else {}
+                    ),
                     reservation=reservation,
                 )
         except Exception as exc:  # noqa: BLE001 - checked evidence failure
@@ -900,9 +915,33 @@ def _write_fixture_summary(
         temporary.replace(path)
         return
     temporary = path.with_name(path.name + ".tmp")
-    descriptor = reservation.open_child(
-        temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
-    )
+    descriptor = reservation.open_child(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            descriptor = -1
+            stream.write(serialized)
+            stream.flush()
+            os.fsync(stream.fileno())
+        reservation.replace_child(temporary, path)
+    except BaseException:
+        if descriptor >= 0:
+            os.close(descriptor)
+        try:
+            reservation.unlink_child(temporary)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+def _write_step4c_summary(
+    path: Path, summary: dict[str, Any], reservation: Step2PathReservation
+) -> None:
+    """Atomically retain the separately validated Step 4c qualification state."""
+
+    validate_step4c_summary(summary)
+    temporary = path.with_name(path.name + ".tmp")
+    serialized = json.dumps(summary, indent=2, sort_keys=True) + "\n"
+    descriptor = reservation.open_child(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
             descriptor = -1
@@ -1011,8 +1050,7 @@ async def _await_rtvi_quiescence_barrier(
     end_wall = float(end["wall_time_s"])
     performance_window_complete = end_performance >= start_performance + quiet_window_ms
     wall_window_complete = (
-        end_wall + RTVI_WALL_CLOCK_SKEW_TOLERANCE_S
-        >= start_wall + quiet_window_ms / 1000.0
+        end_wall + RTVI_WALL_CLOCK_SKEW_TOLERANCE_S >= start_wall + quiet_window_ms / 1000.0
     )
     return {
         "identity": RTVI_TRANSCRIPT_IDENTITY,
@@ -1179,25 +1217,18 @@ def _i1_completion_anchor_indices(
             (
                 index
                 for index, item in enumerate(messages)
-                if index >= at_or_after
-                and item.get("message", {}).get("type") == event_type
+                if index >= at_or_after and item.get("message", {}).get("type") == event_type
             ),
             None,
         )
 
-    original_stop_index = first(
-        "bot-stopped-speaking", at_or_after=interruption_marker_index
-    )
+    original_stop_index = first("bot-stopped-speaking", at_or_after=interruption_marker_index)
     if original_stop_index is None:
         return None
-    replacement_start_index = first(
-        "bot-started-speaking", at_or_after=original_stop_index + 1
-    )
+    replacement_start_index = first("bot-started-speaking", at_or_after=original_stop_index + 1)
     if replacement_start_index is None:
         return None
-    replacement_stop_index = first(
-        "bot-stopped-speaking", at_or_after=replacement_start_index + 1
-    )
+    replacement_stop_index = first("bot-stopped-speaking", at_or_after=replacement_start_index + 1)
     if replacement_stop_index is None:
         return None
     return {
@@ -1292,9 +1323,7 @@ async def _run_step2_fixture_inner(
             )
     trace_baseline = len(trace_before_send)
     await text_box.fill(fixture.typed_text)
-    send_edge = await _emit_fixture_boundary_recorded(
-        page, sink, fixture, result, "start", persist
-    )
+    send_edge = await _emit_fixture_boundary_recorded(page, sink, fixture, result, "start", persist)
     await text_box.press("Enter")
     result["send_wall_time_s"] = time.time()
     persist()
@@ -1350,9 +1379,7 @@ async def _run_step2_fixture_inner(
             interruption_performance_ms = interruption_clock["performance_ms"]
             interruption_send_edge = interruption_clock
             interruption_marker_event_index = int(interruption_clock["rtvi_message_index"])
-            result["interruption"]["rtvi_send_marker_event_index"] = (
-                interruption_marker_event_index
-            )
+            result["interruption"]["rtvi_send_marker_event_index"] = interruption_marker_event_index
             await text_box.press("Enter")
             result["interruption"]["send_wall_time_s"] = time.time()
             result["interruption"]["actual_offset_s"] = (
@@ -1393,9 +1420,7 @@ async def _run_step2_fixture_inner(
                 )
             )
             stop_indices = (
-                _rtvi_event_indices(messages, fixture.wait.event)
-                if interruption is None
-                else []
+                _rtvi_event_indices(messages, fixture.wait.event) if interruption is None else []
             )
             completions = [messages[index] for index in completion_indices]
             stops = [messages[index] for index in stop_indices]
@@ -1403,9 +1428,7 @@ async def _run_step2_fixture_inner(
             original_terminal: dict[str, Any] | None = None
             if fixture.interruption is None:
                 browser_shape_met = (
-                    len(starts) == 1
-                    and len(stops) == 1
-                    and start_indices[0] < stop_indices[0]
+                    len(starts) == 1 and len(stops) == 1 and start_indices[0] < stop_indices[0]
                 )
             else:
                 if interruption_marker_event_index is None:
@@ -1487,10 +1510,8 @@ async def _run_step2_fixture_inner(
                         start_indices[0] : original_terminal_index + 1
                     ]
                     original_before_send = sum(
-                        float(item["receivedPerformanceMs"])
-                        <= float(send_edge["performance_ms"])
-                        or float(item["receivedWallTimeS"])
-                        <= float(send_edge["wall_time_s"])
+                        float(item["receivedPerformanceMs"]) <= float(send_edge["performance_ms"])
+                        or float(item["receivedWallTimeS"]) <= float(send_edge["wall_time_s"])
                         for item in original_bracket_messages
                     )
                     if original_before_send:
@@ -1500,9 +1521,7 @@ async def _run_step2_fixture_inner(
                     attribution["original_response"].update(
                         {
                             "speaking_start_wall_time_s": starts[0]["receivedWallTimeS"],
-                            "interrupted_wall_time_s": original_terminal[
-                                "receivedWallTimeS"
-                            ],
+                            "interrupted_wall_time_s": original_terminal["receivedWallTimeS"],
                             "rtvi_event_bracket": {
                                 "response_id": response_ids[0],
                                 "transcript_binding": RTVI_TRANSCRIPT_IDENTITY,
@@ -1519,9 +1538,7 @@ async def _run_step2_fixture_inner(
                                     "receivedPerformanceMs"
                                 ],
                                 "start_wall_time_s": starts[0]["receivedWallTimeS"],
-                                "terminal_wall_time_s": original_terminal[
-                                    "receivedWallTimeS"
-                                ],
+                                "terminal_wall_time_s": original_terminal["receivedWallTimeS"],
                                 "transcript_event_indices": [],
                                 "transcript_performance_ms": [],
                                 "output_text_sha256": hashlib.sha256(
@@ -1532,9 +1549,7 @@ async def _run_step2_fixture_inner(
                     )
                     attribution["replacement_response"].update(
                         {
-                            "speaking_start_wall_time_s": completion_start[
-                                "receivedWallTimeS"
-                            ],
+                            "speaking_start_wall_time_s": completion_start["receivedWallTimeS"],
                             "speaking_stop_wall_time_s": completed["receivedWallTimeS"],
                             "transcript_evidence": second,
                             "rtvi_event_bracket": transcript_bracket,
@@ -1704,9 +1719,7 @@ def test_step2_child_writers_survive_deterministic_directory_swap_after_reservat
         assert (displaced / "summary.json").read_text(encoding="utf-8") == "{}\n"
         assert list(attacker.iterdir()) == []
         with pytest.raises(ValueError, match="no longer names|identity changed"):
-            read_playout_trace(
-                Path(paths["pipecat_playout_capture_on"]), reservation=paths
-            )
+            read_playout_trace(Path(paths["pipecat_playout_capture_on"]), reservation=paths)
     finally:
         paths.close()
 
@@ -2221,9 +2234,7 @@ async def test_fixture_fake_completes_truncated_l1_without_browser_transcript_fl
     tmp_path: Path,
 ) -> None:
     fixture = parse_fixture_plan(canonical_plan_json()).fixtures[3]
-    truncated_text = (
-        "The quick brown fox jumps over the lazy dog while seventeen green dragons"
-    )
+    truncated_text = "The quick brown fox jumps over the lazy dog while seventeen green dragons"
     messages = [
         _timed_message("bot-started-speaking", 10.0),
         _timed_message("bot-stopped-speaking", 30.0),
@@ -2302,9 +2313,7 @@ async def test_fixture_fake_rejects_repeated_s1_identical_bytes_late_transcript(
         _timed_message("bot-transcription", 20.0, text=fixture.typed_text),
         _timed_message("bot-stopped-speaking", 30.0),
     ]
-    late_identical = complete + [
-        _timed_message("bot-transcription", 31.0, text=fixture.typed_text)
-    ]
+    late_identical = complete + [_timed_message("bot-transcription", 31.0, text=fixture.typed_text)]
     result = blank_fixture_result(fixture)
 
     with pytest.raises(AssertionError, match="quiescence barrier"):
@@ -2317,9 +2326,7 @@ async def test_fixture_fake_rejects_repeated_s1_identical_bytes_late_transcript(
             lambda: None,
             tmp_path / "trace.jsonl",
             trace_reader=_FixtureFakeTrace(
-                _fake_response_trace(
-                    "response-S1-1", 1.0, output_text=fixture.typed_text
-                )
+                _fake_response_trace("response-S1-1", 1.0, output_text=fixture.typed_text)
             ),
             quiescence_window_ms=RTVI_QUIESCENCE_MIN_WINDOW_MS,
         )
@@ -2594,17 +2601,13 @@ async def test_attempt_7_retained_i1_observation_matches_completion_anchors(
         retained["interruption"]["actual_offset_s"] * 1000.0
     )
     final_stop = next(
-        item
-        for item in reversed(messages)
-        if item["message"]["type"] == "bot-stopped-speaking"
+        item for item in reversed(messages) if item["message"]["type"] == "bot-stopped-speaking"
     )
     fixture = parse_fixture_plan(canonical_plan_json()).fixtures[6]
     fixture = replace(fixture, wait=WaitCriteria(fixture.wait.event, 0.02, True))
     result = blank_fixture_result(fixture)
     records = _fake_response_trace("original", 1.0, cancelled=True)
-    records += _fake_response_trace(
-        "replacement", 2.0, output_text=" Two plus two is four."
-    )
+    records += _fake_response_trace("replacement", 2.0, output_text=" Two plus two is four.")
 
     completed = await _run_step2_fixture(
         _FixtureFakePage(
@@ -2647,9 +2650,7 @@ async def test_attempt_7_retained_i1_observation_matches_completion_anchors(
         "completed"
     )
     assert result["interruption"]["rtvi_send_marker_event_index"] == 300
-    original_bracket = result["response_attribution"]["original_response"][
-        "rtvi_event_bracket"
-    ]
+    original_bracket = result["response_attribution"]["original_response"]["rtvi_event_bracket"]
     replacement_bracket = result["response_attribution"]["replacement_response"][
         "rtvi_event_bracket"
     ]
@@ -2676,8 +2677,7 @@ async def test_i1_completion_anchors_ignore_interruption_count_and_user_speech_e
     fixture = parse_fixture_plan(canonical_plan_json()).fixtures[6]
     first = [_timed_message("bot-started-speaking", 10.0)]
     ignored = [
-        _timed_message("bot-interrupted", 4011.0 + index)
-        for index in range(bot_interrupted_count)
+        _timed_message("bot-interrupted", 4011.0 + index) for index in range(bot_interrupted_count)
     ]
     ignored.extend(
         [
@@ -2693,16 +2693,18 @@ async def test_i1_completion_anchors_ignore_interruption_count_and_user_speech_e
                 _timed_message("user-stopped-speaking", 4018.0),
             ]
         )
-    complete = first + ignored + [
-        _timed_message("bot-stopped-speaking", 4020.0),
-        _timed_message("bot-started-speaking", 4030.0),
-        _timed_message("bot-transcription", 4040.0, text="Two plus two is four."),
-        _timed_message("bot-stopped-speaking", 4050.0),
-    ]
-    records = _fake_response_trace("original", 1.0, cancelled=True)
-    records += _fake_response_trace(
-        "replacement", 2.0, output_text=" Two plus two is four."
+    complete = (
+        first
+        + ignored
+        + [
+            _timed_message("bot-stopped-speaking", 4020.0),
+            _timed_message("bot-started-speaking", 4030.0),
+            _timed_message("bot-transcription", 4040.0, text="Two plus two is four."),
+            _timed_message("bot-stopped-speaking", 4050.0),
+        ]
     )
+    records = _fake_response_trace("original", 1.0, cancelled=True)
+    records += _fake_response_trace("replacement", 2.0, output_text=" Two plus two is four.")
     result = blank_fixture_result(fixture)
 
     completed = await _run_step2_fixture(
@@ -2719,9 +2721,12 @@ async def test_i1_completion_anchors_ignore_interruption_count_and_user_speech_e
 
     assert completed is True
     assert result["completion_status"] == "completed"
-    assert result["response_attribution"]["original_response"]["rtvi_event_bracket"][
-        "terminal_event_type"
-    ] == "bot-stopped-speaking"
+    assert (
+        result["response_attribution"]["original_response"]["rtvi_event_bracket"][
+            "terminal_event_type"
+        ]
+        == "bot-stopped-speaking"
+    )
     assert result["quiescence_barrier"]["passed"] is True
 
 
@@ -2737,9 +2742,7 @@ async def test_i1_uses_event_index_when_original_stop_precedes_send_clock_by_56m
         _timed_message("bot-stopped-speaking", 4090.0),
     ]
     records = _fake_response_trace("original", 1.0, cancelled=True)
-    records += _fake_response_trace(
-        "replacement", 2.0, output_text=" Two plus two is four."
-    )
+    records += _fake_response_trace("replacement", 2.0, output_text=" Two plus two is four.")
     wall_times = iter((99.0, 99.1, 104.0, 104.122, 110.0))
     monkeypatch.setattr(time, "time", lambda: next(wall_times))
     result = blank_fixture_result(fixture)
@@ -3996,6 +3999,182 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
 
 @pytest.mark.browser_e2e
 @pytest.mark.asyncio
+async def test_step4c_live_fixture_plan(tmp_path):
+    """Run one exact L1 incidence block under the isolated Step 4c schema."""
+
+    raw_plan = os.environ.get("VOICECHAT_STEP4C_FIXTURE_PLAN")
+    if not raw_plan:
+        pytest.skip("set VOICECHAT_STEP4C_FIXTURE_PLAN for the Step 4c live fixture")
+    plan = parse_step4c_fixture_plan(raw_plan)
+    url = os.environ.get("VOICECHAT_LIVE_PLAYGROUND_URL")
+    if not url:
+        pytest.fail("VOICECHAT_LIVE_PLAYGROUND_URL is required for Step 4c")
+    if CHROMIUM and not Path(CHROMIUM).exists():
+        pytest.fail(f"configured Chromium is not installed at {CHROMIUM}")
+    configured_trace = os.environ.get("NEMOTRON_VOICECHAT_PLAYOUT_TRACE")
+    configured_output = os.environ.get("VOICECHAT_STEP4C_OUTPUT_DIR")
+    if not configured_trace or not configured_output:
+        pytest.fail("Step 4c requires explicit playout trace and output directory paths")
+    output_dir = Path(configured_output).expanduser()
+    microphone_wav = Path(
+        os.environ.get("VOICECHAT_LIVE_MIC_WAV", str(tmp_path / "step4c-silent-mic.wav"))
+    ).expanduser()
+    if not microphone_wav.exists():
+        _write_silent_microphone(
+            microphone_wav, duration=plan.duration_seconds + plan.drain_seconds + 30
+        )
+    capture_artifact = output_dir / "browser-playout.jsonl"
+    unused_capture_off = output_dir / "browser-playout-unused-capture-off.jsonl"
+    summary_path = output_dir / "step4c-browser-summary.json"
+    try:
+        resolved = resolve_step2_paths(
+            microphone=microphone_wav,
+            capture_on=capture_artifact,
+            capture_off=unused_capture_off,
+            summary=summary_path,
+            pipecat_trace=Path(configured_trace).expanduser(),
+            output_dir=output_dir,
+        )
+    except (ValueError, FileExistsError) as exc:
+        pytest.fail(f"unsafe Step 4c path configuration: {exc}")
+    capture_artifact = Path(resolved["browser_capture_on"])
+    summary_path = Path(resolved["summary"])
+    pipecat_trace = connection_playout_trace_path(Path(resolved["pipecat_playout_trace"]), 1)
+    health_url = os.environ.get("VOICECHAT_STEP4C_HEALTH_URL", "http://127.0.0.1:8786/health")
+    try:
+        with urllib.request.urlopen(health_url, timeout=10) as response:  # noqa: S310
+            health = json.load(response)
+    except Exception as exc:  # noqa: BLE001 - retained pre-connection failure
+        resolved.close()
+        pytest.fail(f"Step 4c immediate health check failed: {exc!r}")
+    if not isinstance(health, dict) or health.get("active_client") is not False:
+        resolved.close()
+        pytest.fail("Step 4c immediate health check did not prove active_client:false")
+    health_path = output_dir / "health-immediately-before.json"
+    health_descriptor = resolved.open_child(
+        health_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
+    )
+    with os.fdopen(health_descriptor, "w", encoding="utf-8") as stream:
+        json.dump(health, stream, indent=2, sort_keys=True)
+        stream.write("\n")
+
+    fixture = plan.fixtures[0]
+    result = blank_fixture_result(fixture)
+    summary: dict[str, Any] = {
+        "schema": STEP4C_SUMMARY_SCHEMA,
+        "status": "running",
+        "started_wall_time_s": time.time(),
+        "completed_wall_time_s": None,
+        "plan": plan_document(plan),
+        "health_immediately_before": health,
+        "session": {
+            "status": "running",
+            "session_id": None,
+            "browser_artifact_validation": None,
+            "observed_playout_trace": None,
+            "capture_shutdown": None,
+            "teardown_errors": [],
+            "connected_window_seconds": None,
+        },
+        "fixture": result,
+        "error": None,
+    }
+
+    def persist() -> None:
+        _write_step4c_summary(summary_path, summary, resolved)
+
+    persist()
+    manager = async_playwright()
+    playwright = None
+    state: dict[str, Any] = {"browser": None, "context": None, "page": None, "sink": None}
+    browser_log: list[str] = []
+    failure: str | None = None
+    connected_started: float | None = None
+    try:
+        playwright = await _start_playwright(manager)
+        text_box = await _setup_step2_session(
+            state=state,
+            playwright=playwright,
+            url=url,
+            microphone_wav=Path(resolved["microphone"]),
+            artifact=capture_artifact,
+            capture_mode="on",
+            browser_log=browser_log,
+            reservation=resolved,
+        )
+        connected_started = time.monotonic()
+        await asyncio.sleep(plan.warmup_seconds)
+        attribution_cursor: dict[str, int | None] = {
+            "rtvi_index": 0,
+            "playout_index": len(read_playout_trace(pipecat_trace, reservation=resolved)),
+        }
+        fixture_ok = await _run_step2_fixture(
+            state["page"],
+            text_box,
+            state["sink"],
+            fixture,
+            result,
+            persist,
+            pipecat_trace,
+            trace_reader=lambda path: read_playout_trace(path, reservation=resolved),
+            attribution_cursor=attribution_cursor,
+        )
+        if not fixture_ok:
+            failure = f"Step 4c L1 failed: {result['error']}"
+        remaining = connected_started + plan.duration_seconds - time.monotonic()
+        if remaining > 0:
+            await asyncio.sleep(remaining)
+        await asyncio.sleep(plan.drain_seconds)
+        summary["session"]["connected_window_seconds"] = time.monotonic() - connected_started
+    except Exception as exc:  # noqa: BLE001 - retain live partial evidence
+        failure = failure or repr(exc)
+    finally:
+        shutdown, artifact_validation, teardown_errors = await _teardown_step2_session(
+            page=state.get("page"),
+            sink=state.get("sink"),
+            context=state.get("context"),
+            browser=state.get("browser"),
+            artifact=capture_artifact,
+            capture_enabled=True,
+            expected_fixtures=plan.fixtures,
+            reservation=resolved,
+        )
+        summary["session"]["capture_shutdown"] = shutdown
+        summary["session"]["browser_artifact_validation"] = artifact_validation
+        summary["session"]["teardown_errors"] = teardown_errors
+        if teardown_errors:
+            failure = failure or teardown_errors[0]
+        if playwright is not None:
+            terminal_errors: list[str] = []
+            stop_error = await _stop_playwright_recorded(playwright, terminal_errors)
+            failure = failure or stop_error
+        try:
+            observed = await wait_for_playout_trace_publication(pipecat_trace, reservation=resolved)
+            summary["session"]["observed_playout_trace"] = observed
+            records = read_playout_trace(pipecat_trace, reservation=resolved)
+            session_ids = {
+                record.get("session_id")
+                for record in records
+                if isinstance(record.get("session_id"), str)
+            }
+            if len(session_ids) != 1:
+                failure = failure or f"ambiguous Step 4c session IDs: {sorted(session_ids)}"
+            else:
+                summary["session"]["session_id"] = session_ids.pop()
+        except Exception as exc:  # noqa: BLE001 - terminal evidence is mandatory
+            failure = failure or f"playout publication failed: {exc!r}"
+        summary["completed_wall_time_s"] = time.time()
+        summary["status"] = "failed" if failure else "completed"
+        summary["session"]["status"] = "failed" if failure else "completed"
+        summary["error"] = failure
+        persist()
+        resolved.close()
+    if failure:
+        pytest.fail(f"Step 4c browser fixture failed closed: {failure}; summary={summary_path}")
+
+
+@pytest.mark.browser_e2e
+@pytest.mark.asyncio
 async def test_step2_live_fixture_plan(tmp_path):
     """Run the preregistered plan in one session per capture mode."""
 
@@ -4140,9 +4319,7 @@ async def test_step2_live_fixture_plan(tmp_path):
                 attribution_cursor: dict[str, int | None] = {
                     "rtvi_index": 0,
                     "playout_index": len(
-                        read_playout_trace(
-                            session_pipecat_trace, reservation=resolved_paths
-                        )
+                        read_playout_trace(session_pipecat_trace, reservation=resolved_paths)
                     ),
                 }
 

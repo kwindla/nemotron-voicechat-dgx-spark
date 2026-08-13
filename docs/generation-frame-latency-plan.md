@@ -572,3 +572,21 @@ clock; a future pairing candidate must be gated on the arrival clock.
   proper fix is searching `/opt/project/config`), and documenting the
   launcher-injected `VOICECHAT_RUNTIME_IMAGE`/`_ID` env keys as
   non-managed so qualification runs need not strip them ad hoc.
+
+- **2026-08-13 — STEP 4 CLOSED (4e ranking review round 2: PASS).**
+  Evidence base: 4a/4b descriptive (thermal/DVFS/pressure exonerated;
+  server trace cost UNMEASURED pending the designed experiment), 4c
+  INSUFFICIENT (EarTTS-high mode absent in 0/764 valid rows; retained-state
+  pivot standing), 4d descriptive/INCOMPLETE (ten-block decomposition:
+  content 53.56/45.85/7.71 ms, PAD 53.60/45.58/8.02 — ~86% of the Nano
+  interface inside the CUDA-graph envelope; exact-output gate exposed
+  fresh-engine graph-path replay divergence, a standing prerequisite).
+  Byproduct: the deferred-tool "flake" was root-caused as a real
+  abort-delivery liveness gap and fixed via a cancellation-safe
+  transferred-ownership terminal path (3 review rounds; commit bc367bb).
+  The ranking table (`reports/step4-candidate-ranking-20260813.md`)
+  grants no candidate ranking authority yet; its reviewed recommendation:
+  (1) close the W8 graph-path reproducibility gate first (unlocks the
+  kernel and wrapper classes), (2) run pairing's wedge-closure decision as
+  a design-only reliability track in parallel, (3) Step 5 selection only
+  after at least one row turns `measured`.

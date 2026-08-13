@@ -136,6 +136,17 @@ async def test_tool_handler_returns_terminal_utc_result():
     assert results[0].model_output.endswith(" UTC.")
 
 
+def test_step4c_browser_fixture_is_explicit_tool_free_and_fail_closed(monkeypatch):
+    monkeypatch.setenv(bot_module.STEP4C_FIXTURE_ENV, bot_module.STEP4C_FIXTURE)
+    instruction, tools = bot_module.qualification_settings()
+    assert instruction == bot_module.STEP4C_SYSTEM_INSTRUCTION
+    assert tools == []
+
+    monkeypatch.setenv(bot_module.STEP4C_FIXTURE_ENV, "unknown")
+    with pytest.raises(RuntimeError, match="unsupported browser qualification"):
+        bot_module.qualification_settings()
+
+
 @pytest.mark.asyncio
 async def test_concise_tool_result_retains_full_context_and_sidecar(monkeypatch):
     context = VoicechatLLMContext(messages=[])
@@ -172,12 +183,8 @@ async def test_concise_tool_result_retains_full_context_and_sidecar(monkeypatch)
         )
     )
 
-    assert context.get_messages()[-1]["content"] == (
-        '{"timezone": "UTC", "iso_utc": "full-value"}'
-    )
-    assert context.voicechat_model_output("call_concise") == (
-        "It is currently four o'clock."
-    )
+    assert context.get_messages()[-1]["content"] == ('{"timezone": "UTC", "iso_utc": "full-value"}')
+    assert context.voicechat_model_output("call_concise") == ("It is currently four o'clock.")
 
 
 @pytest.mark.asyncio
