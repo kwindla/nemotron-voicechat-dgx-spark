@@ -1,0 +1,32 @@
+{
+  "audio_bytes": 141120,
+  "audio_frames": 40,
+  "drain_seconds": 8.0,
+  "duration_seconds": 8.0,
+  "passed": true,
+  "playout_trace_enabled": true,
+  "playout_trace_status": {
+    "artifact_published": true,
+    "closed": true,
+    "dropped_records": 0,
+    "enabled": true,
+    "error": null,
+    "invalid_reason": null,
+    "queued_records": 0,
+    "valid": true,
+    "writer_alive": false,
+    "written_records": 197
+  },
+  "prompts": [
+    "What is two plus three? Answer in one short sentence.",
+    "Remember that the codeword is sapphire and acknowledge it briefly.",
+    "What codeword did I ask you to remember?",
+    "Say the word latency once."
+  ],
+  "prompts_sent": 1,
+  "responses_done": 1,
+  "schema": "nemotron_voicechat.step4_pipecat_soak.v1",
+  "session_id": "c61e37f5-51a3-4673-86c7-620d8d72dcd8",
+  "source_frames": 100,
+  "typed_interval_seconds": 45.0
+}

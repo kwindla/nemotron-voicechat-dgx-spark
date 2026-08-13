@@ -1,0 +1,6 @@
+72d4dff418111e4c1034ec57c82f8f35cde597023cb8ef640dc2efebeb422834  /home/khkramer/.local/state/nemotron-voicechat/traces/model/3c888978-02de-4b81-982b-10d696c86328/events.jsonl
+a1b745b1399927be490ea0b7f9d88c59f88ba1c9ff4b740a32d87300ebf6169f  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/telemetry.jsonl
+3607f180c19f982dd5cf48b72aecbc092ba67c78107f5f9a10b61ee4b7288aa8  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/soak/events.jsonl
+119d7f1af75120158ab077045d506a557e4a9d2e445430f71f25f53585bac889  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/soak/report.json
+90ee668887cee1e32d3db61393795dc2a6abfcb4c1f6e28a47ae1f0f672063ec  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/stratified-analysis.json
+dc433983c3e72fcdc6b2fd32f5212336d47dac92a7b277c3fa51a57382908759  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/telemetry-regression.json

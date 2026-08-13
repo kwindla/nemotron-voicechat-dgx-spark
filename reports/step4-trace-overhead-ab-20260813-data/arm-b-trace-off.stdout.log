@@ -1,0 +1,57 @@
+2026-08-13 15:28:05.315 | INFO     | pipecat:<module>:54 - ᓚᘏᗢ Pipecat 1.7.1.dev21 (Python 3.12.13 (main, Mar 20 2026, 00:36:21) [Clang 22.1.1 ]) ᓚᘏᗢ
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.processors.frame_processor:link:577 - Linking Pipeline#0::Source -> NemotronVoicechatLLMService#0
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.processors.frame_processor:link:577 - Linking NemotronVoicechatLLMService#0 -> CaptureSink#0
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.processors.frame_processor:link:577 - Linking CaptureSink#0 -> Pipeline#0::Sink
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.processors.frame_processor:link:577 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.processors.frame_processor:link:577 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.workers.runner:add_workers:213 - WorkerRunner 'runner-af2fbb75': added worker 'PipelineWorker#0'
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.workers.runner:run:257 - WorkerRunner 'runner-af2fbb75': started running
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.workers.runner:_start_worker:413 - WorkerRunner 'runner-af2fbb75': starting worker 'PipelineWorker#0'
+2026-08-13 15:28:06.125 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:965 - PipelineWorker#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-08-13 15:28:06.281 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#0' ready (local)
+2026-08-13 15:28:06.281 | DEBUG    | pipecat.workers.runner:_send_registry:465 - WorkerRunner 'runner-af2fbb75': broadcasting registry: ['PipelineWorker#0']
+2026-08-13 15:28:06.281 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1078 - Worker 'PipelineWorker#0': activated
+2026-08-13 15:28:06.281 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:968 - PipelineWorker#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-08-13 15:28:08.535 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:753 - NemotronVoicechatLLMService#0: broadcasting interruption
+2026-08-13 15:28:12.069 | INFO     | nemotron_voicechat_pipecat.llm:_release_held_input:1127 - voicechat.held_input_release preroll_cap_bytes=12800 retained_unassigned_chunks=5 retained_unassigned_bytes=12800 evicted_unassigned_chunks=64 evicted_unassigned_bytes=163840 released_chunks=5 released_audio_bytes=12800
+2026-08-13 15:28:53.859 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:753 - NemotronVoicechatLLMService#0: broadcasting interruption
+2026-08-13 15:28:57.743 | INFO     | nemotron_voicechat_pipecat.llm:_release_held_input:1127 - voicechat.held_input_release preroll_cap_bytes=12800 retained_unassigned_chunks=5 retained_unassigned_bytes=12800 evicted_unassigned_chunks=73 evicted_unassigned_bytes=186880 released_chunks=5 released_audio_bytes=12800
+2026-08-13 15:29:37.835 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:753 - NemotronVoicechatLLMService#0: broadcasting interruption
+2026-08-13 15:29:40.422 | INFO     | nemotron_voicechat_pipecat.llm:_release_held_input:1127 - voicechat.held_input_release preroll_cap_bytes=12800 retained_unassigned_chunks=5 retained_unassigned_bytes=12800 evicted_unassigned_chunks=44 evicted_unassigned_bytes=112640 released_chunks=5 released_audio_bytes=12800
+2026-08-13 15:30:22.417 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:753 - NemotronVoicechatLLMService#0: broadcasting interruption
+2026-08-13 15:30:24.712 | INFO     | nemotron_voicechat_pipecat.llm:_release_held_input:1127 - voicechat.held_input_release preroll_cap_bytes=12800 retained_unassigned_chunks=5 retained_unassigned_bytes=12800 evicted_unassigned_chunks=36 evicted_unassigned_bytes=92160 released_chunks=5 released_audio_bytes=12800
+2026-08-13 15:31:08.472 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:753 - NemotronVoicechatLLMService#0: broadcasting interruption
+2026-08-13 15:31:12.477 | INFO     | nemotron_voicechat_pipecat.llm:_release_held_input:1127 - voicechat.held_input_release preroll_cap_bytes=12800 retained_unassigned_chunks=5 retained_unassigned_bytes=12800 evicted_unassigned_chunks=71 evicted_unassigned_bytes=181760 released_chunks=5 released_audio_bytes=12800
+2026-08-13 15:31:53.372 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:753 - NemotronVoicechatLLMService#0: broadcasting interruption
+2026-08-13 15:31:57.472 | INFO     | nemotron_voicechat_pipecat.llm:_release_held_input:1127 - voicechat.held_input_release preroll_cap_bytes=12800 retained_unassigned_chunks=5 retained_unassigned_bytes=12800 evicted_unassigned_chunks=71 evicted_unassigned_bytes=181760 released_chunks=5 released_audio_bytes=12800
+2026-08-13 15:32:37.578 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:753 - NemotronVoicechatLLMService#0: broadcasting interruption
+2026-08-13 15:32:40.226 | INFO     | nemotron_voicechat_pipecat.llm:_release_held_input:1127 - voicechat.held_input_release preroll_cap_bytes=12800 retained_unassigned_chunks=5 retained_unassigned_bytes=12800 evicted_unassigned_chunks=44 evicted_unassigned_bytes=112640 released_chunks=5 released_audio_bytes=12800
+2026-08-13 15:33:21.453 | DEBUG    | pipecat.pipeline.worker:stop_when_done:665 - Task PipelineWorker#0 scheduled to stop when done
+2026-08-13 15:33:21.453 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:986 - PipelineWorker#0: Closing. Waiting for EndFrame#0(reason: None) to reach the end of the pipeline...
+2026-08-13 15:33:21.667 | INFO     | nemotron_voicechat_pipecat.llm:_handle_server_event:1370 - NemotronVoicechatLLMService#0: Voicechat session closed status=completed reason=client_stop
+2026-08-13 15:33:21.668 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:992 - PipelineWorker#0: EndFrame#0(reason: None) reached the end of the pipeline, pipeline is closing.
+2026-08-13 15:33:21.668 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#0: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-08-13 15:33:21.669 | DEBUG    | pipecat.pipeline.worker:run:711 - Pipeline worker PipelineWorker#0 is finishing...
+2026-08-13 15:33:21.669 | DEBUG    | pipecat.pipeline.worker:run:715 - Pipeline worker PipelineWorker#0 has finished
+2026-08-13 15:33:21.669 | DEBUG    | pipecat.workers.runner:run:300 - WorkerRunner 'runner-af2fbb75': finished running
+{
+  "audio_bytes": 984312,
+  "audio_frames": 279,
+  "drain_seconds": 15.0,
+  "duration_seconds": 300.0,
+  "passed": true,
+  "playout_trace_enabled": false,
+  "playout_trace_status": null,
+  "prompts": [
+    "What is two plus three? Answer in one short sentence.",
+    "Remember that the codeword is sapphire and acknowledge it briefly.",
+    "What codeword did I ask you to remember?",
+    "Say the word latency once."
+  ],
+  "prompts_sent": 7,
+  "responses_done": 7,
+  "schema": "nemotron_voicechat.step4_pipecat_soak.v1",
+  "session_id": "bb89df0d-33ef-45c5-9fbe-0238fa789e40",
+  "source_frames": 3750,
+  "typed_interval_seconds": 45.0
+}

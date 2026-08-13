@@ -1,0 +1,4477 @@
+{
+  "channel_sample_distributions": {
+    "cpu5.scaling_cur_freq_khz": {
+      "max": 3900000.0,
+      "mean": 3900000.0,
+      "min": 3900000.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "cpu6.scaling_cur_freq_khz": {
+      "max": 3900000.0,
+      "mean": 3900000.0,
+      "min": 3900000.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "cpu7.scaling_cur_freq_khz": {
+      "max": 3900000.0,
+      "mean": 3900000.0,
+      "min": 3900000.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "cpu8.scaling_cur_freq_khz": {
+      "max": 3900000.0,
+      "mean": 3900000.0,
+      "min": 3900000.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "cpu9.scaling_cur_freq_khz": {
+      "max": 3900000.0,
+      "mean": 3900000.0,
+      "min": 3900000.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "gpu.clocks.mem": {
+      "max": null,
+      "mean": null,
+      "min": null,
+      "n": 0,
+      "n_unique": 0
+    },
+    "gpu.clocks.sm": {
+      "max": 2554.0,
+      "mean": 2494.320241691843,
+      "min": 2398.0,
+      "n": 331,
+      "n_unique": 19
+    },
+    "gpu.memory.total": {
+      "max": null,
+      "mean": null,
+      "min": null,
+      "n": 0,
+      "n_unique": 0
+    },
+    "gpu.memory.used": {
+      "max": null,
+      "mean": null,
+      "min": null,
+      "n": 0,
+      "n_unique": 0
+    },
+    "gpu.power.draw": {
+      "max": 36.77,
+      "mean": 28.47057401812689,
+      "min": 10.44,
+      "n": 331,
+      "n_unique": 259
+    },
+    "gpu.power.limit": {
+      "max": null,
+      "mean": null,
+      "min": null,
+      "n": 0,
+      "n_unique": 0
+    },
+    "gpu.temperature.gpu": {
+      "max": 70.0,
+      "mean": 64.47432024169184,
+      "min": 48.0,
+      "n": 331,
+      "n_unique": 21
+    },
+    "gpu.utilization.gpu": {
+      "max": 96.0,
+      "mean": 66.32930513595166,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 30
+    },
+    "gpu.utilization.memory": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "pressure.cpu.avg10": {
+      "max": 2.35,
+      "mean": 0.3323867069486405,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 85
+    },
+    "pressure.cpu.avg300": {
+      "max": 0.22,
+      "mean": 0.14722054380664654,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 17
+    },
+    "pressure.cpu.avg60": {
+      "max": 0.51,
+      "mean": 0.2992447129909365,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 36
+    },
+    "pressure.cpu.interval_stall_fraction": {
+      "max": 0.2227926524940683,
+      "mean": 0.004318870348702629,
+      "min": 0.00013607611538044205,
+      "n": 330,
+      "n_unique": 330
+    },
+    "pressure.io.avg10": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "pressure.io.avg300": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "pressure.io.avg60": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "pressure.io.interval_stall_fraction": {
+      "max": 0.0029549268317259378,
+      "mean": 0.00015627187095668005,
+      "min": 0.0,
+      "n": 330,
+      "n_unique": 103
+    },
+    "pressure.memory.avg10": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "pressure.memory.avg300": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "pressure.memory.avg60": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 331,
+      "n_unique": 1
+    },
+    "pressure.memory.interval_stall_fraction": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 330,
+      "n_unique": 1
+    }
+  },
+  "channels": [
+    "cpu5.scaling_cur_freq_khz",
+    "cpu6.scaling_cur_freq_khz",
+    "cpu7.scaling_cur_freq_khz",
+    "cpu8.scaling_cur_freq_khz",
+    "cpu9.scaling_cur_freq_khz",
+    "gpu.clocks.mem",
+    "gpu.clocks.sm",
+    "gpu.memory.total",
+    "gpu.memory.used",
+    "gpu.power.draw",
+    "gpu.power.limit",
+    "gpu.temperature.gpu",
+    "gpu.utilization.gpu",
+    "gpu.utilization.memory",
+    "pressure.cpu.avg10",
+    "pressure.cpu.avg300",
+    "pressure.cpu.avg60",
+    "pressure.cpu.interval_stall_fraction",
+    "pressure.io.avg10",
+    "pressure.io.avg300",
+    "pressure.io.avg60",
+    "pressure.io.interval_stall_fraction",
+    "pressure.memory.avg10",
+    "pressure.memory.avg300",
+    "pressure.memory.avg60",
+    "pressure.memory.interval_stall_fraction"
+  ],
+  "clock_mapping": {
+    "maximum_permitted_join_distance_s": 0.55,
+    "method": "direct shared-host monotonic clock; wall = monotonic + sampled offset",
+    "poll_interval_s": {
+      "max": 1.000764325261116,
+      "mean": 1.000001492340005,
+      "min": 0.9991662912070751
+    },
+    "telemetry_samples": 331,
+    "wall_minus_monotonic_s": {
+      "max": 1781806752.7731395,
+      "mean": 1781806752.7731373,
+      "min": 1781806752.7731364,
+      "range_ms": 0.0030994415283203125
+    }
+  },
+  "populations": {
+    "delivered": {
+      "analyzer_membership": {
+        "n": 300,
+        "sha256": "7138c2eb10406d0b1348e231b619ba55259a73d72842705cc0fb77d61e24aac4"
+      },
+      "analyzer_server_step_ms": {
+        "count_over_80_ms": 129,
+        "max": 162.31,
+        "mean": 82.35526999999999,
+        "n": 300,
+        "p50": 79.583,
+        "p95": 85.717,
+        "p99": 157.894
+      },
+      "join_distance_ms": {
+        "count_over_80_ms": 250,
+        "max": 499.3132632225752,
+        "mean": 249.9390234456708,
+        "n": 300,
+        "p50": 249.29026141762733,
+        "p95": 478.24190091341734,
+        "p99": 495.61502505093813
+      },
+      "regressions": {
+        "cpu5.scaling_cur_freq_khz": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu6.scaling_cur_freq_khz": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu7.scaling_cur_freq_khz": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu8.scaling_cur_freq_khz": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu9.scaling_cur_freq_khz": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "gpu.clocks.mem": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.clocks.sm": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 8,
+          "ols_slope_ms_per_unit_frame": -0.08886947857959866,
+          "pearson_r_frame": -0.11372766816293219,
+          "pearson_r_frame_after_linear_time_detrend": -0.06107930406564941,
+          "pearson_r_sample_mean": -0.28132504445010387,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.10891728719344065,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.18366660350764735,
+              -0.029064852560543634
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 84.80921333333333,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 2502.0,
+              "telemetry_mean": 2492.0133333333333,
+              "telemetry_min": 2457.0
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 79.80828,
+              "server_step_ms_p95": 85.384,
+              "telemetry_max": 2509.0,
+              "telemetry_mean": 2508.2533333333336,
+              "telemetry_min": 2502.0
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 84.81370666666668,
+              "server_step_ms_p95": 157.894,
+              "telemetry_max": 2515.0,
+              "telemetry_mean": 2512.12,
+              "telemetry_min": 2509.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 79.98988,
+              "server_step_ms_p95": 81.973,
+              "telemetry_max": 2535.0,
+              "telemetry_mean": 2527.12,
+              "telemetry_min": 2515.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.memory.total": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.memory.used": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.power.draw": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 31,
+          "ols_slope_ms_per_unit_frame": 0.06539515553374876,
+          "pearson_r_frame": 0.009886707451312511,
+          "pearson_r_frame_after_linear_time_detrend": -0.05542659990855449,
+          "pearson_r_sample_mean": -0.013917529953746762,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.2456185004792514,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.12683651009073463,
+              0.15309679524046782
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 83.03836000000001,
+              "server_step_ms_p95": 85.147,
+              "telemetry_max": 31.81,
+              "telemetry_mean": 30.73426666666667,
+              "telemetry_min": 29.19
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 81.95331999999999,
+              "server_step_ms_p95": 86.039,
+              "telemetry_max": 32.11,
+              "telemetry_mean": 31.94653333333333,
+              "telemetry_min": 31.81
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 80.87297333333333,
+              "server_step_ms_p95": 85.507,
+              "telemetry_max": 33.35,
+              "telemetry_mean": 32.803733333333334,
+              "telemetry_min": 32.11
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 83.55642666666667,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 36.77,
+              "telemetry_mean": 35.1912,
+              "telemetry_min": 33.35
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.power.limit": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.temperature.gpu": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 10,
+          "ols_slope_ms_per_unit_frame": 0.26952626184696765,
+          "pearson_r_frame": 0.10477853526543329,
+          "pearson_r_frame_after_linear_time_detrend": -0.08581402489861907,
+          "pearson_r_sample_mean": 0.3195080902054134,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.2659937009337443,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.005154187819377213,
+              0.20111601104254231
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 61.0,
+              "telemetry_mean": 57.626666666666665,
+              "telemetry_min": 54.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 67.0,
+              "telemetry_mean": 64.58666666666667,
+              "telemetry_min": 61.0
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 80.83418666666667,
+              "server_step_ms_p95": 85.28,
+              "telemetry_max": 68.0,
+              "telemetry_mean": 67.46666666666667,
+              "telemetry_min": 67.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 86.70212,
+              "server_step_ms_p95": 87.167,
+              "telemetry_max": 69.0,
+              "telemetry_mean": 68.53333333333333,
+              "telemetry_min": 68.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.utilization.gpu": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 12,
+          "ols_slope_ms_per_unit_frame": -0.1569902971806683,
+          "pearson_r_frame": -0.08876580093287104,
+          "pearson_r_frame_after_linear_time_detrend": -0.01912435718120804,
+          "pearson_r_sample_mean": -0.30472848450810225,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.13917592112119856,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.20959623371550587,
+              0.03876991016088433
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 5,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 83.33682666666667,
+              "server_step_ms_p95": 86.333,
+              "telemetry_max": 75.0,
+              "telemetry_mean": 68.32,
+              "telemetry_min": 52.0
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 81.15593333333332,
+              "server_step_ms_p95": 85.433,
+              "telemetry_max": 77.0,
+              "telemetry_mean": 76.38666666666667,
+              "telemetry_min": 75.0
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.50774666666666,
+              "server_step_ms_p95": 85.717,
+              "telemetry_max": 81.0,
+              "telemetry_mean": 79.09333333333333,
+              "telemetry_min": 77.0
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 82.42057333333332,
+              "server_step_ms_p95": 85.147,
+              "telemetry_max": 83.0,
+              "telemetry_mean": 82.04,
+              "telemetry_min": 81.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.utilization.memory": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.cpu.avg10": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 18,
+          "ols_slope_ms_per_unit_frame": 1.9361196515557884,
+          "pearson_r_frame": 0.058284792818672965,
+          "pearson_r_frame_after_linear_time_detrend": 0.11961775674759488,
+          "pearson_r_sample_mean": 0.17720262120554192,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.42543930849629663,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.07963039897270993,
+              0.2188282939469777
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 79.92134666666666,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.55,
+              "telemetry_mean": 0.47906666666666664,
+              "telemetry_min": 0.37
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 84.28967999999999,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.8,
+              "telemetry_mean": 0.6550666666666667,
+              "telemetry_min": 0.55
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 81.83450666666667,
+              "server_step_ms_p95": 85.782,
+              "telemetry_max": 1.06,
+              "telemetry_mean": 0.9341333333333334,
+              "telemetry_min": 0.8
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 83.37554666666666,
+              "server_step_ms_p95": 85.421,
+              "telemetry_max": 1.72,
+              "telemetry_mean": 1.3626666666666667,
+              "telemetry_min": 1.06
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.avg300": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 7,
+          "ols_slope_ms_per_unit_frame": 46.39107494019871,
+          "pearson_r_frame": 0.17621489300780224,
+          "pearson_r_frame_after_linear_time_detrend": 0.07222030247751392,
+          "pearson_r_sample_mean": 0.5151466264153469,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.21790970625985542,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              0.010152760977883285,
+              0.2310452954330339
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.12,
+              "telemetry_mean": 0.106,
+              "telemetry_min": 0.09
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.15,
+              "telemetry_mean": 0.13520000000000001,
+              "telemetry_min": 0.12
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 81.24918666666667,
+              "server_step_ms_p95": 85.507,
+              "telemetry_max": 0.21,
+              "telemetry_mean": 0.17826666666666666,
+              "telemetry_min": 0.15
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 86.28712,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.22,
+              "telemetry_mean": 0.21973333333333334,
+              "telemetry_min": 0.21
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.avg60": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 15,
+          "ols_slope_ms_per_unit_frame": 26.131225321320134,
+          "pearson_r_frame": 0.11564081035411126,
+          "pearson_r_frame_after_linear_time_detrend": 0.10003418942789875,
+          "pearson_r_sample_mean": 0.34895235656303225,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.339898483466719,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.03585901014653969,
+              0.2168802186357206
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 79.78190666666667,
+              "server_step_ms_p95": 80.709,
+              "telemetry_max": 0.34,
+              "telemetry_mean": 0.3274666666666667,
+              "telemetry_min": 0.31
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 84.48176,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.41,
+              "telemetry_mean": 0.36773333333333336,
+              "telemetry_min": 0.34
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 81.1112,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.44,
+              "telemetry_mean": 0.4236,
+              "telemetry_min": 0.41
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 84.04621333333334,
+              "server_step_ms_p95": 86.333,
+              "telemetry_max": 0.49,
+              "telemetry_mean": 0.46,
+              "telemetry_min": 0.44
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.interval_stall_fraction": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 31,
+          "ols_slope_ms_per_unit_frame": -1580.571457140085,
+          "pearson_r_frame": -0.033012607113579895,
+          "pearson_r_frame_after_linear_time_detrend": -0.0049537081540243855,
+          "pearson_r_sample_mean": 0.02844147480777028,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.04269852382400145,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.11555497434018586,
+              0.07139642967006811
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 5,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 81.73121333333334,
+              "server_step_ms_p95": 85.572,
+              "telemetry_max": 0.0004661683628432799,
+              "telemetry_mean": 0.00041230974956415795,
+              "telemetry_min": 0.0003430762592041276
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 84.58932,
+              "server_step_ms_p95": 156.954,
+              "telemetry_max": 0.0005970051157959461,
+              "telemetry_mean": 0.0005247894113986879,
+              "telemetry_min": 0.0004661683628432799
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 81.95124,
+              "server_step_ms_p95": 86.291,
+              "telemetry_max": 0.0008008788248990726,
+              "telemetry_mean": 0.0006760506677375538,
+              "telemetry_min": 0.0005970051157959461
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 81.14930666666667,
+              "server_step_ms_p95": 85.421,
+              "telemetry_max": 0.0013071324124564443,
+              "telemetry_mean": 0.001030204542038256,
+              "telemetry_min": 0.0008008788248990726
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.io.avg10": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.avg300": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.avg60": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.interval_stall_fraction": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 12,
+          "ols_slope_ms_per_unit_frame": -9413.095416016455,
+          "pearson_r_frame": -0.0937353129233673,
+          "pearson_r_frame_after_linear_time_detrend": -0.10565353261146172,
+          "pearson_r_sample_mean": -0.2394952751804879,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.32463812238963174,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.14150014285584397,
+              -0.006689062156245632
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 81.08292,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 85.38201333333333,
+              "server_step_ms_p95": 157.894,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.37675999999999,
+              "server_step_ms_p95": 86.039,
+              "telemetry_max": 0.00014493066680068816,
+              "telemetry_mean": 5.643708606197079e-05,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 80.57938666666666,
+              "server_step_ms_p95": 85.269,
+              "telemetry_max": 0.0004408899078738696,
+              "telemetry_mean": 0.0002600124964640478,
+              "telemetry_min": 0.00014493066680068816
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.memory.avg10": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.avg300": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.avg60": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.interval_stall_fraction": {
+          "n_rows": 300,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 1,
+              "server_step_ms_mean": 80.93038666666666,
+              "server_step_ms_p95": 82.458,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 2,
+              "server_step_ms_mean": 80.95438666666666,
+              "server_step_ms_p95": 82.851,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 75,
+              "quartile": 3,
+              "server_step_ms_mean": 82.01219999999999,
+              "server_step_ms_p95": 84.868,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 75,
+              "quartile": 4,
+              "server_step_ms_mean": 85.52410666666667,
+              "server_step_ms_p95": 86.882,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        }
+      }
+    },
+    "delivered-generation->=88ms": {
+      "definition": "analyzer delivered-nonBOS membership and server_step_ms >= 88.0",
+      "membership": {
+        "n": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "regressions": null,
+      "server_step_ms": {
+        "count_over_80_ms": 0,
+        "max": null,
+        "mean": null,
+        "n": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null
+      }
+    },
+    "delivered-nonBOS": {
+      "analyzer_membership": {
+        "n": 293,
+        "sha256": "bccf6f80f74b8a2a59073bd21cb845785425c4420d44507e32610ef15672b672"
+      },
+      "analyzer_server_step_ms": {
+        "count_over_80_ms": 122,
+        "max": 87.167,
+        "mean": 80.5528566552901,
+        "n": 293,
+        "p50": 79.522,
+        "p95": 85.384,
+        "p99": 86.882
+      },
+      "join_distance_ms": {
+        "count_over_80_ms": 245,
+        "max": 499.3132632225752,
+        "mean": 249.8811135202036,
+        "n": 293,
+        "p50": 249.29026141762733,
+        "p95": 478.24190091341734,
+        "p99": 497.08209931850433
+      },
+      "regressions": {
+        "cpu5.scaling_cur_freq_khz": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu6.scaling_cur_freq_khz": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu7.scaling_cur_freq_khz": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu8.scaling_cur_freq_khz": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu9.scaling_cur_freq_khz": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "gpu.clocks.mem": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.clocks.sm": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 8,
+          "ols_slope_ms_per_unit_frame": -0.03849434650266018,
+          "pearson_r_frame": -0.21547670047095238,
+          "pearson_r_frame_after_linear_time_detrend": 0.09885056183433,
+          "pearson_r_sample_mean": -0.26881707341453265,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.09773615477624971,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.7912663396263651,
+              0.11450278240160543
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 82.82706849315069,
+              "server_step_ms_p95": 85.782,
+              "telemetry_max": 2502.0,
+              "telemetry_mean": 2492.6164383561645,
+              "telemetry_min": 2457.0
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 79.80250684931507,
+              "server_step_ms_p95": 85.384,
+              "telemetry_max": 2509.0,
+              "telemetry_mean": 2508.2328767123286,
+              "telemetry_min": 2502.0
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 80.5642602739726,
+              "server_step_ms_p95": 85.121,
+              "telemetry_max": 2515.0,
+              "telemetry_mean": 2512.041095890411,
+              "telemetry_min": 2509.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 79.03833783783784,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 2535.0,
+              "telemetry_mean": 2527.0135135135133,
+              "telemetry_min": 2515.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.memory.total": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.memory.used": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.power.draw": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 31,
+          "ols_slope_ms_per_unit_frame": 0.02047482462936093,
+          "pearson_r_frame": 0.013679100381917938,
+          "pearson_r_frame_after_linear_time_detrend": -0.44227505787853333,
+          "pearson_r_sample_mean": 0.01212425815566696,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.5385625990418651,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.2592320410595699,
+              0.310350105273473
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 80.01827397260274,
+              "server_step_ms_p95": 84.728,
+              "telemetry_max": 31.81,
+              "telemetry_mean": 30.754794520547943,
+              "telemetry_min": 29.19
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 80.83305479452055,
+              "server_step_ms_p95": 85.572,
+              "telemetry_max": 32.11,
+              "telemetry_mean": 31.95,
+              "telemetry_min": 31.81
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 80.89104109589042,
+              "server_step_ms_p95": 85.507,
+              "telemetry_max": 33.35,
+              "telemetry_mean": 32.78876712328767,
+              "telemetry_min": 32.11
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 80.47018918918918,
+              "server_step_ms_p95": 85.269,
+              "telemetry_max": 36.77,
+              "telemetry_mean": 35.14337837837838,
+              "telemetry_min": 33.35
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.power.limit": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": null,
+            "iterations": 0,
+            "seed": 20260813
+          },
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.temperature.gpu": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 10,
+          "ols_slope_ms_per_unit_frame": 0.26993861187726487,
+          "pearson_r_frame": 0.4664205816861745,
+          "pearson_r_frame_after_linear_time_detrend": -0.6234406059086486,
+          "pearson_r_sample_mean": 0.5019569472119826,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.7514545398325403,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              0.003510728453752446,
+              0.8218584861805686
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 61.0,
+              "telemetry_mean": 57.64383561643836,
+              "telemetry_min": 54.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 67.0,
+              "telemetry_mean": 64.56164383561644,
+              "telemetry_min": 61.0
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 80.76978082191782,
+              "server_step_ms_p95": 85.28,
+              "telemetry_max": 68.0,
+              "telemetry_mean": 67.45205479452055,
+              "telemetry_min": 67.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 83.60875675675675,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 69.0,
+              "telemetry_mean": 68.51351351351352,
+              "telemetry_min": 68.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.utilization.gpu": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 12,
+          "ols_slope_ms_per_unit_frame": -0.1487937386593463,
+          "pearson_r_frame": -0.37089871675213865,
+          "pearson_r_frame_after_linear_time_detrend": -0.06094927106608591,
+          "pearson_r_sample_mean": -0.295083839884938,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.04616023120171307,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.5849231694688544,
+              -0.026563003683796108
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 5,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 82.29593150684931,
+              "server_step_ms_p95": 86.291,
+              "telemetry_max": 75.0,
+              "telemetry_mean": 68.42465753424658,
+              "telemetry_min": 52.0
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 80.19313698630137,
+              "server_step_ms_p95": 85.384,
+              "telemetry_max": 77.0,
+              "telemetry_mean": 76.35616438356165,
+              "telemetry_min": 75.0
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 80.37432876712329,
+              "server_step_ms_p95": 85.44,
+              "telemetry_max": 81.0,
+              "telemetry_mean": 79.01369863013699,
+              "telemetry_min": 77.0
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 79.3643108108108,
+              "server_step_ms_p95": 83.827,
+              "telemetry_max": 83.0,
+              "telemetry_mean": 82.0,
+              "telemetry_min": 81.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.utilization.memory": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.cpu.avg10": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 18,
+          "ols_slope_ms_per_unit_frame": -0.04612711046368507,
+          "pearson_r_frame": -0.006164787368631981,
+          "pearson_r_frame_after_linear_time_detrend": 0.383162664583769,
+          "pearson_r_sample_mean": -0.017719536038967434,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.480352833383717,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.6553206927057709,
+              0.5840290721521392
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.85653424657534,
+              "server_step_ms_p95": 81.0,
+              "telemetry_max": 0.55,
+              "telemetry_mean": 0.47712328767123285,
+              "telemetry_min": 0.37
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 82.21605479452055,
+              "server_step_ms_p95": 86.039,
+              "telemetry_max": 0.8,
+              "telemetry_mean": 0.6510958904109589,
+              "telemetry_min": 0.55
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 80.72294520547945,
+              "server_step_ms_p95": 85.507,
+              "telemetry_max": 1.06,
+              "telemetry_mean": 0.9282191780821919,
+              "telemetry_min": 0.8
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 80.41774324324324,
+              "server_step_ms_p95": 84.765,
+              "telemetry_max": 1.72,
+              "telemetry_mean": 1.353108108108108,
+              "telemetry_min": 1.06
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.avg300": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 7,
+          "ols_slope_ms_per_unit_frame": 45.63778461739882,
+          "pearson_r_frame": 0.7721147414809433,
+          "pearson_r_frame_after_linear_time_detrend": 0.24330598082287067,
+          "pearson_r_sample_mean": 0.820229031993394,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.24102964782067718,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              0.10478491904625693,
+              0.9050452939349547
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.12,
+              "telemetry_mean": 0.10602739726027396,
+              "telemetry_min": 0.09
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.15,
+              "telemetry_mean": 0.13506849315068492,
+              "telemetry_min": 0.12
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 80.13980821917808,
+              "server_step_ms_p95": 85.44,
+              "telemetry_max": 0.21,
+              "telemetry_mean": 0.17767123287671233,
+              "telemetry_min": 0.15
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.23021621621622,
+              "server_step_ms_p95": 86.333,
+              "telemetry_max": 0.22,
+              "telemetry_mean": 0.2195945945945946,
+              "telemetry_min": 0.21
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.avg60": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 15,
+          "ols_slope_ms_per_unit_frame": 16.53812843345793,
+          "pearson_r_frame": 0.32603586552312575,
+          "pearson_r_frame_after_linear_time_detrend": 0.37867361994166865,
+          "pearson_r_sample_mean": 0.37034470922116497,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.4795178186437849,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.40464354612029757,
+              0.7362690446986256
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.73694520547944,
+              "server_step_ms_p95": 80.621,
+              "telemetry_max": 0.34,
+              "telemetry_mean": 0.3271232876712329,
+              "telemetry_min": 0.31
+            },
+            {
+              "n_responses": 4,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 82.41005479452055,
+              "server_step_ms_p95": 86.291,
+              "telemetry_max": 0.41,
+              "telemetry_mean": 0.36684931506849316,
+              "telemetry_min": 0.34
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.12447945205479,
+              "server_step_ms_p95": 81.768,
+              "telemetry_max": 0.44,
+              "telemetry_mean": 0.423013698630137,
+              "telemetry_min": 0.41
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 81.9212027027027,
+              "server_step_ms_p95": 85.717,
+              "telemetry_max": 0.49,
+              "telemetry_mean": 0.4594594594594595,
+              "telemetry_min": 0.44
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.interval_stall_fraction": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 31,
+          "ols_slope_ms_per_unit_frame": -124.39344261506612,
+          "pearson_r_frame": -0.011639893279882515,
+          "pearson_r_frame_after_linear_time_detrend": 0.17770294807236983,
+          "pearson_r_sample_mean": 0.12276832756666363,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.23325940813500295,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.2207968985420596,
+              0.2742843282282233
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 5,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 80.69549315068492,
+              "server_step_ms_p95": 85.28,
+              "telemetry_max": 0.0004580175436451426,
+              "telemetry_mean": 0.00041153490450157994,
+              "telemetry_min": 0.0003430762592041276
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 80.44849315068493,
+              "server_step_ms_p95": 85.121,
+              "telemetry_max": 0.0005970051157959461,
+              "telemetry_mean": 0.0005249135251907839,
+              "telemetry_min": 0.0004661683628432799
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 80.85865753424657,
+              "server_step_ms_p95": 85.717,
+              "telemetry_max": 0.0008008788248990726,
+              "telemetry_mean": 0.0006754235087619387,
+              "telemetry_min": 0.000611205797049256
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 80.21343243243243,
+              "server_step_ms_p95": 85.384,
+              "telemetry_max": 0.0013071324124564443,
+              "telemetry_mean": 0.0010308478106205573,
+              "telemetry_min": 0.0008008788248990726
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.io.avg10": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.avg300": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.avg60": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.interval_stall_fraction": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 12,
+          "ols_slope_ms_per_unit_frame": -1272.9382151661637,
+          "pearson_r_frame": -0.05692023739371139,
+          "pearson_r_frame_after_linear_time_detrend": -0.1627884961413205,
+          "pearson_r_sample_mean": -0.014541991812151147,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.1456269410212383,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              -0.1624776644846292,
+              0.10148786500898133
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 10000
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 79.0884109589041,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 81.25956164383562,
+              "server_step_ms_p95": 85.507,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 5,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 81.26467123287671,
+              "server_step_ms_p95": 85.572,
+              "telemetry_max": 0.00014493066680068816,
+              "telemetry_mean": 5.853048626118202e-05,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 6,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 80.59816216216217,
+              "server_step_ms_p95": 85.269,
+              "telemetry_max": 0.0004408899078738696,
+              "telemetry_mean": 0.00026156765632436344,
+              "telemetry_min": 0.00014493066680068816
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.memory.avg10": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.avg300": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.avg60": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.interval_stall_fraction": {
+          "n_rows": 293,
+          "n_telemetry_samples": 31,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": {
+            "ci_95": [
+              null,
+              null
+            ],
+            "iterations": 10000,
+            "seed": 20260813,
+            "valid_iterations": 0
+          },
+          "scatter_quartiles": [
+            {
+              "n_responses": 2,
+              "n_rows": 73,
+              "quartile": 1,
+              "server_step_ms_mean": 78.93727397260274,
+              "server_step_ms_p95": 81.901,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 2,
+              "server_step_ms_mean": 78.85375342465753,
+              "server_step_ms_p95": 81.147,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 3,
+              "n_rows": 73,
+              "quartile": 3,
+              "server_step_ms_mean": 79.88005479452055,
+              "server_step_ms_p95": 83.212,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 2,
+              "n_rows": 74,
+              "quartile": 4,
+              "server_step_ms_mean": 84.48645945945945,
+              "server_step_ms_p95": 86.439,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        }
+      }
+    },
+    "idle": {
+      "analyzer_membership": {
+        "n": 3315,
+        "sha256": "ed72af26a6f80d8f04248178888554c11be06e6bc2acd3e816bf8232c526f726"
+      },
+      "analyzer_server_step_ms": {
+        "count_over_80_ms": 39,
+        "max": 129.257,
+        "mean": 70.032780693816,
+        "n": 3315,
+        "p50": 69.708,
+        "p95": 75.006,
+        "p99": 80.371
+      },
+      "join_distance_ms": {
+        "count_over_80_ms": 2782,
+        "max": 499.8733475804329,
+        "mean": 249.76698574448514,
+        "n": 3315,
+        "p50": 247.14129511266947,
+        "p95": 474.81311578303576,
+        "p99": 490.85868522524834
+      },
+      "regressions": {
+        "cpu5.scaling_cur_freq_khz": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu6.scaling_cur_freq_khz": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu7.scaling_cur_freq_khz": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu8.scaling_cur_freq_khz": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "cpu9.scaling_cur_freq_khz": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 3900000.0,
+              "telemetry_mean": 3900000.0,
+              "telemetry_min": 3900000.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "gpu.clocks.mem": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.clocks.sm": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 19,
+          "ols_slope_ms_per_unit_frame": -0.06213704257675504,
+          "pearson_r_frame": -0.133188958554469,
+          "pearson_r_frame_after_linear_time_detrend": -0.07724047641699322,
+          "pearson_r_sample_mean": -0.21923320643247157,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.18165512635666697,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 70.27068599033817,
+              "server_step_ms_p95": 74.354,
+              "telemetry_max": 2502.0,
+              "telemetry_mean": 2491.009661835749,
+              "telemetry_min": 2398.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 71.90998914354644,
+              "server_step_ms_p95": 75.597,
+              "telemetry_max": 2502.0,
+              "telemetry_mean": 2502.0,
+              "telemetry_min": 2502.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 71.27982026537997,
+              "server_step_ms_p95": 75.687,
+              "telemetry_max": 2515.0,
+              "telemetry_mean": 2508.9191797346202,
+              "telemetry_min": 2502.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 66.67091435464415,
+              "server_step_ms_p95": 74.322,
+              "telemetry_max": 2554.0,
+              "telemetry_mean": 2519.4487334137516,
+              "telemetry_min": 2515.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.memory.total": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.memory.used": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.power.draw": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 212,
+          "ols_slope_ms_per_unit_frame": -0.2215267082721847,
+          "pearson_r_frame": -0.08106716841012616,
+          "pearson_r_frame_after_linear_time_detrend": -0.18330694788359067,
+          "pearson_r_sample_mean": -0.19347560658864726,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.2768574424487704,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 69.64616425120772,
+              "server_step_ms_p95": 74.357,
+              "telemetry_max": 29.2,
+              "telemetry_mean": 27.291449275362318,
+              "telemetry_min": 10.59
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 69.85428829915561,
+              "server_step_ms_p95": 74.401,
+              "telemetry_max": 30.88,
+              "telemetry_mean": 30.041326899879373,
+              "telemetry_min": 29.2
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 70.96100241254524,
+              "server_step_ms_p95": 74.948,
+              "telemetry_max": 31.5,
+              "telemetry_mean": 31.154825090470446,
+              "telemetry_min": 30.88
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 69.66920144752714,
+              "server_step_ms_p95": 79.307,
+              "telemetry_max": 36.77,
+              "telemetry_mean": 32.298395657418574,
+              "telemetry_min": 31.5
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.power.limit": {
+          "n_rows": 0,
+          "n_telemetry_samples": 0,
+          "n_unique_values": 0,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [],
+          "status": "undefined-no-variation"
+        },
+        "gpu.temperature.gpu": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 20,
+          "ols_slope_ms_per_unit_frame": 0.2047950810321935,
+          "pearson_r_frame": 0.11739931931637428,
+          "pearson_r_frame_after_linear_time_detrend": -0.14066372839929142,
+          "pearson_r_sample_mean": 0.04271728725392581,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.25999546566780246,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.99595531400966,
+              "server_step_ms_p95": 74.397,
+              "telemetry_max": 63.0,
+              "telemetry_mean": 58.85507246376812,
+              "telemetry_min": 49.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.7414728588661,
+              "server_step_ms_p95": 74.77,
+              "telemetry_max": 67.0,
+              "telemetry_mean": 64.80820265379975,
+              "telemetry_min": 63.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 72.45136067551266,
+              "server_step_ms_p95": 75.232,
+              "telemetry_max": 68.0,
+              "telemetry_mean": 67.73341375150784,
+              "telemetry_min": 67.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 70.94108323281061,
+              "server_step_ms_p95": 75.206,
+              "telemetry_max": 70.0,
+              "telemetry_mean": 69.00482509047045,
+              "telemetry_min": 68.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.utilization.gpu": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 28,
+          "ols_slope_ms_per_unit_frame": -0.04809954055915531,
+          "pearson_r_frame": -0.06076238679545715,
+          "pearson_r_frame_after_linear_time_detrend": -0.07830274600203221,
+          "pearson_r_sample_mean": -0.1401206035256194,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.15746091643124888,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 70.80512077294686,
+              "server_step_ms_p95": 74.738,
+              "telemetry_max": 74.0,
+              "telemetry_mean": 65.82487922705315,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 69.78053317249699,
+              "server_step_ms_p95": 74.453,
+              "telemetry_max": 76.0,
+              "telemetry_mean": 75.0096501809409,
+              "telemetry_min": 74.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.78399155609168,
+              "server_step_ms_p95": 75.284,
+              "telemetry_max": 78.0,
+              "telemetry_mean": 77.34981905910736,
+              "telemetry_min": 76.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 69.76240892641736,
+              "server_step_ms_p95": 76.522,
+              "telemetry_max": 87.0,
+              "telemetry_mean": 81.47647768395657,
+              "telemetry_min": 78.0
+            }
+          ],
+          "status": "estimated"
+        },
+        "gpu.utilization.memory": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.cpu.avg10": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 78,
+          "ols_slope_ms_per_unit_frame": -2.5498393791682656,
+          "pearson_r_frame": -0.1450370924777855,
+          "pearson_r_frame_after_linear_time_detrend": -0.10786965675688423,
+          "pearson_r_sample_mean": -0.1417881919336657,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.10360947786137391,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 70.29081038647342,
+              "server_step_ms_p95": 74.329,
+              "telemetry_max": 0.06,
+              "telemetry_mean": 0.03158212560386473,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 70.88850180940892,
+              "server_step_ms_p95": 74.562,
+              "telemetry_max": 0.15,
+              "telemetry_mean": 0.09846803377563329,
+              "telemetry_min": 0.06
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 71.21401809408927,
+              "server_step_ms_p95": 75.564,
+              "telemetry_max": 0.4,
+              "telemetry_mean": 0.2570928829915561,
+              "telemetry_min": 0.15
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 67.73810373944511,
+              "server_step_ms_p95": 78.923,
+              "telemetry_max": 2.35,
+              "telemetry_mean": 0.9098914354644149,
+              "telemetry_min": 0.4
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.avg300": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 16,
+          "ols_slope_ms_per_unit_frame": 31.887618195408912,
+          "pearson_r_frame": 0.19044239957516365,
+          "pearson_r_frame_after_linear_time_detrend": -0.032505521386312713,
+          "pearson_r_sample_mean": 0.16669089430222522,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.0868626072167187,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 69.78889855072464,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.11,
+              "telemetry_mean": 0.09094202898550724,
+              "telemetry_min": 0.07
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 68.91957297949337,
+              "server_step_ms_p95": 73.26,
+              "telemetry_max": 0.13,
+              "telemetry_mean": 0.12145958986731001,
+              "telemetry_min": 0.11
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 67.71588902291919,
+              "server_step_ms_p95": 74.856,
+              "telemetry_max": 0.19,
+              "telemetry_mean": 0.1615078407720145,
+              "telemetry_min": 0.13
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.70646803377564,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.22,
+              "telemetry_mean": 0.20300361881785284,
+              "telemetry_min": 0.19
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.avg60": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 33,
+          "ols_slope_ms_per_unit_frame": -1.9326193043805362,
+          "pearson_r_frame": -0.019174363632768563,
+          "pearson_r_frame_after_linear_time_detrend": -0.02615612914158877,
+          "pearson_r_sample_mean": -0.06263109625248549,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.06819139774182559,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 69.76925483091787,
+              "server_step_ms_p95": 73.657,
+              "telemetry_max": 0.25,
+              "telemetry_mean": 0.22096618357487924,
+              "telemetry_min": 0.17
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 71.01212907117008,
+              "server_step_ms_p95": 74.767,
+              "telemetry_max": 0.29,
+              "telemetry_mean": 0.2734981905910736,
+              "telemetry_min": 0.25
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.9692593486128,
+              "server_step_ms_p95": 75.262,
+              "telemetry_max": 0.36,
+              "telemetry_mean": 0.32607961399276236,
+              "telemetry_min": 0.29
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 69.38016164053076,
+              "server_step_ms_p95": 78.923,
+              "telemetry_max": 0.51,
+              "telemetry_mean": 0.40664656212303985,
+              "telemetry_min": 0.36
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.cpu.interval_stall_fraction": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 273,
+          "ols_slope_ms_per_unit_frame": 12.32786777121667,
+          "pearson_r_frame": 0.01648843613142691,
+          "pearson_r_frame_after_linear_time_detrend": 0.02639877091913186,
+          "pearson_r_sample_mean": 0.03357560901005523,
+          "pearson_r_sample_mean_after_linear_time_detrend": 0.05370166267023827,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 70.34759541062802,
+              "server_step_ms_p95": 75.233,
+              "telemetry_max": 0.0004399582795500922,
+              "telemetry_mean": 0.0003854970488464131,
+              "telemetry_min": 0.00026583384632960437
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 69.68262002412546,
+              "server_step_ms_p95": 75.262,
+              "telemetry_max": 0.0005590168062946983,
+              "telemetry_mean": 0.0004980047438376523,
+              "telemetry_min": 0.0004399582795500922
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 70.96534137515079,
+              "server_step_ms_p95": 74.678,
+              "telemetry_max": 0.0007247035836845831,
+              "telemetry_mean": 0.0006484533988105014,
+              "telemetry_min": 0.0005590168062946983
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 69.13594571773221,
+              "server_step_ms_p95": 75.147,
+              "telemetry_max": 0.2227926524940683,
+              "telemetry_mean": 0.006093012805288172,
+              "telemetry_min": 0.0007247035836845831
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.io.avg10": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.avg300": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.avg60": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.io.interval_stall_fraction": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 83,
+          "ols_slope_ms_per_unit_frame": -1138.3966667350608,
+          "pearson_r_frame": -0.07295876250828782,
+          "pearson_r_frame_after_linear_time_detrend": -0.10389669003916098,
+          "pearson_r_sample_mean": -0.05802810778652623,
+          "pearson_r_sample_mean_after_linear_time_detrend": -0.08492389614764698,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 69.73313526570048,
+              "server_step_ms_p95": 74.919,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 69.04531242460796,
+              "server_step_ms_p95": 74.182,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 72.63682509047045,
+              "server_step_ms_p95": 75.815,
+              "telemetry_max": 0.00011296550903976654,
+              "telemetry_mean": 1.4901773701284293e-05,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 68.71548854041013,
+              "server_step_ms_p95": 74.759,
+              "telemetry_max": 0.0029549268317259378,
+              "telemetry_mean": 0.0005965374271447082,
+              "telemetry_min": 0.00011296550903976654
+            }
+          ],
+          "status": "estimated"
+        },
+        "pressure.memory.avg10": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.avg300": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.avg60": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        },
+        "pressure.memory.interval_stall_fraction": {
+          "n_rows": 3315,
+          "n_telemetry_samples": 273,
+          "n_unique_values": 1,
+          "ols_slope_ms_per_unit_frame": null,
+          "pearson_r_frame": null,
+          "pearson_r_frame_after_linear_time_detrend": null,
+          "pearson_r_sample_mean": null,
+          "pearson_r_sample_mean_after_linear_time_detrend": null,
+          "response_clustered_bootstrap": null,
+          "scatter_quartiles": [
+            {
+              "n_responses": 0,
+              "n_rows": 828,
+              "quartile": 1,
+              "server_step_ms_mean": 68.95476086956522,
+              "server_step_ms_p95": 74.42,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 2,
+              "server_step_ms_mean": 67.72305428226778,
+              "server_step_ms_p95": 74.657,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 3,
+              "server_step_ms_mean": 69.6090205066345,
+              "server_step_ms_p95": 74.082,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            },
+            {
+              "n_responses": 0,
+              "n_rows": 829,
+              "quartile": 4,
+              "server_step_ms_mean": 73.8429867310012,
+              "server_step_ms_p95": 76.084,
+              "telemetry_max": 0.0,
+              "telemetry_mean": 0.0,
+              "telemetry_min": 0.0
+            }
+          ],
+          "status": "undefined-no-variation"
+        }
+      }
+    }
+  },
+  "schema": "nemotron_voicechat.step4_telemetry_regression.v1",
+  "sources": {
+    "qualified_analyzer": {
+      "bytes": 8741957,
+      "path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/stratified-analysis.json",
+      "sha256": "90ee668887cee1e32d3db61393795dc2a6abfcb4c1f6e28a47ae1f0f672063ec"
+    },
+    "server_trace": {
+      "bytes": 21729707,
+      "path": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/3c888978-02de-4b81-982b-10d696c86328/events.jsonl",
+      "sha256": "72d4dff418111e4c1034ec57c82f8f35cde597023cb8ef640dc2efebeb422834"
+    },
+    "telemetry": {
+      "bytes": 217760,
+      "path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/telemetry.jsonl",
+      "sha256": "a1b745b1399927be490ea0b7f9d88c59f88ba1c9ff4b740a32d87300ebf6169f"
+    }
+  },
+  "unavailable_sample_counts": {
+    "cpu5.scaling_cur_freq_khz": 0,
+    "cpu6.scaling_cur_freq_khz": 0,
+    "cpu7.scaling_cur_freq_khz": 0,
+    "cpu8.scaling_cur_freq_khz": 0,
+    "cpu9.scaling_cur_freq_khz": 0,
+    "gpu.clocks.mem": 331,
+    "gpu.clocks.sm": 0,
+    "gpu.memory.total": 331,
+    "gpu.memory.used": 331,
+    "gpu.power.draw": 0,
+    "gpu.power.limit": 331,
+    "gpu.temperature.gpu": 0,
+    "gpu.utilization.gpu": 0,
+    "gpu.utilization.memory": 0,
+    "pressure.cpu.avg10": 0,
+    "pressure.cpu.avg300": 0,
+    "pressure.cpu.avg60": 0,
+    "pressure.cpu.interval_stall_fraction": 1,
+    "pressure.io.avg10": 0,
+    "pressure.io.avg300": 0,
+    "pressure.io.avg60": 0,
+    "pressure.io.interval_stall_fraction": 1,
+    "pressure.memory.avg10": 0,
+    "pressure.memory.avg300": 0,
+    "pressure.memory.avg60": 0,
+    "pressure.memory.interval_stall_fraction": 1
+  }
+}
