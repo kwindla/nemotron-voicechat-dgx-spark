@@ -1086,6 +1086,7 @@ PLAYOUT_TRACE_TYPES = frozenset(
     {
         "voicechat.playout.config",
         "response.created",
+        "response.output_text.delta",
         "response.output_audio.delta",
         "response.done",
         "voicechat.metrics",
@@ -1107,6 +1108,7 @@ PLAYOUT_TRACE_CLOCKS = (
 PLAYOUT_TRACE_CLOCK_BY_TYPE = {
     "voicechat.playout.config": "client_configured_monotonic_s",
     "response.created": "client_received_monotonic_s",
+    "response.output_text.delta": "client_received_monotonic_s",
     "response.output_audio.delta": "client_received_monotonic_s",
     "response.done": "client_received_monotonic_s",
     "voicechat.metrics": "client_received_monotonic_s",
@@ -1135,6 +1137,16 @@ _PLAYOUT_TRACE_FIELDS_BY_TYPE = {
             "client_received_monotonic_s",
             "response_id",
             "turn_id",
+        }
+    ),
+    "response.output_text.delta": frozenset(
+        {
+            "trace_schema",
+            "type",
+            "client_received_monotonic_s",
+            "response_id",
+            "ordinal",
+            "delta",
         }
     ),
     "response.output_audio.delta": frozenset(
@@ -1262,6 +1274,7 @@ def _validate_playout_record_schema(event: JsonObject, event_ordinal: int) -> No
     response_id = event.get("response_id")
     response_types = {
         "response.created",
+        "response.output_text.delta",
         "response.output_audio.delta",
         "response.done",
         "voicechat.playout.interruption",
@@ -1276,6 +1289,12 @@ def _validate_playout_record_schema(event: JsonObject, event_ordinal: int) -> No
         event.get("turn_id") is None or isinstance(event.get("turn_id"), str)
     ):
         raise ValueError(f"response.created turn_id schema mismatch at event {event_ordinal}")
+    if event_type == "response.output_text.delta" and (
+        not _playout_int(event.get("ordinal"), minimum=1)
+        or not isinstance(event.get("delta"), str)
+        or not event["delta"]
+    ):
+        raise ValueError(f"text delta field schema mismatch at event {event_ordinal}")
     if event_type == "input_audio_buffer.speech_started" and (
         event.get("source") != "typed"
         or not (response_id is None or isinstance(response_id, str))
@@ -1332,7 +1351,9 @@ def _validate_playout_record_schema(event: JsonObject, event_ordinal: int) -> No
         ):
             raise ValueError(f"voicechat.metrics field schema mismatch at event {event_ordinal}")
         if "audio_delivered" in event and (
-            not _playout_int(event.get("frame"), minimum=1)
+            # Real sessions begin at frame 0 (first model frame of the
+            # session); only negative frames are malformed.
+            not _playout_int(event.get("frame"), minimum=0)
             or type(event.get("audio_delivered")) is not bool
             or not isinstance(event.get("model_output_audio"), dict)
             or not (
@@ -1475,6 +1496,7 @@ def validate_observed_playout_trace(events: Sequence[JsonObject]) -> JsonObject:
             current_response = response_id
             responses[response_id] = {
                 "next_ordinal": 1,
+                "next_text_ordinal": 1,
                 "samples": {},
                 "held": [],
                 "pending_push": [],
@@ -1487,6 +1509,14 @@ def validate_observed_playout_trace(events: Sequence[JsonObject]) -> JsonObject:
                 "interruption_cleared": False,
                 "cancelling": False,
             }
+            continue
+        if event_type == "response.output_text.delta":
+            state = state_for(event.get("response_id"), event_ordinal)
+            if state["done"] or state["cancelling"]:
+                raise ValueError(f"text delta contradicts lifecycle at event {event_ordinal}")
+            if event.get("ordinal") != state["next_text_ordinal"]:
+                raise ValueError(f"text delta ordinal mismatch at event {event_ordinal}")
+            state["next_text_ordinal"] += 1
             continue
         if event_type == "response.output_audio.delta":
             state = state_for(event.get("response_id"), event_ordinal)
@@ -1514,6 +1544,11 @@ def validate_observed_playout_trace(events: Sequence[JsonObject]) -> JsonObject:
         if interruption:
             if current_response is None and event.get("response_id") is None:
                 continue
+            if event.get("response_id") is None and current_response is not None:
+                if responses[current_response]["done"]:
+                    finish_response(current_response, event_ordinal)
+                    current_response = None
+                    continue
             state = state_for(event.get("response_id"), event_ordinal)
             if state["done"]:
                 raise ValueError(f"interruption follows response.done at event {event_ordinal}")

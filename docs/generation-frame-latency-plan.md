@@ -276,6 +276,35 @@ first).
 
 ## Implementation log
 
+- **2026-08-13 — Step 2 LIVE CAMPAIGN COMPLETED (attempt 10).** After
+  driver qualification (7 offline review rounds) the campaign required ten
+  live attempts; each failure was a fail-closed catch of a real
+  fake-vs-real gap, fixed with the retained artifact as regression:
+  post-release immediate-push semantics, object-identity brackets across
+  the marshaling boundary, completion-vs-transcript-equality decoupling
+  (twice: ordinary and I1), I1 dual typed-send windows, exact-shape RTVI
+  predicates replaced by minimal five-anchor index matching (diagnosed via
+  the retained observation the fix-12 diagnosability change added),
+  teardown-latency publication racing (fixed with Playground Disconnect +
+  90 s wait), and a frame-0 schema off-by-one. Two launch-environment
+  deviations recorded (config mount for the validator's installed-layout
+  path bug; launcher-injected image-identity envs dropped). **Results**
+  (`reports/step2-live/session-20260813T083303Z/`): all 8 fixtures
+  completed with terminal validation; short controls 3/3 full renditions
+  (incl. capture-off); long bins: L1 1/2, L2 1/2 full — the model
+  truncates long scripts stochastically (~50%), confirmed model-level
+  (decoded-silence watchdog closes after EarTTS goes silent; no-text
+  override present in every per-frame snapshot); I1 cancel-then-replace
+  chain complete with second answer correct. **Step 3 decision inputs**:
+  capture-on delivered 756 frames mean 83.2 ms p95 86.5 (75% over
+  budget); real-response reserve sweep shows even 560 ms leaves 3
+  responses starving — fixed reserves cannot clean long renditions,
+  elevating the Step 5 structural fix; the capture-off full L1 rendition
+  passed the K=12 arrival gate (worst window 936.8 ms) despite 84%
+  over-80 server frames — arrival cadence smooths relative to server
+  steps. ASR gate-1/gate-2 adjudication and the session manifest in
+  progress.
+
 - **2026-08-13 — Step 2 CODE-COMPLETE (review round 4: PASS).** All deltas
   closed within the recorded threat model and verified with fresh probes
   (`docs/reviews/step2-implementation-review-r4.md`): consume-once

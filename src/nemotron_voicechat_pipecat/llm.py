@@ -73,6 +73,21 @@ from .tool_results import VoicechatLLMContext
 
 PLAYOUT_TRACE_ENV = "NEMOTRON_VOICECHAT_PLAYOUT_TRACE"
 PLAYOUT_TRACE_SCHEMA = "nemotron_voicechat.playout.v1"
+PLAYOUT_TRACE_CONNECTION_TOKEN = "{connection}"
+_playout_trace_connection_lock = threading.Lock()
+_playout_trace_connection_ordinal = 0
+
+
+def _connection_playout_trace_path(path: str) -> str:
+    """Expand the opt-in per-connection trace token without changing legacy paths."""
+
+    if PLAYOUT_TRACE_CONNECTION_TOKEN not in path:
+        return path
+    global _playout_trace_connection_ordinal
+    with _playout_trace_connection_lock:
+        _playout_trace_connection_ordinal += 1
+        connection = f"{_playout_trace_connection_ordinal:04d}"
+    return path.replace(PLAYOUT_TRACE_CONNECTION_TOKEN, connection)
 
 
 class _PlayoutTraceWriter:
@@ -1710,6 +1725,7 @@ class _TracedNemotronVoicechatLLMService(NemotronVoicechatLLMService):
         path = os.environ.get(PLAYOUT_TRACE_ENV, "").strip()
         if not path:
             raise RuntimeError("traced Voicechat service requires a trace path")
+        path = _connection_playout_trace_path(path)
         try:
             close_timeout = float(
                 os.environ.get("NEMOTRON_VOICECHAT_PLAYOUT_TRACE_CLOSE_TIMEOUT", "2")
@@ -1730,6 +1746,7 @@ class _TracedNemotronVoicechatLLMService(NemotronVoicechatLLMService):
         )
         self._playout_trace_close_timeout = close_timeout
         self._playout_trace_ordinals: dict[str, int] = {}
+        self._playout_trace_text_ordinals: dict[str, int] = {}
         self._playout_trace_frame_ordinals: dict[int, int] = {}
         self._playout_trace_interruption_observed = False
         self._playout_trace.record(
@@ -1794,6 +1811,13 @@ class _TracedNemotronVoicechatLLMService(NemotronVoicechatLLMService):
         event_type = event.get("type")
         received = self._receipt_time(event)
         response_id = event.get("response_id")
+        accepted_text_delta = (
+            event_type == "response.output_text.delta"
+            and self._is_current_response(event)
+            and not self._response_cancelling
+            and isinstance(event.get("delta"), str)
+            and bool(event["delta"])
+        )
         if event_type == "input_audio_buffer.speech_started" and event.get(
             "source"
         ) == "typed":
@@ -1814,9 +1838,22 @@ class _TracedNemotronVoicechatLLMService(NemotronVoicechatLLMService):
                 response_id=response_id,
                 status=event.get("status"),
             )
+        elif accepted_text_delta:
+            assert isinstance(response_id, str)
+            ordinal = self._playout_trace_text_ordinals.get(response_id, 0) + 1
+            self._playout_trace_text_ordinals[response_id] = ordinal
+            self._playout_trace.record(
+                event_type,
+                timestamp_field="client_received_monotonic_s",
+                timestamp=received,
+                response_id=response_id,
+                ordinal=ordinal,
+                delta=event["delta"],
+            )
         await super()._handle_server_event(event)
         if event_type == "response.created" and isinstance(response_id, str):
             self._playout_trace_ordinals[response_id] = 0
+            self._playout_trace_text_ordinals[response_id] = 0
             self._playout_trace.record(
                 event_type,
                 timestamp_field="client_received_monotonic_s",
@@ -1827,6 +1864,7 @@ class _TracedNemotronVoicechatLLMService(NemotronVoicechatLLMService):
         elif accepted_done:
             if isinstance(response_id, str):
                 self._playout_trace_ordinals.pop(response_id, None)
+                self._playout_trace_text_ordinals.pop(response_id, None)
         elif event_type == "voicechat.metrics":
             self._playout_trace.record(
                 event_type,

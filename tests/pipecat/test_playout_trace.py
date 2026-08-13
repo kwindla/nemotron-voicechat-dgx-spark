@@ -608,6 +608,64 @@ async def test_lifecycle_filter_precedes_single_decode(monkeypatch, tmp_path) ->
 
 
 @pytest.mark.asyncio
+async def test_traced_text_identity_records_only_current_accepted_response(
+    monkeypatch, tmp_path
+) -> None:
+    path = tmp_path / "response-text.jsonl"
+    monkeypatch.setenv(PLAYOUT_TRACE_ENV, str(path))
+    service = _RecordingTracedService()
+    await service._handle_server_event(
+        _stamp({"type": "response.created", "response_id": "response_1"}, 1.0)
+    )
+    await service._handle_server_event(
+        _stamp(
+            {
+                "type": "response.output_text.delta",
+                "response_id": "response_1",
+                "delta": "owned response text",
+            },
+            1.1,
+        )
+    )
+    await service._handle_server_event(
+        _stamp(
+            {
+                "type": "response.output_text.delta",
+                "response_id": "stale",
+                "delta": "stale text",
+            },
+            1.2,
+        )
+    )
+    service._response_cancelling = True
+    await service._handle_server_event(
+        _stamp(
+            {
+                "type": "response.output_text.delta",
+                "response_id": "response_1",
+                "delta": "cancelled text",
+            },
+            1.3,
+        )
+    )
+    service._playout_trace.close()
+
+    text_records = [
+        record for record in _records(path) if record["type"] == "response.output_text.delta"
+    ]
+    assert text_records == [
+        {
+            "trace_schema": PLAYOUT_TRACE_SCHEMA,
+            "type": "response.output_text.delta",
+            "client_received_monotonic_s": 1.1,
+            "response_id": "response_1",
+            "ordinal": 1,
+            "delta": "owned response text",
+        }
+    ]
+
+
+@pytest.mark.asyncio
 async def test_typed_speech_without_active_response_does_not_fabricate_clear(
     monkeypatch, tmp_path
 ) -> None:

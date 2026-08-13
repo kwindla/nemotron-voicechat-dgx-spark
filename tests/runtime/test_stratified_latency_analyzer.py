@@ -1098,3 +1098,29 @@ def test_markdown_output_without_step1_details_fails_before_writing(
     assert "--markdown-output requires --step1-details" in capsys.readouterr().err
     assert not output.exists()
     assert not markdown_output.exists()
+
+
+def test_active_metrics_frame_zero_session9_artifact_validates() -> None:
+    """Real sessions begin at frame 0 (session-9 live artifact regression)."""
+
+    import hashlib
+    from pathlib import Path
+
+    artifact = Path(
+        "reports/step2-live/session-20260813T082710Z/driver/pipecat-playout-0001.jsonl"
+    )
+    if not artifact.exists():
+        pytest.skip("retained session-9 artifact not present on this machine")
+    payload = artifact.read_bytes()
+    digest = hashlib.sha256(payload).hexdigest()
+    module = load_module()
+    events = [json.loads(line) for line in payload.decode("utf-8").splitlines() if line]
+    frames = [
+        event.get("frame")
+        for event in events
+        if event.get("type") == "voicechat.metrics" and "audio_delivered" in event
+    ]
+    assert 0 in frames, "regression requires a frame-0 active metrics row"
+    validation = module.validate_observed_playout_trace(events)
+    assert validation["valid"] is True, validation
+    assert len(digest) == 64

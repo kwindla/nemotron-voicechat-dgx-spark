@@ -47,6 +47,32 @@ preregistration.
 
 Run order: S1, S1, L1, L1, L2, L2, I1, then capture-off L1.
 
+### RTVI transcript identity boundary
+
+The installed Pipecat 1.7.1.dev21 protocol (`PROTOCOL_VERSION = 2.1.0`)
+defines `BotTranscriptionMessage` as only `label`, `type`, and
+`data: TextMessageData`; `TextMessageData` contains only `text`. The bundled
+Pipecat client dispatches only that `data` object to `onBotTranscript`. There
+is therefore no response ID, item ID, or message ID that the fixture driver can
+bind to the traced response.
+
+The driver instead uses the ordered RTVI data channel plus a fixed
+post-terminal quiescence barrier. After every fixture's
+`bot-stopped-speaking`, it admits no next typed send until a 2000 ms window
+(`VOICECHAT_LIVE_RTVI_QUIET_WINDOW_MS`, default `2000`, valid range
+`500..60000`) completes with no `bot-*` message. Each result retains the window
+start/end, total-message counts, and bot-message counts/types. Both retained
+clock durations must cover the configured interval; the wall-clock comparison
+allows at most 1 ms for `Date.now()` quantization. A barrier with any bot activity fails the
+fixture. Every accepted speaking/transcript bracket must also begin strictly
+after its own retained typed-send edge. Pipecat emits the accumulated
+`bot-transcription` before the terminal speaking transition, and RTC data
+channels deliver messages in order; consequently all text sent for the prior
+response must be delivered before that prior terminal. The terminal-aligned
+quiet window then proves the channel stayed drained until the next send, so
+prior-response text cannot enter the next fixture's bracket, including when
+the two scripts have identical bytes.
+
 ## Preregistered gates (Step 2 scope)
 
 1. **Fixture validity / audio completeness** (per long-bin response),
@@ -73,6 +99,8 @@ Run order: S1, S1, L1, L1, L2, L2, I1, then capture-off L1.
    grid 0–560 ms step 80.
 6. Interruption run: trace remains valid; no post-clear audio accepted;
    cancel-then-replace completes; second answer delivered.
+7. Every fixture has a successful retained RTVI ordered-channel quiescence
+   barrier, and every response bracket is strictly after its own send edge.
 
 Failure of gate 1 on both long-bin attempts of a script is a finding
 (fixture-design or model behavior), not silently retried; everything is
@@ -87,3 +115,9 @@ identity) and single-client check, Pipecat and browser JSONL artifacts,
 live-test stdout/stderr with both capture-overhead reports, server
 event/metrics traces and input/output audio, evaluator transcripts and
 adjudications, and `arrival-analysis.json` with command parameters.
+The driver retains the no-follow session-directory descriptor and its
+`(st_dev, st_ino)` reservation until terminal summary publication. Browser
+artifacts and atomic summary children are opened relative to that descriptor;
+every necessarily pathname-based Pipecat read, publication poll,
+reconstruction, and terminal-set validation first requires the current parent
+pathname to match the reserved identity.
