@@ -1,0 +1,508 @@
+# Generation-frame latency plan
+
+Status: **draft r3, under adversarial review.** r1 review reversed the
+draft's PAD-pair story and replaced its queue model; r2 review
+(`docs/reviews/generation-latency-plan-review-r2.md`) returned NOT-READY
+with four blockers: inconsistent measurement populations, a structural
+target incompatible with the leading candidate, an underspecified watchdog
+fix, and a pairing "recovery" precondition that is not recovery. r3
+addresses all six of its closure conditions. Nothing here is promoted.
+
+## Measurement schema (normative for every number and gate in this plan)
+
+Every table and gate names its **population** and **clock** from this
+schema. Percentiles are nearest-rank over the stated population; frames
+within a response are autocorrelated, so cross-response claims use
+response-clustered statistics (bootstrap by response).
+
+Populations (per model-step row; r3.1 refinements from the Step 0
+implementation review):
+- `delivered` — canonical predicate `audio_delivered == true`; a
+  bytes-based inference from legacy server traces lacking the field is an
+  explicitly labeled degraded mode.
+- `BOS-transition` — any EarTTS BOS transition row;
+  `abort-prefill-reset` — the subset that performed an actual reset
+  (prepared-reuse transitions carry no reset cost and must not be
+  conflated with it). Both reported separately.
+- `delivered-nonBOS` — delivered minus all BOS-transition rows.
+- `response-null` — **literal** `response_id == null` on the source row
+  (legacy population, kept for anchor reproduction; on legacy server
+  traces this includes delivered rows that lack the field).
+- `idle` (normative, r3.2) — `response-null` AND non-delivered, minus
+  function-cycle pseudo-steps. (Inferred response grouping is used for
+  response clustering only, never to define a literal source population.)
+- High-mode strata are selected by **stage predicates over
+  delivered-nonBOS only** (EarTTS-high: EarTTS ≥ 18 ms; residual-high:
+  residual ≥ 10 ms), never by the total latency they are supposed to
+  explain, and never overlapping the BOS strata.
+
+Clocks:
+- `server` — `server_step_ms` (model-step wall time; excludes event
+  construction and send).
+- `arrival` — client-observed `response.output_audio.delta` receipt times
+  with exact per-delta sample counts.
+- `browser` — AudioWorklet enqueue/dequeue/underrun timestamps plus
+  Pipecat receipt/release timestamps with response ID, ordinal, and sample
+  count (Step 2b instrumentation; relative intervals only unless a clock
+  offset is established).
+
+Anchor values (retained artifacts, `server` clock, delivered population):
+
+| Artifact | n | mean |
+|---|---:|---:|
+| Sequential preflight (fresh, 2026-08-10) | 34 | 86.168 ms |
+| Aged 26 h sustained probe (2026-08-12) | 193 | 85.403 ms |
+| Aged, delivered-nonBOS | 188 | 82.919 ms |
+| Pair-era baseline `f110f063…` | 32 | 75.116 ms |
+| `response-null`, fresh (legacy idle) | 2,692 | 70.926 ms |
+| `response-null`, aged (legacy idle) | 2,454 | 70.627 ms |
+| `idle` (normative, function-cycle excluded), aged | 2,424 | 71.469 ms |
+
+Clock rules (r3.1): the **normative** arrival clock is
+`response.output_audio.delta` receipt time, reconciled to delivered
+logical frames (fail closed or mark unavailable if the mapping is not
+provable). Metrics-row receipt and server-emit times are diagnostic-only
+(`normative: false`) and never issue a qualification verdict. The
+sequential structural anchor on the normative delta clock is worst window
+1009.934 ms (the metrics-clock 1009.957 value is retained as a
+diagnostic anchor). Server-only traces cannot observe `response.done`;
+below-threshold done-flush outcomes there are `done_flush_unknown`, never
+fabricated. A structural evaluation with no complete K=12 window returns
+`INSUFFICIENT`, not ACCEPT. Replay validates the real wire contract
+(PCM16 / 22,050 Hz / mono, per `events.decode_audio_delta()`) and fails
+closed on nonconforming payloads; simulated starvation is labeled
+simulation-only until browser enqueue/dequeue evidence exists.
+
+## Problem
+
+The realtime contract is one 80 ms audio frame per model step. On the
+current sequential production image, delivered generation frames average
+~83–86 ms (anchors above; 34/34 over 80 ms in the preflight, 52/55 in the
+browser math turn) and client arrival intervals average 86.6 ms pooled
+(preflight-only mean 88.9 ms). The playout reserve (repo default 160 ms —
+the deployed value was not inspected; Pipecat's TTFA metric is computed
+upstream of it) absorbs a bounded deficit; retained ~3 s responses starve
+it (A6), and the browser underruns audibly.
+
+Established during review:
+
+1. **PAD-pair history, corrected.** The retired conditional PAD-pair
+   scheduler drafted whenever the previous effective token was PAD — which
+   includes the generated audio tail, where it was heavily exercised
+   (buffered PAD rows ~45 ms alternating with packed ~96 ms). The closest
+   retained configuration comparison shows delivered generation at
+   75.1 ms (pair era) vs 86.2 ms (sequential) on the server clock — an
+   ~11 ms/frame association, though not a counterbalanced A/B. Retirement
+   remains justified by the unrecoverable packed-call wedge. Note the pair
+   schedule's per-call p95 was 118.3 ms while its arrival-clock peak queue
+   debt was ~4.5 ms — which is why this plan's targets are queue/throughput
+   gates, not per-call percentiles.
+2. **Stage attribution** (A3, aligned populations): during
+   delivered-nonBOS generation, Nano interface ≈ 52.3–52.8 ms dominates;
+   perception ≈ 12.5–13.1; EarTTS ≈ 12.2–12.4 steady; codec call ≈ 0.6–0.7;
+   residual ≈ 3.7–4.6. Distinct high-modes exist: EarTTS-high (≥ 18 ms,
+   ~10 rows in the analyzed session), residual-high (~15 ms residual with
+   normal EarTTS, 2 rows), and the BOS reset (own stratum). Host intervals
+   are attribution hints, not additive causal GPU costs.
+3. **Playout is a release-aware queue.** The service releases buffered
+   audio downstream in a burst when the reserve threshold is crossed (or on
+   `response.done` for short responses); audible behavior then follows the
+   recovering queue over arrival intervals. The normative model is the
+   exact state machine (A6's simulator), not any summed-excess scalar.
+4. **No uptime drift demonstrated** (A2); the live stack was never
+   restarted during this work. Not proven impossible; arms were not
+   workload-identical.
+
+### Blocking interaction: the no-text watchdog
+
+Confirmed truncation: in the aged probe's tool response, frame 1791 reaches
+no-text count 30 while decoded output is still −47 dBFS; frame 1792 is
+forced to `agent_eos`. All six retained sustained responses end via this
+watchdog (some during already-silent tails, which is benign). Consequence:
+no ≥ 8 s response fixture can exist until this is handled.
+
+**r3 decision (per r2 review):** this plan takes the
+**qualification-scoped override** path — an explicitly qualification-only
+mechanism (env-gated, refused in production images) that suspends the
+no-text limit for latency fixtures. The **production** watchdog repair is
+moved to its own correctness plan, which must specify a two-dimensional
+liveness contract (the naive "pause while audible" rule would let
+continuous audible non-text output evade all three watchdogs — a bounded
+audio-only/max-response rule is required) and a full boundary test matrix
+(BOS+silence, BOS+continuous-audible-no-text, legitimate long tails,
+prosodic gaps, function-only output, fused/post-FC BOS, interruption,
+session caps). The companion transport-gate defect (quiet first-turn
+speech discarded at −40 dBFS) is likewise tracked separately.
+
+## Targets
+
+Preregistered, on schema populations. The former per-call p95 target is
+**removed** (it would reject safe bursty schedules; see Problem 1). In its
+place:
+
+1. **Audible (normative):** running the exact release-aware playout state
+   machine (exact chunk sample counts, threshold release, `response.done`
+   flush, interruption at every arrival) over browser-clock measurements:
+   zero underruns for responses up to the declared product envelope
+   (duration bins, transport conditions, and independent-response counts
+   declared before the run), at a reserve whose added release delay is
+   explicitly accepted.
+2. **Structural (normative):** logical media throughput ≥ 1.0 — for every
+   consecutive 12-frame window of delivered logical frames, literally
+   `t[i+11] − t[i] ≤ 960 ms` on the arrival clock — plus a bounded maximum
+   single arrival gap (preregistered per fixture; default ≤ 160 ms) so a
+   burst-and-stall scheduler cannot pass on averages. This exact convention
+   is the one Step 0 encodes (r3 review verified it: pair-era worst window
+   877.9 ms / 0 failures → accept; sequential 1010.0 ms / 13 failing
+   windows → reject; discrimination is robust to the interval-counting
+   variant). Verified against retained schedules in A7.
+3. No regression to idle percentiles, voice-to-voice latency, barge-in
+   measured at the output device (tested just before release, at release,
+   and after each downstream frame — the release burst changes the worst
+   case), or any semantic/WER gate. Semantic gates compare against known
+   fixtures for **audio completeness**, not transcript presence (truncated
+   responses can still show complete text).
+
+## Plan
+
+### Step 0 — Land the measurement schema and analyzers (offline) — READY
+
+Implement the schema above in the sustained/qualification analyzers: exact
+membership lists + source hash per aggregate, both queue diagnostics (the
+release-aware state machine as normative; zero-reserve max debt as
+informational), clocks/thermal/power telemetry columns, response-clustered
+statistics.
+
+Gate: reproduces every anchor value in the schema table from retained
+artifacts, with published membership.
+
+### Step 1 — Finish mining retained evidence (offline) — READY
+
+Complete and record with aligned populations: stage-timing strata (A3),
+pair-vs-sequential comparison on one clock (A4), EarTTS-high /
+residual-high row inventories with token/control context, and the
+negative-control reports (already copied into `reports/`, byte-verified;
+A5).
+
+### Step 2 — Unblock long-response fixtures — qualification parts READY
+
+2a. Qualification-only no-text override (refused in production), enabling
+≥ 8–10 s continuous-speech fixtures; fixture validity gate = audio
+completeness against a known script, not transcript presence.
+
+2b. Browser-side instrumentation: Pipecat receipt/release timestamps
+(response ID, ordinal, sample count) and AudioWorklet
+enqueue/dequeue/underrun capture; reconciliation with the Step 0 replay on
+the same session using relative intervals.
+
+### Step 3 — Stopgap reserve, sized by replay on real fixtures
+
+Re-run the A6 sweep on genuine 8–10 s fixtures (blocked on 2a) with the
+exact state machine, including interruption sweeps at every arrival
+position. Pick reserve for the declared envelope; deploy via
+`NEMOTRON_VOICECHAT_PREBUFFER_MS`; verify with 2b browser measurements.
+Preliminary retained-data result (A6): 160 ms starves 4/6 of even ~3 s
+responses; 400 ms was the first clean grid point for those samples (longer
+responses *may* require more — path-dependent, not certain). Report added
+release delay, browser first-audible delay, and reserve audio duration as
+separate quantities (the reserve fills with all PCM including leading
+silence). Evaluate adaptive reserve as fast-follow. Interim; revisited
+after Step 5.
+
+### Step 4 — Complete the profile and produce the candidate ranking table
+
+Additions per r2 review — Step 4 must be able to rank Step 5:
+
+- **Nano kernel/CPU-gap profile** (the dominant 52 ms term): Nsight
+  Systems/Compute on captured content-position and PAD-position states;
+  exact-output component benchmark; measure kernel time vs launch/gap time.
+- EarTTS-high forensics on the stage-predicate row set (not
+  total-latency-selected); residual-high separately (trace/logging overhead
+  A/B on a deterministic fixture is the first residual hypothesis).
+- Thermal/DVFS/memory-pressure regression against frame timestamps.
+
+Output (the Step 5 decision input): a candidate table with, per candidate:
+measured recoverable ceiling, correctness scope, reliability risk, and a
+preregistered promotion floor.
+
+### Step 5 — Structural candidate (selected BY the Step 4 table, not before)
+
+Candidates to be ranked (no winner is declared in this plan):
+
+- **Repaired tail-restricted PAD pairing.** Strongest retained latency
+  precedent (A4) — but **inadmissible until its reliability precondition
+  is closed**, which per the retirement doc's authority means one of:
+  (a) eliminate the two-position packed vLLM call while keeping an
+  amortized schedule; (b) find and fix the specific worker/graph/
+  output-wakeup defect, then prove deterministic replay plus long
+  worker-level stress; or (c) isolate the engine behind a supervisor that
+  can kill and recreate the worker with proven clean reinitialization (no
+  stale state or client lock survives), single-session failure only, and
+  an explicit service-recovery SLO. A bounded timeout with session-fatal
+  close is **not** closure — it cannot restore a wedged EngineCore.
+  Additionally requires an executable tail state machine (entry/exit
+  predicates, pending-row handling, rejection/rollback across BOS/EOS,
+  SOTC/EOTR, post-FC BOS, interruption, abort, session caps) and a
+  same-image, queue-clock, counterbalanced A/B with independent responses.
+- **Nano batch-1 kernel work** (Marlin tile/split-K tuning, fused dequant,
+  launch-gap reduction) — ranked by the Step 4 Nano profile against exact
+  W8 outputs.
+- **Wrapper small-launch-path graphing/fusion** — only if measured
+  recoverable gaps ≥ 1.5 ms/frame.
+- **EarTTS-high elimination** — worth up to ~8–10 ms of the p95 tail if
+  the forensics find a fixable kernel/sampler cause.
+- Selective EarTTS precision, two-frame perception batching — behind the
+  above.
+
+Negative controls (retained reports, `reports/`; byte-verified against the
+source tree — do not rerun absent a changed-stack hypothesis): Step-8
+concurrent perception overlap (+1.076 ms, defended stop, both stages
+inflate under overlap), Step-5 barrier coalescing (seven barriers, none
+removable; safe subset regressed).
+
+Deferred, unchanged: Nano W4; CFG guidance changes (blinded non-inferiority
+protocol required); low-buffer catch-up playback (offline evaluation
+first).
+
+## Constraints
+
+- Single-session, batch-1, stateful runtime: check the single-client
+  health/lock immediately before any live probe; fail closed if occupied.
+- No container restarts are required by this plan; never use
+  `./voicechat up` for probes against the current checkout.
+- House rules: hash-qualified anchor patches, fail-closed, preregistered
+  gates, response-clustered statistics, immutable-image evidence, negative
+  results retained.
+
+## Implementation log
+
+- **2026-08-13 — Step 2 CODE-COMPLETE (review round 4: PASS).** All deltas
+  closed within the recorded threat model and verified with fresh probes
+  (`docs/reviews/step2-implementation-review-r4.md`): consume-once
+  validator authority surviving visible-field rewrites and two-thread
+  races; real concurrent-process publication races with exactly-one-winner
+  and orphan quarantine; the four round-3 producer-impossible traces plus
+  two novel ones all rejected; full copy/deepcopy/pickle rejection matrix.
+  Final state: 902 passed / 67 anchors / task-scoped lint green. Four
+  review rounds total. The **live phase is gated** on the review's seven
+  preconditions (immutable reviewed image, single-client check, fresh
+  artifact paths, explicit qualification identity, pre-fixture /health
+  capture, preregistered fixtures/gates, paired capture-off control) and
+  its evidence-retention manifest; it requires an image build and a stack
+  restart, and is scheduled explicitly, not autonomously.
+
+- **2026-08-13 — Step 2 review round 3: FAIL (4 deltas remain); browser
+  flush-ack delta closed with live-Chromium fault injection.** Remaining
+  (`docs/reviews/step2-implementation-review-r3.md`): the proof seal is
+  reachable-mutable (fix: validator-owned identity-keyed registry;
+  raw-label grammar without normalization); artifact publication is not
+  no-clobber and staging files persist on failure (fix: link-based
+  no-replace publish, cleanup, quarantine of crash orphans); the consumer
+  accepts four producer-impossible traces (post-clear audio, non-typed
+  speech-start records, zero-sample chains, self-contradictory
+  terminals); deepcopy reconstructs a half-initialized traced service.
+  **Threat-model boundary (recorded):** the qualification fence defends
+  against misconfiguration and careless in-process code; arbitrary
+  hostile in-process code (e.g. `object.__setattr__` rewriting, module
+  patching) can defeat any pure-Python design and is out of scope beyond
+  the registry hardening. Fix round 3 delegated.
+
+- **2026-08-13 — Step 2 review round 2: FAIL (5 boundary deltas); live
+  phase still blocked.** Round-1 conditions largely closed (environment
+  matcher rejects all fresh near-miss attacks; off-paths verified
+  functionally byte-identical by independent code-object comparison;
+  bounded writer and batched browser capture confirmed). Remaining
+  (`docs/reviews/step2-implementation-review-r2.md`): proof-object
+  forgeability (`dataclasses.replace`/subclass attribute spoofing at the
+  engine boundary), false-valid persisted trace terminal on close failure
+  plus non-finite timeout handling, consumer acceptance of
+  clockless/unknown/misordered records and no prebuffer identity to check
+  threshold releases against, unacknowledged final browser worklet batch,
+  and shallow-copy producing a half-initialized traced service. Spec note:
+  the qualification mode label must match `^[a-z0-9][a-z0-9-]{2,63}$`,
+  is recorded verbatim in health/traces, and the label `production` is
+  explicitly refused. Fix round 2 delegated.
+
+- **2026-08-12 — Step 2 review round 1: FAIL (6 closure conditions); live
+  qualification blocked.** The adversarial review
+  (`docs/reviews/step2-implementation-review-r1.md`) found production-path
+  defects: fail-open production refusal (any one-key drift admits the
+  override — including the live recipe's own prompt change), trace-on
+  behavior changes (stale malformed deltas become fatal instead of
+  ignored; receipt clock sampled post-parse/post-decode), trace-off branch
+  additions on both hot paths, unbounded writer queue + blocking cleanup,
+  analyzer ignoring the new release/downstream-push records (verified by
+  impossible-record injection), and per-quantum browser-binding load that
+  can perturb measured underruns. **Design decision (r3.3):** the override
+  becomes a positive, fail-closed qualification identity — it requires an
+  explicit `VOICECHAT_QUALIFICATION_MODE=<label>` opt-in AND an
+  environment equal to a checked-in candidate TOML environment except for
+  an explicit allowlist of qualification deltas (the system prompt, the
+  override itself, the mode flag); any other drift refuses. Off-path code
+  must be byte-identical (construction-time variant selection). Fix round
+  delegated.
+
+- **2026-08-12 — Step 1 COMPLETE (review round 2: PASS).** All closure
+  conditions verified with fresh raw-artifact probes
+  (`docs/reviews/step1-evidence-review-r2.md`): corrected phase split
+  209/615/7 member-for-member identical to independent recomputation, the
+  seven moved rows exactly the round-1 `agent_eos` set, neighbor labels
+  fixed, CLI validation pinned, reports byte-reproducible, 67/67 anchors,
+  30/30 tests, 14/14 source hashes. Step 1 gate ("every number traces to
+  a retained artifact + membership hash") is met. Deliverables:
+  `reports/step1-retained-evidence-20260812.{md,json}`.
+
+- **2026-08-12 — Step 1 review round 1: FAIL (one blocking finding).**
+  The retained-evidence report's arithmetic engine fully verified by raw
+  recomputation (10/10 sampled claims exact, all 14 source hashes match,
+  pair-class walk reproduced exactly, PAD/BOS predicates sound, flake
+  attribution confirmed pre-existing). Blocking: `_token_phase()` folds
+  seven delivered `agent_eos` control rows into text-emission (true split:
+  209 text / 615 PAD / 7 agent-EOS control of 831); closure requires the
+  control stratum, EOS/CLI tests, and report regeneration
+  (`docs/reviews/step1-evidence-review-r1.md`). Plan A4 prose corrected to
+  the request-delta classification (12 packed, p95 118.710). Closure round
+  delegated.
+
+- **2026-08-12 — Step 0 COMPLETE (review round 3: PASS).** All five round-2
+  deltas closed and verified with fresh counterexamples
+  (`docs/reviews/step0-analyzer-review-r3.md`): ordered interruption/clear
+  replay matching `llm.py` (cleared media never resurrected by a later
+  `response.done`), at-release whole-burst exposure and elapsed drain
+  before pre-arrival, typed-only cancellation trigger, literal
+  `response-null` + r3.2 `idle` reproduced on both legacy traces
+  (245/190, 490/326), and full verifier integrity (real corruption of a
+  copied anchor tree exits nonzero on source and membership hashes).
+  Final state: `verify-anchors PASS (67 anchors)`, analyzer tests 27/27,
+  full suite 824 passed / 16 skipped. Three review rounds total; spec
+  evolved r3 → r3.1 → r3.2 along the way. The Step 0 gate ("reproduces
+  every anchor with published membership") is met.
+
+- **2026-08-12 — Step 0 review round 2: FAIL (narrowing); spec refined to
+  r3.2.** The fix round closed most of r1 (verified with fresh
+  counterexamples: high-mode partition, canonical delivery, BOS strata,
+  normative delta clock + fail-closed reconciliation, done_flush_unknown,
+  INSUFFICIENT, hardened 60-anchor verifier; full suite 817 passed; a
+  previously unchecked artifact — `nano-sequential-production-r1` —
+  reproduced independently across all nine populations). Five fixes
+  remain (`docs/reviews/step0-analyzer-review-r2.md`): observed
+  interruption/clear must be an ordered replay event (a cancelled
+  `response.done` currently "releases" media `llm.py` already cleared);
+  add the at-release/pre-first-push interruption point and drain elapsed
+  playout before pre-arrival; cancellation trigger must match
+  `llm.py` (`speech_started` only with `source == "typed"`); spec
+  decision recorded: `response-null` is literal on the source row and
+  normative `idle` = response-null ∧ non-delivered − function-cycle
+  (r3.2); complete verifier membership coverage + negative integrity
+  tests. Fix round 2 delegated.
+
+- **2026-08-12 — Step 0 review round 1: FAIL; spec refined to r3.1.** The
+  implementation passed all 38 anchors and my independent non-anchor
+  cross-checks (arithmetic, K=12 enumeration, nearest-rank, and the A6
+  replay all verified correct), but the adversarial review
+  (`docs/reviews/step0-analyzer-review-r1.md`) correctly failed it on
+  population semantics: high-modes not scoped to delivered-nonBOS,
+  idle/function-cycle overlap silently resolving a genuine spec/anchor
+  inconsistency (spec now fixed: `response-null` legacy vs normative
+  `idle`, new anchor n=2424 mean 71.469), BOS transition vs
+  abort-prefill-reset conflation, wrong normative structural clock
+  (metrics receipt instead of audio-delta receipt), fabricated server
+  `response.done`, single-point interruption model, permissive wire
+  metadata, vacuous ACCEPT on n<12, and an anchor verifier too narrow to
+  catch any of it. Aged artifact moved to a durable location
+  (`~/.local/state/nemotron-voicechat/qualification/sustained-aged-26h-20260812/`,
+  events SHA-256 `acb205f6…`). Ambiguity-resolution records now live in
+  this log rather than the transient scratchpad. Fix round delegated.
+
+- **2026-08-12 — Step 0 started.** Implementation delegated to Codex
+  (brief: `stratified_latency_analyzer` CLI under `tools/qualification/`,
+  schema populations/clocks, membership manifests + source hashes,
+  release-aware replay + informational zero-reserve debt, literal K=12
+  throughput gate, anchor-verification subcommand). Review protocol per
+  step: hands-on verification by the orchestrating session in parallel
+  with a fresh-session Codex adversarial review; iterate until the step
+  gate passes; notes recorded here.
+
+## Data appendix
+
+### A1 — Corpus sweep (2026-08-12; superseded in part)
+
+Post-retirement sessions show delivered-generation means ~82–88 ms;
+pair-era sessions run lower (75.1 ms in `f110f063…`). The sweep's deficit
+figures used a non-recovering sum and are superseded by A6.
+
+### A2 — Aged vs fresh sustained comparison (2026-08-12)
+
+Schema-tabled anchors above. Conclusion: no uptime drift demonstrated
+(non-identical workloads, one fresh response; no statistical test claimed);
+the earlier "59 → 72 ms drift" reading was a workload-composition artifact.
+The probe's aggregate p95 (82.2 ms at ~9% generation share vs 73.99 at
+1.4%) is a live demonstration of why aggregate gates hid the problem.
+
+### A3 — Stage timings, aligned populations (server clock, delivered-nonBOS)
+
+| Artifact | n | perception | Nano | EarTTS | codec | residual | wrapper |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Sequential preflight | 33 | 13.06 | 52.29 | 12.15 | 0.70 | 4.57 | 82.77 |
+| Aged sustained | 188 | 12.52 | 52.79 | 12.40 | 0.61 | 3.75 | 82.06 |
+
+BOS stratum reported separately (preflight BOS row: EarTTS 84.5 ms
+abort/prefill reset). High-mode inventory for `209fe177…` (55 delivered
+rows): 10 EarTTS-high rows (EarTTS ≥ 18 ms; mean 20.4 vs 10.86 on the
+other non-BOS rows), 2 residual-high rows (~15 ms residual, EarTTS
+normal), 1 BOS row. Nano is flat (52.5–52.8) across all strata — the
+dominant constant term.
+
+### A4 — Pair era vs sequential (server clock, delivered)
+
+Pair `f110f063…`: n=32, mean 75.116 (non-BOS 72.699), 13/32 over 80 ms.
+Under the normative request-position-delta classification (Step 1 report):
+12 buffered rows at 45.0 ms alternating exactly with 12 packed-pair rows
+at 97.49 ms (p95 118.710, nearest-rank), plus 8 sequential/control rows
+(one BOS, six text, one PAD) before pairing begins; arrival-clock peak
+queue debt ≈ 4.5 ms.
+Sequential preflight: n=34, mean 86.168 (non-BOS 84.024), 34/34 over
+80 ms, client-arrival debt 293.9 ms. Association ≈ 11.1–11.3 ms/frame;
+this is the closest retained configuration comparison, not a
+counterbalanced A/B.
+
+### A5 — Negative controls
+
+`reports/step8-overlap-ab-20260807.md` and
+`reports/step5-host-barriers-20260807.md`, byte-identical to the
+source-artifact tree (SHA-256 verified in r2 review). Summaries in Step 5.
+
+### A6 — Reserve replay sweep (2026-08-12, arrival clock, release-aware)
+
+Six retained responses (2.7–3.4 s, all watchdog-truncated), exact
+state-machine replay on `client_received_monotonic_s`; numbers reproduced
+independently by the r2 review:
+
+| Reserve | Responses starved | Total starvation | Mean added release delay |
+|---:|---:|---:|---:|
+| 160 ms (repo default) | 4/6 | 797 ms | 116 ms |
+| 240 ms | 4/6 | 439 ms | 203 ms |
+| 320 ms | 2/6 | 136 ms | 290 ms |
+| 400 ms | 0/6 | 0 | 376 ms |
+
+Pooled arrival-interval mean 86.589 ms over 221 intervals (preflight-only
+88.906 ms; response means 82.5–89.0). "Added release delay" is the
+model-client first-delta-to-release interval, not browser audible onset
+(Step 2b measures that). 400 ms is the first clean 80 ms-grid point for
+these truncated samples; longer responses may, not necessarily will,
+require more.
+
+### A7 — Structural-gate acceptance/rejection verification (2026-08-12)
+
+The Target-2 gate (worst 12-frame window mean ≤ 80 ms, max single gap
+≤ 160 ms) evaluated on retained schedules:
+
+| Schedule (clock) | Worst 12-frame window | Max gap | Verdict |
+|---|---:|---:|---|
+| Pair era `f110f063…` (server emit — arrival unavailable in model trace) | 77.1 ms | 120.9 ms | accepts |
+| Sequential preflight (client arrival) | 91.4 ms | 151.7 ms | rejects |
+| Aged sequential probe (client arrival) | 92.4 ms | 147.2 ms | rejects |
+
+The gate accepts the safe bursty scheduler and rejects the starving
+sequential one, as required. Caveat: the pair-era row uses the server-emit
+clock; a future pairing candidate must be gated on the arrival clock.
