@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 import re
+import threading
+import tomllib
 from collections.abc import Mapping
+from dataclasses import dataclass
+from hashlib import sha256
+from pathlib import Path
 
 RUNTIME_PROVENANCE_REQUIRED_SOURCES = frozenset(
     {
@@ -69,6 +74,88 @@ NANO_PAD_PAIR_PRODUCTION_POLICY = {
     "VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER": "0",
     "VOICECHAT_NANO_PAIR_FULL_GRAPH": "0",
 }
+
+QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV = (
+    "VOICECHAT_QUAL_NO_TEXT_WATCHDOG_OVERRIDE_FRAMES"
+)
+QUALIFICATION_MODE_ENV = "VOICECHAT_QUALIFICATION_MODE"
+QUALIFICATION_ENVIRONMENT_DELTAS = frozenset(
+    {
+        "VOICECHAT_WEB_SYSTEM_PROMPT",
+        QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV,
+        QUALIFICATION_MODE_ENV,
+    }
+)
+_QUALIFICATION_MANAGED_PREFIXES = ("EA_", "S2S_", "VOICECHAT_")
+_QUALIFICATION_MANAGED_NAMES = frozenset({"HF_HUB_OFFLINE", "TRANSFORMERS_OFFLINE"})
+
+
+@dataclass(frozen=True, slots=True, eq=False)
+class ValidatedQualificationMode:
+    """Caller-visible identity for one validator-owned qualification authority."""
+
+    label: str
+    candidate: str
+    no_text_watchdog_override_frames: int
+    environment_sha256: str
+
+    def __copy__(self) -> ValidatedQualificationMode:
+        return type(self)(
+            self.label,
+            self.candidate,
+            self.no_text_watchdog_override_frames,
+            self.environment_sha256,
+        )
+
+    def __deepcopy__(self, _memo: dict[int, object]) -> ValidatedQualificationMode:
+        return self.__copy__()
+
+    def __reduce__(self) -> object:
+        raise TypeError("validated qualification identities cannot be pickled")
+
+
+@dataclass(frozen=True, slots=True)
+class _QualificationAuthority:
+    """Values retained only by the validator until one engine consumes them."""
+
+    label: str
+    candidate: str
+    no_text_watchdog_override_frames: int
+    environment_sha256: str
+
+
+_QUALIFICATION_AUTHORITIES: dict[
+    ValidatedQualificationMode, _QualificationAuthority
+] = {}
+_QUALIFICATION_AUTHORITIES_LOCK = threading.Lock()
+
+
+def is_validated_qualification_mode(value: object) -> bool:
+    """Return whether an exact validator result has unconsumed authority."""
+
+    if type(value) is not ValidatedQualificationMode:
+        return False
+    with _QUALIFICATION_AUTHORITIES_LOCK:
+        return value in _QUALIFICATION_AUTHORITIES
+
+
+def validated_qualification_mode_fields(
+    value: object,
+) -> tuple[str, str, int, str]:
+    """Consume and return validator-owned fields for one exact result identity."""
+
+    if type(value) is not ValidatedQualificationMode:
+        raise TypeError("qualification_mode must be a validated qualification identity")
+    with _QUALIFICATION_AUTHORITIES_LOCK:
+        authority = _QUALIFICATION_AUTHORITIES.pop(value, None)
+    if authority is None:
+        raise TypeError("qualification_mode must be a validated qualification identity")
+    return (
+        authority.label,
+        authority.candidate,
+        authority.no_text_watchdog_override_frames,
+        authority.environment_sha256,
+    )
 
 
 def validate_nano_pad_pair_production_policy(environment: Mapping[str, str]) -> None:
@@ -139,3 +226,111 @@ PRODUCTION_ENVIRONMENT = {
     "VOICECHAT_WEB_WS_PING_INTERVAL": "none",
     "VOICECHAT_WEB_WS_PING_TIMEOUT": "none",
 }
+
+def checked_in_candidate_environments() -> dict[str, dict[str, str]]:
+    """Load the serving identities from the checked-in candidate TOMLs."""
+
+    config_root = Path(__file__).resolve().parents[2] / "config"
+    candidates: dict[str, dict[str, str]] = {}
+    for path in sorted(config_root.glob("production-candidate-*.toml")):
+        with path.open("rb") as stream:
+            config = tomllib.load(stream)
+        candidate = config.get("candidate")
+        environment = config.get("runtime", {}).get("environment")
+        if not isinstance(candidate, str) or not isinstance(environment, dict):
+            raise RuntimeError(f"invalid checked-in candidate environment: {path}")
+        if not all(
+            isinstance(key, str) and isinstance(value, str)
+            for key, value in environment.items()
+        ):
+            raise RuntimeError(f"non-string checked-in candidate environment: {path}")
+        candidates[candidate] = dict(environment)
+    if not candidates:
+        raise RuntimeError(f"no checked-in candidate environments found beneath {config_root}")
+    return candidates
+
+
+def qualification_no_text_watchdog_override_frames(
+    environment: Mapping[str, str],
+) -> int:
+    """Parse the qualification-only no-text watchdog threshold override."""
+
+    raw = environment.get(QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV, "0").strip()
+    if not raw:
+        return 0
+    try:
+        frames = int(raw)
+    except ValueError as exc:
+        raise RuntimeError(
+            f"{QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV} must be a non-negative integer"
+        ) from exc
+    if frames < 0:
+        raise RuntimeError(
+            f"{QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV} must be a non-negative integer"
+        )
+    return frames
+
+
+def validate_qualification_watchdog_production_policy(
+    environment: Mapping[str, str],
+) -> ValidatedQualificationMode | None:
+    """Return positive qualification identity or refuse every unmanaged drift."""
+
+    frames = qualification_no_text_watchdog_override_frames(environment)
+    if not frames:
+        return None
+    label = environment.get(QUALIFICATION_MODE_ENV, "")
+    if re.fullmatch(r"[a-z0-9][a-z0-9-]{2,63}", label) is None:
+        raise RuntimeError(
+            f"{QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV} requires explicit "
+            f"{QUALIFICATION_MODE_ENV}=<label> matching "
+            "^[a-z0-9][a-z0-9-]{2,63}$"
+        )
+    if label == "production":
+        raise RuntimeError(f"{QUALIFICATION_MODE_ENV}=production is explicitly refused")
+
+    candidates = checked_in_candidate_environments()
+    actual_managed = {
+        name: value
+        for name, value in environment.items()
+        if name in _QUALIFICATION_MANAGED_NAMES
+        or name.startswith(_QUALIFICATION_MANAGED_PREFIXES)
+    }
+    comparisons: list[tuple[int, str, list[str], dict[str, str]]] = []
+    for candidate, expected in candidates.items():
+        managed_names = (set(actual_managed) | set(expected)) - QUALIFICATION_ENVIRONMENT_DELTAS
+        offending = sorted(
+            name for name in managed_names if actual_managed.get(name) != expected.get(name)
+        )
+        comparisons.append((len(offending), candidate, offending, expected))
+    _, candidate, offending, expected = min(comparisons, key=lambda item: (item[0], item[1]))
+    if offending:
+        raise RuntimeError(
+            "qualification environment does not match a checked-in candidate; "
+            f"closest={candidate}; offending keys: {', '.join(offending)}"
+        )
+
+    identity_environment = {
+        **expected,
+        "VOICECHAT_WEB_SYSTEM_PROMPT": environment.get("VOICECHAT_WEB_SYSTEM_PROMPT", ""),
+        QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV: str(frames),
+        QUALIFICATION_MODE_ENV: label,
+    }
+    digest_input = "\n".join(
+        f"{name}={identity_environment[name]}" for name in sorted(identity_environment)
+    ).encode()
+    authority = _QualificationAuthority(
+        label=label,
+        candidate=candidate,
+        no_text_watchdog_override_frames=frames,
+        environment_sha256=sha256(digest_input).hexdigest(),
+    )
+    result = ValidatedQualificationMode(
+        label=authority.label,
+        candidate=authority.candidate,
+        no_text_watchdog_override_frames=authority.no_text_watchdog_override_frames,
+        environment_sha256=authority.environment_sha256,
+    )
+    with _QUALIFICATION_AUTHORITIES_LOCK:
+        _QUALIFICATION_AUTHORITIES[result] = authority
+    return result

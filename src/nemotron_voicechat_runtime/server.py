@@ -60,8 +60,14 @@ from .protocol import (
 from .provenance import (
     NANO_PAD_PAIR_PRODUCTION_POLICY,
     PRODUCTION_ENVIRONMENT,
+    QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV,
+    QUALIFICATION_MODE_ENV,
     RUNTIME_SOURCE_PATHS,
+    ValidatedQualificationMode,
+    is_validated_qualification_mode,
     validate_nano_pad_pair_production_policy,
+    validate_qualification_watchdog_production_policy,
+    validated_qualification_mode_fields,
 )
 
 PINNED_COMMIT = "911ec674ab40f04302ef33672be4179f45a7310f"
@@ -2530,6 +2536,35 @@ class AgentSilenceEosWatchdog:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class _QualificationModeIdentity:
+    """Engine-owned copy of every field sealed by the validator."""
+
+    label: str
+    candidate: str
+    no_text_watchdog_override_frames: int
+    environment_sha256: str
+
+
+@dataclass
+class QualificationAgentSilenceEosWatchdog(AgentSilenceEosWatchdog):
+    """Qualification variant selected once; production snapshot stays unchanged."""
+
+    qualification_mode: _QualificationModeIdentity | None = None
+
+    def snapshot(self) -> dict[str, Any]:
+        if self.qualification_mode is None:
+            raise RuntimeError("qualification watchdog lacks validated identity")
+        return {
+            **super().snapshot(),
+            "qualification_no_text_watchdog_override_frames": (
+                self.qualification_mode.no_text_watchdog_override_frames
+            ),
+            "qualification_mode": self.qualification_mode.label,
+            "qualification_candidate": self.qualification_mode.candidate,
+        }
+
+
 @dataclass
 class TransportModelGate:
     """Gate only leading silence; preserve NVIDIA's continuous stream thereafter."""
@@ -2851,6 +2886,7 @@ class VoiceChatEngine:
         agent_silence_eos_frames: int = 12,
         agent_no_text_frames: int = 30,
         agent_no_audio_frames: int = 30,
+        qualification_mode: ValidatedQualificationMode | None = None,
         response_tail_dbfs: float = -60.0,
         response_tail_silence_frames: int = 3,
         response_tail_max_frames: int = 25,
@@ -2869,12 +2905,30 @@ class VoiceChatEngine:
         self.user_text_segment = ""
         self.last_rnnt_decoded_count = 0
         self.vllm_request_position_baseline: dict[str, int] = {}
-        self.agent_silence_watchdog = AgentSilenceEosWatchdog(
-            threshold_dbfs=agent_silence_eos_dbfs,
-            required_frames=agent_silence_eos_frames,
-            no_text_required_frames=agent_no_text_frames,
-            no_audio_required_frames=agent_no_audio_frames,
+        qualification_identity: _QualificationModeIdentity | None = None
+        if qualification_mode is not None:
+            qualification_identity = _QualificationModeIdentity(
+                *validated_qualification_mode_fields(qualification_mode)
+            )
+        self.qualification_mode = qualification_identity
+        watchdog_type = (
+            QualificationAgentSilenceEosWatchdog
+            if qualification_identity is not None
+            else AgentSilenceEosWatchdog
         )
+        watchdog_kwargs: dict[str, Any] = {
+            "threshold_dbfs": agent_silence_eos_dbfs,
+            "required_frames": agent_silence_eos_frames,
+            "no_text_required_frames": (
+                qualification_identity.no_text_watchdog_override_frames
+                if qualification_identity is not None
+                else agent_no_text_frames
+            ),
+            "no_audio_required_frames": agent_no_audio_frames,
+        }
+        if qualification_identity is not None:
+            watchdog_kwargs["qualification_mode"] = qualification_identity
+        self.agent_silence_watchdog = watchdog_type(**watchdog_kwargs)
         self.response_boundary = AcousticResponseBoundary(
             threshold_dbfs=response_tail_dbfs,
             required_silent_frames=response_tail_silence_frames,
@@ -4410,6 +4464,7 @@ def _install_step9_capture_sizes() -> None:
 def build_public_pipeline(args: argparse.Namespace) -> Any:
     """Build NVIDIA's streamer from the exact public combined weights."""
     validate_nano_pad_pair_production_policy(os.environ)
+    qualification_mode = validate_qualification_watchdog_production_policy(os.environ)
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     os.environ.setdefault("VLLM_ATTENTION_BACKEND", "TRITON_ATTN")
@@ -4647,6 +4702,7 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
         "fixed_stage_optimizations": fixed_stage_optimizations,
         "host_runtime": host_runtime_provenance(),
     }
+    pipeline.qualification_mode = qualification_mode
     print(
         f"Checkpoint provenance: {json.dumps(pipeline.checkpoint_provenance, sort_keys=True)}",
         flush=True,
@@ -5849,6 +5905,16 @@ def create_app(
             "active_client": active_client.locked(),
             "uptime_seconds": round(time.time() - loaded_at, 1),
         }
+        qualification_mode = getattr(engine, "qualification_mode", None)
+        if type(qualification_mode) is _QualificationModeIdentity:
+            result["qualification_no_text_watchdog_override"] = {
+                "environment": QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV,
+                "frames": qualification_mode.no_text_watchdog_override_frames,
+                "mode_environment": QUALIFICATION_MODE_ENV,
+                "mode": qualification_mode.label,
+                "candidate": qualification_mode.candidate,
+                "environment_sha256": qualification_mode.environment_sha256,
+            }
         if cleanup_failure is not None:
             result["model_cleanup_failure"] = cleanup_failure
         diagnostics: dict[str, bool] = {}
@@ -7888,6 +7954,11 @@ def main() -> None:
         warm_pipeline(pipeline, args.warmup_wav, system_prompt=args.system_prompt)
         startup_event("pipeline_warmup_finished")
     agent_no_text_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES", "30"))
+    qualification_mode = getattr(pipeline, "qualification_mode", None)
+    if qualification_mode is not None and not is_validated_qualification_mode(
+        qualification_mode
+    ):
+        raise RuntimeError("pipeline retained an invalid qualification identity")
     agent_no_audio_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_AUDIO_FRAMES", "30"))
     agent_decoded_silence_frames = int(
         os.environ.get("VOICECHAT_WEB_AGENT_SILENCE_EOS_FRAMES", "20")
@@ -7919,6 +7990,7 @@ def main() -> None:
         agent_silence_eos_frames=agent_decoded_silence_frames,
         agent_no_text_frames=agent_no_text_frames,
         agent_no_audio_frames=agent_no_audio_frames,
+        qualification_mode=qualification_mode,
         response_tail_dbfs=float(os.environ.get("VOICECHAT_WEB_RESPONSE_TAIL_DBFS", "-60")),
         response_tail_silence_frames=int(
             os.environ.get("VOICECHAT_WEB_RESPONSE_TAIL_SILENCE_FRAMES", "3")

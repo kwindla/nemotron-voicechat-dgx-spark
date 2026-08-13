@@ -10,10 +10,12 @@ import os
 import re
 import socket
 import sys
+import time
 import urllib.error
 import urllib.request
 import wave
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -147,6 +149,447 @@ def _voice_latency_probe_script() -> str:
     })();"""
 
 
+def _audio_worklet_playout_capture_script(peer_connection_slot: str) -> str:
+    """Batch a parallel render tap without touching the served audio element."""
+
+    return f"""async () => {{
+      const EXPORT_CHUNK_RECORDS = 128;
+      const MAX_PENDING_BINDING_WRITES = 16;
+      const exportBuffer = [];
+      const pendingBindingWrites = new Set();
+      let exportFailure = null;
+      let exportedChunks = 0;
+      let exportedRecords = 0;
+      let stopped = false;
+      const boundedWait = async (promise, label) => {{
+        let timer;
+        try {{
+          return await Promise.race([
+            promise,
+            new Promise((_, reject) => {{
+              timer = setTimeout(() => reject(new Error(`${{label}} timed out`)), 5000);
+            }}),
+          ]);
+        }} finally {{
+          clearTimeout(timer);
+        }}
+      }};
+      const flushExport = () => {{
+        while (exportBuffer.length) {{
+          if (pendingBindingWrites.size >= MAX_PENDING_BINDING_WRITES)
+            throw new Error('browser playout binding write bound exceeded');
+          const chunk = exportBuffer.splice(0, EXPORT_CHUNK_RECORDS);
+          exportedChunks++;
+          exportedRecords += chunk.length;
+          const pending = Promise.resolve(window.__voicechatEmitPlayoutTraceBatch(chunk))
+            .catch((error) => {{ exportFailure ||= error; }})
+            .finally(() => pendingBindingWrites.delete(pending));
+          pendingBindingWrites.add(pending);
+        }}
+      }};
+      const awaitBindingWrites = async () => {{
+        await boundedWait(Promise.all([...pendingBindingWrites]), 'binding writes');
+        if (exportFailure) throw exportFailure;
+      }};
+      const emit = (record) => {{
+        exportBuffer.push({{
+          trace_schema: 'nemotron_voicechat.browser_playout.v1',
+          ...record,
+        }});
+        if (exportBuffer.length >= EXPORT_CHUNK_RECORDS) flushExport();
+      }};
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass || !window.AudioWorkletNode) {{
+        emit({{type: 'browser.playout.capability', audio_worklet: false}});
+        flushExport();
+        await awaitBindingWrites();
+        return;
+      }}
+      const processorSource = `
+        class VoicechatPlayoutCapture extends AudioWorkletProcessor {{
+          constructor(options) {{
+            super();
+            this.ordinal = 0;
+            this.underrunCount = 0;
+            this.audible = false;
+            this.batch = [];
+            this.captureStopped = false;
+            this.workletId = options.processorOptions.workletId;
+            this.port.onmessage = (event) => {{
+              if (event.data?.kind !== 'flush') return;
+              this.captureStopped = true;
+              this.flush();
+              this.port.postMessage({{
+                kind: 'flush-ack',
+                flushId: event.data.flushId,
+                workletId: this.workletId,
+                finalOrdinal: this.ordinal,
+              }});
+            }};
+          }}
+          flush() {{
+            if (!this.batch.length) return;
+            this.port.postMessage({{kind: 'render-batch', records: this.batch}});
+            this.batch = [];
+          }}
+          process(inputs) {{
+            if (this.captureStopped) return false;
+            const channels = inputs[0] || [];
+            const samples = channels[0] || [];
+            let sumSquares = 0;
+            let nonzero = false;
+            for (let index = 0; index < samples.length; index++) {{
+              const sample = samples[index];
+              sumSquares += sample * sample;
+              if (sample !== 0) nonzero = true;
+            }}
+            const rms = samples.length ? Math.sqrt(sumSquares / samples.length) : 0;
+            const underrun = !samples.length || !nonzero;
+            if (underrun) this.underrunCount++;
+            const audible = rms > 0.01;
+            this.batch.push({{
+              ordinal: ++this.ordinal,
+              audioContextTimeS: currentTime,
+              audioContextFrame: currentFrame,
+              sampleCount: samples.length,
+              channelCount: channels.length,
+              rms,
+              underrun,
+              underrunCount: this.underrunCount,
+              onset: audible && !this.audible,
+            }});
+            if (this.batch.length >= 64) this.flush();
+            this.audible = audible;
+            return true;
+          }}
+        }}
+        registerProcessor('voicechat-playout-capture', VoicechatPlayoutCapture);
+      `;
+      const moduleUrl = URL.createObjectURL(new Blob([processorSource], {{
+        type: 'application/javascript',
+      }}));
+      const context = new AudioContextClass({{latencyHint: 'interactive'}});
+      await context.audioWorklet.addModule(moduleUrl);
+      URL.revokeObjectURL(moduleUrl);
+      await context.resume();
+      const clockMapping = (phase) => {{
+        const output = context.getOutputTimestamp?.() || {{}};
+        emit({{
+          type: 'browser.clock_mapping',
+          phase,
+          main_thread_performance_ms: performance.now(),
+          audio_context_time_s: context.currentTime,
+          output_context_time_s: output.contextTime ?? null,
+          output_performance_time_ms: output.performanceTime ?? null,
+        }});
+      }};
+      const monitored = new Set();
+      const readers = [];
+      const nodes = [];
+      const worklets = [];
+      let workletSequence = 0;
+      const monitor = (track) => {{
+        if (!track || track.kind !== 'audio' || monitored.has(track.id)) return;
+        monitored.add(track.id);
+        const source = context.createMediaStreamSource(new MediaStream([track]));
+        const workletId = `worklet-${{++workletSequence}}`;
+        const worklet = new AudioWorkletNode(context, 'voicechat-playout-capture', {{
+          processorOptions: {{workletId}},
+        }});
+        let resolveFlush;
+        let rejectFlush;
+        const workletState = {{
+          worklet,
+          workletId,
+          deliveredLastOrdinal: 0,
+          finalOrdinal: null,
+          flushPromise: new Promise((resolve, reject) => {{
+            resolveFlush = resolve;
+            rejectFlush = reject;
+          }}),
+        }};
+        worklets.push(workletState);
+        emit({{type: 'browser.audio_worklet.registered', worklet_id: workletId}});
+        const silent = context.createGain();
+        silent.gain.value = 0;
+        worklet.port.onmessage = (event) => {{
+          if (event.data?.kind === 'flush-ack') {{
+            workletState.finalOrdinal = event.data.finalOrdinal;
+            emit({{
+              type: 'browser.audio_worklet.flush_ack',
+              worklet_id: workletId,
+              final_ordinal: event.data.finalOrdinal,
+              delivered_last_ordinal: workletState.deliveredLastOrdinal,
+            }});
+            if (workletState.deliveredLastOrdinal !== event.data.finalOrdinal) {{
+              rejectFlush(new Error(
+                `${{workletId}} delivered ${{workletState.deliveredLastOrdinal}} ` +
+                `but acknowledged ${{event.data.finalOrdinal}}`
+              ));
+            }} else {{
+              resolveFlush(event.data.finalOrdinal);
+            }}
+            return;
+          }}
+          if (event.data?.kind !== 'render-batch') return;
+          const mainThreadReceivedMs = performance.now();
+          for (const item of event.data.records) {{
+            if (item.ordinal !== workletState.deliveredLastOrdinal + 1) {{
+              rejectFlush(new Error(`${{workletId}} render ordinal is not contiguous`));
+              return;
+            }}
+            workletState.deliveredLastOrdinal = item.ordinal;
+            const base = {{
+              worklet_id: workletId,
+              main_thread_received_performance_ms: mainThreadReceivedMs,
+              render_audio_context_time_s: item.audioContextTimeS,
+              render_audio_context_frame: item.audioContextFrame,
+              ordinal: item.ordinal,
+              sample_count: item.sampleCount,
+              channel_count: item.channelCount,
+              rms: item.rms,
+              underrun: item.underrun,
+              underrun_count: item.underrunCount,
+            }};
+            emit({{type: 'browser.audio_worklet.dequeue', ...base}});
+            if (item.onset)
+              emit({{type: 'browser.audio_worklet.onset', ...base}});
+          }}
+        }};
+        source.connect(worklet);
+        worklet.connect(silent);
+        silent.connect(context.destination);
+        nodes.push(source, worklet, silent);
+
+        if ('MediaStreamTrackProcessor' in window) {{
+          const clonedTrack = track.clone();
+          const processor = new MediaStreamTrackProcessor({{track: clonedTrack}});
+          const reader = processor.readable.getReader();
+          readers.push({{reader, clonedTrack}});
+          void (async () => {{
+            let ordinal = 0;
+            while (true) {{
+              const {{done, value}} = await reader.read();
+              if (done) break;
+              emit({{
+                type: 'browser.remote_audio.enqueue',
+                main_thread_observed_performance_ms: performance.now(),
+                ordinal: ++ordinal,
+                media_timestamp_us: value.timestamp,
+                media_duration_us: value.duration,
+                sample_count: value.numberOfFrames,
+                sample_rate_hz: value.sampleRate,
+                channel_count: value.numberOfChannels,
+              }});
+              value.close();
+            }}
+          }})();
+        }} else {{
+          emit({{type: 'browser.playout.capability',
+            audio_worklet: true, media_stream_track_processor: false}});
+        }}
+      }};
+      const scan = () => {{
+        const pc = window[{json.dumps(peer_connection_slot)}];
+        if (pc) for (const receiver of pc.getReceivers()) monitor(receiver.track);
+        for (const element of document.querySelectorAll('audio'))
+          for (const track of element.srcObject?.getAudioTracks?.() || []) monitor(track);
+      }};
+      const timer = setInterval(scan, 20);
+      window.__voicechatStopPlayoutCapture = async () => {{
+        if (stopped) return {{exportedChunks, exportedRecords}};
+        stopped = true;
+        clearInterval(timer);
+        const flushId = `flush-${{performance.now()}}`;
+        for (const state of worklets)
+          state.worklet.port.postMessage({{kind: 'flush', flushId}});
+        const finalOrdinals = await boundedWait(
+          Promise.all(worklets.map((state) => state.flushPromise)),
+          'worklet flush acknowledgements',
+        );
+        for (const {{reader, clonedTrack}} of readers) {{
+          await reader.cancel();
+          clonedTrack.stop();
+        }}
+        clockMapping('teardown');
+        await awaitBindingWrites();
+        flushExport();
+        await awaitBindingWrites();
+        for (const node of nodes) node.disconnect();
+        await context.close();
+        return {{
+          exported_chunks: exportedChunks,
+          exported_records: exportedRecords,
+          export_chunk_records: EXPORT_CHUNK_RECORDS,
+          worklet_batch_records: 64,
+          worklet_final_ordinals: Object.fromEntries(
+            worklets.map((state, index) => [state.workletId, finalOrdinals[index]])
+          ),
+          max_pending_binding_writes: MAX_PENDING_BINDING_WRITES,
+        }};
+      }};
+      emit({{
+        type: 'browser.playout.capability',
+        audio_worklet: true,
+        media_stream_track_processor: 'MediaStreamTrackProcessor' in window,
+        zero_pcm_classification: 'underrun_candidate',
+        audio_context_sample_rate_hz: context.sampleRate,
+        render_path: 'parallel_silent_audio_context_tap',
+        audible_element_render_path_observed: false,
+        render_clock: 'render_audio_context_time_s/render_audio_context_frame',
+        main_thread_clock: 'main_thread_received_performance_ms',
+        caveat: 'parallel tap scheduling/resampling may differ from the audible element',
+        export_chunk_records: EXPORT_CHUNK_RECORDS,
+        worklet_batch_records: 64,
+        max_pending_binding_writes: MAX_PENDING_BINDING_WRITES,
+      }});
+      clockMapping('startup');
+      scan();
+    }}"""
+
+
+class _BrowserPlayoutTraceSink:
+    """Persist bounded page batches and expose capture-overhead counters."""
+
+    def __init__(self, path: Path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self._stream = path.open("w", encoding="utf-8")
+        self._chunks = 0
+        self._records = 0
+        self._handler_seconds = 0.0
+        self._closed = False
+        self._registered_worklets: set[str] = set()
+        self._last_ordinals: dict[str, int] = {}
+        self._acknowledged_ordinals: dict[str, int] = {}
+
+    def emit_batch(self, _source: Any, records: list[dict[str, Any]]) -> None:
+        started = time.perf_counter()
+        if not isinstance(records, list) or not 0 < len(records) <= 128:
+            raise TypeError("browser playout trace batch must contain 1..128 records")
+        received = time.monotonic()
+        lines = []
+        for record in records:
+            if not isinstance(record, dict):
+                raise TypeError("browser playout trace record must be an object")
+            record_type = record.get("type")
+            worklet_id = record.get("worklet_id")
+            if record_type == "browser.audio_worklet.registered":
+                if not isinstance(worklet_id, str) or worklet_id in self._registered_worklets:
+                    raise ValueError("invalid or duplicate browser worklet registration")
+                self._registered_worklets.add(worklet_id)
+                self._last_ordinals[worklet_id] = 0
+            elif record_type == "browser.audio_worklet.dequeue":
+                ordinal = record.get("ordinal")
+                if worklet_id not in self._registered_worklets or ordinal != (
+                    self._last_ordinals[worklet_id] + 1
+                ):
+                    raise ValueError("browser worklet dequeue ordinal is not contiguous")
+                self._last_ordinals[worklet_id] = ordinal
+            elif record_type == "browser.audio_worklet.flush_ack":
+                final_ordinal = record.get("final_ordinal")
+                if (
+                    worklet_id not in self._registered_worklets
+                    or worklet_id in self._acknowledged_ordinals
+                    or not isinstance(final_ordinal, int)
+                ):
+                    raise ValueError("invalid or duplicate browser worklet flush acknowledgement")
+                self._acknowledged_ordinals[worklet_id] = final_ordinal
+            lines.append(
+                json.dumps(
+                    {**record, "playwright_batch_received_monotonic_s": received},
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                + "\n"
+            )
+        self._stream.write("".join(lines))
+        self._stream.flush()
+        self._chunks += 1
+        self._records += len(records)
+        self._handler_seconds += time.perf_counter() - started
+
+    def overhead(self) -> dict[str, int | float]:
+        return {
+            "playwright_binding_chunks": self._chunks,
+            "playwright_binding_records": self._records,
+            "playwright_binding_handler_ms": self._handler_seconds * 1000.0,
+        }
+
+    def ordinal_summary(self) -> dict[str, Any]:
+        return {
+            "persisted_last_ordinals": dict(sorted(self._last_ordinals.items())),
+            "acknowledged_final_ordinals": dict(
+                sorted(self._acknowledged_ordinals.items())
+            ),
+        }
+
+    def _assert_final_ordinals(self) -> None:
+        if self._registered_worklets != self._acknowledged_ordinals.keys():
+            raise AssertionError("not every browser worklet persisted a flush acknowledgement")
+        if self._last_ordinals != self._acknowledged_ordinals:
+            raise AssertionError(
+                "persisted browser worklet ordinal does not equal acknowledged final ordinal"
+            )
+
+    def close(self) -> None:
+        if not self._closed:
+            self._closed = True
+            try:
+                self._assert_final_ordinals()
+            finally:
+                self._stream.close()
+
+
+async def _install_browser_playout_capture(
+    context: Any,
+    page: Any,
+    artifact: Path,
+    *,
+    peer_connection_slot: str,
+) -> _BrowserPlayoutTraceSink:
+    sink = _BrowserPlayoutTraceSink(artifact)
+    await context.expose_binding("__voicechatEmitPlayoutTraceBatch", sink.emit_batch)
+    try:
+        await page.evaluate(_audio_worklet_playout_capture_script(peer_connection_slot))
+    except Exception:
+        sink.close()
+        raise
+    return sink
+
+
+async def _shutdown_browser_playout_capture(
+    page: Any, sink: _BrowserPlayoutTraceSink | None
+) -> dict[str, Any]:
+    """Always stop the page producer before closing its artifact sink."""
+
+    page_summary: dict[str, Any] = {}
+    shutdown_error: str | None = None
+    sink_close_error: str | None = None
+    ordinal_summary: dict[str, Any] = {}
+    try:
+        if sink is not None and not page.is_closed():
+            page_summary = await page.evaluate(
+                "() => window.__voicechatStopPlayoutCapture?.() || {}"
+            )
+    except Exception as exc:  # noqa: BLE001 - preserve the browser-test failure path
+        shutdown_error = repr(exc)
+    finally:
+        if sink is not None:
+            try:
+                sink.close()
+            except Exception as exc:  # noqa: BLE001 - report artifact teardown failure
+                sink_close_error = repr(exc)
+            ordinal_summary = sink.ordinal_summary()
+    return {
+        "capture_enabled": sink is not None,
+        "shutdown_error": shutdown_error,
+        "sink_close_error": sink_close_error,
+        **page_summary,
+        **ordinal_summary,
+        **(sink.overhead() if sink is not None else {}),
+    }
+
+
 def _free_port() -> int:
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
@@ -199,6 +642,103 @@ async def _wait_http(url: str, timeout: float = 15.0) -> None:
         except (OSError, urllib.error.URLError):
             await asyncio.sleep(0.1)
     raise TimeoutError(f"runner did not become ready: {url}")
+
+
+def test_audio_worklet_capture_harness_schema_and_sink(tmp_path) -> None:
+    script = _audio_worklet_playout_capture_script("__testPC")
+    assert "registerProcessor('voicechat-playout-capture'" in script
+    assert "browser.remote_audio.enqueue" in script
+    assert "browser.audio_worklet.dequeue" in script
+    assert "underrunCount" in script
+    assert "browser.audio_worklet.onset" in script
+    assert "window[\"__testPC\"]" in script
+    assert "render_audio_context_time_s" in script
+    assert "main_thread_received_performance_ms" in script
+    assert "parallel_silent_audio_context_tap" in script
+    assert "__voicechatEmitPlayoutTraceBatch" in script
+    assert "EXPORT_CHUNK_RECORDS = 128" in script
+    assert "this.batch.length >= 64" in script
+    assert "kind: 'flush-ack'" in script
+    assert "worklet_final_ordinals" in script
+    assert "MAX_PENDING_BINDING_WRITES = 16" in script
+
+    path = tmp_path / "browser-playout.jsonl"
+    sink = _BrowserPlayoutTraceSink(path)
+    sink.emit_batch(
+        None,
+        [{"trace_schema": "nemotron_voicechat.browser_playout.v1", "ordinal": 1}],
+    )
+    sink.close()
+    record = json.loads(path.read_text(encoding="utf-8"))
+    assert record["ordinal"] == 1
+    assert isinstance(record["playwright_batch_received_monotonic_s"], float)
+    assert sink.overhead()["playwright_binding_chunks"] == 1
+    assert sink.overhead()["playwright_binding_records"] == 1
+
+
+def test_browser_playout_sink_rejects_unbounded_chunks(tmp_path) -> None:
+    sink = _BrowserPlayoutTraceSink(tmp_path / "bounded.jsonl")
+    with pytest.raises(TypeError, match="1..128"):
+        sink.emit_batch(None, [{}] * 129)
+    sink.close()
+
+
+def test_browser_playout_sink_rejects_missing_or_mismatched_final_ordinal(tmp_path) -> None:
+    sink = _BrowserPlayoutTraceSink(tmp_path / "mismatch.jsonl")
+    sink.emit_batch(
+        None,
+        [
+            {"type": "browser.audio_worklet.registered", "worklet_id": "worklet-1"},
+            {
+                "type": "browser.audio_worklet.dequeue",
+                "worklet_id": "worklet-1",
+                "ordinal": 1,
+            },
+            {
+                "type": "browser.audio_worklet.flush_ack",
+                "worklet_id": "worklet-1",
+                "final_ordinal": 2,
+            },
+        ],
+    )
+    with pytest.raises(AssertionError, match="acknowledged final ordinal"):
+        sink.close()
+
+
+@pytest.mark.asyncio
+async def test_browser_finally_path_checks_persisted_ordinal_after_page_failure(
+    tmp_path,
+) -> None:
+    sink = _BrowserPlayoutTraceSink(tmp_path / "finally.jsonl")
+    sink.emit_batch(
+        None,
+        [
+            {"type": "browser.audio_worklet.registered", "worklet_id": "worklet-1"},
+            {
+                "type": "browser.audio_worklet.dequeue",
+                "worklet_id": "worklet-1",
+                "ordinal": 1,
+            },
+            {
+                "type": "browser.audio_worklet.flush_ack",
+                "worklet_id": "worklet-1",
+                "final_ordinal": 1,
+            },
+        ],
+    )
+
+    class _FailingPage:
+        def is_closed(self) -> bool:
+            return False
+
+        async def evaluate(self, _script: str):
+            raise RuntimeError("injected page shutdown failure")
+
+    summary = await _shutdown_browser_playout_capture(_FailingPage(), sink)
+    assert "injected page shutdown failure" in summary["shutdown_error"]
+    assert summary["sink_close_error"] is None
+    assert summary["persisted_last_ordinals"] == {"worklet-1": 1}
+    assert summary["persisted_last_ordinals"] == summary["acknowledged_final_ordinals"]
 
 
 @pytest.mark.asyncio
@@ -376,6 +916,9 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                 runner_lines.append(line.decode(errors="replace").rstrip())
 
         runner_log_task = asyncio.create_task(drain_runner_output())
+        browser_trace_page = None
+        browser_trace_sink = None
+        browser_capture_started = time.perf_counter()
         try:
             await _wait_http(f"http://127.0.0.1:{runner_port}/client/")
             async with async_playwright() as playwright:
@@ -398,10 +941,18 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                 )
                 await context.add_init_script(_rtc_probe_script("__voicechatTestPeerConnection"))
                 page = await context.new_page()
+                browser_trace_page = page
                 browser_log: list[str] = []
                 page.on("console", lambda message: browser_log.append(message.text))
                 page.on("pageerror", lambda error: browser_log.append(f"pageerror: {error}"))
                 await page.goto("/client/")
+                browser_trace_path = tmp_path / "browser-playout.jsonl"
+                browser_trace_sink = await _install_browser_playout_capture(
+                    context,
+                    page,
+                    browser_trace_path,
+                    peer_connection_slot="__voicechatTestPeerConnection",
+                )
                 connect = page.get_by_role("button", name="Connect", exact=True)
                 disconnect = page.get_by_role("button", name="Disconnect", exact=True)
                 # The generic UI initializes media devices asynchronously and
@@ -459,6 +1010,25 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                         break
                     await asyncio.sleep(0.05)
                 await page.screenshot(path=str(tmp_path / "browser-e2e.png"))
+                capture_overhead = await _shutdown_browser_playout_capture(
+                    page, browser_trace_sink
+                )
+                capture_overhead["test_elapsed_ms"] = (
+                    time.perf_counter() - browser_capture_started
+                ) * 1000.0
+                print(
+                    "BROWSER_PLAYOUT_CAPTURE_OVERHEAD "
+                    + json.dumps(capture_overhead, sort_keys=True)
+                )
+                assert capture_overhead["shutdown_error"] is None
+                assert capture_overhead["sink_close_error"] is None
+                assert capture_overhead["persisted_last_ordinals"]
+                assert (
+                    capture_overhead["persisted_last_ordinals"]
+                    == capture_overhead["acknowledged_final_ordinals"]
+                    == capture_overhead["worklet_final_ordinals"]
+                )
+                browser_trace_sink = None
                 # Exercise the browser-owned teardown path and give the
                 # server-side peer event time to cancel its pipeline worker.
                 await disconnect.click()
@@ -475,6 +1045,34 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
             assert stats["tracks"] >= 1
             assert stats["outbound"] > 0
             assert stats["inbound"] > 0
+            browser_trace = [
+                json.loads(line)
+                for line in browser_trace_path.read_text(encoding="utf-8").splitlines()
+            ]
+            assert any(
+                record["type"] == "browser.playout.capability"
+                and record["audio_worklet"] is True
+                for record in browser_trace
+            )
+            assert any(
+                record["type"] == "browser.audio_worklet.dequeue"
+                for record in browser_trace
+            )
+            acknowledged = {
+                record["worklet_id"]: record["final_ordinal"]
+                for record in browser_trace
+                if record["type"] == "browser.audio_worklet.flush_ack"
+            }
+            persisted_last = {
+                worklet_id: max(
+                    record["ordinal"]
+                    for record in browser_trace
+                    if record["type"] == "browser.audio_worklet.dequeue"
+                    and record["worklet_id"] == worklet_id
+                )
+                for worklet_id in acknowledged
+            }
+            assert persisted_last == acknowledged
             assert any(
                 message.get("type") == "bot-transcription"
                 and "deterministic test passed"
@@ -482,6 +1080,10 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
                 for message in observed_rtvi
             )
         finally:
+            if browser_trace_page is not None:
+                await _shutdown_browser_playout_capture(
+                    browser_trace_page, browser_trace_sink
+                )
             if runner.returncode is None:
                 runner.terminate()
                 try:
@@ -532,6 +1134,8 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
         await context.add_init_script(_rtc_probe_script("__voicechatLivePC"))
         page = await context.new_page()
         browser_log: list[str] = []
+        browser_trace_sink = None
+        capture_started = time.perf_counter()
         page.on("console", lambda message: browser_log.append(message.text))
         page.on("pageerror", lambda error: browser_log.append(f"pageerror: {error}"))
         try:
@@ -539,6 +1143,15 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
             # Install the media probe after the secure document exists but
             # before Connect requests the microphone.
             await page.evaluate(_voice_latency_probe_script())
+            configured_playout_trace = os.environ.get("VOICECHAT_LIVE_PLAYOUT_TRACE")
+            if configured_playout_trace:
+                browser_trace_path = Path(configured_playout_trace).expanduser().resolve()
+                browser_trace_sink = await _install_browser_playout_capture(
+                    context,
+                    page,
+                    browser_trace_path,
+                    peer_connection_slot="__voicechatLivePC",
+                )
             connect = page.get_by_role("button", name="Connect", exact=True)
             disconnect = page.get_by_role("button", name="Disconnect", exact=True)
             for _ in range(6):
@@ -774,5 +1387,15 @@ async def test_live_playground_typed_turn_and_audio(tmp_path):
             await disconnect.click()
             await connect.wait_for(timeout=8_000)
         finally:
+            capture_overhead = await _shutdown_browser_playout_capture(
+                page, browser_trace_sink
+            )
+            capture_overhead["test_elapsed_ms"] = (
+                time.perf_counter() - capture_started
+            ) * 1000.0
+            print(
+                "BROWSER_PLAYOUT_CAPTURE_OVERHEAD "
+                + json.dumps(capture_overhead, sort_keys=True)
+            )
             await context.close()
             await browser.close()
