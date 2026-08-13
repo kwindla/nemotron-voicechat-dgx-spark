@@ -9,6 +9,7 @@ import base64
 import json
 import math
 import time
+import urllib.request
 import uuid
 import wave
 from pathlib import Path
@@ -16,6 +17,21 @@ from typing import Any
 
 import numpy as np
 import websockets
+from step4c_contract import (
+    DRAIN_SECONDS as STEP4C_DRAIN_SECONDS,
+)
+from step4c_contract import (
+    DURATION_SECONDS as STEP4C_DURATION_SECONDS,
+)
+from step4c_contract import (
+    L1_SHA256,
+    L1_TEXT,
+    QUALIFICATION_FIXTURE,
+    SYSTEM_INSTRUCTION,
+)
+from step4c_contract import (
+    WARMUP_SECONDS as STEP4C_WARMUP_SECONDS,
+)
 
 from nemotron_voicechat_runtime.tool_freshness_contract import (
     evaluate_tool_cycle_cardinality,
@@ -56,6 +72,14 @@ def typed_prompts(mode: str) -> tuple[str, ...]:
 
 def prompt_expects_tool(mode: str, prompt: str) -> bool:
     return mode == "tool-only" or "get_current_utc_time" in prompt
+
+
+def read_health(url: str) -> dict[str, Any]:
+    with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310 - fixed local URL
+        payload = json.load(response)
+    if not isinstance(payload, dict) or payload.get("active_client") is not False:
+        raise RuntimeError("single-client lock is occupied or health response is invalid")
+    return payload
 
 
 def typed_prompt_index(
@@ -186,7 +210,11 @@ def write_exception_evidence(output: Path, result: dict[str, Any]) -> None:
 
 
 async def run(args: argparse.Namespace) -> dict[str, Any]:
+    health = read_health(getattr(args, "health_url", "http://127.0.0.1:8786/health"))
     args.output.mkdir(parents=True, exist_ok=False)
+    (args.output / "health-immediately-before.json").write_text(
+        json.dumps(health, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     events_file = (args.output / "events.jsonl").open("w", encoding="utf-8")
     silence = bytes(FRAME_BYTES)
     total_frames = round(args.duration_seconds / FRAME_SECONDS)
@@ -205,8 +233,10 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     session_closed: dict[str, Any] | None = None
     typed_answer_events: dict[str, asyncio.Event] = {}
     serialized_typed_error: dict[str, str] | None = None
+    qualification_fixture = getattr(args, "qualification_fixture", None)
+    step4c = qualification_fixture == QUALIFICATION_FIXTURE
     prompt_mode = str(getattr(args, "typed_prompt_mode", "mixed"))
-    prompt_sequence = typed_prompts(prompt_mode)
+    prompt_sequence = (L1_TEXT,) if step4c else typed_prompts(prompt_mode)
 
     async with websockets.connect(
         args.url,
@@ -224,7 +254,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             raise RuntimeError("server did not advertise client Smart Turn v1")
         if not capabilities.get("typed_input"):
             raise RuntimeError("server did not advertise typed input")
-        tools = [tool_definition(prompt_mode)]
+        tools = [] if step4c else [tool_definition(prompt_mode)]
         await websocket.send(
             json.dumps(
                 {
@@ -232,7 +262,11 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     "event_id": "qualification-session-update",
                     "session": {
                         "protocol_version": 3,
-                        "instructions": "Answer briefly. Use tools only when requested.",
+                        "instructions": (
+                            SYSTEM_INSTRUCTION
+                            if step4c
+                            else "Answer briefly. Use tools only when requested."
+                        ),
                         "tools": tools,
                     },
                 }
@@ -393,6 +427,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         sent_frames = 0
         max_typed_prompts = getattr(args, "max_typed_prompts", None)
         serialize_typed_turns = bool(getattr(args, "serialize_typed_turns", False))
+        warmup_frames = round(float(getattr(args, "warmup_seconds", 0.0)) / FRAME_SECONDS)
 
         async def send_serialized_typed_turns() -> None:
             nonlocal serialized_typed_error
@@ -445,10 +480,11 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 if delay > 0:
                     await asyncio.sleep(delay)
                 try:
+                    relative_index = index - warmup_frames
                     prompt_index = (
                         None
-                        if serialize_typed_turns
-                        else typed_prompt_index(index, prompt_interval, max_typed_prompts)
+                        if serialize_typed_turns or relative_index < 0
+                        else typed_prompt_index(relative_index, prompt_interval, max_typed_prompts)
                     )
                     if prompt_index is not None:
                         prompt = prompt_sequence[prompt_index % len(prompt_sequence)]
@@ -566,6 +602,8 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             and tool_response_channel_gate
         ),
         "duration_seconds": args.duration_seconds,
+        "warmup_seconds": float(getattr(args, "warmup_seconds", 0.0)),
+        "drain_seconds": args.drain_seconds,
         "source_frames": total_frames,
         "sent_frames": sent_frames,
         "metric_frames": len(metrics),
@@ -576,6 +614,12 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "typed_jobs": typed,
         "typed_prompt_mode": prompt_mode,
         "typed_prompt_sequence": list(prompt_sequence),
+        "qualification_fixture": qualification_fixture,
+        "system_instruction": (
+            SYSTEM_INSTRUCTION if step4c else "Answer briefly. Use tools only when requested."
+        ),
+        "prompt_sha256": L1_SHA256 if step4c else None,
+        "session_id": created.get("session_id"),
         "typed_completed": len(typed_completed),
         "typed_answered": len(answered_jobs),
         "typed_unanswered": unanswered_jobs,
@@ -607,6 +651,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", default="ws://127.0.0.1:8786/v1/realtime")
+    parser.add_argument("--health-url", default="http://127.0.0.1:8786/health")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--duration-seconds", type=float, default=1200)
     parser.add_argument("--typed-interval-seconds", type=float, default=60)
@@ -620,6 +665,8 @@ def main() -> None:
     parser.add_argument("--typed-settle-seconds", type=float, default=2.0)
     parser.add_argument("--typed-response-timeout-seconds", type=float, default=40.0)
     parser.add_argument("--drain-seconds", type=float, default=30)
+    parser.add_argument("--warmup-seconds", type=float, default=0.0)
+    parser.add_argument("--qualification-fixture", choices=(QUALIFICATION_FIXTURE,))
     parser.add_argument(
         "--require-queue",
         action=argparse.BooleanOptionalAction,
@@ -630,6 +677,20 @@ def main() -> None:
         "--expect-session-limit", action=argparse.BooleanOptionalAction, default=True
     )
     args = parser.parse_args()
+    if args.qualification_fixture == QUALIFICATION_FIXTURE:
+        if (
+            args.duration_seconds != STEP4C_DURATION_SECONDS
+            or args.warmup_seconds != STEP4C_WARMUP_SECONDS
+            or args.drain_seconds != STEP4C_DRAIN_SECONDS
+            or args.max_typed_prompts != 1
+            or args.serialize_typed_turns
+            or args.expect_session_limit
+            or args.require_queue
+        ):
+            parser.error(
+                "Step 4c fixes 10/120/15 seconds, one paced prompt, no session limit, "
+                "and no sustained queue gate"
+            )
     try:
         result = asyncio.run(run(args))
     except Exception as exc:

@@ -16,9 +16,30 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal
 
+from step4c_contract import (
+    BROWSER_ACOUSTIC_CONTRACT_ID,
+    BROWSER_FIXTURE_LIMITATION,
+    BROWSER_SERVER_INGRESS_MAX_ABS_PCM16,
+    BROWSER_SOURCE_PCM,
+    L1_TEXT,
+)
+from step4c_contract import (
+    DRAIN_SECONDS as STEP4C_DRAIN_SECONDS,
+)
+from step4c_contract import (
+    DURATION_SECONDS as STEP4C_DURATION_SECONDS,
+)
+from step4c_contract import (
+    QUALIFICATION_MODE as STEP4C_QUALIFICATION_MODE,
+)
+from step4c_contract import (
+    WARMUP_SECONDS as STEP4C_WARMUP_SECONDS,
+)
 from stratified_latency_analyzer import validate_observed_playout_trace
 
 PLAN_SCHEMA = "nemotron_voicechat.step2_fixture_plan.v2"
+STEP4C_PLAN_SCHEMA = "nemotron_voicechat.step4c_fixture_plan.v2"
+STEP4C_SUMMARY_SCHEMA = "nemotron_voicechat.step4c_fixture_summary.v2"
 MARKER_SCHEMA = "nemotron_voicechat.step2_fixture_marker.v2"
 SUMMARY_SCHEMA = "nemotron_voicechat.step2_fixture_summary.v2"
 FIXTURE_RESULT_SCHEMA = "nemotron_voicechat.step2_fixture_result.v2"
@@ -37,9 +58,7 @@ RTVI_TRANSCRIPT_IDENTITY = "ordered-channel-quiescence-v1"
 TRANSCRIPT_MISMATCH_EMPTY = (
     "joined browser transcript is empty while response-owned traced text is nonempty"
 )
-TRANSCRIPT_MISMATCH_DIFFERENT = (
-    "joined browser transcript differs from response-owned traced text"
-)
+TRANSCRIPT_MISMATCH_DIFFERENT = "joined browser transcript differs from response-owned traced text"
 
 CaptureMode = Literal["on", "off"]
 FixtureStatus = Literal["not_run", "running", "completed", "timeout", "error"]
@@ -122,6 +141,24 @@ class FixturePlan:
         return (("on", self.fixtures[:7]), ("off", self.fixtures[7:]))
 
 
+@dataclass(frozen=True)
+class Step4cFixturePlan:
+    """One-block qualification plan that cannot be parsed as canonical Step 2."""
+
+    fixtures: tuple[FixtureSpec, ...]
+    plan_sha256: str
+    script_hashes_sha256: Mapping[str, str]
+    warmup_seconds: float
+    duration_seconds: float
+    drain_seconds: float
+    acoustic_input_contract: Mapping[str, object]
+    qualification_mode: str = STEP4C_QUALIFICATION_MODE
+    schema: str = STEP4C_PLAN_SCHEMA
+
+    def sessions(self) -> tuple[tuple[CaptureMode, tuple[FixtureSpec, ...]], ...]:
+        return (("on", self.fixtures),)
+
+
 def _canonical_fixture_document() -> list[dict[str, object]]:
     ids_and_scripts = (
         ("S1-1", "S1", "on"),
@@ -171,6 +208,43 @@ CANONICAL_SCRIPT_HASHES_SHA256 = {
     "I1": sha256_text(SCRIPTS["L1"]),
     "I1-replacement": sha256_text(I1_REPLACEMENT_TEXT),
 }
+
+
+STEP4C_FIXTURE_DOCUMENT = {
+    "schema": STEP4C_PLAN_SCHEMA,
+    "qualification_mode": STEP4C_QUALIFICATION_MODE,
+    "warmup_seconds": STEP4C_WARMUP_SECONDS,
+    "duration_seconds": STEP4C_DURATION_SECONDS,
+    "drain_seconds": STEP4C_DRAIN_SECONDS,
+    "acoustic_input_contract": {
+        "contract_id": BROWSER_ACOUSTIC_CONTRACT_ID,
+        "source_pcm": BROWSER_SOURCE_PCM,
+        "server_ingress_max_abs_pcm16": BROWSER_SERVER_INGRESS_MAX_ABS_PCM16,
+        "known_fixture_limitation": BROWSER_FIXTURE_LIMITATION,
+    },
+    "fixtures": [
+        {
+            "fixture_id": "step4c-L1",
+            "script_id": "L1",
+            "typed_text": L1_TEXT,
+            "capture": "on",
+            "wait": {
+                "event": "bot-stopped-speaking",
+                "timeout_s": CANONICAL_TIMEOUT_S,
+                "require_transcription": True,
+            },
+        }
+    ],
+}
+
+
+def step4c_plan_json() -> str:
+    """Return the exact, separately identified Step 4c qualification plan."""
+
+    return json.dumps(STEP4C_FIXTURE_DOCUMENT, sort_keys=True, separators=(",", ":"))
+
+
+STEP4C_PLAN_SHA256 = sha256_text(step4c_plan_json())
 
 
 def _object(value: object, label: str) -> Mapping[str, object]:
@@ -331,17 +405,123 @@ def parse_fixture_plan(raw: str) -> FixturePlan:
     )
 
 
-def plan_document(plan: FixturePlan) -> dict[str, Any]:
+def parse_step4c_fixture_plan(raw: str) -> Step4cFixturePlan:
+    """Parse only the exact one-L1 Step 4c qualification document."""
+
+    try:
+        document = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Step 4c fixture plan is not valid JSON: {exc}") from exc
+    if document != STEP4C_FIXTURE_DOCUMENT:
+        raise ValueError("fixture plan does not match the exact Step 4c qualification plan")
+    canonical = json.dumps(document, sort_keys=True, separators=(",", ":"))
+    if sha256_text(canonical) != STEP4C_PLAN_SHA256:
+        raise ValueError("Step 4c fixture plan hash does not match the qualification contract")
+    raw_fixture = document["fixtures"][0]
+    wait = _parse_wait(raw_fixture["wait"], "Step 4c fixture.wait")
+    fixture = FixtureSpec(
+        plan_index=0,
+        fixture_id=str(raw_fixture["fixture_id"]),
+        script_id=str(raw_fixture["script_id"]),
+        typed_text=str(raw_fixture["typed_text"]),
+        typed_text_sha256=sha256_text(str(raw_fixture["typed_text"])),
+        capture="on",
+        wait=wait,
+        interruption=None,
+    )
+    return Step4cFixturePlan(
+        fixtures=(fixture,),
+        plan_sha256=STEP4C_PLAN_SHA256,
+        script_hashes_sha256={"L1": fixture.typed_text_sha256},
+        warmup_seconds=STEP4C_WARMUP_SECONDS,
+        duration_seconds=STEP4C_DURATION_SECONDS,
+        drain_seconds=STEP4C_DRAIN_SECONDS,
+        acoustic_input_contract=dict(document["acoustic_input_contract"]),
+    )
+
+
+def plan_document(plan: FixturePlan | Step4cFixturePlan) -> dict[str, Any]:
     fixtures: list[dict[str, Any]] = []
     for fixture in plan.fixtures:
         item = asdict(fixture)
         fixtures.append(item)
-    return {
+    document = {
         "schema": plan.schema,
         "plan_sha256": plan.plan_sha256,
         "script_hashes_sha256": dict(plan.script_hashes_sha256),
         "fixtures": fixtures,
     }
+    if isinstance(plan, Step4cFixturePlan):
+        document.update(
+            {
+                "qualification_mode": plan.qualification_mode,
+                "warmup_seconds": plan.warmup_seconds,
+                "duration_seconds": plan.duration_seconds,
+                "drain_seconds": plan.drain_seconds,
+                "acoustic_input_contract": dict(plan.acoustic_input_contract),
+            }
+        )
+    return document
+
+
+def validate_step4c_summary(summary: Mapping[str, object]) -> None:
+    """Validate the isolated one-session Step 4c browser result fail-closed."""
+
+    expected_plan = plan_document(parse_step4c_fixture_plan(step4c_plan_json()))
+    required = {
+        "schema",
+        "status",
+        "started_wall_time_s",
+        "completed_wall_time_s",
+        "plan",
+        "health_immediately_before",
+        "session",
+        "fixture",
+        "error",
+    }
+    if set(summary) != required:
+        raise ValueError("Step 4c summary has an incomplete or extended field set")
+    status = summary.get("status")
+    if summary.get("schema") != STEP4C_SUMMARY_SCHEMA or status not in _SUMMARY_STATUSES:
+        raise ValueError("Step 4c summary identity or status is invalid")
+    _finite_number(summary.get("started_wall_time_s"), "Step 4c start", minimum=0, maximum=1e100)
+    completed = summary.get("completed_wall_time_s")
+    if status == "running":
+        if completed is not None:
+            raise ValueError("running Step 4c summary has a terminal time")
+    else:
+        _finite_number(completed, "Step 4c completion", minimum=0, maximum=1e100)
+    if summary.get("plan") != expected_plan:
+        raise ValueError("Step 4c summary plan differs from its exact qualification plan")
+    health = _object(summary.get("health_immediately_before"), "Step 4c health")
+    if health.get("active_client") is not False:
+        raise ValueError("Step 4c summary lacks a free immediate single-client check")
+    session = _object(summary.get("session"), "Step 4c session")
+    fixture = _object(summary.get("fixture"), "Step 4c fixture")
+    planned = expected_plan["fixtures"][0]
+    if (
+        fixture.get("fixture_id") != planned["fixture_id"]
+        or fixture.get("script_id") != planned["script_id"]
+        or fixture.get("typed_text_sha256") != planned["typed_text_sha256"]
+    ):
+        raise ValueError("Step 4c summary fixture identity differs from L1")
+    if status == "completed":
+        if summary.get("error") is not None:
+            raise ValueError("completed Step 4c summary carries an error")
+        if (
+            fixture.get("completion_status") != "completed"
+            or session.get("status") != "completed"
+            or session.get("teardown_errors")
+            or not isinstance(session.get("session_id"), str)
+            or not session.get("session_id")
+        ):
+            raise ValueError("completed Step 4c summary lacks a valid fixture/session")
+        for field in ("browser_artifact_validation", "observed_playout_trace"):
+            evidence = _object(session.get(field), f"Step 4c {field}")
+            if evidence.get("valid") is not True:
+                raise ValueError(f"completed Step 4c summary lacks valid {field}")
+    elif status == "failed" and summary.get("error") is None:
+        raise ValueError("failed Step 4c summary lacks an error")
 
 
 def interruption_deadline(first_audio_monotonic_s: float, after_first_audio_s: float) -> float:
@@ -594,7 +774,10 @@ def validate_browser_record(record: Mapping[str, object], *, persisted: bool = T
 
 
 def validate_browser_artifact(
-    records: Sequence[Mapping[str, object]], *, capture_enabled: bool
+    records: Sequence[Mapping[str, object]],
+    *,
+    capture_enabled: bool,
+    expected_fixtures: Sequence[FixtureSpec] | None = None,
 ) -> dict[str, Any]:
     """Consume a complete canonical session trace and reconcile terminal ordinals."""
 
@@ -715,8 +898,9 @@ def validate_browser_artifact(
             raise ValueError("browser artifact terminal ordinals do not reconcile")
     elif registered or acknowledged:
         raise ValueError("capture-off browser artifact contains worklet state")
-    plan = parse_fixture_plan(canonical_plan_json())
-    expected_fixtures = plan.sessions()[0 if capture_enabled else 1][1]
+    if expected_fixtures is None:
+        plan = parse_fixture_plan(canonical_plan_json())
+        expected_fixtures = plan.sessions()[0 if capture_enabled else 1][1]
     expected_sequence = [
         {
             "fixture_index": fixture.plan_index,
@@ -749,6 +933,7 @@ def load_browser_artifact(
     path: Path,
     *,
     capture_enabled: bool,
+    expected_fixtures: Sequence[FixtureSpec] | None = None,
     reservation: Step2PathReservation | None = None,
 ) -> dict[str, Any]:
     content = (
@@ -757,7 +942,11 @@ def load_browser_artifact(
         else path.read_text(encoding="utf-8")
     )
     records = [json.loads(line) for line in content.splitlines()]
-    return validate_browser_artifact(records, capture_enabled=capture_enabled)
+    return validate_browser_artifact(
+        records,
+        capture_enabled=capture_enabled,
+        expected_fixtures=expected_fixtures,
+    )
 
 
 def connection_playout_trace_path(template: Path, ordinal: int) -> Path:
@@ -838,9 +1027,7 @@ def _reserve_session_directory(path: Path) -> int:
             if stat.S_ISLNK(before.st_mode):
                 raise ValueError(f"Step 2 session directory must not be a symlink: {path}")
             if not stat.S_ISDIR(before.st_mode):
-                raise ValueError(
-                    f"Step 2 session directory is not a real directory: {path}"
-                )
+                raise ValueError(f"Step 2 session directory is not a real directory: {path}")
             descriptor = os.open(
                 path.name,
                 os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
@@ -848,9 +1035,7 @@ def _reserve_session_directory(path: Path) -> int:
             )
             if (before.st_dev, before.st_ino) != _descriptor_identity(descriptor):
                 os.close(descriptor)
-                raise ValueError(
-                    f"Step 2 session directory identity changed while opening: {path}"
-                )
+                raise ValueError(f"Step 2 session directory identity changed while opening: {path}")
             return descriptor
         except OSError as exc:
             if exc.errno in {errno.ELOOP, errno.ENOTDIR}:
@@ -1034,9 +1219,7 @@ def resolve_step2_paths(
             "pipecat_playout_capture_off",
         ):
             try:
-                existing = os.stat(
-                    resolved[name].name, dir_fd=output_fd, follow_symlinks=False
-                )
+                existing = os.stat(resolved[name].name, dir_fd=output_fd, follow_symlinks=False)
             except FileNotFoundError:
                 continue
             if stat.S_ISLNK(existing.st_mode):
@@ -1065,9 +1248,7 @@ def resolve_step2_paths(
     )
 
 
-def _revalidate_pipecat_parent(
-    path: Path, reservation: Step2PathReservation | None
-) -> Path:
+def _revalidate_pipecat_parent(path: Path, reservation: Step2PathReservation | None) -> Path:
     absolute = _absolute_unresolved(path)
     if reservation is not None:
         reservation.revalidate_parent(absolute)
@@ -1277,15 +1458,10 @@ def correlate_response_lifecycles(
         if record["type"] == "input_audio_buffer.speech_started" and record.get("source") == "typed"
     ]
     idle_typed_edges = [
-        (index, record)
-        for index, record in typed_edges
-        if record.get("response_id") is None
+        (index, record) for index, record in typed_edges if record.get("response_id") is None
     ]
     expected_typed_sends = 2 if interruption else 1
-    if (
-        len(idle_typed_edges) != expected_typed_sends
-        or idle_typed_edges[0][0] >= created[0][0]
-    ):
+    if len(idle_typed_edges) != expected_typed_sends or idle_typed_edges[0][0] >= created[0][0]:
         if interruption:
             raise ValueError("fixture lacks two typed-send edges for its response lifecycle")
         raise ValueError("fixture lacks one typed-send edge before its response lifecycle")
@@ -1303,9 +1479,7 @@ def correlate_response_lifecycles(
         if interruption
         else None
     )
-    if interruption and not (
-        created[0][0] < idle_typed_edges[1][0] < created[1][0]
-    ):
+    if interruption and not (created[0][0] < idle_typed_edges[1][0] < created[1][0]):
         raise ValueError("I1 interruption typed-send edge is outside its response transition")
     lifecycle: dict[str, dict[str, Any]] = {}
     for response_id in response_ids:
@@ -1325,9 +1499,7 @@ def correlate_response_lifecycles(
             if record["type"] == "response.output_text.delta"
         ]
         terminals = [
-            (index, record)
-            for index, record in owned
-            if record["type"] == "response.done"
+            (index, record) for index, record in owned if record["type"] == "response.done"
         ]
         releases = [
             (index, record)
@@ -1345,8 +1517,7 @@ def correlate_response_lifecycles(
             raise ValueError("response lifecycle lacks unique terminal or audio membership")
         text_ordinals = [record.get("ordinal") for _, record in text_deltas]
         if text_ordinals != list(range(1, len(text_ordinals) + 1)) or not all(
-            isinstance(record.get("delta"), str) and record["delta"]
-            for _, record in text_deltas
+            isinstance(record.get("delta"), str) and record["delta"] for _, record in text_deltas
         ):
             raise ValueError("response text delta membership is invalid")
         delta_ordinals = [record.get("ordinal") for _, record in deltas]
@@ -1368,9 +1539,7 @@ def correlate_response_lifecycles(
         if sorted(pushed + cleared) != delta_ordinals:
             raise ValueError("response audio deltas, releases, clears, and pushes disagree")
         created_position, _created_record = next(
-            (index, record)
-            for index, record in owned
-            if record["type"] == "response.created"
+            (index, record) for index, record in owned if record["type"] == "response.created"
         )
         if any(
             index <= created_position
@@ -1750,10 +1919,14 @@ def _validate_rtvi_bracket(
         _finite_number(clock, "RTVI transcript clock", minimum=0, maximum=1e100)
         for clock in transcript_clocks
     ]
-    if not start_performance < terminal_performance or any(
-        not start_performance < clock < terminal_performance
-        for clock in checked_transcript_clocks
-    ) or checked_transcript_clocks != sorted(checked_transcript_clocks):
+    if (
+        not start_performance < terminal_performance
+        or any(
+            not start_performance < clock < terminal_performance
+            for clock in checked_transcript_clocks
+        )
+        or checked_transcript_clocks != sorted(checked_transcript_clocks)
+    ):
         raise ValueError("response RTVI clock bracket is not strict")
     send_performance = _finite_number(
         bracket.get("fixture_send_performance_ms"),
@@ -1761,9 +1934,10 @@ def _validate_rtvi_bracket(
         minimum=0,
         maximum=1e100,
     )
-    if not send_performance < start_performance or bracket.get(
-        "messages_received_before_send_in_bracket"
-    ) != 0:
+    if (
+        not send_performance < start_performance
+        or bracket.get("messages_received_before_send_in_bracket") != 0
+    ):
         raise ValueError("response RTVI bracket contains messages from before its send edge")
     start_wall = _finite_number(
         bracket.get("start_wall_time_s"), "RTVI start wall clock", minimum=0, maximum=1e100
@@ -1840,8 +2014,7 @@ def _validate_quiescence_barrier(value: object) -> None:
     bot_types = barrier.get("bot_message_types")
     performance_window_complete = end_performance >= start_performance + quiet_ms
     wall_window_complete = (
-        end_wall + RTVI_WALL_CLOCK_SKEW_TOLERANCE_S
-        >= start_wall + quiet_ms / 1000.0
+        end_wall + RTVI_WALL_CLOCK_SKEW_TOLERANCE_S >= start_wall + quiet_ms / 1000.0
     )
     expected_passed = bot_count == 0 and performance_window_complete and wall_window_complete
     if (
@@ -1867,9 +2040,7 @@ def transcript_gate_evidence(
     equal = joined == response_text
     mismatch_reason = None
     if not equal:
-        mismatch_reason = (
-            TRANSCRIPT_MISMATCH_EMPTY if not joined else TRANSCRIPT_MISMATCH_DIFFERENT
-        )
+        mismatch_reason = TRANSCRIPT_MISMATCH_EMPTY if not joined else TRANSCRIPT_MISMATCH_DIFFERENT
     return {
         "joined_browser_transcript": joined,
         "response_owned_traced_text": response_text,
@@ -1992,11 +2163,7 @@ def _validate_response_attribution(result: Mapping[str, object], response_ids: l
         release_membership = evidence.get("release_membership")
         pushes = evidence.get("downstream_push_ordinals")
         output_text = evidence.get("output_text")
-        if (
-            not isinstance(deltas, list)
-            or not deltas
-            or deltas != list(range(1, len(deltas) + 1))
-        ):
+        if not isinstance(deltas, list) or not deltas or deltas != list(range(1, len(deltas) + 1)):
             raise ValueError(f"{label} lacks audio delta membership")
         if not isinstance(releases, list) or not releases:
             raise ValueError(f"{label} lacks release membership")
@@ -2112,8 +2279,7 @@ def _validate_response_attribution(result: Mapping[str, object], response_ids: l
             "input_audio_buffer.speech_started",
             "voicechat.playout.interruption",
         }
-        or interruption_typed_send.get("type")
-        != "input_audio_buffer.speech_started"
+        or interruption_typed_send.get("type") != "input_audio_buffer.speech_started"
         or interruption_typed_send.get("source") != "typed"
         or clear.get("reason") != "interruption-clear"
     ):
@@ -2173,9 +2339,7 @@ def _validate_response_attribution(result: Mapping[str, object], response_ids: l
     if speaking_times != sorted(speaking_times):
         raise ValueError("I1 browser response lifecycle clocks are out of order")
     original_bracket = _object(original.get("rtvi_event_bracket"), "original RTVI bracket")
-    replacement_bracket = _object(
-        replacement.get("rtvi_event_bracket"), "replacement RTVI bracket"
-    )
+    replacement_bracket = _object(replacement.get("rtvi_event_bracket"), "replacement RTVI bracket")
     rtvi_window_start = result.get("rtvi_window_start_index")
     interruption_result = _object(result.get("interruption"), "I1 interruption result")
     marker_event_index = interruption_result.get("rtvi_send_marker_event_index")
@@ -2223,17 +2387,13 @@ def _artifact_attribution_projection(
         "typed_send_edge": attribution.get("typed_send_edge"),
     }
     response_names = (
-        ("original_response", "replacement_response")
-        if interruption
-        else ("primary_response",)
+        ("original_response", "replacement_response") if interruption else ("primary_response",)
     )
     for name in response_names:
         response = _object(attribution.get(name), f"artifact attribution {name}")
         projected[name] = {field: response.get(field) for field in _RESPONSE_ARTIFACT_FIELDS}
     if interruption:
-        projected["interruption_typed_send_edge"] = attribution.get(
-            "interruption_typed_send_edge"
-        )
+        projected["interruption_typed_send_edge"] = attribution.get("interruption_typed_send_edge")
         projected["interruption_edge"] = attribution.get("interruption_edge")
         projected["clear_edge"] = attribution.get("clear_edge")
     return projected
@@ -2533,9 +2693,7 @@ def validate_fixture_summary(
                 or event_index != rtvi_window_start + diagnostic_offset
             ):
                 raise ValueError("fixture observed RTVI diagnostic indices are not contiguous")
-            if diagnostic.get("type") is not None and not isinstance(
-                diagnostic.get("type"), str
-            ):
+            if diagnostic.get("type") is not None and not isinstance(diagnostic.get("type"), str):
                 raise ValueError("fixture observed RTVI diagnostic type is invalid")
             for clock_field in ("received_performance_ms", "received_wall_time_s"):
                 _finite_number(
@@ -2647,11 +2805,10 @@ def validate_fixture_summary(
                 "attributed response RTVI bracket",
             )
             checked_barrier = _object(barrier, "completed quiescence barrier")
-            if (
-                checked_barrier.get("window_start_performance_ms")
-                != attributed_bracket.get("terminal_performance_ms")
-                or checked_barrier.get("window_start_wall_time_s")
-                != attributed_bracket.get("terminal_wall_time_s")
+            if checked_barrier.get("window_start_performance_ms") != attributed_bracket.get(
+                "terminal_performance_ms"
+            ) or checked_barrier.get("window_start_wall_time_s") != attributed_bracket.get(
+                "terminal_wall_time_s"
             ):
                 raise ValueError("RTVI quiescence barrier does not begin at the terminal event")
         interruption_result = result.get("interruption")
@@ -2767,9 +2924,7 @@ def validate_fixture_summary(
             )
             if playout_validation != actual_playout_validation:
                 raise ValueError("summary does not contain the full checked Pipecat result")
-            session_fixture_indices = list(
-                range(7) if session["capture"] == "on" else range(7, 8)
-            )
+            session_fixture_indices = list(range(7) if session["capture"] == "on" else range(7, 8))
             retained_records = read_published_playout_trace(
                 Path(str(session["pipecat_artifact"])), reservation=reservation
             )
@@ -2787,9 +2942,7 @@ def validate_fixture_summary(
                 interrupted = canonical_specs[index].interruption is not None
                 if _artifact_attribution_projection(
                     claimed, interruption=interrupted
-                ) != _artifact_attribution_projection(
-                    actual_attribution, interruption=interrupted
-                ):
+                ) != _artifact_attribution_projection(actual_attribution, interruption=interrupted):
                     raise ValueError(
                         "claimed response attribution disagrees with the retained Pipecat artifact"
                     )
@@ -2970,9 +3123,7 @@ def rtvi_transcript_evidence(
         selected_type = (
             selected_message.get("type") if isinstance(selected_message, Mapping) else None
         )
-        current_type = (
-            current_message.get("type") if isinstance(current_message, Mapping) else None
-        )
+        current_type = current_message.get("type") if isinstance(current_message, Mapping) else None
         selected_clocks = (
             _finite_number(
                 selected.get("receivedPerformanceMs"),

@@ -24,6 +24,21 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.workers.runner import WorkerRunner
+from step4c_contract import (
+    DRAIN_SECONDS as STEP4C_DRAIN_SECONDS,
+)
+from step4c_contract import (
+    DURATION_SECONDS as STEP4C_DURATION_SECONDS,
+)
+from step4c_contract import (
+    L1_SHA256,
+    L1_TEXT,
+    QUALIFICATION_FIXTURE,
+    SYSTEM_INSTRUCTION,
+)
+from step4c_contract import (
+    WARMUP_SECONDS as STEP4C_WARMUP_SECONDS,
+)
 
 from nemotron_voicechat_pipecat.llm import NemotronVoicechatLLMService
 from nemotron_voicechat_pipecat.text_input import VoicechatTypedInputFrame
@@ -60,6 +75,7 @@ class CaptureSink(FrameProcessor):
         self.audio_bytes = 0
         self.responses_done = 0
         self.service: QualificationService | None = None
+        self.defer_terminal_identity = False
         self.job_records: list[dict[str, object]] = []
         self.terminal_errors: list[str] = []
 
@@ -91,14 +107,15 @@ class CaptureSink(FrameProcessor):
             pending = [
                 record for record in self.job_records if record["terminal_status"] == "submitted"
             ]
-            response_id = (
-                self.service.step4_terminal_response_id if self.service is not None else None
-            )
-            terminal_status = (
-                self.service.step4_terminal_status if self.service is not None else None
-            )
+            response_id = getattr(self.service, "step4_terminal_response_id", None)
+            terminal_status = getattr(self.service, "step4_terminal_status", None)
             if not pending:
                 self.terminal_errors.append("terminal response had no submitted prompt job")
+            elif self.defer_terminal_identity:
+                record = pending[0]
+                record["terminal_status"] = "awaiting_trace"
+                record["terminal_monotonic_s"] = time.monotonic()
+                record["terminal_wall_time_s"] = time.time()
             elif not isinstance(response_id, str) or not response_id:
                 self.terminal_errors.append("terminal response lacked a response_id")
             else:
@@ -131,19 +148,47 @@ def read_health(url: str) -> dict[str, object]:
     return payload
 
 
+def backfill_terminal_identity_from_trace(
+    records: list[dict[str, object]], trace_path: Path
+) -> None:
+    terminals = [
+        json.loads(line)
+        for line in trace_path.read_text(encoding="utf-8").splitlines()
+        if json.loads(line).get("type") == "response.done"
+    ]
+    if len(terminals) != len(records):
+        raise RuntimeError("Pipecat trace terminal count differs from prompt jobs")
+    for record, terminal in zip(records, terminals, strict=True):
+        response_id = terminal.get("response_id")
+        status = terminal.get("status")
+        if not isinstance(response_id, str) or not response_id:
+            raise RuntimeError("Pipecat trace terminal lacks a response ID")
+        record["response_id"] = response_id
+        record["terminal_status"] = status if isinstance(status, str) else "completed"
+
+
 async def run(args: argparse.Namespace) -> dict[str, object]:
+    qualification_fixture = getattr(args, "qualification_fixture", None)
+    step4c = qualification_fixture == QUALIFICATION_FIXTURE
+    prompts = (L1_TEXT,) if step4c else PROMPTS
+    warmup_seconds = float(getattr(args, "warmup_seconds", 0.0))
+    trace_path_text = os.environ.get("NEMOTRON_VOICECHAT_PLAYOUT_TRACE", "").strip()
+    if step4c and not trace_path_text:
+        raise RuntimeError("Step 4c requires a configured native Pipecat playout trace path")
     health = read_health(args.health_url)
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "health-immediately-before.json").write_text(
         json.dumps(health, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    service = QualificationService(
+    service_type = NemotronVoicechatLLMService if trace_path_text else QualificationService
+    service = service_type(
         base_url=args.url,
-        system_instruction="Answer briefly. Do not use tools.",
+        system_instruction=(SYSTEM_INSTRUCTION if step4c else "Answer briefly. Do not use tools."),
         tools=[],
     )
     sink = CaptureSink()
-    sink.service = service
+    sink.service = service  # type: ignore[assignment]
+    sink.defer_terminal_identity = bool(trace_path_text)
     worker = PipelineWorker(
         Pipeline([service, sink]),
         enable_rtvi=False,
@@ -164,6 +209,7 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
     started = time.monotonic() + 0.25
     total_frames = round(args.duration_seconds / FRAME_SECONDS)
     prompt_interval = max(1, round(args.typed_interval_seconds / FRAME_SECONDS))
+    warmup_frames = round(warmup_seconds / FRAME_SECONDS)
     prompts_sent = 0
     silence = bytes(round(INPUT_RATE * FRAME_SECONDS) * 2)
     for frame_index in range(total_frames):
@@ -171,9 +217,12 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
         delay = deadline - time.monotonic()
         if delay > 0:
             await asyncio.sleep(delay)
-        if frame_index % prompt_interval == 0:
-            prompt_index = prompts_sent % len(PROMPTS)
-            prompt = PROMPTS[prompt_index]
+        prompt_due = (
+            frame_index >= warmup_frames and (frame_index - warmup_frames) % prompt_interval == 0
+        )
+        if prompt_due and (not step4c or prompts_sent == 0):
+            prompt_index = prompts_sent % len(prompts)
+            prompt = prompts[prompt_index]
             job_id = f"step4-{prompts_sent:04d}"
             sink.record_submission(
                 prompt_ordinal=prompts_sent + 1,
@@ -189,9 +238,13 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
     await asyncio.sleep(args.drain_seconds)
     await worker.stop_when_done()
     await runner_task
+    if trace_path_text:
+        if "{connection}" in trace_path_text:
+            raise RuntimeError("native Step 4 Pipecat runner requires a concrete trace path")
+        backfill_terminal_identity_from_trace(sink.job_records, Path(trace_path_text))
     trace_status = service.live_input_readiness_status().get("playout_trace")
     return {
-        "schema": "nemotron_voicechat.step4_pipecat_soak.v2",
+        "schema": "nemotron_voicechat.step4_pipecat_soak.v3",
         "passed": bool(
             service._session_id
             and sink.responses_done == prompts_sent
@@ -200,10 +253,14 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
         ),
         "session_id": service._session_id,
         "duration_seconds": args.duration_seconds,
+        "warmup_seconds": warmup_seconds,
         "typed_interval_seconds": args.typed_interval_seconds,
         "drain_seconds": args.drain_seconds,
         "source_frames": total_frames,
-        "prompts": list(PROMPTS),
+        "qualification_fixture": qualification_fixture,
+        "system_instruction": SYSTEM_INSTRUCTION if step4c else "Answer briefly. Do not use tools.",
+        "prompts": list(prompts),
+        "prompt_sha256": L1_SHA256 if step4c else None,
         "prompts_sent": prompts_sent,
         "responses_done": sink.responses_done,
         "job_records": sink.job_records,
@@ -223,15 +280,25 @@ def main() -> int:
     parser.add_argument("--duration-seconds", type=float, default=300.0)
     parser.add_argument("--typed-interval-seconds", type=float, default=45.0)
     parser.add_argument("--drain-seconds", type=float, default=15.0)
+    parser.add_argument("--warmup-seconds", type=float, default=0.0)
+    parser.add_argument("--qualification-fixture", choices=(QUALIFICATION_FIXTURE,))
     args = parser.parse_args()
     if args.duration_seconds <= 0 or args.typed_interval_seconds <= 0 or args.drain_seconds < 0:
         parser.error("durations and intervals are invalid")
+    if args.warmup_seconds < 0 or args.warmup_seconds >= args.duration_seconds:
+        parser.error("warm-up must be non-negative and shorter than the duration")
+    if args.qualification_fixture == QUALIFICATION_FIXTURE and (
+        args.duration_seconds != STEP4C_DURATION_SECONDS
+        or args.warmup_seconds != STEP4C_WARMUP_SECONDS
+        or args.drain_seconds != STEP4C_DRAIN_SECONDS
+    ):
+        parser.error("Step 4c fixes warm-up/duration/drain at 10/120/15 seconds")
     try:
         result = asyncio.run(run(args))
     except Exception as exc:
         args.output.mkdir(parents=True, exist_ok=True)
         result = {
-            "schema": "nemotron_voicechat.step4_pipecat_soak.v2",
+            "schema": "nemotron_voicechat.step4_pipecat_soak.v3",
             "passed": False,
             "error": {"type": type(exc).__name__, "message": str(exc)},
         }

@@ -29,6 +29,8 @@ from step2_live_fixture_driver import (
     RTVI_QUIESCENCE_WINDOW_MS,
     RTVI_TRANSCRIPT_IDENTITY,
     RTVI_WALL_CLOCK_SKEW_TOLERANCE_S,
+    STEP4C_PLAN_SCHEMA,
+    STEP4C_SUMMARY_SCHEMA,
     SUMMARY_SCHEMA,
     active_playout_trace_path,
     blank_fixture_result,
@@ -38,15 +40,18 @@ from step2_live_fixture_driver import (
     fixture_marker,
     parse_fixture_plan,
     parse_rtvi_quiescence_window_ms,
+    parse_step4c_fixture_plan,
     plan_document,
     read_playout_trace,
     resolve_step2_paths,
     rtvi_transcript_evidence,
+    step4c_plan_json,
     validate_browser_artifact,
     validate_connection_playout_trace_set,
     validate_fixture_summary,
     validate_marker,
     validate_published_playout_artifact,
+    validate_step4c_summary,
     wait_for_interruption_deadline,
     wait_for_playout_trace_publication,
 )
@@ -145,9 +150,7 @@ def test_rtvi_transcript_indices_reject_mismatched_event_revalidation(
 
 
 @pytest.mark.parametrize(("start_index", "terminal_index"), [(-1, 2), (0, 3)])
-def test_rtvi_transcript_indices_are_bounds_checked(
-    start_index: int, terminal_index: int
-) -> None:
+def test_rtvi_transcript_indices_are_bounds_checked(start_index: int, terminal_index: int) -> None:
     messages = rtvi_messages()
 
     with pytest.raises(ValueError, match="out of bounds"):
@@ -449,9 +452,7 @@ def _artifact_response_records(
     )
     for record in records:
         if record["type"] == "response.output_audio.delta":
-            sample_count = (
-                3527 if clear and record["ordinal"] == 1 else 2 if clear else 1
-            )
+            sample_count = 3527 if clear and record["ordinal"] == 1 else 2 if clear else 1
             record.update(
                 sample_count=sample_count,
                 encoding="pcm16",
@@ -466,9 +467,7 @@ def _artifact_response_records(
             )
         elif record["type"] == "voicechat.playout.downstream_push":
             record.update(
-                sample_count=(
-                    3527 if clear and record["ordinal"] == 1 else 2 if clear else 1
-                ),
+                sample_count=(3527 if clear and record["ordinal"] == 1 else 2 if clear else 1),
                 sample_rate_hz=22050,
                 channels=1,
             )
@@ -496,9 +495,9 @@ def _summary_browser_records(
         else:
             lower = float(result["last_audio_wall_time_s"])
             upper = float(result["completion_wall_time_s"])
-            performance = (
-                1060.0 if result["interruption"] is not None else 1040.0
-            ) + int(record["fixture_index"]) * 100.0
+            performance = (1060.0 if result["interruption"] is not None else 1040.0) + int(
+                record["fixture_index"]
+            ) * 100.0
         wall = (lower + upper) / 2
         record["browser_performance_ms"] = performance
         record["browser_wall_time_s"] = wall
@@ -542,20 +541,17 @@ def completed_summary(tmp_path: Path) -> dict[str, object]:
                 "completion_status": "completed",
                 "transcript_evidence": ["The answer is four."],
                 "transcript_gate_evidence": driver.transcript_gate_evidence(
-                    ["The answer is four."], attribution[
+                    ["The answer is four."],
+                    attribution[
                         "replacement_response" if fixture.interruption else "primary_response"
-                    ]["output_text"]
+                    ]["output_text"],
                 ),
                 "quiescence_barrier": {
                     "identity": RTVI_TRANSCRIPT_IDENTITY,
                     "quiet_window_ms": 2000.0,
-                    "window_start_performance_ms": (
-                        1050.0 if fixture.interruption else 1030.0
-                    )
+                    "window_start_performance_ms": (1050.0 if fixture.interruption else 1030.0)
                     + fixture.plan_index * 100.0,
-                    "window_end_performance_ms": (
-                        3050.0 if fixture.interruption else 3030.0
-                    )
+                    "window_end_performance_ms": (3050.0 if fixture.interruption else 3030.0)
                     + fixture.plan_index * 100.0,
                     "window_start_wall_time_s": base_wall + 3.0,
                     "window_end_wall_time_s": base_wall + 5.0,
@@ -594,8 +590,7 @@ def completed_summary(tmp_path: Path) -> dict[str, object]:
                         "response_id": response_ids[0],
                         "transcript_binding": RTVI_TRANSCRIPT_IDENTITY,
                         "protocol_response_identity": None,
-                        "fixture_send_performance_ms": 1000.0
-                        + fixture.plan_index * 100.0,
+                        "fixture_send_performance_ms": 1000.0 + fixture.plan_index * 100.0,
                         "fixture_send_wall_time_s": base_wall + 0.1,
                         "messages_received_before_send_in_bracket": 0,
                         "start_event_index": 0,
@@ -623,8 +618,7 @@ def completed_summary(tmp_path: Path) -> dict[str, object]:
                         "response_id": response_ids[1],
                         "transcript_binding": RTVI_TRANSCRIPT_IDENTITY,
                         "protocol_response_identity": None,
-                        "fixture_send_performance_ms": 1035.0
-                        + fixture.plan_index * 100.0,
+                        "fixture_send_performance_ms": 1035.0 + fixture.plan_index * 100.0,
                         "fixture_send_wall_time_s": base_wall + 2.1,
                         "messages_received_before_send_in_bracket": 0,
                         "start_event_index": 2,
@@ -653,8 +647,7 @@ def completed_summary(tmp_path: Path) -> dict[str, object]:
                         "response_id": response_ids[0],
                         "transcript_binding": RTVI_TRANSCRIPT_IDENTITY,
                         "protocol_response_identity": None,
-                        "fixture_send_performance_ms": 1000.0
-                        + fixture.plan_index * 100.0,
+                        "fixture_send_performance_ms": 1000.0 + fixture.plan_index * 100.0,
                         "fixture_send_wall_time_s": base_wall + 0.1,
                         "messages_received_before_send_in_bracket": 0,
                         "start_event_index": 0,
@@ -778,6 +771,53 @@ def test_canonical_plan_has_exact_order_identity_text_and_hashes() -> None:
     assert plan.script_hashes_sha256 == CANONICAL_SCRIPT_HASHES_SHA256
 
 
+def test_step4c_plan_is_exact_separate_and_cannot_parse_as_step2() -> None:
+    raw = step4c_plan_json()
+    plan = parse_step4c_fixture_plan(raw)
+
+    assert plan.schema == STEP4C_PLAN_SCHEMA
+    assert len(plan.fixtures) == 1
+    assert plan.fixtures[0].fixture_id == "step4c-L1"
+    assert plan.sessions() == (("on", plan.fixtures),)
+    assert plan.acoustic_input_contract == {
+        "contract_id": "chrome-fake-mic-webrtc-one-lsb-v1",
+        "source_pcm": "exact-zero-mono-pcm16",
+        "server_ingress_max_abs_pcm16": 1,
+        "known_fixture_limitation": (
+            "Chrome file-backed fake microphone/WebRTC may transform exact-zero source WAV "
+            "into server-ingress PCM with absolute amplitude one PCM16 LSB."
+        ),
+    }
+    assert (plan.warmup_seconds, plan.duration_seconds, plan.drain_seconds) == (
+        10.0,
+        120.0,
+        15.0,
+    )
+    with pytest.raises(ValueError, match="canonical|eight"):
+        parse_fixture_plan(raw)
+    with pytest.raises(ValueError, match="Step 4c"):
+        parse_step4c_fixture_plan(canonical_plan_json())
+
+
+def test_step4c_summary_validator_requires_exact_plan_and_free_lock() -> None:
+    plan = parse_step4c_fixture_plan(step4c_plan_json())
+    summary = {
+        "schema": STEP4C_SUMMARY_SCHEMA,
+        "status": "running",
+        "started_wall_time_s": 1.0,
+        "completed_wall_time_s": None,
+        "plan": plan_document(plan),
+        "health_immediately_before": {"active_client": False},
+        "session": {"status": "running", "session_id": None},
+        "fixture": blank_fixture_result(plan.fixtures[0]),
+        "error": None,
+    }
+    validate_step4c_summary(summary)
+    summary["health_immediately_before"]["active_client"] = True
+    with pytest.raises(ValueError, match="single-client"):
+        validate_step4c_summary(summary)
+
+
 @pytest.mark.parametrize(
     "mutation",
     [
@@ -854,9 +894,7 @@ def test_normal_response_lifecycle_requires_exact_attributed_audio_chain() -> No
 def test_normal_response_lifecycle_accepts_post_release_immediate_pushes() -> None:
     records = response_records("response-1", 1.0)
     done = next(record for record in records if record["type"] == "response.done")
-    release = next(
-        record for record in records if record["type"] == "voicechat.playout.release"
-    )
+    release = next(record for record in records if record["type"] == "voicechat.playout.release")
     first_push = next(
         record for record in records if record["type"] == "voicechat.playout.downstream_push"
     )
@@ -962,9 +1000,7 @@ def test_retained_live_trace_correlates_post_release_immediate_pushes() -> None:
         "acea2107db42d664fb0c9997d62fc8a42998f64bd6be9e2e8c29c6af5654b23b"
     )
 
-    attribution = correlate_response_lifecycles(
-        read_playout_trace(artifact), interruption=False
-    )
+    attribution = correlate_response_lifecycles(read_playout_trace(artifact), interruption=False)
 
     assert attribution is not None
     response = attribution["primary_response"]
@@ -1406,9 +1442,7 @@ def test_browser_consumer_rejects_canonical_start_only_fixture_markers() -> None
         (lambda summary: summary["sessions"][0].update(status="failed"), "session"),
         (lambda summary: summary["sessions"][0].update(error="boom"), "session"),
         (
-            lambda summary: summary["sessions"][0].update(
-                pipecat_publication_wait_s=None
-            ),
+            lambda summary: summary["sessions"][0].update(pipecat_publication_wait_s=None),
             "publication wait",
         ),
         (lambda summary: summary["sessions"][0].update(capture_shutdown=None), "shutdown"),
@@ -1479,11 +1513,9 @@ def test_completed_i1_accepts_consistent_false_second_answer_adjudication(
     fixture["transcript_gate_evidence"] = driver.transcript_gate_evidence(
         fixture["transcript_evidence"], adjudicated_text
     )
-    fixture["interruption"]["second_answer_gate_evidence"] = (
-        driver.second_answer_gate_evidence(
-            fixture["interruption"]["second_answer_transcript_evidence"],
-            adjudicated_text,
-        )
+    fixture["interruption"]["second_answer_gate_evidence"] = driver.second_answer_gate_evidence(
+        fixture["interruption"]["second_answer_transcript_evidence"],
+        adjudicated_text,
     )
 
     pipecat_path = Path(summary["sessions"][0]["pipecat_artifact"])
@@ -1517,8 +1549,8 @@ def test_completed_i1_accepts_empty_browser_transcript_with_recorded_adjudicatio
         [], replacement["output_text"]
     )
     fixture["interruption"]["second_answer_transcript_evidence"] = []
-    fixture["interruption"]["second_answer_gate_evidence"] = (
-        driver.second_answer_gate_evidence([], replacement["output_text"])
+    fixture["interruption"]["second_answer_gate_evidence"] = driver.second_answer_gate_evidence(
+        [], replacement["output_text"]
     )
 
     validate_fixture_summary(summary)
@@ -1599,13 +1631,9 @@ def test_retained_immediate_push_trace_passes_completed_summary_validation(
         "acea2107db42d664fb0c9997d62fc8a42998f64bd6be9e2e8c29c6af5654b23b"
     )
     retained_records = read_playout_trace(artifact)
-    retained_attribution = correlate_response_lifecycles(
-        retained_records, interruption=False
-    )
+    retained_attribution = correlate_response_lifecycles(retained_records, interruption=False)
     assert retained_attribution is not None
-    assert retained_attribution["primary_response"]["audio_delta_ordinals"] == list(
-        range(1, 68)
-    )
+    assert retained_attribution["primary_response"]["audio_delta_ordinals"] == list(range(1, 68))
 
     relevant_types = {
         "response.created",
@@ -1618,9 +1646,7 @@ def test_retained_immediate_push_trace_passes_completed_summary_validation(
         "voicechat.playout.downstream_push",
     }
     retained_fixture_records = [
-        copy.deepcopy(record)
-        for record in retained_records
-        if record.get("type") in relevant_types
+        copy.deepcopy(record) for record in retained_records if record.get("type") in relevant_types
     ]
     retained_start = float(retained_fixture_records[0]["client_received_monotonic_s"])
     clock_shift = retained_start - 0.9
@@ -1650,9 +1676,7 @@ def test_retained_immediate_push_trace_passes_completed_summary_validation(
     fixture["response_ids"] = summary_attribution["response_ids"]
     fixture["response_attribution"] = summary_attribution
     fixture["transcript_evidence"] = [transcript]
-    fixture["transcript_gate_evidence"] = driver.transcript_gate_evidence(
-        [transcript], transcript
-    )
+    fixture["transcript_gate_evidence"] = driver.transcript_gate_evidence([transcript], transcript)
 
     pipecat_path = Path(summary["sessions"][0]["pipecat_artifact"])
     session_records = read_playout_trace(pipecat_path)
@@ -1665,8 +1689,8 @@ def test_retained_immediate_push_trace_passes_completed_summary_validation(
     ]
     session_records[fixture_starts[0] : fixture_starts[1]] = retained_fixture_records
     _write_jsonl(pipecat_path, session_records)
-    summary["sessions"][0]["observed_playout_trace"] = (
-        validate_published_playout_artifact(pipecat_path)
+    summary["sessions"][0]["observed_playout_trace"] = validate_published_playout_artifact(
+        pipecat_path
     )
 
     validate_fixture_summary(summary)
@@ -1786,9 +1810,9 @@ def test_completed_summary_rejects_campaign_response_id_reuse(tmp_path: Path) ->
     fixture["response_ids"] = [reused]
     fixture["response_attribution"]["response_ids"] = [reused]
     fixture["response_attribution"]["primary_response"]["response_id"] = reused
-    fixture["response_attribution"]["primary_response"]["rtvi_event_bracket"][
-        "response_id"
-    ] = reused
+    fixture["response_attribution"]["primary_response"]["rtvi_event_bracket"]["response_id"] = (
+        reused
+    )
 
     with pytest.raises(ValueError, match="reuse|campaign"):
         validate_fixture_summary(summary)

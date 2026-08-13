@@ -1,0 +1,93 @@
+{
+  "allowed_unanswered_at_fp32_base_rate": 0,
+  "drain_seconds": 15.0,
+  "duration_seconds": 120.0,
+  "eotr_observations": [],
+  "errors": [],
+  "expected_session_limit_error_count": 0,
+  "expected_session_position_limit": false,
+  "metric_frames": 1446,
+  "metric_sequence_complete": true,
+  "passed": true,
+  "prompt_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+  "qualification_fixture": "step4c-l1",
+  "queue": {
+    "passed": false,
+    "reason": "insufficient settled frames"
+  },
+  "queue_required": false,
+  "report_kind": "sustained_strict_v3",
+  "responses": [
+    {
+      "audio_bytes": 550368,
+      "audio_path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/client/response-001.wav",
+      "done_reason": "decoded_silence_watchdog",
+      "expected_response_any": [],
+      "expected_text_semantic_required": false,
+      "job_id": "qual-125-fec75847",
+      "response_id": "response_a0dd12aa-7765-481b-a69b-9d675fe46533_1",
+      "text": "The quick brown fox jumps over the lazy dog. While seventeen green dragons circle the ancient stone tower, they count every window, every door, and every flag that flies above the northern gate.",
+      "turn_id": "turn_a0dd12aa-7765-481b-a69b-9d675fe46533_1"
+    }
+  ],
+  "sent_frames": 1500,
+  "serialized_typed_error": null,
+  "serialized_typed_turns": false,
+  "server_timing": {
+    "frames": 1321,
+    "max_ms": 152.808,
+    "mean_ms": 72.308,
+    "over_80ms": 76,
+    "p50_ms": 71.764,
+    "p95_ms": 80.16
+  },
+  "session_closed": {
+    "client_received_monotonic_s": 4834395.086443,
+    "event_id": "evt_a0dd12aa-7765-481b-a69b-9d675fe46533_1702",
+    "reason": "client_stop",
+    "session_id": "a0dd12aa-7765-481b-a69b-9d675fe46533",
+    "status": "completed",
+    "type": "session.closed"
+  },
+  "session_id": "a0dd12aa-7765-481b-a69b-9d675fe46533",
+  "source_frames": 1500,
+  "system_instruction": "Qualification latency fixture: when the user supplies a script, speak the supplied script aloud completely and exactly, then stop.",
+  "tool_cycle_cardinality": {
+    "client_eou_sotc_committed_count": 0,
+    "criterion": "requested == validated == observed EOTR == boundary commits == post-FC forced BOS",
+    "eotr_observed_count": 0,
+    "passed": false,
+    "post_fc_client_bos_forced_count": 0,
+    "requested_tool_prompts": 0,
+    "validated_tool_responses": 0
+  },
+  "tool_prompt_requested": false,
+  "tool_response_channel_gate": true,
+  "tool_response_checks": [],
+  "two_frame_p95_target": {
+    "status": "documented_near_miss_not_redefined",
+    "target_ms": 80.0
+  },
+  "typed_answered": 1,
+  "typed_completed": 1,
+  "typed_jobs": {
+    "qual-125-fec75847": {
+      "accepted": true,
+      "answered": true,
+      "disposition": "completed",
+      "expected_tool_call": false,
+      "requested_frame": 125,
+      "response_id": "response_a0dd12aa-7765-481b-a69b-9d675fe46533_1",
+      "started": true,
+      "text": "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+      "turn_id": "turn_a0dd12aa-7765-481b-a69b-9d675fe46533_1"
+    }
+  },
+  "typed_prompt_mode": "mixed",
+  "typed_prompt_sequence": [
+    "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate."
+  ],
+  "typed_unanswered": 0,
+  "unexpected_errors": [],
+  "warmup_seconds": 10.0
+}

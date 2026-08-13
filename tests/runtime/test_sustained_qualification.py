@@ -1,7 +1,18 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 from pathlib import Path
+
+import pytest
+
+
+class Response(io.BytesIO):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        self.close()
 
 
 def load_module():
@@ -38,6 +49,26 @@ def test_max_typed_prompts_preserves_a_silence_only_tail() -> None:
     assert module.typed_prompt_index(30, 10, 3) is None
     assert module.typed_prompt_index(31, 10, 3) is None
     assert module.typed_prompt_index(30, 10, None) == 3
+
+
+def test_step4c_health_check_and_fixed_contract(monkeypatch) -> None:
+    module = load_module()
+    monkeypatch.setattr(
+        module.urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: Response(b'{"status":"ready","active_client":false}'),
+    )
+    assert module.read_health("http://127.0.0.1:8786/health")["active_client"] is False
+    assert module.QUALIFICATION_FIXTURE == "step4c-l1"
+    assert (module.STEP4C_WARMUP_SECONDS, module.STEP4C_DURATION_SECONDS) == (10.0, 120.0)
+
+    monkeypatch.setattr(
+        module.urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: Response(b'{"status":"ready","active_client":true}'),
+    )
+    with pytest.raises(RuntimeError, match="single-client"):
+        module.read_health("http://127.0.0.1:8786/health")
 
 
 def test_tool_only_prompt_mode_repeats_real_tool_calls() -> None:
