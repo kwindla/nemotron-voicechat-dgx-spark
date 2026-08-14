@@ -1222,10 +1222,16 @@ def _i1_completion_anchor_indices(
             None,
         )
 
-    original_stop_index = first("bot-stopped-speaking", at_or_after=interruption_marker_index)
+    # The original answer's stop normally follows the interruption marker,
+    # but a stochastically short/truncated original answer can stop BEFORE
+    # the interruption registers. Accept both orderings while still
+    # requiring two full answer lifecycles and the replacement answer to
+    # follow the interruption.
+    original_stop_index = first("bot-stopped-speaking", at_or_after=original_start_index + 1)
     if original_stop_index is None:
         return None
-    replacement_start_index = first("bot-started-speaking", at_or_after=original_stop_index + 1)
+    replacement_search_start = max(original_stop_index, interruption_marker_index) + 1
+    replacement_start_index = first("bot-started-speaking", at_or_after=replacement_search_start)
     if replacement_start_index is None:
         return None
     replacement_stop_index = first("bot-stopped-speaking", at_or_after=replacement_start_index + 1)
@@ -4457,3 +4463,33 @@ async def test_step2_live_fixture_plan(tmp_path):
     if failure is not None:
         pytest.fail(f"Step 2 fixture driver failed closed: {failure}; summary={summary_path}")
     assert all(result["completion_status"] == "completed" for result in summary["fixtures"])
+
+
+def test_i1_anchors_tolerate_original_stop_before_interruption_marker() -> None:
+    """Retained 2026-08-14 stream: truncated original answer stopped one event
+    before the interruption marker registered; both answer lifecycles are
+    present and the replacement follows the interruption."""
+
+    retained = json.loads(
+        (Path(__file__).parent / "retained-i1-early-stop-inversion-20260814.json").read_text()
+    )
+    messages = [{"message": {"type": item["type"]}} for item in retained]
+    original_start = next(
+        index
+        for index, item in enumerate(messages)
+        if item["message"]["type"] == "bot-started-speaking"
+    )
+    marker = next(
+        index
+        for index, item in enumerate(messages)
+        if index > original_start and item["message"]["type"] == "bot-interrupted"
+    )
+    anchors = _i1_completion_anchor_indices(
+        messages,
+        original_start_index=original_start,
+        interruption_marker_index=marker,
+    )
+    assert anchors is not None
+    assert anchors["original_stop"] < anchors["interruption_marker"]
+    assert anchors["replacement_start"] > anchors["interruption_marker"]
+    assert anchors["replacement_stop"] > anchors["replacement_start"]
