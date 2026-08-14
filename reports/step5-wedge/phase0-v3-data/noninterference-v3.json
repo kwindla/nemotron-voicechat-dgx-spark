@@ -1,0 +1,53 @@
+{
+  "exact_outputs": true,
+  "off": {
+    "fixture": {
+      "missing": 0,
+      "output_sha256": "00280c0adae0b2a3e2e838bb9e6ca535e8516474abddd06c33030996bebde8bc",
+      "production_packed_host": {
+        "accepted": 1,
+        "append_calls": 1,
+        "backend_request_id": "backend",
+        "token_id": 12,
+        "total_tokens": 2
+      },
+      "routing_mismatches": 0,
+      "schedules": 64
+    },
+    "trace": {
+      "enabled": false
+    }
+  },
+  "on": {
+    "fixture": {
+      "missing": 0,
+      "output_sha256": "00280c0adae0b2a3e2e838bb9e6ca535e8516474abddd06c33030996bebde8bc",
+      "production_packed_host": {
+        "accepted": 1,
+        "append_calls": 1,
+        "backend_request_id": "backend",
+        "token_id": 12,
+        "total_tokens": 2
+      },
+      "routing_mismatches": 0,
+      "schedules": 64
+    },
+    "trace": {
+      "capacity": 4096,
+      "dropped": 0,
+      "enabled": true,
+      "path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step5-wedge/phase0-v3-data/noninterference-trace/wedge-trace-2211720-phase0-v3-on.ring",
+      "records": 952,
+      "schema_version": 2
+    }
+  },
+  "passed": true,
+  "residual": "GPU worker, CUDA graph, Mamba device state, device tensors, and real ZMQ process timing remain untested.",
+  "retained_ring_records": 952,
+  "retained_ring_truthful": true,
+  "trace_off_cost": {
+    "allocations": "one kwargs dict plus argument scalar construction at each instrumented call site",
+    "branches": "one _RING-is-None branch inside record_boundary",
+    "measured_nanoseconds_per_disabled_call": 66.80905
+  }
+}

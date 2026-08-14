@@ -727,6 +727,15 @@ async def _generate_packed_pad_pair(
     input_dtype = input_dtype or "float32"
     spec_name = spec.get("name") if isinstance(spec, dict) else spec.name
     custom_inputs = {spec_name: input_tensor.to(dtype=getattr(torch, input_dtype)).cpu()}
+    from .wedge_boundary_trace import record_boundary
+
+    record_boundary(
+        "B0",
+        backend_request_id,
+        append_intent=True,
+        host_packed_call=True,
+        token_count=int(input_tensor.shape[0]),
+    )
     await engine.engine.append_request(
         request_id=backend_request_id,
         custom_inputs=custom_inputs,
@@ -746,16 +755,21 @@ async def _generate_packed_pad_pair(
     custom_outputs = slice_position_outputs(
         getattr(completion, "custom_outputs", None), accepted - 1
     )
-    return (
-        GenerationResult(
-            token_id=int(new_tokens[-1]),
-            custom_outputs=custom_outputs,
-            is_finished=bool(output.finished),
-            finish_reason=(completion.finish_reason if output.finished else None),
-            total_tokens=len(request_state.generated_tokens),
-        ),
-        accepted,
+    result = GenerationResult(
+        token_id=int(new_tokens[-1]),
+        custom_outputs=custom_outputs,
+        is_finished=bool(output.finished),
+        finish_reason=(completion.finish_reason if output.finished else None),
+        total_tokens=len(request_state.generated_tokens),
     )
+    record_boundary(
+        "B9",
+        backend_request_id,
+        accepted=accepted,
+        host_call_returned=True,
+        iterator_awakened=True,
+    )
+    return result, accepted
 
 
 def _pad_pair_state(engine: Any, request_id: str) -> dict[str, Any]:

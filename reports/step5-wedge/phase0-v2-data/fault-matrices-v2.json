@@ -1,0 +1,204 @@
+{
+  "operation_loss": [
+    {
+      "detected": true,
+      "domain_seed": 8685995984842014039,
+      "first_missing": [
+        "B0",
+        "B0"
+      ],
+      "injected_boundary": "B0",
+      "schedule": 14039
+    },
+    {
+      "detected": true,
+      "domain_seed": 4986425322868260192,
+      "first_missing": [
+        "B1",
+        "B1"
+      ],
+      "injected_boundary": "B1",
+      "schedule": 260192
+    },
+    {
+      "detected": true,
+      "domain_seed": 13780784636836359395,
+      "first_missing": [
+        "B2"
+      ],
+      "injected_boundary": "B2",
+      "schedule": 359395
+    },
+    {
+      "detected": true,
+      "domain_seed": 4027845099273328474,
+      "first_missing": [
+        "B3",
+        "B3"
+      ],
+      "injected_boundary": "B3",
+      "schedule": 328474
+    },
+    {
+      "detected": true,
+      "domain_seed": 17671022581788431466,
+      "first_missing": [
+        "B4",
+        "B4"
+      ],
+      "injected_boundary": "B4",
+      "schedule": 431466
+    },
+    {
+      "detected": true,
+      "domain_seed": 6652323932703990084,
+      "first_missing": [
+        "B5",
+        "B5"
+      ],
+      "injected_boundary": "B5",
+      "schedule": 990084
+    },
+    {
+      "detected": true,
+      "domain_seed": 4664685221615944164,
+      "first_missing": [
+        "B6",
+        "B6"
+      ],
+      "injected_boundary": "B6",
+      "schedule": 944164
+    },
+    {
+      "detected": true,
+      "domain_seed": 5272262047088350226,
+      "first_missing": [
+        "B7",
+        "B7"
+      ],
+      "injected_boundary": "B7",
+      "schedule": 350226
+    },
+    {
+      "detected": true,
+      "domain_seed": 9318557219514891210,
+      "first_missing": [
+        "B8",
+        "B8"
+      ],
+      "injected_boundary": "B8",
+      "schedule": 891210
+    },
+    {
+      "detected": true,
+      "domain_seed": 17857660927743347336,
+      "first_missing": [
+        "B9"
+      ],
+      "injected_boundary": "B9",
+      "schedule": 347336
+    }
+  ],
+  "operation_loss_detected": 10,
+  "record_suppression": [
+    {
+      "detected": true,
+      "domain_seed": 8685995984842014039,
+      "first_missing": [
+        "B0",
+        "B0"
+      ],
+      "injected_boundary": "B0",
+      "schedule": 14039
+    },
+    {
+      "detected": true,
+      "domain_seed": 4986425322868260192,
+      "first_missing": [
+        "B1",
+        "B1"
+      ],
+      "injected_boundary": "B1",
+      "schedule": 260192
+    },
+    {
+      "detected": true,
+      "domain_seed": 13780784636836359395,
+      "first_missing": [
+        "B2"
+      ],
+      "injected_boundary": "B2",
+      "schedule": 359395
+    },
+    {
+      "detected": true,
+      "domain_seed": 4027845099273328474,
+      "first_missing": [
+        "B3",
+        "B3"
+      ],
+      "injected_boundary": "B3",
+      "schedule": 328474
+    },
+    {
+      "detected": true,
+      "domain_seed": 17671022581788431466,
+      "first_missing": [
+        "B4",
+        "B4"
+      ],
+      "injected_boundary": "B4",
+      "schedule": 431466
+    },
+    {
+      "detected": true,
+      "domain_seed": 6652323932703990084,
+      "first_missing": [
+        "B5",
+        "B5"
+      ],
+      "injected_boundary": "B5",
+      "schedule": 990084
+    },
+    {
+      "detected": true,
+      "domain_seed": 4664685221615944164,
+      "first_missing": [
+        "B6",
+        "B6"
+      ],
+      "injected_boundary": "B6",
+      "schedule": 944164
+    },
+    {
+      "detected": true,
+      "domain_seed": 5272262047088350226,
+      "first_missing": [
+        "B7",
+        "B7"
+      ],
+      "injected_boundary": "B7",
+      "schedule": 350226
+    },
+    {
+      "detected": true,
+      "domain_seed": 9318557219514891210,
+      "first_missing": [
+        "B8",
+        "B8"
+      ],
+      "injected_boundary": "B8",
+      "schedule": 891210
+    },
+    {
+      "detected": true,
+      "domain_seed": 17857660927743347336,
+      "first_missing": [
+        "B9"
+      ],
+      "injected_boundary": "B9",
+      "schedule": 347336
+    }
+  ],
+  "record_suppression_detected": 10
+}

@@ -1,0 +1,104 @@
+{
+  "detected": 10,
+  "first_missing_boundary_histogram": {
+    "B0": 1,
+    "B1": 1,
+    "B2": 1,
+    "B3": 1,
+    "B4": 1,
+    "B5": 1,
+    "B6": 1,
+    "B7": 1,
+    "B8": 1,
+    "B9": 1
+  },
+  "injections": [
+    {
+      "detected": true,
+      "first_missing": [
+        "B0",
+        "B0"
+      ],
+      "injected_boundary": "B0",
+      "schedule": 1010000
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B1",
+        "B1"
+      ],
+      "injected_boundary": "B1",
+      "schedule": 1010001
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B2",
+        "B2"
+      ],
+      "injected_boundary": "B2",
+      "schedule": 1010002
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B3"
+      ],
+      "injected_boundary": "B3",
+      "schedule": 1010003
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B4",
+        "B4"
+      ],
+      "injected_boundary": "B4",
+      "schedule": 1010004
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B5"
+      ],
+      "injected_boundary": "B5",
+      "schedule": 1010005
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B6",
+        "B6"
+      ],
+      "injected_boundary": "B6",
+      "schedule": 1010006
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B7"
+      ],
+      "injected_boundary": "B7",
+      "schedule": 1010007
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B8"
+      ],
+      "injected_boundary": "B8",
+      "schedule": 1010008
+    },
+    {
+      "detected": true,
+      "first_missing": [
+        "B9",
+        "B9"
+      ],
+      "injected_boundary": "B9",
+      "schedule": 1010009
+    }
+  ],
+  "required": 10
+}

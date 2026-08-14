@@ -1,0 +1,19 @@
+{
+  "artifact_gate_required": true,
+  "artifact_hashes_verified": true,
+  "compatibility_identity_sha256": "da11f267a6aad3de556d5c75899a16ae6206cb816bb3a69cc54dac3514bd3507",
+  "distinct_interleavings": 829062,
+  "elapsed_seconds": 646.0523402420804,
+  "fault_operation_loss_detected": 10,
+  "fault_record_suppression_detected": 10,
+  "nonartifact_predicates_passed": true,
+  "noninterference_passed": true,
+  "passed": true,
+  "preregistered_distinct_interleavings": 64,
+  "totals": {
+    "missing_completions": 0,
+    "requests": 1500113,
+    "routing_mismatches": 0,
+    "schedules": 1000000
+  }
+}

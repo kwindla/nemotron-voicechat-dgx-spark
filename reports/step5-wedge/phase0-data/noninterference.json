@@ -1,0 +1,42 @@
+{
+  "exact_outputs": true,
+  "fixture_schedules": 64,
+  "off": {
+    "fixture": {
+      "counts": {
+        "cancellations": 2,
+        "missing_completions": 0,
+        "requests": 95,
+        "routing_mismatches": 0,
+        "schedules": 64,
+        "task_errors": 3
+      },
+      "output_sha256": "c17aa9e0ed828d7404389fc91ead0f1bce931601f76e94fbbace9a2b642a2e8d"
+    },
+    "trace": {
+      "enabled": false
+    }
+  },
+  "on": {
+    "fixture": {
+      "counts": {
+        "cancellations": 2,
+        "missing_completions": 0,
+        "requests": 95,
+        "routing_mismatches": 0,
+        "schedules": 64,
+        "task_errors": 3
+      },
+      "output_sha256": "c17aa9e0ed828d7404389fc91ead0f1bce931601f76e94fbbace9a2b642a2e8d"
+    },
+    "trace": {
+      "capacity": 1280,
+      "dropped": 0,
+      "enabled": true,
+      "path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step5-wedge/phase0-data/noninterference-trace/wedge-trace-2170220.ring",
+      "records": 950
+    }
+  },
+  "passed": true,
+  "residual": "GPU worker execution, CUDA graph dispatch, and device tensor exactness were not exercised in this CPU-only increment."
+}

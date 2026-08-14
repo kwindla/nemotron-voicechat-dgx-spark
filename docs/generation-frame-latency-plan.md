@@ -649,3 +649,20 @@ clock; a future pairing candidate must be gated on the arrival clock.
   alone. **G3 (live/behavioral promotion) remains required before any
   production use.** Follow-ons recorded: attention-projection W8; W4
   head variant; basin-bias → exact-gate repair case.
+
+- **2026-08-14 — Wedge campaign increment 1 (Phase 0) CONCLUDED after
+  three review rounds: v3 PASS confirmed.** v1 (synchronous dry run) and
+  v2 (six round-2 defects) are retained as retracted/superseded; the v3
+  campaign runs the exact qualified async task topology with exact
+  FCFS-admission scheduling, 1,000,000 schedules realizing **829,062
+  distinct event-vector interleavings**, genuine operation-loss injection
+  10/10 (incl. a true stranded-host B9) plus a separate record-suppression
+  self-test 10/10, all-966-file escrow verification, sealed identity
+  enforcement with representative-restoring resume, and truthful
+  production-call-site noninterference (78.94 ns disabled cost). Zero
+  lost B0–B9 completions; the pass weakens only the transport/scheduler/
+  output hypothesis. The revision guard's post-run rejection of a
+  later commit is recorded as correct sealed behavior. **Phase 1 (12
+  fresh-engine GPU discrimination of the B1 graph-dispatch hypothesis)
+  may now be designed.** Large batch evidence (1.1/2.3 GB) retained on
+  disk uncommitted; small artifacts and manifests committed.

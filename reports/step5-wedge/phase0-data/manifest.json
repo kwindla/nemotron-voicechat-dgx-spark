@@ -1,0 +1,49 @@
+{
+  "generated_at_utc": "2026-08-14T02:18:00Z",
+  "kind": "step5_wedge_phase0_raw_artifact_manifest",
+  "preregistration_sha256": "7508866a213915634af6f8675bc5565c1f94e6a77b5b3b7206fdeaa7aa5f4528",
+  "qualified_vllm_tree_sha256": "d66baad763ef5fdd021047391f8b76718f7c97115993bb080a663709c34259e2",
+  "files": [
+    {
+      "bytes": 3671,
+      "path": "batches.jsonl",
+      "sha256": "3f51823e9e4724b0289ad18b9862ae1a5be85020fab280ac60a2faee744e661c"
+    },
+    {
+      "bytes": 1446,
+      "path": "class-provenance.json",
+      "sha256": "3c9e5177b3d461f983be75e079b0f22e8e6ce2bfbb31457afe5ff0679f09befc"
+    },
+    {
+      "bytes": 1253,
+      "path": "diagnostic-patch-manifest.json",
+      "sha256": "04b22b5a6c6f13d12d27622e3de8a06876e7be7171f8802eacaf978a61aee8c0"
+    },
+    {
+      "bytes": 1749,
+      "path": "fault-injection.json",
+      "sha256": "069eb8a4d36a4a2ecfcadc43e05bfe9318fdf850de93319ed18c08098d7cbc03"
+    },
+    {
+      "bytes": 655360,
+      "path": "noninterference-trace/wedge-trace-2170220.ring",
+      "sha256": "a89b51868bcace09114553b4c8bce6995d90ddcec8f2259fbb8ef9d4f9cb635b"
+    },
+    {
+      "bytes": 1156,
+      "path": "noninterference.json",
+      "sha256": "41cdaae0840511abff2bf4dbee49290361093b59476484662f1d0b9377d492d0"
+    },
+    {
+      "bytes": 380,
+      "path": "phase0-summary.json",
+      "sha256": "6ccc6ae69aae6d807e7d952bb7bf88126eefd3c8b9dbd9bbec52745c87e4838c"
+    },
+    {
+      "bytes": 252,
+      "path": "source-identity.json",
+      "sha256": "6fd7b1346ea92218020fa6cc3de0e9acbb801bde1d70354ebd9683968dfa49d6"
+    }
+  ],
+  "schema_version": 1
+}
