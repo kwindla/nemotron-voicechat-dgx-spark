@@ -681,3 +681,17 @@ clock; a future pairing candidate must be gated on the arrival clock.
   preregistered G0–G3 contract.** Remaining before production: the
   promotion contract's counterbalanced A/B latency qualification and the
   explicit user promotion decision.
+
+- **2026-08-14 — fhw8 counterbalanced A/B CONCLUDED: AB PASS. Realtime
+  budget met end-to-end.** Report
+  `reports/fhw8-qualification-ab-20260814.md` (prereg `1eb8f6dc…`).
+  Four sessions R1,C1,C2,R2, all 8/8 first-try. Δ = **5.452 ms/frame**
+  (release 84.12 → candidate **78.67 ms/frame**, under the 80 ms
+  budget), response-clustered 95% CI [3.55, 7.20]. Structural K=12 gate:
+  candidate lanes **ACCEPT**, release lanes REJECT (the chronic overrun,
+  recorded as a release-arm observation). Recorded deviation: normative
+  analysis on pipecat playout traces (baseline-matching), server-clock
+  analyses retained in parallel with identical contrast. **The fhw8
+  candidate has completed the entire promotion contract (G0–G3 + A/B);
+  production promotion awaits the explicit user decision.** Pairing
+  (~11 ms further) remains in root-cause; Phase 1 harness in design.
