@@ -722,3 +722,22 @@ clock; a future pairing candidate must be gated on the arrival clock.
   — a real, client-reachable server defect in the settlement family;
   (3) suite-vs-server protocol contracts documented (1-based turn ids,
   model_output negotiation). fhw8 remains promoted.
+
+- **2026-08-14 — Both live defects FIXED and validated on the
+  deterministic reproduction.** (1) Function-repetition watchdog: the
+  model-level TOOLCALL emission counter joins `AgentSilenceEosWatchdog`
+  (limit 4/response, graceful EOS, reason `function_repetition_watchdog`;
+  4 new unit tests) — guards the 391-call class the published-call budget
+  could not see (pipeline self-feeds injections). (2) Pre-EOU settlement
+  recovery: three-tier ladder before the unweakened strict fatal —
+  administrative closure of a dangling self-interrupted response
+  (`fail_active_response`, no fabricated output), bounded drain of an
+  actively-producing response to natural terminal, bounded cancel
+  escalation. Validation: the replay that fataled at turn 10 every run
+  now completes 3/3 with zero fatals (12 recoveries observed). Image
+  `defect-fixes-1` (overlay on generation-step2) now serves the promoted
+  fhw8 production stack. Two intermediate attempts (cancel-first, then
+  drain-first) are retained in `toolloop/fixed-*`/`fixed2-*` evidence —
+  each exposed one more layer of the self-start taxonomy. Codex
+  adversarial review of both fixes queued behind the wedge Phase 1
+  confirmation.

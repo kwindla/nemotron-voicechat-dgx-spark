@@ -2423,6 +2423,8 @@ class AgentSilenceEosWatchdog:
     required_frames: int = 12
     no_text_required_frames: int = 30
     no_audio_required_frames: int = 30
+    function_call_emission_limit: int = 4
+    function_call_emissions: int = 0
     agent_open: bool = False
     text_seen: bool = False
     function_seen: bool = False
@@ -2434,6 +2436,7 @@ class AgentSilenceEosWatchdog:
     request_reason: str | None = None
 
     def reset(self) -> None:
+        self.function_call_emissions = 0
         self.agent_open = False
         self.text_seen = False
         self.function_seen = False
@@ -2460,6 +2463,7 @@ class AgentSilenceEosWatchdog:
             self.silent_frames = 0
             self.no_text_frames = 0
             self.no_audio_frames = 0
+            self.function_call_emissions = 0
             self.request_pending = False
             self.request_reason = None
 
@@ -2470,6 +2474,7 @@ class AgentSilenceEosWatchdog:
             self.text_seen = True
         if function_delta:
             self.function_seen = True
+            self.function_call_emissions += function_delta.count("<TOOLCALL>")
         if output_dbfs > self.threshold_dbfs:
             self.audible_seen = True
         if function_delta or text_delta:
@@ -2493,12 +2498,18 @@ class AgentSilenceEosWatchdog:
             and self.no_audio_frames >= self.no_audio_required_frames
         )
         decoded_silence = self.required_frames > 0 and self.silent_frames >= self.required_frames
+        function_repetition = (
+            self.function_call_emission_limit > 0
+            and self.function_call_emissions > self.function_call_emission_limit
+        )
         should_request = (
-            no_text_stalled or no_audio_stalled or decoded_silence
+            no_text_stalled or no_audio_stalled or decoded_silence or function_repetition
         ) and not self.request_pending
         if should_request:
             self.request_pending = True
-            if no_text_stalled:
+            if function_repetition:
+                self.request_reason = "function_repetition_watchdog"
+            elif no_text_stalled:
                 self.request_reason = "no_text_since_bos_watchdog"
             elif no_audio_stalled:
                 self.request_reason = "no_audio_since_bos_watchdog"
@@ -2513,6 +2524,7 @@ class AgentSilenceEosWatchdog:
             self.silent_frames = 0
             self.no_text_frames = 0
             self.no_audio_frames = 0
+            self.function_call_emissions = 0
             self.request_pending = False
             self.request_reason = None
             return False
@@ -2524,6 +2536,8 @@ class AgentSilenceEosWatchdog:
             "required_frames": self.required_frames,
             "no_text_required_frames": self.no_text_required_frames,
             "no_audio_required_frames": self.no_audio_required_frames,
+            "function_call_emission_limit": self.function_call_emission_limit,
+            "function_call_emissions": self.function_call_emissions,
             "agent_open": self.agent_open,
             "text_seen": self.text_seen,
             "function_seen": self.function_seen,
@@ -6697,6 +6711,71 @@ def create_app(
             )
             raise SessionTerminated
 
+        async def recover_pre_eou_activity(context: str) -> dict[str, Any] | None:
+            """Settle model self-start before an explicit client EOU recoverably.
+
+            The strict settlement contract treats effective model activity at
+            the client's commit edge as unattributable and fatal. A live model
+            may legitimately self-start inside an open client turn, so drive
+            that activity to its terminal with the existing bounded machinery
+            first; the settlement's fail-closed rejection remains the backstop
+            if recovery leaves activity effective.
+            """
+            result = last_model_result
+            active_function = function_cycle_active(result) if result is not None else False
+            response_open_flag = protocol.response_open
+            if not active_function and not response_open_flag:
+                return None
+            evidence: dict[str, Any] = {
+                "context": context,
+                "response_open": response_open_flag,
+                "function_cycle_effective": active_function,
+            }
+            trace.event("pre_eou_activity_recovery", **evidence)
+            if active_function:
+                interrupt = getattr(engine, "interrupt_unpublished_function_cycle", None)
+                if callable(interrupt):
+                    evidence["function_interrupt"] = await model_call(interrupt)
+            turn_state = (result.turn_state or {}) if result is not None else {}
+            model_quiescent = (
+                turn_state.get("agent_control") == "pad"
+                and not response_audio_is_deliverable(turn_state)
+                and not function_cycle_active(result)
+            )
+            if response_open_flag and model_quiescent:
+                # The model self-started and then self-interrupted back to
+                # listening; only the protocol response is dangling. Close it
+                # administratively without fabricating output and let the
+                # explicit user EOU settle normally.
+                closure_events = protocol.fail_active_response("pre_eou_selfstart_reset")
+                async with send_lock:
+                    for closure_event in closure_events:
+                        await websocket.send_json(closure_event)
+                evidence["dangling_response_closed"] = True
+                trace.event("pre_eou_activity_recovered", **evidence)
+                return evidence
+            # Drain the self-started response to its natural terminal first: a
+            # freshly opened response cannot reach the cancelled-acoustic
+            # terminal, and finishing the utterance is the correct full-duplex
+            # behavior. Escalate to the bounded cancel only if the drain
+            # exhausts its frame budget.
+            drain_budget = int(engine.response_boundary.max_tail_frames) + 400
+            drained_frames = 0
+            while protocol.response_open and drained_frames < drain_budget:
+                await process_pcm(
+                    b"\x00\x00" * FRAME_SAMPLES,
+                    source="microphone",
+                    job_id=None,
+                    synthetic_control=True,
+                )
+                drained_frames += 1
+            evidence["drained_frames"] = drained_frames
+            if protocol.response_open:
+                await cancel_response_to_terminal(f"pre_eou_activity_recovery:{context}")
+                evidence["escalated_to_cancel"] = True
+            trace.event("pre_eou_activity_recovered", **evidence)
+            return evidence
+
         async def inject_trailing_silence(job: ActiveTypedInput) -> None:
             rnnt_eou_frames = int(os.environ.get("VOICECHAT_RNNT_EOU_FRAMES", "20"))
             margin = float(os.environ.get("VOICECHAT_TYPED_INPUT_EOU_MARGIN", "1.25"))
@@ -6824,6 +6903,7 @@ def create_app(
                                     source="typed",
                                     job_id=job.job_id,
                                 )
+                            await recover_pre_eou_activity("typed")
                             typed_settlement = await settle_user_eou(
                                 source="typed",
                                 job_id=job.job_id,
@@ -7745,6 +7825,7 @@ def create_app(
                             )
                         commit_ack_sent = True
 
+                    await recover_pre_eou_activity("microphone_commit")
                     microphone_settlement = await settle_user_eou(
                         source="microphone",
                         job_id=None,

@@ -3142,3 +3142,48 @@ class RealtimeWebServerTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FunctionRepetitionWatchdogTests(unittest.TestCase):
+    """Bound degenerate model-level tool-call emission per response."""
+
+    def test_function_repetition_requests_eos_beyond_limit(self) -> None:
+        watchdog = AgentSilenceEosWatchdog(threshold_dbfs=-90.0, required_frames=0)
+        self.assertFalse(watchdog.observe("agent_bos", "", -40.0))
+        call = '<TOOLCALL>[{"name": "t", "arguments": {}}]</TOOLCALL>'
+        for _ in range(watchdog.function_call_emission_limit):
+            self.assertFalse(watchdog.observe("pad", "", -40.0, function_delta=call))
+        self.assertFalse(watchdog.request_pending)
+        self.assertTrue(watchdog.observe("pad", "", -40.0, function_delta=call))
+        self.assertEqual(watchdog.request_reason, "function_repetition_watchdog")
+
+    def test_function_repetition_counter_resets_per_response(self) -> None:
+        watchdog = AgentSilenceEosWatchdog(threshold_dbfs=-90.0, required_frames=0)
+        call = '<TOOLCALL>[{"name": "t", "arguments": {}}]</TOOLCALL>'
+        watchdog.observe("agent_bos", "", -40.0)
+        for _ in range(watchdog.function_call_emission_limit):
+            watchdog.observe("pad", "", -40.0, function_delta=call)
+        watchdog.observe("agent_eos", "", -40.0)
+        self.assertEqual(watchdog.function_call_emissions, 0)
+        watchdog.observe("agent_bos", "", -40.0)
+        self.assertFalse(watchdog.observe("pad", "", -40.0, function_delta=call))
+        self.assertEqual(watchdog.function_call_emissions, 1)
+
+    def test_function_repetition_disabled_with_zero_limit(self) -> None:
+        watchdog = AgentSilenceEosWatchdog(
+            threshold_dbfs=-90.0, required_frames=0, function_call_emission_limit=0
+        )
+        call = '<TOOLCALL>[{"name": "t", "arguments": {}}]</TOOLCALL>'
+        watchdog.observe("agent_bos", "", -40.0)
+        for _ in range(20):
+            self.assertFalse(watchdog.observe("pad", "", -40.0, function_delta=call))
+        self.assertFalse(watchdog.request_pending)
+
+    def test_normal_single_call_flow_untouched(self) -> None:
+        watchdog = AgentSilenceEosWatchdog(threshold_dbfs=-90.0, required_frames=0)
+        call = '<TOOLCALL>[{"name": "t", "arguments": {}}]</TOOLCALL>'
+        watchdog.observe("agent_bos", "", -40.0)
+        self.assertFalse(watchdog.observe("pad", "", -40.0, function_delta=call))
+        self.assertFalse(watchdog.observe("pad", "answer text", -40.0))
+        self.assertFalse(watchdog.request_pending)
+        self.assertEqual(watchdog.function_call_emissions, 1)
