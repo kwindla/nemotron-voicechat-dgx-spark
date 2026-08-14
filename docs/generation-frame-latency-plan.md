@@ -666,3 +666,18 @@ clock; a future pairing candidate must be gated on the arrival clock.
   fresh-engine GPU discrimination of the B1 graph-dispatch hypothesis)
   may now be designed.** Large batch evidence (1.1/2.3 GB) retained on
   disk uncommitted; small artifacts and manifests committed.
+
+- **2026-08-14 — fhw8 G3 live behavioral phase CONCLUDED: PASS.** Report
+  `reports/fhw8-qualification-g3-20260814.md` (prereg sealed
+  `671784e2…`). Candidate-backed service (earned-reproducibility manifest
+  `fbb12132…`, accepted by the server's own fail-closed validation) ran
+  the canonical 8-fixture plan: 8/8, zero terminalization errors,
+  categorical parity with the retained Step 2 baseline on every gate
+  field — no new failure class. Function-calling: baseline 20/20 vs
+  candidate 20/20, identical decisions. Descriptive latency: candidate
+  faster on 5/8 fixtures, long fixtures ~1–1.5 s faster to first audio.
+  Startup attempt 1 hit the known release-artifact EarTTS warmup stall
+  (retained; retry clean). **The fhw8 candidate has now passed its entire
+  preregistered G0–G3 contract.** Remaining before production: the
+  promotion contract's counterbalanced A/B latency qualification and the
+  explicit user promotion decision.

@@ -1,0 +1,62 @@
+{
+  "byte_identical": true,
+  "candidate_root": "/home/khkramer/.cache/nemotron-voicechat/artifacts/candidates/nano-fhw8",
+  "files_compared": 13,
+  "first_inventory": {
+    "artifact.sha256.json": {
+      "bytes": 1182,
+      "sha256": "09ed428991123ebcd6ca300cc02452112c8b1eb3df2cdc080826ead39f1d3098"
+    },
+    "chat_template.jinja": {
+      "bytes": 4070,
+      "sha256": "b7a3a520a4bc1beae6a25d615f9215580df8eea926f488256c2bef74039433c0"
+    },
+    "config.json": {
+      "bytes": 3994,
+      "sha256": "289b47e1aa92bf31c7767ea3cdb934f148820ba087b3001418f2df3f3470f3d8"
+    },
+    "configuration_nemotron_h.py": {
+      "bytes": 12176,
+      "sha256": "18186204622431c336a7c2813a80f0d37937dde962b8aebddf24caf5bffa03f7"
+    },
+    "model-00001-of-00004.safetensors": {
+      "bytes": 2348810384,
+      "sha256": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8"
+    },
+    "model-00002-of-00004.safetensors": {
+      "bytes": 1945452632,
+      "sha256": "659f015df802e9ec6696def3a194b12610feaaa2d8fcbe6fb3ffa0490b49e32c"
+    },
+    "model-00003-of-00004.safetensors": {
+      "bytes": 4259170776,
+      "sha256": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21"
+    },
+    "model-00004-of-00004.safetensors": {
+      "bytes": 3564975568,
+      "sha256": "ac118ef7f5262be37c37e44ff71b6f95598e0a2e9a8af2912e94aff627948f4a"
+    },
+    "model.safetensors.index.json": {
+      "bytes": 56678,
+      "sha256": "70fd0aa041ea5c4c121032b676c5fbe580f66ebce8b5fa948101ff58be2c2e0f"
+    },
+    "quantize_config.json": {
+      "bytes": 429,
+      "sha256": "32008b58f9497fc019c994ee8b49af6751461b989b696d497ee807fa7f161354"
+    },
+    "special_tokens_map.json": {
+      "bytes": 422,
+      "sha256": "2a4d2e7403546286e5d75f5b6b3c197490be67fb1e2118e5c60ad5c26e6668b1"
+    },
+    "tokenizer.json": {
+      "bytes": 17078330,
+      "sha256": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f"
+    },
+    "tokenizer_config.json": {
+      "bytes": 177181,
+      "sha256": "d05c050a1cffa3b00df7b0d2596425a17a3e5a03159ea04e0457f6cdf8d29cd4"
+    }
+  },
+  "kind": "fhw8_double_build_evidence",
+  "manifest_sha256": "fbb121328a9c7a4d5e8b374704484095364a232b79ed0001cba142fb0b86f472",
+  "rebuild_root": "/tmp/claude-1000/-home-khkramer-src-nemotron-voicechat-dgx-spark/9dab1982-03af-4f77-9d25-ddf7139af66f/scratchpad/fhw8-rebuild-proof"
+}
