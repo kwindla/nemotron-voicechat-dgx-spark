@@ -1,0 +1,34 @@
+{
+  "config_mount": [
+    "/home/khkramer/src/nemotron-voicechat-dgx-spark/config",
+    false
+  ],
+  "identity": {
+    "active_client": [
+      false,
+      false
+    ],
+    "eartts_sha256": [
+      "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e",
+      "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e"
+    ],
+    "image_id": [
+      "sha256:ea15693c2c7931516a366fe886a00caabe09f441abadc2a461cdaa51d0ed232a",
+      "sha256:ea15693c2c7931516a366fe886a00caabe09f441abadc2a461cdaa51d0ed232a"
+    ],
+    "model_sha256": [
+      "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+      "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b"
+    ],
+    "nano_sha256": [
+      "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99",
+      "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99"
+    ],
+    "revision": [
+      "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+      "fb0f94eaf4d03ddc430f39565229393fa1b50c26"
+    ]
+  },
+  "identity_match": true,
+  "status": "ready"
+}

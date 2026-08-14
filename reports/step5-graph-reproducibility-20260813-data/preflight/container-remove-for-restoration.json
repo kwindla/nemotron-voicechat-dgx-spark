@@ -1,0 +1,6 @@
+{
+  "reason": "retained v4 docker run requires the service name to be free; image and volumes were not removed",
+  "removed_stopped_container_id": "3cdd25015787cb8b83dfadaef13a4e153b788915bcdcbf8cb287c33a7b13e95d",
+  "stdout": "nemotron-voicechat-model",
+  "utc": "2026-08-14T00:14:28.820322+00:00"
+}

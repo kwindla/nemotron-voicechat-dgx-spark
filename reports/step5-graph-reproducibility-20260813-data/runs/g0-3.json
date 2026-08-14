@@ -1,0 +1,338 @@
+{
+  "blocks": [
+    {
+      "actual_token_vector_sha256": "9206e365db1ad7a0fa8863b19d3edc9a46b97eb3d51f2f4e16a059ac5caa3035",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        1044,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 0,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [
+        {
+          "end_call": 39,
+          "length": 1,
+          "reconverged_call": 40,
+          "start_call": 39
+        }
+      ],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "request_id": "g0-3-block-000",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": true,
+      "wall_ms": 2672.2745280712843
+    },
+    {
+      "actual_token_vector_sha256": "9206e365db1ad7a0fa8863b19d3edc9a46b97eb3d51f2f4e16a059ac5caa3035",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        1044,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 1,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [
+        {
+          "end_call": 39,
+          "length": 1,
+          "reconverged_call": 40,
+          "start_call": 39
+        }
+      ],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "request_id": "g0-3-block-001",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": true,
+      "wall_ms": 2505.8560520410538
+    },
+    {
+      "actual_token_vector_sha256": "9206e365db1ad7a0fa8863b19d3edc9a46b97eb3d51f2f4e16a059ac5caa3035",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        1044,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 2,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [
+        {
+          "end_call": 39,
+          "length": 1,
+          "reconverged_call": 40,
+          "start_call": 39
+        }
+      ],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "request_id": "g0-3-block-002",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": true,
+      "wall_ms": 2470.3542748466134
+    }
+  ],
+  "capture": {
+    "manifest_sha256": "55d9e815ec235a588b0aa6eacb4a97a2d5a77f19aa00954d0c2e205d4108d1aa",
+    "max_call_index": 46,
+    "root": "/capture"
+  },
+  "component": {
+    "config_sha256": "2a0576a8b71aa09a5a6683d5a0d2e3fc099839ea9fe559d69a3458e828530391",
+    "enforce_eager": false,
+    "gpu_memory_utilization": 0.42,
+    "max_model_len": 12288,
+    "path": "/models/derived/nano"
+  },
+  "distinct_token_vectors": 1,
+  "engine_label": "g0-3",
+  "hypothesis_controls": {
+    "parent_seed": 20260813,
+    "prelude_calls": 0,
+    "reuse_request_id": false,
+    "sampling_seed": 0,
+    "sync_each_call": false
+  },
+  "kind": "step5_graph_reproducibility_engine_run",
+  "passed": true,
+  "prelude": null,
+  "schema": 1,
+  "token_vector_sha256": [
+    "9206e365db1ad7a0fa8863b19d3edc9a46b97eb3d51f2f4e16a059ac5caa3035"
+  ]
+}

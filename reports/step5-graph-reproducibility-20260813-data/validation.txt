@@ -1,0 +1,31 @@
+Step 5 graph reproducibility closure validation — 2026-08-14 UTC
+
+Task-scoped Ruff:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/ruff check tools/benchmark/graph_reproducibility.py tests/runtime/test_graph_reproducibility.py
+  PASS — All checks passed.
+
+Focused regression tests:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -q -p no:cacheprovider tests/runtime/test_graph_reproducibility.py tests/runtime/test_nano_interface_decomposition.py
+  PASS — 27 passed in 0.78s.
+
+Qualification anchors:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/qualification/stratified_latency_analyzer.py verify-anchors --output reports/step5-graph-reproducibility-20260813-data/validation-anchors.json
+  PASS — 67/67 anchors.
+
+Full suite excluding browser_e2e:
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -q -p no:cacheprovider -m 'not browser_e2e'
+  PASS — 1190 passed, 15 skipped, 3 deselected, 4 warnings, 29 subtests
+  passed in 33.36s.
+
+Patch whitespace:
+  git diff --check -- reports/step5-graph-reproducibility-20260813.md reports/step4-candidate-ranking-20260813.md tools/benchmark/graph_reproducibility.py tests/runtime/test_graph_reproducibility.py
+  PASS.
+
+Preregistration seal verification:
+  SHA-256 of report bytes through STEP5_RESULTS_BEGIN:
+  6c5b6c05dc3ca1677015574dce0818f2ca84d2786c4ef1859e0e651277fde071
+  PASS — matches preregistration.sha256.
+
+Service restoration:
+  PASS — /health status=ready, active_client=false; pre/post revision, model,
+  Nano, EarTTS and image identity match; config mount is read-only.

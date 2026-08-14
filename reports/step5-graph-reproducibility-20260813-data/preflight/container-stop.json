@@ -1,0 +1,14 @@
+{
+  "command": [
+    "docker",
+    "stop",
+    "--time",
+    "30",
+    "nemotron-voicechat-model"
+  ],
+  "container_id": "3cdd25015787cb8b83dfadaef13a4e153b788915bcdcbf8cb287c33a7b13e95d",
+  "finished_utc": "2026-08-13T23:05:34Z",
+  "image_id": "sha256:ea15693c2c7931516a366fe886a00caabe09f441abadc2a461cdaa51d0ed232a",
+  "started_utc": "2026-08-13T23:05:31Z",
+  "stdout": "Flag --time has been deprecated, use --timeout instead\nnemotron-voicechat-model"
+}

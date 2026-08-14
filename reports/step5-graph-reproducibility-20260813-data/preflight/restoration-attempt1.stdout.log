@@ -1,0 +1,282 @@
+VOICECHAT_STARTUP {"event": "server_module_imported", "monotonic_ns": 4859716452907999, "wall_time_ns": 1786666469226044939}
+VOICECHAT_STARTUP {"event": "main_entered", "monotonic_ns": 4859716456192341, "wall_time_ns": 1786666469229328849}
+VOICECHAT_STARTUP {"event": "pipeline_build_started", "monotonic_ns": 4859716456749115, "wall_time_ns": 1786666469229885543}
+[NeMo I 2026-08-14 00:14:53 nemo_logging:393] Triton available & CUDA detected. Using Triton kernel for batch_matmul.
+INFO 08-14 00:14:55 [__init__.py:224] Automatically detected platform cuda.
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] pythonpath: ['/opt/Speech', '/opt/project', '/usr/lib/python312.zip', '/usr/lib/python3.12', '/usr/lib/python3.12/lib-dynload', '/usr/local/lib/python3.12/dist-packages', '/usr/local/lib/python3.12/dist-packages/nvidia_cutlass_dsl/python_packages', '/usr/lib/python3/dist-packages', '/usr/local/lib/python3.12/dist-packages/nvidia_cutlass_dsl/python_packages/cutlass/base_dsl', '/usr/local/lib/python3.12/dist-packages/setuptools/_vendor', '/root/.lhotse/tools/sph2pipe-2.5']
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] before setting - torch.backends.cudnn.allow_tf32: True
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] before setting - torch.backends.cuda.matmul.allow_tf32: True
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] before setting - torch.get_float32_matmul_precision(): medium
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] torch.backends.cudnn.allow_tf32: True
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] torch.backends.cuda.matmul.allow_tf32: True
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] torch.get_float32_matmul_precision(): medium
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Speaker mode: pre-baked latent 'Aria' (no WAV file needed)
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] TTS system prompt: None
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] ======================================================================
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] INITIALIZING REALTIME STREAMING INFERENCE
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] ======================================================================
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Frame size: 0.08s (1280 samples @ 16000Hz)
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Device: cuda:0
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Compute dtype: torch.bfloat16
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Decode audio: True
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Engine type: vllm_llm_vllm_eartts
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Sampling - top_p: 1.0, repetition_penalty: 1.0, temperature: 0.0
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] ======================================================================
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] use_codec_cache is enabled — codec_token_history_size (30) will be ignored (context is maintained incrementally by the codec cache).
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Initializing model with hybrid loading strategy...
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Loading and merging configurations...
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]   Loading nano config: /models/voicechat/config.json
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]   Loading eartts config: /models/voicechat/config.json
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]   Merging: Using nano's config for LLM/perception, eartts's for TTS
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]     TTS config from eartts
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]   Final config:
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]     - pretrained_llm: nvidia/NVIDIA-Nemotron-Nano-9B-v2
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]     - perception.d_model: 1024
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393]     - speech_generation: present
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Combined checkpoint contains RNNT decoder/joint config.
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] RNNT will be loaded from combined checkpoint (embedded weights + saved config).
+[NeMo I 2026-08-14 00:15:05 nemo_logging:393] Initializing model structure...
+[NeMo I 2026-08-14 00:15:29 nemo_logging:393] Using AddFusion with weights: agent=1.0, audio=1.0, text=1.0, function=2.0
+[NeMo I 2026-08-14 00:15:29 nemo_logging:393] [Function Calling] Initialized separate function_head (shared embeddings with text channel)
+[NeMo I 2026-08-14 00:15:29 nemo_logging:393] setup_speech_encoder: pretrained_asr not set — using embedded perception config
+[NeMo I 2026-08-14 00:15:29 nemo_logging:393] PADDING: 0
+[NeMo I 2026-08-14 00:15:31 nemo_logging:393] Silence template will be created lazily on first use (after model is moved to device)
+[NeMo I 2026-08-14 00:15:38 nemo_logging:393] Building character vocabulary from tokenizer.
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393] Time taken to initialize NemotronVoiceChat: 40.27038788795471 seconds
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393]   Model structure initialized
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393] Initialised RNNT decoder (nemo.collections.asr.modules.rnnt.RNNTDecoder) and joint (nemo.collections.asr.modules.rnnt.RNNTJoint) module structure from combined checkpoint config. blank_id=1024
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393] Loaded RNNT SentencePiece tokenizer from: /models/voicechat/rnnt_tokenizer/tokenizer.model
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393] Loading LLM + perception:
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393]   Path: /models/voicechat
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393]   Using vLLM - excluding LLM weights from nano checkpoint
+[NeMo I 2026-08-14 00:15:45 nemo_logging:393]   Loading 658 parameters (excluded: ['tts_model.', 'speech_generation.', 'stt_model.llm.'])...
+[NeMo I 2026-08-14 00:15:46 nemo_logging:393]  | > 658 / 1631 layers are restored.
+[NeMo I 2026-08-14 00:15:47 nemo_logging:393] Loading TTS checkpoint:
+[NeMo I 2026-08-14 00:15:47 nemo_logging:393]   Path: /models/voicechat
+[NeMo I 2026-08-14 00:15:48 nemo_logging:393]   Loading 635 TTS parameters...
+[NeMo I 2026-08-14 00:15:48 nemo_logging:393] Time taken to load TTS state dict: 0.7418620586395264 seconds
+[NeMo I 2026-08-14 00:15:48 nemo_logging:393]   Pre-baked audio_prompt_latents after load: ['Aria']
+[NeMo I 2026-08-14 00:15:49 nemo_logging:393]   Released TTS checkpoint state dictionaries
+[NeMo I 2026-08-14 00:15:49 nemo_logging:393] LLMStreamingEngine initialized for model: /models/derived/eartts
+[NeMo I 2026-08-14 00:15:49 nemo_logging:393] Read guidance_scale=0.2 from /models/derived/eartts/config.json
+[NeMo I 2026-08-14 00:15:49 nemo_logging:393] EARTTSStreamingEngine initialized (guidance_scale=0.2, unique_backend_request_ids=True).
+[NeMo I 2026-08-14 00:15:49 nemo_logging:393] Initializing vLLM engine (this may take a moment)...
+[NeMo I 2026-08-14 00:15:49 nemo_logging:393] Initializing vLLM engine...
+[NeMo I 2026-08-14 00:15:49 nemo_logging:393] [LLMStreamingEngine] Pinning vLLM to GPU 0 (CUDA_VISIBLE_DEVICES=0)
+ERROR 08-14 00:15:49 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+ERROR 08-14 00:15:49 [__init__.py:57] Traceback (most recent call last):
+ERROR 08-14 00:15:49 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+ERROR 08-14 00:15:49 [__init__.py:57]     func = plugin.load()
+ERROR 08-14 00:15:49 [__init__.py:57]            ^^^^^^^^^^^^^
+ERROR 08-14 00:15:49 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+ERROR 08-14 00:15:49 [__init__.py:57]     module = import_module(match.group('module'))
+ERROR 08-14 00:15:49 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-14 00:15:49 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+ERROR 08-14 00:15:49 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+ERROR 08-14 00:15:49 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-14 00:15:49 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+ERROR 08-14 00:15:49 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+ERROR 08-14 00:15:49 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ERROR 08-14 00:15:49 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+INFO 08-14 00:15:49 [arg_utils.py:535] HF_HUB_OFFLINE is True, replace model_id [/models/derived/eartts] to model_path [/models/derived/eartts]
+INFO 08-14 00:15:55 [model.py:653] Resolved architecture: EarTTSForCausalLM
+ERROR 08-14 00:15:55 [config.py:298] Error retrieving safetensors: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/derived/eartts'. Use `repo_type` argument if needed., retrying 1 of 2
+ERROR 08-14 00:15:57 [config.py:296] Error retrieving safetensors: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/derived/eartts'. Use `repo_type` argument if needed.
+INFO 08-14 00:15:57 [model.py:1729] Using max model len 12288
+INFO 08-14 00:15:57 [scheduler.py:225] Chunked prefill is enabled with max_num_batched_tokens=768.
+WARNING 08-14 00:15:57 [__init__.py:3134] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+VOICECHAT_STARTUP {"event": "server_module_imported", "monotonic_ns": 4859804598149453, "wall_time_ns": 1786666557371286409}
+INFO 08-14 00:15:58 [__init__.py:224] Automatically detected platform cuda.
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:01 [core.py:721] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57] Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]     func = plugin.load()
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]            ^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]     module = import_module(match.group('module'))
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+[1;36m(EngineCore_DP0 pid=313)[0;0m ERROR 08-14 00:16:01 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:01 [core.py:96] Initializing a V1 LLM engine (v0.17.1.dev0+gb31e9326a.fi065) with config: model='/models/derived/eartts', speculative_config=None, tokenizer='/models/derived/eartts', skip_tokenizer_init=True, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float32, max_seq_len=12288, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=ea_w8a32, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=/models/derived/eartts, enable_prefix_caching=False, chunked_prefill_enabled=True, pooler_config=None, compilation_config={'level': 3, 'debug_dump_path': None, 'cache_dir': '', 'backend': '', 'custom_ops': [], 'splitting_ops': ['vllm.unified_attention', 'vllm.unified_attention_with_output', 'vllm.mamba_mixer2', 'vllm.mamba_mixer', 'vllm.short_conv', 'vllm.linear_attention', 'vllm.plamo2_mamba_mixer', 'vllm.gdn_attention', 'vllm.sparse_attn_indexer'], 'use_inductor': True, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'use_cudagraph': True, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [256, 248, 240, 232, 224, 216, 208, 200, 192, 184, 176, 168, 160, 152, 144, 136, 128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1], 'cudagraph_copy_inputs': False, 'full_cuda_graph': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_capture_size': 256, 'local_cache_dir': None}
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:02 [parallel_state.py:1231] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:02 [topk_topp_sampler.py:59] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:02 [gpu_model_runner.py:3224] Starting to load model /models/derived/eartts...
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:02 [gpu_model_runner.py:3254] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:04 [cuda.py:347] Using Triton backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:14 [default_loader.py:309] Loading weights took 9.77 seconds
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:14 [gpu_model_runner.py:3286] Model loading took 1.3906 GiB and 11.137135 seconds
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:18 [backends.py:594] Using cache directory: /root/.cache/vllm/torch_compile_cache/20627f2bf0/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:18 [backends.py:608] Dynamo bytecode transform time: 4.20 s
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:26 [backends.py:214] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:16:52 [backends.py:241] Compiling a graph for dynamic shape takes 33.29 s
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:17:16 [monitor.py:33] torch.compile takes 37.50 s in total
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:17:20 [gpu_worker.py:314] Available KV cache memory: 5.76 GiB
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:17:20 [kv_cache_utils.py:1133] GPU KV cache size: 23,968 tokens
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:17:20 [kv_cache_utils.py:1138] Maximum concurrency for 12,288 tokens per request: 6.45x
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:17:49 [gpu_model_runner.py:4203] Graph capturing finished in 28 secs, took -1.20 GiB
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:17:49 [core.py:237] init engine (profile, create kv cache, warmup model) took 95.34 seconds
+INFO 08-14 00:17:49 [loggers.py:148] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 10492
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393] Engine initialized with custom input specs:
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393]   - CustomInputSpec(name='acoustic_tokens', dtype='int32', dim=31)
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393]   - CustomInputSpec(name='text_tokens', dtype='int32', dim=None)
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393]   - CustomInputSpec(name='text_mask', dtype=None, dim=None)
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393]   - CustomInputSpec(name='bos_mask', dtype=None, dim=None)
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393]   - CustomInputSpec(name='speaker_latent', dtype=None, dim=1152)
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393] text_pad_id resolved to: 0
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393] vLLM engine ready!
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393] VllmEARTTSModel initialized with EARTTS-specific settings.
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393]   eartts checkpoint loaded (TTS only)
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393] 
+    Hybrid loading completed!
+[NeMo I 2026-08-14 00:17:49 nemo_logging:393] 
+    Deleting native LLM before GPU transfer (will use vLLM instead)...
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:17:50 [gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+[NeMo I 2026-08-14 00:17:50 nemo_logging:393]   Native LLM deleted
+[NeMo I 2026-08-14 00:17:50 nemo_logging:393] Moving top-level component stt_model to cuda:0...
+[NeMo I 2026-08-14 00:18:13 nemo_logging:393] Moved top-level component stt_model to cuda:0 in 23.007s
+[NeMo I 2026-08-14 00:18:13 nemo_logging:393] Moving top-level component tts_model to cuda:0...
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] Moved top-level component tts_model to cuda:0 in 1.849s
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] Converting S2S components to torch.bfloat16 (keeping TTS in float32)...
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] function_head converted to torch.bfloat16
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] rnnt_decoder converted to torch.bfloat16
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] rnnt_joint converted to torch.bfloat16
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] S2S components converted, TTS kept in float32
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] new update, perception also is kept in float32
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] inference_eos_boost: None
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] inference_bos_boost: 0.0
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] inference_pad_boost: None
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] inference_user_pad_boost: 0.8
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] inference_user_bos_boost: None
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] inference_user_eos_boost: None
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] Using AddFusion with weights: agent=1.0, audio=1.0, text=0.0, function=2.0
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] Fusion module created: type=AddFusion, agent_text_weight=1.000, user_audio_weight=1.000, user_text_weight=1.000, function_weight=2.000, fuse_method=None
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] FC token IDs resolved: SOTC=20, EOTC=21, EOTR=22, TOOLRESPONSE_OPEN=[1060, 9197, 8568, 3609, 8504, 107284, 1062], TOOLRESPONSE_CLOSE=[1885, 9197, 8568, 3609, 8504, 107284, 1062]
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] 
+    Wrapping model with VllmLLMModel interface...
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] Set env VLLM_ASR_BOOST_12=0.8 (from inference_user_pad_boost)
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] LLMStreamingEngine initialized for model: /models/derived/nano
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] Initializing vLLM engine (this may take a moment)...
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] Initializing vLLM engine...
+[NeMo I 2026-08-14 00:18:15 nemo_logging:393] [LLMStreamingEngine] Pinning vLLM to GPU 0 (CUDA_VISIBLE_DEVICES=0)
+INFO 08-14 00:18:15 [arg_utils.py:535] HF_HUB_OFFLINE is True, replace model_id [/models/derived/nano] to model_path [/models/derived/nano]
+INFO 08-14 00:18:20 [model.py:653] Resolved architecture: NemotronHForCausalLM
+INFO 08-14 00:18:20 [model.py:1729] Using max model len 12288
+INFO 08-14 00:18:20 [gptq_marlin.py:226] The model is convertible to gptq_marlin during runtime. Using gptq_marlin kernel.
+INFO 08-14 00:18:20 [scheduler.py:225] Chunked prefill is enabled with max_num_batched_tokens=768.
+INFO 08-14 00:18:20 [config.py:313] Disabling cascade attention since it is not supported for hybrid models.
+INFO 08-14 00:18:20 [config.py:403] Setting attention block size to 1312 tokens to ensure that attention page size is >= mamba page size.
+INFO 08-14 00:18:20 [config.py:427] Padding mamba page size by 1.08% to ensure that mamba page size and attention page size are exactly equal.
+VOICECHAT_STARTUP {"event": "server_module_imported", "monotonic_ns": 4859948588348037, "wall_time_ns": 1786666701361485073}
+INFO 08-14 00:18:22 [__init__.py:224] Automatically detected platform cuda.
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:26 [core.py:721] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57] Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]     func = plugin.load()
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]            ^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]     module = import_module(match.group('module'))
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+[1;36m(EngineCore_DP0 pid=3990)[0;0m ERROR 08-14 00:18:26 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:26 [core.py:96] Initializing a V1 LLM engine (v0.17.1.dev0+gb31e9326a.fi065) with config: model='/models/derived/nano', speculative_config=None, tokenizer='/models/derived/nano', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=12288, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=gptq_marlin, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=/models/derived/nano, enable_prefix_caching=False, chunked_prefill_enabled=True, pooler_config=None, compilation_config={'level': 3, 'debug_dump_path': None, 'cache_dir': '', 'backend': '', 'custom_ops': [], 'splitting_ops': ['vllm.unified_attention', 'vllm.unified_attention_with_output', 'vllm.mamba_mixer2', 'vllm.mamba_mixer', 'vllm.short_conv', 'vllm.linear_attention', 'vllm.plamo2_mamba_mixer', 'vllm.gdn_attention', 'vllm.sparse_attn_indexer'], 'use_inductor': True, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'use_cudagraph': True, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [256, 248, 240, 232, 224, 216, 208, 200, 192, 184, 176, 168, 160, 152, 144, 136, 128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1], 'cudagraph_copy_inputs': False, 'full_cuda_graph': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_capture_size': 256, 'local_cache_dir': None}
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:27 [parallel_state.py:1231] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:27 [topk_topp_sampler.py:59] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:27 [gpu_model_runner.py:3224] Starting to load model /models/derived/nano...
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:27 [gpu_model_runner.py:3254] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:27 [gptq_marlin.py:374] Using MarlinLinearKernel for GPTQMarlinLinearMethod
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:18:27 [cuda.py:392] Using Flash Attention backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:04 [default_loader.py:309] Loading weights took 36.26 seconds
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:04 [gpu_model_runner.py:3286] Model loading took 10.2843 GiB and 36.976450 seconds
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:06 [backends.py:594] Using cache directory: /root/.cache/vllm/torch_compile_cache/7249140f80/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:06 [backends.py:608] Dynamo bytecode transform time: 1.48 s
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:07 [backends.py:214] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:11 [backends.py:241] Compiling a graph for dynamic shape takes 4.62 s
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:31 [monitor.py:33] torch.compile takes 6.10 s in total
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:32 [gpu_worker.py:314] Available KV cache memory: 39.33 GiB
+[1;36m(EngineCore_DP0 pid=3990)[0;0m WARNING 08-14 00:19:32 [kv_cache_utils.py:1022] Add 1 padding layers, may waste at most 3.70% KV cache memory
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:32 [kv_cache_utils.py:1133] GPU KV cache size: 321,440 tokens
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:19:32 [kv_cache_utils.py:1138] Maximum concurrency for 12,288 tokens per request: 115.53x
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:20:50 [gpu_model_runner.py:4203] Graph capturing finished in 53 secs, took 1.05 GiB
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:20:50 [core.py:237] init engine (profile, create kv cache, warmup model) took 105.35 seconds
+INFO 08-14 00:20:51 [loggers.py:148] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 1964
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] Engine initialized with custom input specs:
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393]   - CustomInputSpec(name='combined_embeds', dtype='bfloat16', dim=4480)
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] text_pad_id resolved to: 12
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] vLLM engine ready!
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] VllmLLMModel interface created
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] stt_model re-pinned to cuda:0 after vLLM LLM init
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] 
+    TTS model initialized: target_fps=12.5, sample_rate=22050
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] Preparing TTS warmup state...
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] Using pre-baked speaker latent 'Aria' from checkpoint
+[NeMo I 2026-08-14 00:20:51 nemo_logging:393] set_init_inputs: using pre-baked latent for speaker 'Aria' (silent carrier audio)
+[1;36m(EngineCore_DP0 pid=3990)[0;0m INFO 08-14 00:20:51 [gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+[NeMo I 2026-08-14 00:20:52 nemo_logging:393] Starting generation session with logical request_id: tts_system_prompt_prefill_request, backend request_id: tts_system_prompt_prefill_request__eartts_generation_1, generation: 1
+[NeMo I 2026-08-14 00:20:52 nemo_logging:393] Initializing generation for request tts_system_prompt_prefill_request with first embedding
+WARNING 08-14 00:20:52 [async_llm.py:283] Processor has been moved under OpenAIServing and will be removed from AsyncLLM in v0.13.
+WARNING 08-14 00:20:52 [preprocess.py:81] Using None for EOS token id because tokenizer is not initialized
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] Aborted generation for logical request tts_system_prompt_prefill_request (backend tts_system_prompt_prefill_request__eartts_generation_1)
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] TTS warmup state prepared
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] [FC] Number-to-text conversion enabled for tool responses
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] [FC Config] fc_async_enabled=True, fc_async_two_phase=True, fc_async_use_real_audio=False, has_function_head=True, SOTC_id=20, sotc_boost=0.0
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] [FC Async] Creating silence embedding cache...
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:20:53 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 42 blocks: [3, 2, 1, 6, 5, 4, 9, 8, 7, 12]...
+[1;36m(EngineCore_DP0 pid=313)[0;0m INFO 08-14 00:20:53 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 1176 tensors across 42 blocks
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] [FC Async] Silence embedding cached: shape=[1, 4480] (1s → 14 frames, using frame 0)
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] [RNNT] Punct bias enabled: tokens=['.', ',', '?', '!'] IDs=[962, 961, 977, 1007] increments={962: 1.5, 961: 1.0, 977: 1.5, 1007: 1.0} min_blanks=5
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] [Turn-taking] RNNT is_start_tokens built: 1024 tokens (EOU word-boundary check enabled)
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] [Turn-taking] source=rnnt, rnnt_eou_frames=20, rnnt_bou_frames=3, rnnt_fc_interrupt_frames=3 (240 ms), rnnt_unk_id=0
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] PADDING: 0
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393] Perception cache setup complete:
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393]    Streaming config: chunk_size=[1, 8], shift_size=[1, 8]
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393]    Pre-encode cache size: [0, 9]
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393]    Subsampling factor: 8
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393]    Setting up CUDA graphs for perception encoder...
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393]    CUDA graph mel lengths: first=1, subsequent=17
+[NeMo I 2026-08-14 00:20:53 nemo_logging:393]    Warming up encoder for CUDA graph capture...
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393]    Capturing CUDA graph for first chunk (mel_len=1)...
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393]    Capturing CUDA graph for subsequent chunks (mel_len=17)...
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393]    CUDA graphs captured successfully
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393]    CUDA graphs captured
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] NemotronVoicechatInferenceWrapper initialized successfully.
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] self.model.stt_model.perception.encoder._cfg = {'_target_': 'nemo.collections.asr.modules.ConformerEncoder', 'att_context_size': [70, 0], 'att_context_style': 'chunked_limited', 'causal_downsampling': True, 'conv_context_size': 'causal', 'conv_kernel_size': 9, 'conv_norm_type': 'layer_norm', 'd_model': 1024, 'dropout': 0.1, 'dropout_att': 0.1, 'dropout_emb': 0.0, 'dropout_pre_encoder': 0.1, 'feat_in': 128, 'feat_out': -1, 'ff_expansion_factor': 4, 'n_heads': 8, 'n_layers': 24, 'pos_emb_max_len': 5000, 'reduction': None, 'reduction_factor': 1, 'reduction_position': None, 'self_attention_model': 'rel_pos', 'stochastic_depth_drop_prob': 0.0, 'stochastic_depth_mode': 'linear', 'stochastic_depth_start_layer': 1, 'subsampling': 'dw_striding', 'subsampling_conv_channels': 256, 'subsampling_factor': 8, 'untie_biases': True, 'use_bias': False, 'xscaling': False}
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] self.model.stt_model.perception.encoder.streaming_cfg = CacheAwareStreamingConfig(chunk_size=[1, 8], shift_size=[1, 8], cache_drop_size=0, last_channel_cache_size=70, valid_out_len=1, pre_encode_cache_size=[0, 9], drop_extra_pre_encoded=2, last_channel_num=0, last_time_num=0)
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] S2S model `/models/voicechat` loaded
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] Registered 8 built-in tool(s): ['calculate_bmi', 'get_weather', 'check_gpu_usage', 'get_stock_price', 'get_top_paper', 'get_top_news', 'generate_random_number', 'find_nearby_restaurants']
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] FC acknowledgement: text_bos_id=1 (text=''), text_eos_id=2 (text='</s>')
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] FC acknowledgement: random selection enabled, 20 messages loaded (each wrapped with <s>/</s>, 17 trailing PADs); sample[0]=25 tokens, decoded='Happy to help with that.</s>'
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] FC reminder: enabled, 10 messages loaded; sample[0]='Still working on that.</s>'
+[NeMo I 2026-08-14 00:20:54 nemo_logging:393] `StreamingS2SPipeline` pipeline loaded
+[NeMo I 2026-08-14 00:21:06 nemo_logging:393] Triton available & CUDA detected. Using Triton kernel for batch_matmul.
+INFO 08-14 00:21:08 [__init__.py:224] Automatically detected platform cuda.
+Checkpoint provenance: {"checkpoint": "/models/voicechat", "engine_type": "vllm_llm_vllm_eartts", "fixed_stage_optimizations": {"cpu_codec": {"checkpoint_root": "/models/voicechat", "cpus": [5, 6], "mode": "process", "persistent": true, "pointwise_linear": true, "threads": 2, "warmup_worker_ms": 150.57088062167168, "worker": {"checkpoint": {"layout": "public_combined", "path": "/models/voicechat/model.safetensors", "source_prefix": "tts_model.audio_codec.", "tensor_count": 214}, "cpus": [5, 6], "depthwise_replacements": 18, "pid": 4336, "pointwise_replacements": 38, "status": "ready", "threads": 2}}, "cyclic_gc_guard": true, "eartts_decode_pad_silence": true, "eartts_idle_pad_bypass": true, "eartts_prepared_epoch": true, "eartts_reset_on_bos": true, "eartts_unique_backend_request_ids": true, "nano_pad_pair_control_barrier": false, "perception_dtype": "bf16", "vllm_delta_output": ["eartts"]}, "host_runtime": {"driver_version": "580.142", "kernel_version": "6.17.0-1014-nvidia"}, "kind": "public_checkpoint_production_candidate_1", "model_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b", "nano_pad_pair_runtime": {"conditional_previous_effective_pad": false, "contract": {"agent_decoded_silence_frames": 20, "agent_no_audio_frames": 30, "agent_no_text_frames": 30, "conditional_previous_effective_pad": true, "function_async_pending_drain": true, "function_async_sequential_latch": true, "function_channel_rejection": true, "mamba_chunk_size": 1, "max_positions": 2, "max_session_model_frames": 12000, "post_fc_fusion_correction": true, "production_candidate": 1, "production_mamba_rollback": true, "scope": "production live runtime", "source_config_sha256": "caf9fe075b3baae60d39990bc6a48d48413857b7dd5f321350b3e236cc6681b9", "streaming_max_len": 12288, "vllm_max_model_len": 12288}, "enabled": false, "mamba_chunk_size": 1, "max_session_model_frames": 12000, "pad_token_id": 12, "streaming_max_len": 12288, "vllm_max_model_len": 12288}, "nano_runtime_optimization": {"retained_custom_outputs": ["function_tokens", "function_logits"], "sampling_contract": {"repetition_penalty": 1.0, "temperature": 0.0, "top_p": 1.0}, "skip_custom_text_logits": true, "vllm_temperature": 0.0}, "nano_skeleton": "/models/NVIDIA-Nemotron-Nano-9B-v2", "repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B", "revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26", "rnnt_bou_frames": 3, "rnnt_eou_frames": 20, "rnnt_fc_interrupt_ms": 240, "rnnt_self_play_suppression": true, "rnnt_source": "embedded_combined_checkpoint", "speaker": "Aria", "turn_taking_source": "rnnt", "ui_asr_source": "rnnt", "use_perception_cudagraph": true, "vllm_artifacts": {"components": {"eartts": {"artifact_files": {"config.json": {"bytes": 3513, "sha256": "f1b445f141fb7db1acdf2b76d7e9da0939831bac5c2363f40af99968cce385e8"}, "model-00001-of-00001.safetensors": {"bytes": 1412084716, "sha256": "aa4c17d2f313d357cf1ef8b7f8f3da05cbb65d4d2a747cdee089ad6bac0b7d56"}, "model.safetensors.index.json": {"bytes": 61634, "sha256": "e90d07f540b7614480689df6a3a46639b1a3f3e655753732765a85e6a32aeef2"}, "quantize_config.json": {"bytes": 33, "sha256": "2bbd43e9c7715806ca2b2d4dbebd58b04dbb74d1c07e29397038e056b4ec409b"}}, "bytes": 1412084716, "files": [{"bytes": 1412084716, "name": "model-00001-of-00001.safetensors", "sha256": "aa4c17d2f313d357cf1ef8b7f8f3da05cbb65d4d2a747cdee089ad6bac0b7d56"}], "path": "/models/derived/eartts", "quantization": {"release": "production-candidate-1"}, "reproducibility_runs": 2, "runtime_optimization": null, "sha256": "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e", "tensor_count": null}, "nano": {"artifact_files": {"chat_template.jinja": {"bytes": 4070, "sha256": "b7a3a520a4bc1beae6a25d615f9215580df8eea926f488256c2bef74039433c0"}, "config.json": {"bytes": 3982, "sha256": "2a0576a8b71aa09a5a6683d5a0d2e3fc099839ea9fe559d69a3458e828530391"}, "configuration_nemotron_h.py": {"bytes": 12176, "sha256": "18186204622431c336a7c2813a80f0d37937dde962b8aebddf24caf5bffa03f7"}, "model-00001-of-00004.safetensors": {"bytes": 2348810384, "sha256": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8"}, "model-00002-of-00004.safetensors": {"bytes": 4294263336, "sha256": "38ff5efa8d7de903d0dd45ed5cf22212db3cbc5ab87e99a3f2f010ac4ca63216"}, "model-00003-of-00004.safetensors": {"bytes": 4259170776, "sha256": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21"}, "model-00004-of-00004.safetensors": {"bytes": 2963992080, "sha256": "6d0f28a5cfa176c82e673e09f113b7e03e3f8ad4cb491f33b30501c7f767fdea"}, "model.safetensors.index.json": {"bytes": 56456, "sha256": "a83fcd79b1661af926ddf62eac663a269853443c3d03dc690da6928598a9fbad"}, "quantize_config.json": {"bytes": 438, "sha256": "7eeba0b4d95e514ec6ba40a4c917bdde900282ce512eee1b509467078b5a58ec"}, "special_tokens_map.json": {"bytes": 422, "sha256": "2a4d2e7403546286e5d75f5b6b3c197490be67fb1e2118e5c60ad5c26e6668b1"}, "tokenizer.json": {"bytes": 17078330, "sha256": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f"}, "tokenizer_config.json": {"bytes": 177181, "sha256": "d05c050a1cffa3b00df7b0d2596425a17a3e5a03159ea04e0457f6cdf8d29cd4"}}, "bytes": 13866236576, "files": [{"bytes": 2348810384, "name": "model-00001-of-00004.safetensors", "sha256": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8"}, {"bytes": 4294263336, "name": "model-00002-of-00004.safetensors", "sha256": "38ff5efa8d7de903d0dd45ed5cf22212db3cbc5ab87e99a3f2f010ac4ca63216"}, {"bytes": 4259170776, "name": "model-00003-of-00004.safetensors", "sha256": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21"}, {"bytes": 2963992080, "name": "model-00004-of-00004.safetensors", "sha256": "6d0f28a5cfa176c82e673e09f113b7e03e3f8ad4cb491f33b30501c7f767fdea"}], "path": "/models/derived/nano", "quantization": {"release": "production-candidate-1"}, "reproducibility_runs": 2, "runtime_optimization": null, "sha256": "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99", "tensor_count": null}}, "derived_from_ea": false, "manifest": "/models/derived/manifests/release.json", "runtime": null, "runtime_optimization": null}}
+VOICECHAT_STARTUP {"event": "pipeline_build_finished", "monotonic_ns": 4860119473225647, "wall_time_ns": 1786666872246362795}
+VOICECHAT_STARTUP {"event": "pipeline_warmup_started", "monotonic_ns": 4860119473252879, "wall_time_ns": 1786666872246389259}
+[NeMo I 2026-08-14 00:21:12 nemo_logging:393] No system prompt configured — using fallback prompt for warmup: "Mock system prompt for warmup."
+[NeMo I 2026-08-14 00:21:12 nemo_logging:393] Running pipeline warmup prefill...
+[NeMo I 2026-08-14 00:21:12 nemo_logging:393] Prefilling TTS speaker embedding for stream -1...
+[NeMo I 2026-08-14 00:21:12 nemo_logging:393] Starting generation session with logical request_id: -1, backend request_id: -1__eartts_generation_2, generation: 2

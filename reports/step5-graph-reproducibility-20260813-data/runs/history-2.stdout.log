@@ -1,0 +1,917 @@
+[NeMo W 2026-08-13 23:32:27 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:323: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+", " ", text)
+    
+[NeMo W 2026-08-13 23:32:27 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:324: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+\.\s+", ".", text)
+    
+[NeMo W 2026-08-13 23:32:29 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:300: SyntaxWarning: invalid escape sequence '\('
+      m = re.match('([su]([0-9]{1,2})p?) \(([0-9]{1,2}) bit\)$', token)
+    
+[NeMo W 2026-08-13 23:32:29 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:301: SyntaxWarning: invalid escape sequence '\('
+      m2 = re.match('([su]([0-9]{1,2})p?)( \(default\))?$', token)
+    
+[NeMo W 2026-08-13 23:32:29 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:310: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(flt)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-13 23:32:29 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:314: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(dbl)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-13 23:32:29 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:170: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+      warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+    
+[NeMo I 2026-08-13 23:32:31 nemo_logging:393] Triton available & CUDA detected. Using Triton kernel for batch_matmul.
+[NeMo W 2026-08-13 23:32:32 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/whisper_normalizer/basic.py:97: SyntaxWarning: invalid escape sequence '\X'
+      """
+    
+INFO 08-13 23:32:33 [__init__.py:224] Automatically detected platform cuda.
+[NeMo I 2026-08-13 23:32:35 nemo_logging:393] LLMStreamingEngine initialized for model: /models/derived/nano
+[NeMo I 2026-08-13 23:32:35 nemo_logging:393] Initializing vLLM engine (this may take a moment)...
+[NeMo I 2026-08-13 23:32:35 nemo_logging:393] Initializing vLLM engine...
+ERROR 08-13 23:32:35 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+ERROR 08-13 23:32:35 [__init__.py:57] Traceback (most recent call last):
+ERROR 08-13 23:32:35 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+ERROR 08-13 23:32:35 [__init__.py:57]     func = plugin.load()
+ERROR 08-13 23:32:35 [__init__.py:57]            ^^^^^^^^^^^^^
+ERROR 08-13 23:32:35 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+ERROR 08-13 23:32:35 [__init__.py:57]     module = import_module(match.group('module'))
+ERROR 08-13 23:32:35 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-13 23:32:35 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+ERROR 08-13 23:32:35 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+ERROR 08-13 23:32:35 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-13 23:32:35 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+ERROR 08-13 23:32:35 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+ERROR 08-13 23:32:35 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ERROR 08-13 23:32:35 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+INFO 08-13 23:32:35 [arg_utils.py:535] HF_HUB_OFFLINE is True, replace model_id [/models/derived/nano] to model_path [/models/derived/nano]
+INFO 08-13 23:32:40 [model.py:653] Resolved architecture: NemotronHForCausalLM
+INFO 08-13 23:32:40 [model.py:1729] Using max model len 12288
+`torch_dtype` is deprecated! Use `dtype` instead!
+INFO 08-13 23:32:41 [gptq_marlin.py:226] The model is convertible to gptq_marlin during runtime. Using gptq_marlin kernel.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 08-13 23:32:41 [scheduler.py:225] Chunked prefill is enabled with max_num_batched_tokens=768.
+INFO 08-13 23:32:41 [config.py:313] Disabling cascade attention since it is not supported for hybrid models.
+INFO 08-13 23:32:41 [config.py:403] Setting attention block size to 1312 tokens to ensure that attention page size is >= mamba page size.
+INFO 08-13 23:32:41 [config.py:427] Padding mamba page size by 1.08% to ensure that mamba page size and attention page size are exactly equal.
+WARNING 08-13 23:32:41 [__init__.py:3134] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+INFO 08-13 23:32:42 [__init__.py:224] Automatically detected platform cuda.
+/usr/local/lib/python3.12/dist-packages/torch/library.py:356: UserWarning: Warning only once for all operators,  other operators may also be overridden.
+  Overriding a previously registered kernel for the same operator and the same dispatch key
+  operator: flash_attn::_flash_attn_backward(Tensor dout, Tensor q, Tensor k, Tensor v, Tensor out, Tensor softmax_lse, Tensor(a6!)? dq, Tensor(a7!)? dk, Tensor(a8!)? dv, float dropout_p, float softmax_scale, bool causal, SymInt window_size_left, SymInt window_size_right, float softcap, Tensor? alibi_slopes, bool deterministic, Tensor? rng_state=None) -> Tensor
+    registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922
+  dispatch key: ADInplaceOrView
+  previous kernel: no debug info
+       new kernel: registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922 (Triggered internally at /opt/pytorch/pytorch/aten/src/ATen/core/dispatch/OperatorEntry.cpp:208.)
+  self.m.impl(
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:45 [core.py:721] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57] Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]     func = plugin.load()
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]            ^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]     module = import_module(match.group('module'))
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 23:32:45 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:45 [core.py:96] Initializing a V1 LLM engine (v0.17.1.dev0+gb31e9326a.fi065) with config: model='/models/derived/nano', speculative_config=None, tokenizer='/models/derived/nano', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=12288, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=gptq_marlin, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=/models/derived/nano, enable_prefix_caching=False, chunked_prefill_enabled=True, pooler_config=None, compilation_config={'level': 3, 'debug_dump_path': None, 'cache_dir': '', 'backend': '', 'custom_ops': [], 'splitting_ops': ['vllm.unified_attention', 'vllm.unified_attention_with_output', 'vllm.mamba_mixer2', 'vllm.mamba_mixer', 'vllm.short_conv', 'vllm.linear_attention', 'vllm.plamo2_mamba_mixer', 'vllm.gdn_attention', 'vllm.sparse_attn_indexer'], 'use_inductor': True, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'use_cudagraph': True, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [256, 248, 240, 232, 224, 216, 208, 200, 192, 184, 176, 168, 160, 152, 144, 136, 128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1], 'cudagraph_copy_inputs': False, 'full_cuda_graph': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_capture_size': 256, 'local_cache_dir': None}
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:46 [parallel_state.py:1231] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:46 [topk_topp_sampler.py:59] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:46 [gpu_model_runner.py:3224] Starting to load model /models/derived/nano...
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:47 [gpu_model_runner.py:3254] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:47 [gptq_marlin.py:374] Using MarlinLinearKernel for GPTQMarlinLinearMethod
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:32:47 [cuda.py:347] Using Triton backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:15<00:45, 15.15s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:31<00:31, 15.73s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:31<00:08,  8.83s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:39<00:00,  8.38s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:39<00:00,  9.90s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m 
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:27 [default_loader.py:309] Loading weights took 39.84 seconds
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:28 [gpu_model_runner.py:3286] Model loading took 10.2843 GiB and 40.639305 seconds
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:29 [backends.py:594] Using cache directory: /root/.cache/vllm/torch_compile_cache/d6aba81093/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:29 [backends.py:608] Dynamo bytecode transform time: 1.45 s
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:30 [backends.py:214] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=260)[0;0m [rank0]:W0813 23:33:32.325000 260 torch/_inductor/utils.py:1725] [0/0] Not enough SMs to use max_autotune_gemm mode
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:34 [backends.py:241] Compiling a graph for dynamic shape takes 4.75 s
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:56 [monitor.py:33] torch.compile takes 6.20 s in total
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:57 [gpu_worker.py:314] Available KV cache memory: 39.65 GiB
+[1;36m(EngineCore_DP0 pid=260)[0;0m WARNING 08-13 23:33:57 [kv_cache_utils.py:1022] Add 1 padding layers, may waste at most 3.70% KV cache memory
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:57 [kv_cache_utils.py:1133] GPU KV cache size: 324,064 tokens
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:33:57 [kv_cache_utils.py:1138] Maximum concurrency for 12,288 tokens per request: 116.47x
+[1;36m(EngineCore_DP0 pid=260)[0;0m 2026-08-13 23:33:58,880 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=260)[0;0m 2026-08-13 23:33:59,393 - INFO - autotuner.py:268 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=260)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 1/35 [00:00<00:08,  3.81it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 2/35 [00:00<00:08,  3.77it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▊         | 3/35 [00:00<00:08,  3.80it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  11%|█▏        | 4/35 [00:01<00:08,  3.81it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  14%|█▍        | 5/35 [00:01<00:07,  3.85it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  17%|█▋        | 6/35 [00:01<00:07,  3.85it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|██        | 7/35 [00:01<00:07,  3.88it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  23%|██▎       | 8/35 [00:02<00:06,  3.89it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  26%|██▌       | 9/35 [00:02<00:06,  4.18it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▊       | 10/35 [00:02<00:05,  4.38it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 11/35 [00:02<00:05,  4.58it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 12/35 [00:02<00:04,  4.72it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 13/35 [00:03<00:04,  4.86it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 14/35 [00:03<00:04,  4.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 15/35 [00:03<00:03,  5.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  46%|████▌     | 16/35 [00:03<00:03,  5.11it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▊     | 17/35 [00:03<00:03,  5.61it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████▏    | 18/35 [00:03<00:02,  5.92it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  54%|█████▍    | 19/35 [00:04<00:02,  6.15it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 20/35 [00:04<00:02,  6.35it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|██████    | 21/35 [00:04<00:02,  6.52it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 22/35 [00:04<00:02,  6.48it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  66%|██████▌   | 23/35 [00:04<00:01,  6.66it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 24/35 [00:04<00:01,  6.83it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  74%|███████▍  | 26/35 [00:04<00:01,  8.50it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 28/35 [00:05<00:00,  9.69it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▌ | 30/35 [00:05<00:00, 10.63it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  91%|█████████▏| 32/35 [00:05<00:00, 11.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  97%|█████████▋| 34/35 [00:05<00:00, 11.88it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:05<00:00,  6.17it/s]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Capturing CUDA graphs (decode, FULL):   0%|          | 0/19 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   5%|▌         | 1/19 [00:01<00:21,  1.17s/it]Capturing CUDA graphs (decode, FULL):  11%|█         | 2/19 [00:01<00:13,  1.26it/s]Capturing CUDA graphs (decode, FULL):  16%|█▌        | 3/19 [00:01<00:07,  2.03it/s]Capturing CUDA graphs (decode, FULL):  21%|██        | 4/19 [00:01<00:05,  2.87it/s]Capturing CUDA graphs (decode, FULL):  26%|██▋       | 5/19 [00:02<00:03,  3.74it/s]Capturing CUDA graphs (decode, FULL):  32%|███▏      | 6/19 [00:02<00:02,  4.59it/s]Capturing CUDA graphs (decode, FULL):  37%|███▋      | 7/19 [00:02<00:02,  5.40it/s]Capturing CUDA graphs (decode, FULL):  42%|████▏     | 8/19 [00:02<00:01,  6.13it/s]Capturing CUDA graphs (decode, FULL):  53%|█████▎    | 10/19 [00:02<00:01,  8.19it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 12/19 [00:02<00:00,  9.88it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▎  | 14/19 [00:02<00:00, 11.33it/s]Capturing CUDA graphs (decode, FULL):  84%|████████▍ | 16/19 [00:03<00:00,  5.48it/s]Capturing CUDA graphs (decode, FULL):  95%|█████████▍| 18/19 [00:03<00:00,  7.10it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 19/19 [00:04<00:00,  4.10it/s]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:10 [gpu_model_runner.py:4203] Graph capturing finished in 11 secs, took 0.20 GiB
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:10 [core.py:237] init engine (profile, create kv cache, warmup model) took 42.11 seconds
+INFO 08-13 23:34:10 [loggers.py:148] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 1980
+[NeMo I 2026-08-13 23:34:10 nemo_logging:393] Engine initialized with custom input specs:
+[NeMo I 2026-08-13 23:34:10 nemo_logging:393]   - CustomInputSpec(name='combined_embeds', dtype='bfloat16', dim=4480)
+[NeMo I 2026-08-13 23:34:10 nemo_logging:393] text_pad_id resolved to: 12
+[NeMo I 2026-08-13 23:34:10 nemo_logging:393] vLLM engine ready!
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:11 [gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+[NeMo I 2026-08-13 23:34:11 nemo_logging:393] Starting generation session with request_id: history-2-baseline-000
+[NeMo I 2026-08-13 23:34:11 nemo_logging:393] Initializing generation for request history-2-baseline-000 with first embedding
+WARNING 08-13 23:34:11 [async_llm.py:283] Processor has been moved under OpenAIServing and will be removed from AsyncLLM in v0.13.
+[NeMo I 2026-08-13 23:34:13 nemo_logging:393] Aborted generation for request: history-2-baseline-000
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:13 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [1, 2, 3, 4, 5, 6, 7, 8]
+[NeMo I 2026-08-13 23:34:13 nemo_logging:393] Starting generation session with request_id: history-2-post-47-prelude
+[NeMo I 2026-08-13 23:34:13 nemo_logging:393] Initializing generation for request history-2-post-47-prelude with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:13 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:16 nemo_logging:393] Aborted generation for request: history-2-post-47-prelude
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:16 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [9, 10, 11, 12, 13, 14, 15, 16]
+[NeMo I 2026-08-13 23:34:16 nemo_logging:393] Starting generation session with request_id: history-2-post-47-000
+[NeMo I 2026-08-13 23:34:16 nemo_logging:393] Initializing generation for request history-2-post-47-000 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:16 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:18 nemo_logging:393] Aborted generation for request: history-2-post-47-000
+[NeMo I 2026-08-13 23:34:18 nemo_logging:393] Starting generation session with request_id: history-2-post-47-001
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:18 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [17, 18, 19, 20, 21, 22, 23, 24]
+[NeMo I 2026-08-13 23:34:18 nemo_logging:393] Initializing generation for request history-2-post-47-001 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:18 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:21 nemo_logging:393] Aborted generation for request: history-2-post-47-001
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:21 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [25, 26, 27, 28, 29, 30, 31, 32]
+[NeMo I 2026-08-13 23:34:21 nemo_logging:393] Starting generation session with request_id: history-2-post-47-002
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:21 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:21 nemo_logging:393] Initializing generation for request history-2-post-47-002 with first embedding
+[NeMo I 2026-08-13 23:34:23 nemo_logging:393] Aborted generation for request: history-2-post-47-002
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:23 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [33, 34, 35, 36, 37, 38, 39, 40]
+[NeMo I 2026-08-13 23:34:23 nemo_logging:393] Starting generation session with request_id: history-2-post-17-prelude
+[NeMo I 2026-08-13 23:34:23 nemo_logging:393] Initializing generation for request history-2-post-17-prelude with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:23 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:24 nemo_logging:393] Aborted generation for request: history-2-post-17-prelude
+[NeMo I 2026-08-13 23:34:24 nemo_logging:393] Starting generation session with request_id: history-2-post-17-000
+[NeMo I 2026-08-13 23:34:24 nemo_logging:393] Initializing generation for request history-2-post-17-000 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:24 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [41, 42, 43, 44, 45, 46, 47, 48]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:24 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:27 nemo_logging:393] Aborted generation for request: history-2-post-17-000
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:27 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [49, 50, 51, 52, 53, 54, 55, 56]
+[NeMo I 2026-08-13 23:34:27 nemo_logging:393] Starting generation session with request_id: history-2-post-17-001
+[NeMo I 2026-08-13 23:34:27 nemo_logging:393] Initializing generation for request history-2-post-17-001 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:27 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:29 nemo_logging:393] Aborted generation for request: history-2-post-17-001
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:29 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [57, 58, 59, 60, 61, 62, 63, 64]
+[NeMo I 2026-08-13 23:34:29 nemo_logging:393] Starting generation session with request_id: history-2-post-17-002
+[NeMo I 2026-08-13 23:34:29 nemo_logging:393] Initializing generation for request history-2-post-17-002 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 23:34:29 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 23:34:31 nemo_logging:393] Aborted generation for request: history-2-post-17-002
+[NeMo I 2026-08-13 23:34:31 nemo_logging:393] Shutting down engine...
+[rank0]:[W813 23:34:32.267419182 ProcessGroupNCCL.cpp:1564] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[NeMo I 2026-08-13 23:34:33 nemo_logging:393] Engine shutdown complete.
+{
+  "blocks": [
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        10592,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 0,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "baseline",
+      "request_id": "history-2-baseline-000",
+      "request_policy": "unique",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "sync_each_call": false,
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2689.8242067545652
+    },
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        10592,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 1,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "post-47",
+      "request_id": "history-2-post-47-000",
+      "request_policy": "unique",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "sync_each_call": false,
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2488.272985443473
+    },
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        10592,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 2,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "post-47",
+      "request_id": "history-2-post-47-001",
+      "request_policy": "unique",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "sync_each_call": false,
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2476.739558391273
+    },
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        10592,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 3,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "post-47",
+      "request_id": "history-2-post-47-002",
+      "request_policy": "unique",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "sync_each_call": false,
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2473.5452998429537
+    },
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        10592,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 4,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "post-17",
+      "request_id": "history-2-post-17-000",
+      "request_policy": "unique",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "sync_each_call": false,
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2480.6807739660144
+    },
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        10592,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 5,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "post-17",
+      "request_id": "history-2-post-17-001",
+      "request_policy": "unique",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "sync_each_call": false,
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2473.2211865484715
+    },
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "actual_tokens": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        2,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        93585,
+        1115,
+        60756,
+        1317,
+        3081,
+        4942,
+        6939,
+        10592,
+        1321,
+        10035,
+        43467,
+        17253,
+        5481,
+        1046,
+        12
+      ],
+      "block": 6,
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "post-17",
+      "request_id": "history-2-post-17-002",
+      "request_policy": "unique",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_match": true
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_match": true
+        }
+      ],
+      "sync_each_call": false,
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2473.084343597293
+    }
+  ],
+  "capture": {
+    "manifest_sha256": "55d9e815ec235a588b0aa6eacb4a97a2d5a77f19aa00954d0c2e205d4108d1aa",
+    "max_call_index": 46,
+    "root": "/capture"
+  },
+  "component": {
+    "config_sha256": "2a0576a8b71aa09a5a6683d5a0d2e3fc099839ea9fe559d69a3458e828530391",
+    "enforce_eager": false,
+    "gpu_memory_utilization": 0.42,
+    "max_model_len": 12288,
+    "path": "/models/derived/nano"
+  },
+  "distinct_token_vectors": 1,
+  "engine_label": "history-2",
+  "hypothesis_controls": {
+    "parent_seed": 20260813,
+    "prelude_calls": 0,
+    "reuse_request_id": false,
+    "sampling_seed": 0,
+    "sequence": "history",
+    "sync_each_call": false
+  },
+  "kind": "step5_graph_reproducibility_engine_run",
+  "passed": true,
+  "prelude": null,
+  "preludes": [
+    {
+      "actual_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": false,
+        "valid": true
+      },
+      "calls": 47,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6",
+      "history": "post-47",
+      "request_id": "history-2-post-47-prelude",
+      "selected_outputs": [
+        {
+          "call_index": 45,
+          "digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_digest": null,
+          "reference_match": null
+        },
+        {
+          "call_index": 46,
+          "digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_digest": null,
+          "reference_match": null
+        }
+      ],
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 2518.7170719727874
+    },
+    {
+      "actual_token_vector_sha256": "9c17808076b65c7ac25b391a9e30dd906e8c5eb838712f38f7443d800c22f15a",
+      "bounded_gate": {
+        "all_divergences_reconverge": true,
+        "cleanup_ok": true,
+        "control_token_mismatches_zero": true,
+        "first_mismatch_no_earlier_than_39": true,
+        "lexical_divergences_only": true,
+        "max_divergence_run_at_most_one": true,
+        "mismatch_rate_at_most_one_per_687": true,
+        "mismatches_at_most_one": true,
+        "selected_outputs_match": true,
+        "valid": true
+      },
+      "calls": 17,
+      "cleanup_ok": true,
+      "divergence_runs": [],
+      "engine_requests_after_cleanup": 0,
+      "engine_requests_before": 0,
+      "expected_token_vector_sha256": "9c17808076b65c7ac25b391a9e30dd906e8c5eb838712f38f7443d800c22f15a",
+      "history": "post-17",
+      "request_id": "history-2-post-17-prelude",
+      "selected_outputs": [],
+      "token_mismatches": [],
+      "valid": true,
+      "wall_ms": 904.3815098702908
+    }
+  ],
+  "schema": 1,
+  "token_vector_sha256": [
+    "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6"
+  ]
+}

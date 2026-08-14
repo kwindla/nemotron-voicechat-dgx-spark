@@ -1,0 +1,9 @@
+{
+  "container_id": "2fc45b2523f76b0f41259a71635eb88d54b0d96187fef0d0237a810a66fce0fe",
+  "finished_utc": "2026-08-14T00:27:28.142816+00:00",
+  "image_id": "sha256:ea15693c2c7931516a366fe886a00caabe09f441abadc2a461cdaa51d0ed232a",
+  "reason": "startup remained stalled at first EarTTS pipeline warmup request for more than seven minutes after model construction; port never bound",
+  "remove_stdout": "nemotron-voicechat-model",
+  "started_utc": "2026-08-14T00:27:24Z",
+  "stop_stdout": "Flag --time has been deprecated, use --timeout instead\nnemotron-voicechat-model"
+}
