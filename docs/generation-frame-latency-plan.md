@@ -613,3 +613,19 @@ clock; a future pairing candidate must be gated on the arrival clock.
   gated: no ranking row is `measured`. The three funding axes are (1) the
   graph exact-gate repair, (2) the pairing wedge experiments, (3) Nano W4
   requalification — an explicit product/engineering decision.
+
+- **2026-08-14 — Bandwidth attribution side-study (user-funded)
+  CONCLUDED.** Preregistered (SHA `0f638644…`) three-phase descriptive
+  study; report `reports/step5-bandwidth-attribution-20260814.md`. The
+  graph envelope is bytes-bound at the measured 239.6 GB/s ceiling, not
+  idle: intra-envelope idle is 1.048 ms/frame, below the preregistered
+  1.5 ms floor, so the wrapper graphing/fusion row **screens out**. The
+  dominant recoverable cost is the unquantized bf16 `function_head`
+  (7.292 ms/frame median, one vocab-sized GEMV per step) plus bf16
+  attention projections (≈1.9 ms): a **quantization-extension candidate**
+  worth ≈4.6 ms/frame (`function_head` W8 at measured Marlin throughput)
+  to ≈5.5+ ms/frame (with attention W8) — descriptive, new-candidate
+  qualification required; in-recipe precedent is the GPTQ-W8 `lm_head`.
+  Attempt 1 of the profile phase is retained-invalid (call-39 divergent
+  basin — one more divergent fresh graph construction for the Step 5
+  defect census); attempt 2 (exact basin, 12/12 valid) is designated.
