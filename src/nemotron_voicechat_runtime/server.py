@@ -6903,7 +6903,9 @@ def create_app(
                                     source="typed",
                                     job_id=job.job_id,
                                 )
-                            await recover_pre_eou_activity("typed")
+                            # No recovery here: the typed path owns deliberate
+                            # cancel-then-replace interruption semantics; recovery
+                            # would drain a response the client intends to cancel.
                             typed_settlement = await settle_user_eou(
                                 source="typed",
                                 job_id=job.job_id,

@@ -741,3 +741,22 @@ clock; a future pairing candidate must be gated on the arrival clock.
   each exposed one more layer of the self-start taxonomy. Codex
   adversarial review of both fixes queued behind the wedge Phase 1
   confirmation.
+
+- **2026-08-14 — Browser-path validation of the defect fixes: fixes
+  exonerated; I1 fixture sensitivity isolated as a pre-existing open
+  item.** The Chrome canonical plan on the fixed image failed only at I1;
+  the unmodified generation-step2 control reproduced the identical I1
+  timeout (6/8 + I1), and a fresh-service run refuted service-age
+  degradation. The typed-site recovery call was removed anyway on review
+  of I1 semantics (the typed path owns deliberate cancel-then-replace;
+  recovery remains microphone-commit-only where the original fatal
+  occurred). Failing I1 streams show BOTH answers completing behaviorally
+  but 4 bot-interrupted events (vs the historical 2) and an anchor-order
+  mismatch: the completion predicate requires the original answer's stop
+  AFTER the interruption marker, which the known stochastic
+  early-truncation can defeat. Open item: I1 predicate robustness (order-
+  tolerant anchors) and the doubled interruption-event signature; all
+  three failing runs + the exoneration control retained under
+  reports/fhw8-qualification/browser-fix-validation/. S1/L1/L2 browser
+  fixtures pass on the fixed image (6/6), and the direct-WS fatal
+  reproduction remains 3/3 clean.
