@@ -695,3 +695,12 @@ clock; a future pairing candidate must be gated on the arrival clock.
   candidate has completed the entire promotion contract (G0–G3 + A/B);
   production promotion awaits the explicit user decision.** Pairing
   (~11 ms further) remains in root-cause; Phase 1 harness in design.
+
+- **2026-08-14 — fhw8 PROMOTED (local production mode) on user
+  instruction.** `reports/fhw8-qualification/promotion/promotion-record.md`.
+  Production stack running for manual testing: frozen candidate-1 env +
+  generation-step2 image + fhw8 manifest/nano; pipecat on 0.0.0.0:7860;
+  ngrok tunnel. Recorded follow-up: signed release-chain assembly (HF
+  publication, user-owned). Wedge Phase 1 harness in fix round (four
+  review blockers); its GPU campaign awaits a service-downtime window
+  after manual testing.
