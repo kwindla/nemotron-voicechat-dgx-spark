@@ -1,0 +1,10 @@
+{
+  "baseline_valid_blocks": 5,
+  "basin": "call39-divergent",
+  "candidate_valid_blocks": 15,
+  "decision_flips": [],
+  "decision_pairs_checked": 87900,
+  "kind": "fhw8_g1_comparison",
+  "min_valid_blocks": 3,
+  "passed": true
+}

@@ -629,3 +629,23 @@ clock; a future pairing candidate must be gated on the arrival clock.
   Attempt 1 of the profile phase is retained-invalid (call-39 divergent
   basin — one more divergent fresh graph construction for the Step 5
   defect census); attempt 2 (exact basin, 12/12 valid) is designated.
+
+- **2026-08-14 — function_head W8 qualification G0–G2 CONCLUDED: all
+  gates PASS; first `measured` ranking row.** Preregistered (SHA
+  `40a36a2c…`); report `reports/fhw8-qualification-20260814.md`. G0:
+  RTN-exact packing (max err 0.391% of weight max); 100% argmax agreement
+  on all 1,172 retained-capture hidden states; loader fails closed when
+  routing is incomplete (two retained attempts; candidate definition
+  amended to include `modules_in_block_to_quantize`). G1: zero decision
+  flips — baseline exact-basin lane 15/15 vs retained capture; matched-
+  divergent comparison 439,500 paired decisions, 0 flips across five
+  candidate engines (recorded deviation; both lanes share the
+  characterized call-39 basin). New defect evidence: candidate
+  constructions selected the divergent basin 5/5 — checkpoint layout
+  influences basin selection. G2: **−4.437 ms/frame traced** (54.986 →
+  50.549), mechanism exact (function_head bf16 GEMV −7.21 ms → Marlin
+  +2.51 ms), no other family regressed. Projected untraced content wall
+  ≈ 49.1 ms — generation frames near the 80 ms budget on this change
+  alone. **G3 (live/behavioral promotion) remains required before any
+  production use.** Follow-ons recorded: attention-projection W8; W4
+  head variant; basin-bias → exact-gate repair case.
