@@ -598,3 +598,18 @@ clock; a future pairing candidate must be gated on the arrival clock.
   track 2 (pairing wedge-closure design-only study) queued behind it.
   Step 5 candidate selection remains gated until a ranking row turns
   `measured`.
+
+- **2026-08-14 — Step 5 prerequisite tracks CONCLUDED (both reviewed to
+  PASS).** Track 1: the W8 graph-path divergence is a characterized
+  bistable graph-construction defect (REAL STATE DEFECT); kernel-class
+  candidates remain blocked pending an exact-gate repair at the
+  vLLM graph-construction level; long-lived production instances carry a
+  construction-time state qualification. Track 2: pairing's reliability
+  precondition is NOT CLOSED — packed-call elimination and supervisor
+  recovery are NO-GO on reviewed static grounds; wedge root-cause repair
+  is the only bounded route, NEEDS-EXPERIMENT with repaired preregistered
+  designs (matched within-epoch lanes, transactional sequential oracle,
+  exposure-census-calibrated stress gate). Step 5 selection remains
+  gated: no ranking row is `measured`. The three funding axes are (1) the
+  graph exact-gate repair, (2) the pairing wedge experiments, (3) Nano W4
+  requalification — an explicit product/engineering decision.
