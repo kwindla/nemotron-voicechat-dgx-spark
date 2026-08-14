@@ -704,3 +704,21 @@ clock; a future pairing candidate must be gated on the arrival clock.
   publication, user-owned). Wedge Phase 1 harness in fix round (four
   review blockers); its GPU campaign awaits a service-downtime window
   after manual testing.
+
+- **2026-08-14 — Tool-call weirdness root-caused: PRE-EXISTING model/
+  runtime behavior, NOT an fhw8 regression.** New diagnostic suite
+  `tools/qualification/tool_call_behavior_suite.py` (direct-WS replay of
+  retained live-session audio with production session config, energy
+  turn segmentation, protocol-aware pacing, variation-tolerant metrics:
+  loop incidence, max call-run, 4-gram repetition). Deterministic A/B on
+  the loop-triggering session audio: candidate and release are
+  **byte-identical** (same text, same 2 tool calls, same fatal) — 3+3
+  replicates. Findings recorded for the follow-up ledger: (1) the live
+  391-call tool loop and text repetition loops are model behavior under
+  greedy decoding with overlapped user speech during function cycles
+  (release-reachable; user-observed on candidate); (2)
+  `UserEouSettlementFailure` (`_reject_initial_activity`) deterministically
+  fatals the session when the model self-starts before client EOU commit
+  — a real, client-reachable server defect in the settlement family;
+  (3) suite-vs-server protocol contracts documented (1-based turn ids,
+  model_output negotiation). fhw8 remains promoted.
