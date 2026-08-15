@@ -776,3 +776,20 @@ clock; a future pairing candidate must be gated on the arrival clock.
   retry-on-truncation rule — coupled to the standing stochastic-truncation
   known-limitation. Retained: four failing runs with distinct signatures
   + control evidence under browser-fix-validation/.
+
+- **2026-08-15 — MAJOR FINDING (wedge round 4): genuine
+  packed-vs-sequential divergence under the corrected committed-boundary
+  comparator.** After a complete audit classified all 1,416 prior
+  cross-lane differences (lane-absolute evidence excluded; KV projected
+  to committed tokens; shadows canonicalized), the S-oracle-gated smoke
+  found the first B case genuinely divergent: function_logits max delta
+  **0.125** (the Step 5 basin-margin magnitude), committed Mamba conv
+  state diverging from conv-history channel 3 (layer 0 exact), all 27
+  SSM leaves differing — while tokens, decisions, pending/correction
+  state, and committed KV are EXACT. Typed-carrier replay is now
+  byte-faithful (synthesized PCM exact vs the retained 24-frame prefix).
+  Phase 1 remains campaign-inadmissible under its exactness rule. The
+  B-lane conflates packing with dispatch mode; the A-lane discriminator
+  (packed+graph vs sequential+graph) is running to isolate eager-mode
+  numerics vs true pair-path divergence, deciding between a mode-matched-
+  oracle design amendment and a Step-7-contradicting pair-path finding.
