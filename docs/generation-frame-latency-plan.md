@@ -793,3 +793,17 @@ clock; a future pairing candidate must be gated on the arrival clock.
   (packed+graph vs sequential+graph) is running to isolate eager-mode
   numerics vs true pair-path divergence, deciding between a mode-matched-
   oracle design amendment and a Step-7-contradicting pair-path finding.
+
+- **2026-08-15 — Tool-call × interruption matrix built and PASSING
+  12/12 on the fixed image.** New qualified harness
+  `tools/qualification/tool_call_interrupt_matrix.py`: elicits a real
+  spoken tool call, then lands a genuine second utterance at phase-locked
+  offsets (call outstanding pre-response / during result injection /
+  mid-acknowledgment) plus a no-interruption control, 3 replicates each,
+  with a continuous silence clock for realtime pacing. All cells: exactly
+  one tool call (no loops), zero fatals (the settlement recovery held at
+  every FC phase, its first live exercise), and a second answer lifecycle
+  after every interruption. Bonus negative-control: with a mismatched
+  advertised tool the model declined 12/12 per the production instruction.
+  This closes the coverage gap at the tool-call × barge-in intersection;
+  optional follow-up: a release-arm baseline of the same matrix.
