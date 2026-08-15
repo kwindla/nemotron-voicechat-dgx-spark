@@ -760,3 +760,19 @@ clock; a future pairing candidate must be gated on the arrival clock.
   reports/fhw8-qualification/browser-fix-validation/. S1/L1/L2 browser
   fixtures pass on the fixed image (6/6), and the direct-WS fatal
   reproduction remains 3/3 clean.
+
+- **2026-08-15 — I1 root cause fully characterized: fixture premise vs
+  stochastic truncation.** With the order-tolerant anchors (e17e57e) the
+  RTVI predicate completes, and the failure moved to the driver's strict
+  lifecycle contract (`step2_live_fixture_driver.py:1675`: exactly one
+  interruption edge + clear release). When the original answer truncates
+  early (the known pre-existing stochastic truncation), the scripted
+  interruption fires against an already-stopped response, so no clean
+  mid-speech edge/release exists. All non-interruption browser fixtures
+  pass 6/6 on the fixed image; the WS fatal reproduction is 3/3 clean;
+  the step2-image control exonerates the defect fixes. Open follow-up
+  (qualified-driver scope, needs its own reviewed change): either an I1
+  alternate lifecycle for interruption-after-early-stop, or a fixture
+  retry-on-truncation rule — coupled to the standing stochastic-truncation
+  known-limitation. Retained: four failing runs with distinct signatures
+  + control evidence under browser-fix-validation/.
