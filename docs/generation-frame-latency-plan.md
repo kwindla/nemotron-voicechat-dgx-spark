@@ -853,3 +853,19 @@ clock; a future pairing candidate must be gated on the arrival clock.
   make the tool call" (A/B-proven pre-existing); candidate mitigation:
   strengthened tool-obligation instruction, testable with the behavior
   suite's propensity metrics.
+
+- **2026-08-16 — fhw8 weights published to the signed release chain and
+  made clone+bootstrap reproducible.** HF release commit
+  `fdf70edf9d8b…` on `pipecat-ai/NVIDIA-NemotronLabs-VoiceChat-11B-Spark`
+  (only ~537 MB of genuinely new LFS data after chunk dedupe); new
+  inventory verified pre-upload with the bootstrap's own `verify_release`
+  and re-verified by download round-trip (`release_sha256 426eecc0…`,
+  nano composite `dd4ce6a9…` = the qualified candidate manifest value).
+  Repo side: `config/production-candidate-3.toml` +
+  `config/artifact-release-fhw8.json` pin the new revision;
+  `deploy/promotion-candidate/` carries the portable launch scripts, the
+  deterministic derivation script with fail-closed qualified pins (the
+  provenance proof that the uploaded bytes are exactly the committed
+  transform), the inventory builder, and the runbook. Recorded follow-up:
+  fresh-machine end-to-end test of the candidate-3 `./voicechat up`
+  bootstrap-state swap.

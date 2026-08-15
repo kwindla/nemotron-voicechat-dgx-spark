@@ -1,14 +1,14 @@
 #!/bin/bash
 set -euo pipefail
-docker run -d --name nemotron-voicechat-model --init --gpus all --ipc host --shm-size 16g --security-opt label=disable \
+exec docker run -d --name nemotron-voicechat-model --init --gpus all --ipc host --shm-size 16g --security-opt label=disable \
   -p 127.0.0.1:8786:8786 \
-  -v /home/khkramer/src/nemotron-voicechat-dgx-spark/config:/usr/local/lib/python3.12/config:ro \
-  -v /home/khkramer/.cache/nemotron-voicechat/artifacts/parent:/models/voicechat:ro \
-  -v /home/khkramer/.cache/nemotron-voicechat/artifacts/nano-skeleton:/models/NVIDIA-Nemotron-Nano-9B-v2:ro \
-  -v /home/khkramer/.cache/nemotron-voicechat/artifacts/release:/models/derived:ro \
-  -v /home/khkramer/.cache/nemotron-voicechat/artifacts/candidates:/models/candidates:ro \
-  -v /home/khkramer/.cache/nemotron-voicechat/huggingface:/models/huggingface:ro \
-  -v /home/khkramer/.local/state/nemotron-voicechat/traces/model:/trace \
+  -v ${HOME}/src/nemotron-voicechat-dgx-spark/config:/usr/local/lib/python3.12/config:ro \
+  -v ${HOME}/.cache/nemotron-voicechat/artifacts/parent:/models/voicechat:ro \
+  -v ${HOME}/.cache/nemotron-voicechat/artifacts/nano-skeleton:/models/NVIDIA-Nemotron-Nano-9B-v2:ro \
+  -v ${HOME}/.cache/nemotron-voicechat/artifacts/release:/models/derived:ro \
+  -v ${HOME}/.cache/nemotron-voicechat/artifacts/candidates:/models/candidates:ro \
+  -v ${HOME}/.cache/nemotron-voicechat/huggingface:/models/huggingface:ro \
+  -v ${HOME}/.local/state/nemotron-voicechat/traces/model:/trace \
   -e EA_CPU_CODEC=1 \
   -e EA_CPU_CODEC_ASYNC=1 \
   -e EA_CPU_CODEC_CORES=5,6 \

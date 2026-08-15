@@ -1,0 +1,165 @@
+{
+  "components": {
+    "eartts": {
+      "files": {
+        "config.json": {
+          "bytes": 3513,
+          "sha256": "f1b445f141fb7db1acdf2b76d7e9da0939831bac5c2363f40af99968cce385e8"
+        },
+        "model-00001-of-00001.safetensors": {
+          "bytes": 1412084716,
+          "sha256": "aa4c17d2f313d357cf1ef8b7f8f3da05cbb65d4d2a747cdee089ad6bac0b7d56"
+        },
+        "model.safetensors.index.json": {
+          "bytes": 61634,
+          "sha256": "e90d07f540b7614480689df6a3a46639b1a3f3e655753732765a85e6a32aeef2"
+        },
+        "quantize_config.json": {
+          "bytes": 33,
+          "sha256": "2bbd43e9c7715806ca2b2d4dbebd58b04dbb74d1c07e29397038e056b4ec409b"
+        }
+      },
+      "model": {
+        "bytes": 1412084716,
+        "files": [
+          {
+            "bytes": 1412084716,
+            "name": "model-00001-of-00001.safetensors",
+            "sha256": "aa4c17d2f313d357cf1ef8b7f8f3da05cbb65d4d2a747cdee089ad6bac0b7d56"
+          }
+        ],
+        "sha256": "6e103b3cbcbb9594c9f01a37328ff72e9628962ccaf3fbd01e0b1937a40faf3e"
+      },
+      "quantization": {
+        "release": "production-candidate-1"
+      },
+      "reproducibility": {
+        "byte_identical": true,
+        "runs": 2
+      }
+    },
+    "nano": {
+      "files": {
+        "artifact.sha256.json": {
+          "bytes": 1182,
+          "sha256": "09ed428991123ebcd6ca300cc02452112c8b1eb3df2cdc080826ead39f1d3098"
+        },
+        "chat_template.jinja": {
+          "bytes": 4070,
+          "sha256": "b7a3a520a4bc1beae6a25d615f9215580df8eea926f488256c2bef74039433c0"
+        },
+        "config.json": {
+          "bytes": 3994,
+          "sha256": "289b47e1aa92bf31c7767ea3cdb934f148820ba087b3001418f2df3f3470f3d8"
+        },
+        "configuration_nemotron_h.py": {
+          "bytes": 12176,
+          "sha256": "18186204622431c336a7c2813a80f0d37937dde962b8aebddf24caf5bffa03f7"
+        },
+        "model-00001-of-00004.safetensors": {
+          "bytes": 2348810384,
+          "sha256": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8"
+        },
+        "model-00002-of-00004.safetensors": {
+          "bytes": 1945452632,
+          "sha256": "659f015df802e9ec6696def3a194b12610feaaa2d8fcbe6fb3ffa0490b49e32c"
+        },
+        "model-00003-of-00004.safetensors": {
+          "bytes": 4259170776,
+          "sha256": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21"
+        },
+        "model-00004-of-00004.safetensors": {
+          "bytes": 3564975568,
+          "sha256": "ac118ef7f5262be37c37e44ff71b6f95598e0a2e9a8af2912e94aff627948f4a"
+        },
+        "model.safetensors.index.json": {
+          "bytes": 56678,
+          "sha256": "70fd0aa041ea5c4c121032b676c5fbe580f66ebce8b5fa948101ff58be2c2e0f"
+        },
+        "quantize_config.json": {
+          "bytes": 429,
+          "sha256": "32008b58f9497fc019c994ee8b49af6751461b989b696d497ee807fa7f161354"
+        },
+        "special_tokens_map.json": {
+          "bytes": 422,
+          "sha256": "2a4d2e7403546286e5d75f5b6b3c197490be67fb1e2118e5c60ad5c26e6668b1"
+        },
+        "tokenizer.json": {
+          "bytes": 17078330,
+          "sha256": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f"
+        },
+        "tokenizer_config.json": {
+          "bytes": 177181,
+          "sha256": "d05c050a1cffa3b00df7b0d2596425a17a3e5a03159ea04e0457f6cdf8d29cd4"
+        }
+      },
+      "model": {
+        "bytes": 12118409360,
+        "files": [
+          {
+            "bytes": 2348810384,
+            "name": "model-00001-of-00004.safetensors",
+            "sha256": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8"
+          },
+          {
+            "bytes": 1945452632,
+            "name": "model-00002-of-00004.safetensors",
+            "sha256": "659f015df802e9ec6696def3a194b12610feaaa2d8fcbe6fb3ffa0490b49e32c"
+          },
+          {
+            "bytes": 4259170776,
+            "name": "model-00003-of-00004.safetensors",
+            "sha256": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21"
+          },
+          {
+            "bytes": 3564975568,
+            "name": "model-00004-of-00004.safetensors",
+            "sha256": "ac118ef7f5262be37c37e44ff71b6f95598e0a2e9a8af2912e94aff627948f4a"
+          }
+        ],
+        "sha256": "dd4ce6a99d03847c8da10708a0214b1815df078a5c43cae9846b7fe136085ce6"
+      },
+      "quantization": {
+        "base_release_nano_composite_sha256": "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99",
+        "builder": "tools/benchmark/build_fhw8_candidate.py",
+        "campaign": "reports/fhw8-qualification-20260814.md (G0-G2 PASS)",
+        "delta": {
+          "config_quantized_output_heads": [
+            "lm_head",
+            "function_head"
+          ],
+          "embedded_quantization_config_dynamic_removed": [
+            "-:.*function_head$"
+          ],
+          "quantize_config_dynamic_removed": [
+            "-:.*function_head$"
+          ],
+          "quantized": "stt_model.function_head.weight"
+        },
+        "kind": "fhw8_candidate",
+        "packing": {
+          "bits": 8,
+          "construction": "deterministic RTN (preregistered primary)",
+          "group_size": 128,
+          "sym": true,
+          "zero_point_convention": "gptqmodel-v2 qzeros=0, w = s*(q-128)"
+        }
+      },
+      "reproducibility": {
+        "byte_identical": true,
+        "runs": 2
+      }
+    }
+  },
+  "derived_from_ea": false,
+  "kind": "exact_public_vllm_quantized_nano_eartts",
+  "schema": 1,
+  "source": {
+    "model": {
+      "sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b"
+    },
+    "repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+    "revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+    "runtime": null
+  }
+}
