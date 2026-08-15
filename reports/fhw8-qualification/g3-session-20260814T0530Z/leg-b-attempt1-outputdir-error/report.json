@@ -1,0 +1,6 @@
+{
+  "error": "FileExistsError: [Errno 17] File exists: 'reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b'",
+  "kind": "tool_call_latency_benchmark",
+  "passed": false,
+  "schema": 1
+}

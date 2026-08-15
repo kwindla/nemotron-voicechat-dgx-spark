@@ -1,0 +1,12 @@
+{
+  "identity_match_stable_fields": true,
+  "stable_field_differences": [],
+  "volatile_field_differences": [
+    "checkpoint.fixed_stage_optimizations.cpu_codec.warmup_worker_ms",
+    "checkpoint.fixed_stage_optimizations.cpu_codec.worker.pid",
+    "checkpoint.realtime_continuation_warmup.elapsed_seconds",
+    "checkpoint.realtime_continuation_warmup.frame_ms",
+    "typed_input.pid",
+    "uptime_seconds"
+  ]
+}

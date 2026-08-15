@@ -145,7 +145,7 @@ def descriptor_key(value: Any) -> str:
         separators=(",", ":"),
         sort_keys=True,
     ).encode("utf-8")
-    return hashlib.sha256(canonical).hexdigest()[:24]
+    return hashlib.sha256(canonical).hexdigest()
 
 
 def record_boundary(boundary: str, request_id: str, **details: Any) -> None:

@@ -1,0 +1,36 @@
+{
+  "assistant_text": " time in UTC?",
+  "assistant_text_chars": 13,
+  "call_runs": [],
+  "errors": [
+    {
+      "client_received_monotonic_s": 4926755.379278254,
+      "error": {
+        "code": "response_cancel_timeout",
+        "fatal": true,
+        "message": "Cancelled response did not reach its acoustic terminal"
+      },
+      "event_id": "evt_bde1fd25-9aa3-456a-96e7-bfd9a3777575_235",
+      "session_id": "bde1fd25-9aa3-456a-96e7-bfd9a3777575",
+      "type": "error"
+    }
+  ],
+  "injections_sent": 0,
+  "instructions": "production",
+  "kind": "tool_call_behavior_scenario",
+  "loop_flag": false,
+  "max_call_run": 0,
+  "max_injections": 8,
+  "repetition_ratio_4gram": 0.0,
+  "replayed_turns": 10,
+  "scenario": "repro-loop-session",
+  "schema": 1,
+  "session_fatal": "received 1011 (internal error) response_cancel_timeout; then sent 1011 (internal error) response_cancel_timeout",
+  "speech_pcm": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/68b60e3d-bf77-470c-8107-79be1aaf6510/input-16000-mono-s16le.pcm",
+  "speech_seconds": 78.098,
+  "tool": "utc_time",
+  "tool_call_count": 0,
+  "tool_calls_head": [],
+  "url": "ws://127.0.0.1:8786/v1/realtime",
+  "user_speech_onsets": 2
+}

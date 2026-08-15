@@ -1,0 +1,52 @@
+{
+  "cells": [
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-001/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-002/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-003/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-004/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-005/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-006/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-007/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-008/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-009/report.json"
+    },
+    {
+      "passed": false,
+      "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/fhw8-qualification/g3-session-20260814T0530Z/leg-b-r2/cell-010/report.json"
+    }
+  ],
+  "elapsed_seconds": 252.79977150913328,
+  "kind": "tool_call_latency_benchmark",
+  "mode": "speech",
+  "model_output_enabled": false,
+  "passed": false,
+  "payload_manifest": "/home/khkramer/.local/state/nemotron-voicechat/traces/tool-call-latency/benchmark-v2/payloads.json",
+  "payload_manifest_sha256": "edd6cb1844468dee145893b2f5f2b083dabf8a212db549787e9c11d21f18ba5d",
+  "schema": 1
+}

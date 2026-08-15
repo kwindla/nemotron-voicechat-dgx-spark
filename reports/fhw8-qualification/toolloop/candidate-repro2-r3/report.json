@@ -1,0 +1,52 @@
+{
+  "assistant_text": " time in UTC? twenty. time in UTC? nine fifty nine AM in",
+  "assistant_text_chars": 56,
+  "call_runs": [
+    1,
+    1
+  ],
+  "errors": [
+    {
+      "client_received_monotonic_s": 4923223.833308615,
+      "error": {
+        "code": "internal_error",
+        "fatal": true,
+        "message": "UserEouSettlementFailure: Model activity was already effective before explicit user EOU settlement"
+      },
+      "event_id": "evt_4e6a21e0-e903-45d0-978f-48d1c9bddcb7_536",
+      "session_id": "4e6a21e0-e903-45d0-978f-48d1c9bddcb7",
+      "type": "error"
+    }
+  ],
+  "injections_sent": 2,
+  "instructions": "production",
+  "kind": "tool_call_behavior_scenario",
+  "loop_flag": false,
+  "max_call_run": 1,
+  "max_injections": 8,
+  "repetition_ratio_4gram": 0.0,
+  "replayed_turns": 10,
+  "scenario": "repro-loop-session",
+  "schema": 1,
+  "session_fatal": "received 1011 (internal error) internal_error; then sent 1011 (internal error) internal_error",
+  "speech_pcm": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/68b60e3d-bf77-470c-8107-79be1aaf6510/input-16000-mono-s16le.pcm",
+  "speech_seconds": 78.098,
+  "tool": "utc_time",
+  "tool_call_count": 2,
+  "tool_calls_head": [
+    {
+      "arguments": "{}",
+      "call_id": "call_33f82dff90c5402a8f17342758c004bd",
+      "monotonic_s": 4923091.615444594,
+      "name": "get_current_utc_time"
+    },
+    {
+      "arguments": "{}",
+      "call_id": "call_1b3135009c4e4f7ba4e0caf93b3dce24",
+      "monotonic_s": 4923174.18254279,
+      "name": "get_current_utc_time"
+    }
+  ],
+  "url": "ws://127.0.0.1:8786/v1/realtime",
+  "user_speech_onsets": 7
+}

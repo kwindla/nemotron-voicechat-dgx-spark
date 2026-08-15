@@ -13,6 +13,9 @@ from pathlib import Path
 from typing import Callable
 
 MARKER = "step5_wedge_boundary_trace"
+PHASE1_MARKER = "step5_phase1_pair_eager_dispatch"
+PHASE1_B_REQUEST_PREFIX = "step5-phase1/B/"
+PHASE1_PAD_TOKEN_ID = 12
 REPO_ROOT = Path(__file__).resolve().parents[2]
 INDEX_PATH = REPO_ROOT / "tools/provenance/qualified-deltas/index.json"
 TRACE_SOURCE = Path(__file__).with_name("wedge_boundary_trace.py")
@@ -68,6 +71,52 @@ def verify_qualified_source_tree(source: Path, expected: dict[str, str]) -> str:
     if tree_sha256 != QUALIFIED_TREE_SHA256:
         raise ValueError(f"qualified source tree mismatch: {tree_sha256}")
     return tree_sha256
+
+
+def qualified_binary_data_grafts(
+    source: Path, expected: dict[str, str]
+) -> dict[str, dict[str, object]]:
+    """Enumerate and seal non-Python files needed beside the qualified sources.
+
+    Bytecode caches are deliberately excluded.  Any Python source outside the
+    provenance index is rejected so an installed-image module can never leak
+    into the atomic tree.
+    """
+    grafts: dict[str, dict[str, object]] = {}
+    for path in sorted(source.rglob("*")):
+        if path.is_symlink():
+            raise ValueError(f"qualified source contains a symlink: {path}")
+        if path.is_dir():
+            continue
+        if not path.is_file():
+            raise ValueError(f"qualified source contains a non-regular entry: {path}")
+        relative = path.relative_to(source).as_posix()
+        if relative in expected:
+            continue
+        if "__pycache__" in path.parts or path.suffix == ".pyc":
+            continue
+        if path.suffix == ".py":
+            raise ValueError(f"unqualified Python module would leak into tree: {relative}")
+        grafts[relative] = {"bytes": path.stat().st_size, "sha256": sha256_file(path)}
+    return grafts
+
+
+def _copy_sealed_files(
+    source: Path,
+    staging: Path,
+    expected: dict[str, str],
+    grafts: dict[str, dict[str, object]],
+) -> None:
+    for relative in sorted(set(expected) | set(grafts)):
+        source_path = source / relative
+        target = staging / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source_path, target)
+        expected_sha256 = expected.get(relative) or grafts[relative]["sha256"]
+        if sha256_file(source_path) != expected_sha256:
+            raise ValueError(f"atomic source changed during copy: {relative}")
+        if sha256_file(target) != expected_sha256:
+            raise ValueError(f"atomic staging copy differs: {relative}")
 
 
 def _patch_scheduler(source: str) -> str:
@@ -253,6 +302,9 @@ def _patch_runner(source: str) -> str:
                 descriptor_key=wedge_descriptor_key,
                 epoch=getattr(self, "engine_index", 0),
                 graph_mode=str(cudagraph_runtime_mode),
+                phase1_pair_eager_selector=bool(
+                    locals().get("wedge_phase1_pair_eager", False)
+                ),
                 token_count=int(num_input_tokens),
             )
 
@@ -307,7 +359,7 @@ def _patch_runner(source: str) -> str:
                 commit_outcome="post_execute_state_updated",
                 proposed_count=(
                     0 if spec_decode_metadata is None else
-                    int(spec_decode_metadata.num_draft_tokens.sum())
+                    int(sum(spec_decode_metadata.num_draft_tokens))
                 ),
                 sampled=True,
                 speculative=spec_decode_metadata is not None,
@@ -316,6 +368,60 @@ def _patch_runner(source: str) -> str:
         return sampler_output
 """,
         "runner B5",
+    )
+
+
+def _patch_pair_eager_dispatch(source: str) -> str:
+    """Force only the Phase-1 B lane's one-request/two-position pair eager."""
+    return replace_once(
+        source,
+        """            cudagraph_runtime_mode, batch_descriptor = (
+                self.cudagraph_dispatcher.dispatch(batch_descriptor, use_cascade_attn)
+            )
+
+        # Set cudagraph mode to none if calc_kv_scales is true.
+""",
+        f"""            cudagraph_runtime_mode, batch_descriptor = (
+                self.cudagraph_dispatcher.dispatch(batch_descriptor, use_cascade_attn)
+            )
+
+            # {PHASE1_MARKER}: the intervention is selected by the sealed
+            # B-lane request namespace and the exact PAD-pair descriptor.  It
+            # does not affect one-position work, other lanes, or construction.
+            wedge_phase1_request_ids = tuple(
+                scheduler_output.num_scheduled_tokens
+            )
+            wedge_phase1_pair_eager = (
+                len(wedge_phase1_request_ids) == 1
+                and self.input_batch.num_reqs == 1
+                and int(num_scheduled_tokens) == 2
+                and int(
+                    scheduler_output.num_scheduled_tokens[
+                        wedge_phase1_request_ids[0]
+                    ]
+                ) == 2
+                and len(scheduler_output.scheduled_spec_decode_tokens) == 1
+                and len(
+                    scheduler_output.scheduled_spec_decode_tokens.get(
+                        wedge_phase1_request_ids[0], ()
+                    )
+                ) == 1
+                and int(
+                    scheduler_output.scheduled_spec_decode_tokens[
+                        wedge_phase1_request_ids[0]
+                    ][0]
+                ) == {PHASE1_PAD_TOKEN_ID}
+                and wedge_phase1_request_ids[0].startswith(
+                    {PHASE1_B_REQUEST_PREFIX!r}
+                )
+            )
+            if wedge_phase1_pair_eager:
+                cudagraph_runtime_mode = CUDAGraphMode.NONE
+                batch_descriptor = None
+
+        # Set cudagraph mode to none if calc_kv_scales is true.
+""",
+        "Phase-1 pair-only eager dispatch",
     )
 
 
@@ -354,6 +460,7 @@ def apply_patch(
     output_root: Path,
     *,
     failure_point: str | None = None,
+    pair_eager_dispatch: bool = False,
 ) -> dict[str, object]:
     """Verify, stage, compile, and atomically publish without source writes."""
     source = qualified_source_root.resolve(strict=True)
@@ -363,19 +470,23 @@ def apply_patch(
 
     # Verify all 966 source hashes, then every patch anchor, before the first write.
     verified_tree_sha256 = verify_qualified_source_tree(source, expected)
+    grafts = qualified_binary_data_grafts(source, expected)
     before: dict[str, str] = {}
     patched_text: dict[str, str] = {}
     for relative in TARGETS:
         path = source / relative
         before[relative] = expected[relative]
         patched_text[relative] = PATCHERS[relative](path.read_text(encoding="utf-8"))
+    if pair_eager_dispatch:
+        runner = "v1/worker/gpu_model_runner.py"
+        patched_text[runner] = _patch_pair_eager_dispatch(patched_text[runner])
     if failure_point == "after_verify":
         raise RuntimeError("injected patcher failure after verification")
 
     output.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=f".{output.name}.staging-", dir=output.parent))
     try:
-        shutil.copytree(source, staging, dirs_exist_ok=True, symlinks=True)
+        _copy_sealed_files(source, staging, expected, grafts)
         verify_qualified_source_tree(staging, expected)
         if failure_point == "after_copy":
             raise RuntimeError("injected patcher failure after copy")
@@ -395,14 +506,24 @@ def apply_patch(
         if failure_point == "after_compile":
             raise RuntimeError("injected patcher failure after compile")
         manifest: dict[str, object] = {
+            "atomic_source_file_count": len(expected) + len(grafts),
             "baseline_tree_sha256": verified_tree_sha256,
             "before": before,
             "after": after,
             "marker": MARKER,
+            "grafted_binary_data_files": grafts,
             "patcher_sha256": sha256_file(Path(__file__)),
             "trace_source_sha256": sha256_file(TRACE_SOURCE),
             "verified_source_file_count": len(expected),
         }
+        if pair_eager_dispatch:
+            manifest["phase1_intervention"] = {
+                "kind": "pair-only-graph-disabled-eager-dispatch",
+                "marker": PHASE1_MARKER,
+                "pad_token_id": PHASE1_PAD_TOKEN_ID,
+                "request_prefix": PHASE1_B_REQUEST_PREFIX,
+                "target": "v1/worker/gpu_model_runner.py",
+            }
         (staging / MANIFEST_NAME).write_text(
             json.dumps(manifest, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
@@ -421,12 +542,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--qualified-source-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--phase1-pair-eager-dispatch", action="store_true")
     args = parser.parse_args()
     print(
         json.dumps(
             apply_patch(
                 args.qualified_source_root,
                 args.output_root,
+                pair_eager_dispatch=args.phase1_pair_eager_dispatch,
             ),
             indent=2,
             sort_keys=True,
