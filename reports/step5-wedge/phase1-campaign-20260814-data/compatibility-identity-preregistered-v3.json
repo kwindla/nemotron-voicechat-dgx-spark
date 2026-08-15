@@ -1,0 +1,60 @@
+{
+  "application_revision": "cf0e9ca89d2048717a83c15570c2c39630b7e558",
+  "case_matrix_names": [
+    "text-only-rejection",
+    "text-only-rejection-pending-drain",
+    "function-only-rejection",
+    "function-only-rejection-pending-drain",
+    "conjunctive-rejection",
+    "conjunctive-rejection-pending-drain",
+    "agent-bos",
+    "agent-eos",
+    "function-sotc",
+    "function-eotr",
+    "post-fc-bos",
+    "abort",
+    "frozen-prefix-pad-accept"
+  ],
+  "execution_identity_status": "INCOMPLETE_MISSING_REAL_EXECUTOR",
+  "executor_identity": null,
+  "frozen_files": {
+    "docs/reviews/step5-wedge-phase1-design-review-r1.md": "b7374d1d12bee389b9060cc46c0c4506141afc091ce2f2b1a9e88d394bb2bcfa",
+    "docs/reviews/step5-wedge-phase1-design-review-r2.md": "984f783488f14f8a9a725632cf56d72c20f44b941c9d3ff03dccfb0a0acadbdf",
+    "docs/step5-pairing-wedge-closure-design.md": "a7c8c44419d9d7eb53d559e82e2cb0402985601487e9702751a29253dff322af",
+    "reports/step5-wedge/phase1-frozen-fixture.json": "dee66b5e7cb7374cf287ac4373af34affb266e4c1fbe2e903c0f5e5a0d00d4f7",
+    "reports/step5-wedge/phase1-preregistration-v3.md": "8c3494e8f755f9b6f252ba2306b34af7fcd8cecd38e18285a83ee65f202c1d64",
+    "reports/step5-wedge/phase1-preregistration.md": "f38b02c8c171489199685aa802d9ff176c689e762ff9851eeedce6c7556879a5",
+    "src/nemotron_voicechat_runtime/patch_step5_wedge_boundary_trace.py": "66e390da0f70a5ce72d2734a75840f39dc8481978dc8090bfc5c5178354d97a2",
+    "src/nemotron_voicechat_runtime/runtime_optimizations.py": "7c0dcb45c5d47a71693984916276247326fda35882b50b919c3aab41baf3025e",
+    "src/nemotron_voicechat_runtime/wedge_boundary_trace.py": "bce4a62b640c24d575915fba4781fb94b315d4d6e35ac51d32fd6c473448a481",
+    "tests/runtime/test_step5_phase1_campaign.py": "8d5905551d297ca5ba4685ca5d5479685cf720adeb18d02fe0a811e4f7eec311",
+    "tests/runtime/test_step5_phase1_oracle.py": "10968c11d76f8fa0265d0f7754c7dbe446278b1fc9ed0b77dc81dafbcd5ae06d",
+    "tools/provenance/qualified-deltas/index.json": "8854e6eb87c7adec5ed0cdba9a9b9d5f16cecf62182c8e928be91058aabc1117",
+    "tools/qualification/step5_phase1_campaign.py": "1de0610401f85804d6f8963bf3c69db103a489557a8d60eeb6065d58c1a4ddb1",
+    "tools/qualification/step5_phase1_oracle.py": "1db87f76474f02c09466aee946a2b46b407040a6c42076942d4b46260b2933fd"
+  },
+  "identity_sha256": "c9cb992ca8488a1e7c04ba467726db1819a06597e08a105a7a8c486702e6b384",
+  "identity_scope": "phase1-source-protocol-compatibility-reseal",
+  "lane_order": [
+    "S",
+    "B",
+    "A"
+  ],
+  "patch_manifest_path": "reports/step5-wedge/phase1-campaign-20260814-data/patch-manifest.json",
+  "patch_manifest_sha256": "818906e4c83ecbd8a62a82193a3df86b563f8fc402d07fbf3453deec1f946786",
+  "preregistered_a_first_missing": "B4",
+  "qualified_file_count": 966,
+  "qualified_tree_sha256": "d66baad763ef5fdd021047391f8b76718f7c97115993bb080a663709c34259e2",
+  "replicates": 12,
+  "request_prefix_b": "step5-phase1/B/",
+  "reseal": {
+    "commit_range": "15bcb8e5fb16dfa1fa987def60e7c130c00c82bc..cf0e9ca89d2048717a83c15570c2c39630b7e558",
+    "frozen_path_intersection_count": 0,
+    "previous_application_revision": "15bcb8e5fb16dfa1fa987def60e7c130c00c82bc",
+    "previous_v2_compatibility_identity_canonical_sha256": "311a251849b62cc359feccfb6d89a1b7d5e71cd864af9a4111e28ba422bd73b9",
+    "previous_v2_compatibility_identity_file_sha256": "a4263c391b52bcef512d220684e745c83ee6529f471a321d43e66eb1fe187606",
+    "previous_v2_preregistration_sha256": "f38b02c8c171489199685aa802d9ff176c689e762ff9851eeedce6c7556879a5",
+    "reason": "HEAD moved only for unrelated committed FHW8 qualification/promotion and tool-loop defect fixes; all round-2 frozen Phase 1 hashes were reverified before the v3 amendment"
+  },
+  "schema_version": 3
+}

@@ -1,0 +1,21 @@
+{
+  "checkpoint_root": "/models/voicechat",
+  "construction_timeout_seconds": 900.0,
+  "eartts_vllm_path": "/models/derived/eartts",
+  "gpu_memory_utilization": 0.42,
+  "hf_skeleton": "/models/NVIDIA-Nemotron-Nano-9B-v2",
+  "image_sha256": "ea15693c2c7931516a366fe886a00caabe09f441abadc2a461cdaa51d0ed232a",
+  "model_sha256": "bd12062f1afc92079c92b739c56b542c50778f8edab44b2a3896d5a79fbe6dc2",
+  "nano_vllm_path": "/models/candidates/nano-fhw8",
+  "patch_manifest": "/phase1/patched-vllm/step5-wedge-diagnostic-patch-manifest.json",
+  "patched_vllm_root": "/phase1/patched-vllm",
+  "pocket_hf_hub": "/models/huggingface/hub",
+  "pocket_python": "/opt/pocket-tts/bin/python",
+  "rpc_timeout_seconds": 120.0,
+  "source_pcm": "/trace/model/2d08e743-39bb-4119-866d-8ab5c215581c/input-16000-mono-s16le.pcm",
+  "source_typed_carrier_witness": "/trace/nano-sequential-browser-r1.log",
+  "speech_root": "/opt/Speech",
+  "system_prompt": "You are a helpful voice assistant in a live conversation.\nKeep answers concise, natural, and easy to understand when spoken aloud.\nUse a tool only when the user's request matches that tool's purpose. Never use an\navailable tool as a substitute for an unrelated or unavailable capability. After a\ntool returns, state its result accurately and continue the conversation normally.",
+  "terminal_timeout_seconds": 30.0,
+  "vllm_manifest": "/models/candidates/fhw8-candidate-manifest.json"
+}

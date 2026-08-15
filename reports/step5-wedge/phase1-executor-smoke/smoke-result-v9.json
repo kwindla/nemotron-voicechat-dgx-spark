@@ -1,0 +1,252 @@
+{
+  "campaign_admissible": false,
+  "construction": {
+    "gpu_memory_utilization": 0.42,
+    "kind": "nano-epoch",
+    "overlay": "/tmp/step5-phase1-vllm-overlay-y3yjavfl/vllm",
+    "patch_manifest_sha256": "2e5ab58a0970ea15a3fe65ea514994ab5638dbd3abdb3bcb51818dcdadf156a6",
+    "patched_runner_sha256": "b73d2876650d38f7acd0da823f3320ad4b5ab80bf9b87555f3fecaa0f5ddb2d4",
+    "schema": 1
+  },
+  "fixture_prefix_identity": "dee66b5e7cb7374cf287ac4373af34affb266e4c1fbe2e903c0f5e5a0d00d4f7",
+  "gpu_memory_utilization": 0.42,
+  "kind": "phase1-real-executor-structural-s-smoke",
+  "real_engine_constructions": 1,
+  "s_lane_cases": [
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "text-only-rejection",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "text-only-rejection-pending-drain",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "function-only-rejection",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "function-only-rejection-pending-drain",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "conjunctive-rejection",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "conjunctive-rejection-pending-drain",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "agent-bos",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "agent-eos",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "function-sotc",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "function-eotr",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "post-fc-bos",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "abort",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    },
+    {
+      "boundaries": [
+        "B0",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "case": "frozen-prefix-pad-accept",
+      "completed": true,
+      "dispatch_mode": "normal",
+      "snapshot": true
+    }
+  ],
+  "schema": 1
+}

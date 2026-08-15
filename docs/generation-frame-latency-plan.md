@@ -807,3 +807,25 @@ clock; a future pairing candidate must be gated on the arrival clock.
   advertised tool the model declined 12/12 per the production instruction.
   This closes the coverage gap at the tool-call × barge-in intersection;
   optional follow-up: a release-arm baseline of the same matrix.
+
+- **2026-08-15 — Wedge Phase 1 track CONSOLIDATED at an evidentiary
+  stopping point: pairing-as-retained is disqualified from
+  exact-replacement revival by two sealed findings.** (1) bf16
+  recurrent-state drift from packed scan reduction order (decisions
+  exact; production served the whole pair era this way). (2) **NEW
+  BUG-CLASS: post-rejection corrected-drain committed-attention-KV
+  non-equivalence** — at verified-aligned logical position 377 the packed
+  path commits different K/V content than sequential in all four
+  attention leaves, deterministically across five fresh constructions,
+  with divergence accumulating thereafter
+  (`phase1-postdrain-kv-adjudication-20260815.md`). The five-construction
+  calibration campaign fail-closed REJECTED its own envelope amendment on
+  this finding; no waiver, projection shift, or tolerance was adopted;
+  the 12 held-out replicates remain unrun and Phase 1 unscheduled. The
+  full real-executor stack (atomic 1,439-file tree, observed-only
+  snapshots, evidence-verified dispatch, schema-3 used-runtime identity)
+  is review-hardened through five adversarial rounds and committed.
+  **Pairing's ~11 ms now requires a drain-path KV repair in the pair
+  implementation, then recalibration and requalification — a defined
+  follow-on project.** The B1 wedge-liveness question remains open but
+  moot until the semantic repair lands.
