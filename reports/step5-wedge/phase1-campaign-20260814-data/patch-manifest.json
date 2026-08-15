@@ -1,0 +1,27 @@
+{
+  "after": {
+    "v1/core/sched/scheduler.py": "9bd92861211f961ed171379788f0db1f41c4dd6ea7418cc07a85e87f1df0fc88",
+    "v1/engine/core.py": "e4ec819d0a2e624db351ce0864cb0e33c2ad69b08d65b65540a85aa593349478",
+    "v1/engine/output_processor.py": "5950af579fde83eb8f53914936c8bfae419872a1940f782c10d2ec0c2913496a",
+    "v1/wedge_boundary_trace.py": "bce4a62b640c24d575915fba4781fb94b315d4d6e35ac51d32fd6c473448a481",
+    "v1/worker/gpu_model_runner.py": "1cc698d1badf9caf15cf514d135cbcc4b35e0ca288e75b8dee0bd768ec39cd01"
+  },
+  "baseline_tree_sha256": "d66baad763ef5fdd021047391f8b76718f7c97115993bb080a663709c34259e2",
+  "before": {
+    "v1/core/sched/scheduler.py": "988ecb28f4383e6a9b8ab9595ab6ec5b9d08e267409c014304bb14fabe528ff3",
+    "v1/engine/core.py": "590925b3823b0bcb4153329441e8e83b1a3ca06b4746082956bdb8afd4004f29",
+    "v1/engine/output_processor.py": "92fcde44138193422a150a7a0a12c1efc5133c59d85864ba67966fb2e0fa8719",
+    "v1/worker/gpu_model_runner.py": "2ce42b6fcafa1ff3320b78efe1d9c36462e646982c47ab088eed60d47605925f"
+  },
+  "marker": "step5_wedge_boundary_trace",
+  "patcher_sha256": "66e390da0f70a5ce72d2734a75840f39dc8481978dc8090bfc5c5178354d97a2",
+  "phase1_intervention": {
+    "kind": "pair-only-graph-disabled-eager-dispatch",
+    "marker": "step5_phase1_pair_eager_dispatch",
+    "pad_token_id": 12,
+    "request_prefix": "step5-phase1/B/",
+    "target": "v1/worker/gpu_model_runner.py"
+  },
+  "trace_source_sha256": "bce4a62b640c24d575915fba4781fb94b315d4d6e35ac51d32fd6c473448a481",
+  "verified_source_file_count": 966
+}

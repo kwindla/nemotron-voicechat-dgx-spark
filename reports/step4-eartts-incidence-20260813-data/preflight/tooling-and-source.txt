@@ -1,0 +1,45 @@
+e6d3e9953106c352dc5b8fe5bfdb658981099843
+ M tests/e2e/test_browser_smallwebrtc_e2e.py
+ M tests/runtime/test_step2_live_fixture_driver.py
+ M tests/runtime/test_sustained_qualification.py
+ M tools/qualification/step2_live_fixture_driver.py
+ M tools/qualification/step4_pipecat_soak.py
+ M tools/qualification/sustained_strict_v3.py
+?? reports/step1-retained-evidence-20260812.json
+?? reports/step2-live/image-build.log
+?? reports/step2-live/session-20260813T060844Z/
+?? reports/step2-live/session-20260813T062842Z/
+?? reports/step2-live/session-20260813T064805Z/
+?? reports/step2-live/session-20260813T070325Z/
+?? reports/step2-live/session-20260813T071818Z/
+?? reports/step2-live/session-20260813T073549Z/
+?? reports/step2-live/session-20260813T075531Z/
+?? reports/step2-live/session-20260813T081251Z/
+?? reports/step2-live/session-20260813T082710Z/
+?? reports/step2-live/session-20260813T083303Z/asr/
+?? reports/step2-live/session-20260813T083303Z/campaign-stdout.log
+?? reports/step2-live/session-20260813T083303Z/driver/.pipecat-playout-0001.jsonl.pending.lock
+?? reports/step2-live/session-20260813T083303Z/driver/.pipecat-playout-0002.jsonl.pending.lock
+?? reports/step2-live/session-20260813T083303Z/driver/.step2-live-fixture-session
+?? reports/step2-live/session-20260813T083303Z/driver/browser-playout-capture-on-capture-off.jsonl
+?? reports/step2-live/session-20260813T083303Z/driver/browser-playout-capture-on.jsonl
+?? reports/step2-live/session-20260813T083303Z/driver/pipecat-playout-0001.jsonl
+?? reports/step2-live/session-20260813T083303Z/driver/pipecat-playout-0002.jsonl
+?? reports/step2-live/session-20260813T083303Z/pipecat.log
+?? reports/step2-live/session-20260813T083303Z/preregistration.md
+?? reports/step2-live/session-20260813T083303Z/rendered-audio/
+?? reports/step2-live/session-20260813T083303Z/server-traces/
+?? reports/step4-eartts-incidence-20260813-data/
+?? reports/step4-eartts-incidence-20260813.md
+?? tests/pipecat/test_step4_pipecat_soak.py
+?? tests/runtime/test_step4c_incidence.py
+?? tools/qualification/step4c_contract.py
+?? tools/qualification/step4c_incidence.py
+Python 3.12.13
+pipecat 1.7.1.dev21
+NVIDIA Nsight Systems version 2025.6.3.343-256337165561v0
+NVIDIA (R) Nsight Compute Command Line Profiler
+Copyright (c) 2018-2026 NVIDIA Corporation
+Version 2026.1.0.0 (build 37166530) (public-release)
+cdda3dc8ebd955aa60b778692607a2f8ce1777dafb99a01a8f15143e783d5cc0  reports/step4-eartts-incidence-20260813-data/preflight/silent-microphone-165s.wav
+0b669e25ed463b97f8f962eedee5fc25a346308b980eec155556e597824e2cd4  reports/step4-eartts-incidence-20260813-data/preflight/step4c-browser-plan.json

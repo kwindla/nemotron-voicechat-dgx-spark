@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "[Errno 17] File exists: '/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-telemetry-regression-20260813-data/session-20260813T150500Z/soak'",
+      "type": "FileExistsError"
+    }
+  ],
+  "passed": false,
+  "report_kind": "sustained_strict_v3"
+}

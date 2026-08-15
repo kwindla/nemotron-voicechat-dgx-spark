@@ -1,0 +1,250 @@
+{
+  "bounded_gate": {
+    "applicable": false,
+    "exclusion_reason": "REAL STATE DEFECT requires exact-gate repair",
+    "fresh_graph_engines": 3,
+    "measured_687_call_blocks": 6,
+    "overlay_margin_values_supportive_only": [
+      0.0,
+      0.125
+    ],
+    "passed": false,
+    "production_margin_status": "unresolved",
+    "production_margin_values": [],
+    "requirements": {
+      "all_engine_identities_match": true,
+      "all_measured_blocks_pass": true,
+      "fresh_graph_engines_at_least_five": false,
+      "measured_blocks_at_least_30": false,
+      "production_margin_at_most_0_05": false
+    },
+    "status": "excluded_real_state_defect",
+    "technical_requirements_passed": false
+  },
+  "classification": "REAL STATE DEFECT",
+  "classification_basis": {
+    "all_reports_valid": true,
+    "eager_all_exact": true,
+    "graph_eager_discriminator": true,
+    "graph_within_engine_stable": true,
+    "request_history_selects_result": false,
+    "request_id_or_synchronization_selects_result": false,
+    "sampler_seed_selects_result": null
+  },
+  "diagnostic_retained_minus_alternate_logit_values": [
+    0.0,
+    0.125
+  ],
+  "groups": {
+    "confirmation_eager": {
+      "blocks": 9,
+      "distinct_token_vectors": 1,
+      "engines": 3,
+      "exact_blocks": 9,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {},
+      "selected_output_digests_compared": 54,
+      "selected_output_digests_matching": 54,
+      "valid_blocks": 9,
+      "valid_engines": 3,
+      "within_engine_stable": true
+    },
+    "confirmation_graph": {
+      "blocks": 9,
+      "distinct_token_vectors": 1,
+      "engines": 3,
+      "exact_blocks": 9,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {},
+      "selected_output_digests_compared": 54,
+      "selected_output_digests_matching": 54,
+      "valid_blocks": 9,
+      "valid_engines": 3,
+      "within_engine_stable": true
+    },
+    "diagnostic_eager": {
+      "blocks": 3,
+      "distinct_token_vectors": 1,
+      "engines": 1,
+      "exact_blocks": 3,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {},
+      "selected_output_digests_compared": 6,
+      "selected_output_digests_matching": 6,
+      "valid_blocks": 3,
+      "valid_engines": 1,
+      "within_engine_stable": true
+    },
+    "diagnostic_graph": {
+      "blocks": 9,
+      "distinct_token_vectors": 2,
+      "engines": 3,
+      "exact_blocks": 6,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {
+        "call=39;expected=10592;actual=1044": 3
+      },
+      "selected_output_digests_compared": 18,
+      "selected_output_digests_matching": 18,
+      "valid_blocks": 9,
+      "valid_engines": 3,
+      "within_engine_stable": true
+    },
+    "graph_history": {
+      "blocks": 14,
+      "distinct_token_vectors": 1,
+      "engines": 2,
+      "exact_blocks": 14,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {},
+      "selected_output_digests_compared": 28,
+      "selected_output_digests_matching": 28,
+      "valid_blocks": 14,
+      "valid_engines": 2,
+      "within_engine_stable": true
+    },
+    "graph_scheduling": {
+      "blocks": 18,
+      "distinct_token_vectors": 2,
+      "engines": 2,
+      "exact_blocks": 9,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {
+        "call=39;expected=10592;actual=1044": 9
+      },
+      "selected_output_digests_compared": 36,
+      "selected_output_digests_matching": 36,
+      "valid_blocks": 18,
+      "valid_engines": 2,
+      "within_engine_stable": true
+    },
+    "graph_seed1": {
+      "blocks": 6,
+      "distinct_token_vectors": 2,
+      "engines": 2,
+      "exact_blocks": 3,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {
+        "call=39;expected=10592;actual=1044": 3
+      },
+      "selected_output_digests_compared": 12,
+      "selected_output_digests_matching": 12,
+      "valid_blocks": 6,
+      "valid_engines": 2,
+      "within_engine_stable": true
+    },
+    "primary_eager_seed0": {
+      "blocks": 9,
+      "distinct_token_vectors": 1,
+      "engines": 3,
+      "exact_blocks": 9,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {},
+      "selected_output_digests_compared": 18,
+      "selected_output_digests_matching": 18,
+      "valid_blocks": 9,
+      "valid_engines": 3,
+      "within_engine_stable": true
+    },
+    "primary_graph_seed0": {
+      "blocks": 9,
+      "distinct_token_vectors": 2,
+      "engines": 3,
+      "exact_blocks": 3,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {
+        "call=39;expected=10592;actual=1044": 6
+      },
+      "selected_output_digests_compared": 18,
+      "selected_output_digests_matching": 18,
+      "valid_blocks": 9,
+      "valid_engines": 3,
+      "within_engine_stable": true
+    }
+  },
+  "kind": "step5_graph_reproducibility_investigation_summary",
+  "passed": true,
+  "production": {
+    "eager": {
+      "blocks": 18,
+      "distinct_token_vectors": 2,
+      "engines": 6,
+      "exact_blocks": 18,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {},
+      "selected_output_digests_compared": 72,
+      "selected_output_digests_matching": 72,
+      "valid_blocks": 18,
+      "valid_engines": 6,
+      "within_engine_stable": true
+    },
+    "graph": {
+      "blocks": 56,
+      "distinct_token_vectors": 3,
+      "engines": 12,
+      "exact_blocks": 38,
+      "invalid_engine_reasons": {},
+      "mismatch_locations": {
+        "call=39;expected=10592;actual=1044": 18
+      },
+      "selected_output_digests_compared": 148,
+      "selected_output_digests_matching": 148,
+      "valid_blocks": 56,
+      "valid_engines": 12,
+      "within_engine_stable": true
+    }
+  },
+  "schema": 1,
+  "selectors": {
+    "per_call_synchronization": {
+      "conclusion": "not_observed_in_tested_basins",
+      "policies": [
+        "synchronized",
+        "unsynchronized_unique"
+      ],
+      "selects_result": false,
+      "tested_basins": [
+        "divergent",
+        "exact"
+      ]
+    },
+    "request_history": {
+      "conclusion": "not_observed_in_tested_basins",
+      "histories": [
+        "baseline",
+        "post-17",
+        "post-47"
+      ],
+      "selects_result": false,
+      "tested_basins": [
+        "exact"
+      ]
+    },
+    "request_id_reuse": {
+      "conclusion": "not_observed_in_tested_basins",
+      "policies": [
+        "reused",
+        "unique"
+      ],
+      "selects_result": false,
+      "tested_basins": [
+        "divergent",
+        "exact"
+      ]
+    },
+    "sampler_seed": {
+      "conclusion": "no_observed_association_not_isolated",
+      "isolated": false,
+      "observed_association": false,
+      "seed0_vectors": [
+        "9206e365db1ad7a0fa8863b19d3edc9a46b97eb3d51f2f4e16a059ac5caa3035",
+        "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6"
+      ],
+      "seed1_vectors": [
+        "9206e365db1ad7a0fa8863b19d3edc9a46b97eb3d51f2f4e16a059ac5caa3035",
+        "e6087d860d926cc77b97d1e449b0765ab1e95291f9838e31f9129eb3765737d6"
+      ],
+      "selects_result": null
+    }
+  }
+}

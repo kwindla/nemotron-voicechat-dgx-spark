@@ -8,13 +8,19 @@ function calls.  A disconnected model session is never transparently resumed.
 from __future__ import annotations
 
 import asyncio
+import fcntl
 import json
 import math
 import os
+import queue
 import re
+import threading
 import time
+import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from numbers import Real
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -55,11 +61,287 @@ from pipecat.services.settings import LLMSettings, assert_given
 from pipecat.utils.time import time_now_iso8601
 from websockets.asyncio.client import connect as websocket_connect
 
-from nemotron_voicechat_runtime.protocol import FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS
+from nemotron_voicechat_runtime.protocol import (
+    FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS,
+    FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+)
 
 from . import events
 from .adapter import NemotronVoicechatLLMAdapter
 from .text_input import VoicechatTypedInputFrame
+from .tool_results import VoicechatLLMContext
+
+PLAYOUT_TRACE_ENV = "NEMOTRON_VOICECHAT_PLAYOUT_TRACE"
+PLAYOUT_TRACE_SCHEMA = "nemotron_voicechat.playout.v1"
+PLAYOUT_TRACE_CONNECTION_TOKEN = "{connection}"
+_playout_trace_connection_lock = threading.Lock()
+_playout_trace_connection_ordinal = 0
+
+
+def _connection_playout_trace_path(path: str) -> str:
+    """Expand the opt-in per-connection trace token without changing legacy paths."""
+
+    if PLAYOUT_TRACE_CONNECTION_TOKEN not in path:
+        return path
+    global _playout_trace_connection_ordinal
+    with _playout_trace_connection_lock:
+        _playout_trace_connection_ordinal += 1
+        connection = f"{_playout_trace_connection_ordinal:04d}"
+    return path.replace(PLAYOUT_TRACE_CONNECTION_TOKEN, connection)
+
+
+class _PlayoutTraceWriter:
+    """Bound trace memory and isolate every writer failure from media."""
+
+    _STOP = object()
+    _QUARANTINE_DIRECTORY = ".voicechat-playout-trace-quarantine"
+
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        clock: Callable[[], float] = time.monotonic,
+        queue_records: int = 256,
+        batch_records: int = 32,
+        stream: Any | None = None,
+    ):
+        if queue_records <= 0 or batch_records <= 0:
+            raise ValueError("playout trace queue and batch sizes must be positive")
+        trace_path = Path(path).expanduser()
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        self._artifact_path = trace_path
+        self._staging_path: Path | None = None
+        self._staging_lease_fd: int | None = None
+        if stream is None:
+            self._stream = self._open_staging_stream(trace_path)
+        else:
+            self._stream = stream
+        self._clock = clock
+        self._queue: queue.Queue[dict[str, Any] | object] = queue.Queue(
+            maxsize=queue_records
+        )
+        self._batch_records = batch_records
+        self._closed = False
+        self._error: BaseException | None = None
+        self._invalid_reason: str | None = None
+        self._dropped_records = 0
+        self._written_records = 0
+        self._published = False
+        self._thread = threading.Thread(
+            target=self._write_loop,
+            name="voicechat-playout-trace",
+            daemon=True,
+        )
+        self._thread.start()
+
+    def record(
+        self,
+        event_type: str,
+        *,
+        timestamp_field: str | None = None,
+        timestamp: float | None = None,
+        **fields: Any,
+    ) -> bool:
+        if self._closed:
+            self._invalidate("record-after-close")
+            return False
+        if self._error is not None:
+            self._dropped_records += 1
+            return False
+        record = {
+            "trace_schema": PLAYOUT_TRACE_SCHEMA,
+            "type": event_type,
+            **fields,
+        }
+        if timestamp_field is not None:
+            record[timestamp_field] = self._clock() if timestamp is None else timestamp
+        try:
+            self._queue.put_nowait(record)
+        except queue.Full:
+            self._dropped_records += 1
+            self._invalidate("queue-overflow")
+            return False
+        return True
+
+    def status(self) -> dict[str, Any]:
+        return {
+            "enabled": True,
+            "valid": self._invalid_reason is None and self._error is None,
+            "invalid_reason": self._invalid_reason,
+            "error": repr(self._error) if self._error is not None else None,
+            "dropped_records": self._dropped_records,
+            "written_records": self._written_records,
+            "queued_records": self._queue.qsize(),
+            "closed": self._closed,
+            "writer_alive": self._thread.is_alive(),
+            "artifact_published": self._published,
+        }
+
+    def close(self, *, timeout: float = 2.0) -> dict[str, Any]:
+        if self._closed:
+            return self.status()
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ValueError("playout trace close timeout must be finite and positive")
+        self._closed = True
+        deadline = time.monotonic() + timeout
+        terminal = {
+            "trace_schema": PLAYOUT_TRACE_SCHEMA,
+            "type": "voicechat.playout.trace_status",
+            "trace_closed_monotonic_s": self._clock(),
+            "valid": True,
+            "invalid_reason": None,
+            "error": None,
+            "dropped_records": 0,
+        }
+        if not self._put_control(terminal, deadline):
+            self._invalidate("close-queue-timeout")
+        if not self._put_control(self._STOP, deadline):
+            self._invalidate("close-queue-timeout")
+        self._thread.join(max(0.0, deadline - time.monotonic()))
+        if self._thread.is_alive():
+            self._invalidate("close-timeout")
+        elif self._invalid_reason is None and self._error is None:
+            if self._staging_path is not None:
+                try:
+                    self._publish_staging()
+                except BaseException as exc:  # noqa: BLE001 - evidence failure is status only
+                    self._invalidate("publish-error", exc)
+                else:
+                    self._published = True
+            else:
+                self._published = True
+        self._cleanup_staging()
+        return self.status()
+
+    def _open_staging_stream(self, trace_path: Path):
+        lock_path = trace_path.with_name(f".{trace_path.name}.pending.lock")
+        lock_fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+        try:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX)
+            self._quarantine_orphaned_staging(trace_path)
+            if trace_path.exists():
+                raise FileExistsError(
+                    f"playout trace artifact already exists; refusing stale evidence: {trace_path}"
+                )
+            staging_path = trace_path.with_name(
+                f".{trace_path.name}.{os.getpid()}.{uuid.uuid4().hex}.pending"
+            )
+            lease_fd = os.open(staging_path, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o600)
+            try:
+                fcntl.flock(lease_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                stream_fd = os.dup(lease_fd)
+            except BaseException:
+                os.close(lease_fd)
+                staging_path.unlink(missing_ok=True)
+                raise
+            self._staging_path = staging_path
+            self._staging_lease_fd = lease_fd
+            return os.fdopen(stream_fd, "w", encoding="utf-8")
+        finally:
+            os.close(lock_fd)
+
+    def _quarantine_orphaned_staging(self, trace_path: Path) -> None:
+        pattern = f".{trace_path.name}.*.pending"
+        for pending_path in trace_path.parent.glob(pattern):
+            try:
+                pending_fd = os.open(pending_path, os.O_RDWR)
+            except FileNotFoundError:
+                continue
+            try:
+                try:
+                    fcntl.flock(pending_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    continue
+                quarantine = trace_path.parent / self._QUARANTINE_DIRECTORY
+                quarantine.mkdir(mode=0o700, exist_ok=True)
+                orphan_path = quarantine / f"{pending_path.name}.orphan"
+                pending_path.rename(orphan_path)
+                self._fsync_directory(trace_path.parent)
+                self._fsync_directory(quarantine)
+            finally:
+                os.close(pending_fd)
+
+    @staticmethod
+    def _fsync_directory(path: Path) -> None:
+        directory_fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+
+    def _publish_staging(self) -> None:
+        assert self._staging_path is not None
+        os.link(self._staging_path, self._artifact_path)
+        try:
+            self._fsync_directory(self._artifact_path.parent)
+            self._staging_path.unlink()
+            self._fsync_directory(self._staging_path.parent)
+        except BaseException:
+            self._artifact_path.unlink(missing_ok=True)
+            self._fsync_directory(self._artifact_path.parent)
+            raise
+
+    def _cleanup_staging(self) -> None:
+        if self._staging_path is not None and self._staging_path.exists():
+            try:
+                self._staging_path.unlink()
+                self._fsync_directory(self._staging_path.parent)
+            except BaseException as exc:  # noqa: BLE001 - evidence failure is status only
+                self._invalidate("staging-cleanup-error", exc)
+        if self._staging_lease_fd is not None:
+            os.close(self._staging_lease_fd)
+            self._staging_lease_fd = None
+
+    def _put_control(self, item: dict[str, Any] | object, deadline: float) -> bool:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return False
+        try:
+            self._queue.put(item, timeout=remaining)
+        except queue.Full:
+            return False
+        return True
+
+    def _invalidate(self, reason: str, error: BaseException | None = None) -> None:
+        if self._invalid_reason is None:
+            self._invalid_reason = reason
+        if error is not None and self._error is None:
+            self._error = error
+
+    def _write_loop(self) -> None:
+        try:
+            stop = False
+            while not stop:
+                item = self._queue.get()
+                batch: list[dict[str, Any]] = []
+                if item is self._STOP:
+                    break
+                batch.append(item)
+                while len(batch) < self._batch_records:
+                    try:
+                        item = self._queue.get_nowait()
+                    except queue.Empty:
+                        break
+                    if item is self._STOP:
+                        stop = True
+                        break
+                    batch.append(item)
+                payload = "".join(
+                    json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n"
+                    for record in batch
+                )
+                self._stream.write(payload)
+                self._stream.flush()
+                self._written_records += len(batch)
+            if self._staging_path is not None:
+                os.fsync(self._stream.fileno())
+        except BaseException as exc:  # noqa: BLE001 - evidence failure is status only
+            self._invalidate("writer-error", exc)
+        finally:
+            try:
+                self._stream.close()
+            except BaseException as exc:  # noqa: BLE001 - evidence failure is status only
+                self._invalidate("close-error", exc)
 
 
 class _SentenceBuffer:
@@ -109,6 +391,23 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
 
     Settings = NemotronVoicechatLLMSettings
     adapter_class = NemotronVoicechatLLMAdapter
+
+    def __new__(cls, *args: Any, **kwargs: Any):
+        if cls is NemotronVoicechatLLMService and os.environ.get(PLAYOUT_TRACE_ENV, "").strip():
+            return super().__new__(_TracedNemotronVoicechatLLMService)
+        return super().__new__(cls)
+
+    def __copy__(self):
+        raise TypeError("NemotronVoicechatLLMService instances cannot be shallow-copied")
+
+    def __deepcopy__(self, _memo: dict[int, object]):
+        raise TypeError("NemotronVoicechatLLMService instances cannot be deep-copied")
+
+    def __reduce__(self):
+        raise TypeError("NemotronVoicechatLLMService instances cannot be pickled")
+
+    def __reduce_ex__(self, _protocol: int):
+        raise TypeError("NemotronVoicechatLLMService instances cannot be pickled")
 
     def __init__(
         self,
@@ -182,6 +481,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._liveness_task: asyncio.Task | None = None
         self._session_created = asyncio.Event()
         self._session_ready = asyncio.Event()
+        self._live_input_ready_event = asyncio.Event()
         self._session_update_lock = asyncio.Lock()
         self._context_ready = asyncio.Event()
         self._session_closed = asyncio.Event()
@@ -204,6 +504,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._typed_jobs: dict[str, str] = {}
         self._typed_context_commits: set[str] = set()
         self._pending_typed_requests: list[VoicechatTypedInputFrame] = []
+        self._pending_typed_flush_lock = asyncio.Lock()
 
         self._response_id: str | None = None
         self._response_open = False
@@ -211,12 +512,15 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._sentence_buffer = _SentenceBuffer()
         self._user_id = ""
         self._session_id: str | None = None
+        self._function_output_model_output_advertised = False
+        self._function_output_model_output_negotiated = False
         self._client_turn_sequence = 0
         self._active_client_turn_id: int | None = None
         self._pre_ready_dropped_turn_id: int | None = None
         self._pre_ready_audio_chunks_dropped = 0
         self._pre_ready_audio_bytes_dropped = 0
         self._pre_ready_turns_dropped = 0
+        self._pre_ready_typed_requests_dropped = 0
         self._pre_ready_drop_summary_emitted = False
         self._turn_barrier_event_ids: dict[tuple[str, int], str] = {}
         self._turn_barrier_timeout_secs = turn_barrier_ack_timeout_secs
@@ -336,6 +640,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             )
             await self._update_session_and_wait()
             self._audio_send_task = self.create_task(self._audio_send_loop())
+            await self._activate_live_input_if_ready()
             self._liveness_task = self.create_task(self._liveness_loop())
         except Exception as exc:  # noqa: BLE001 - surface transport/library failures
             await self.push_error(
@@ -350,6 +655,9 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             return
         self._disconnecting = True
         self._input_failed = True
+        self._live_input_ready_event.clear()
+        self._pre_ready_typed_requests_dropped += len(self._pending_typed_requests)
+        self._pending_typed_requests.clear()
         self._emit_pre_ready_drop_summary(reason="disconnect")
         self._reset_pre_ready_drop_state()
         for task in self._turn_barrier_timeout_tasks.values():
@@ -420,12 +728,47 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         if not isinstance(tools, list):
             tools = []
         self._session_ready.clear()
-        await self._send(events.session_update(instructions=instruction, tools=tools))
+        await self._send(
+            events.session_update(
+                instructions=instruction,
+                tools=tools,
+                function_output_model_output=(
+                    FUNCTION_OUTPUT_MODEL_OUTPUT_MODE
+                    if self._function_output_model_output_advertised
+                    else None
+                ),
+            )
+        )
 
     async def _wait_for_model_ready(self) -> None:
         await asyncio.wait_for(
             self._session_ready.wait(), timeout=self._model_ready_timeout_secs
         )
+
+    async def wait_for_live_input_ready(self) -> None:
+        """Wait until the model handshake, context, and send loop are all ready."""
+        await asyncio.wait_for(
+            self._live_input_ready_event.wait(), timeout=self._model_ready_timeout_secs
+        )
+
+    def live_input_readiness_status(self) -> dict[str, bool]:
+        """Return bounded readiness evidence safe for client-facing diagnostics."""
+        return {
+            "session_ready": self._session_ready.is_set(),
+            "context_ready": self._context_ready.is_set(),
+            "audio_send_task": self._audio_send_task is not None,
+        }
+
+    async def abort_live_input_startup(self) -> None:
+        """Close a model session whose browser readiness gate failed."""
+        await self._disconnect()
+
+    async def _activate_live_input_if_ready(self) -> None:
+        if not self._live_input_ready():
+            return
+        self._live_input_ready_event.set()
+        self._emit_pre_ready_drop_summary(reason="model_ready")
+        await self._flush_pending_typed_inputs()
 
     async def _update_session_and_wait(self) -> None:
         async with self._session_update_lock:
@@ -433,7 +776,6 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             await self._wait_for_model_ready()
 
     async def _request_typed_input(self, frame: VoicechatTypedInputFrame) -> None:
-        await self._context_ready.wait()
         if (
             frame.job_id in self._typed_jobs
             or frame.job_id in self._typed_context_commits
@@ -441,8 +783,11 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         ):
             await self.push_error(error_msg=f"Duplicate Voicechat typed job ID: {frame.job_id}")
             return
+        if self._input_failed:
+            return
         if (
-            self._active_client_turn_id is not None
+            not self._live_input_ready()
+            or self._active_client_turn_id is not None
             or self._pre_ready_dropped_turn_id is not None
             or self._function_epoch_active
         ):
@@ -459,15 +804,18 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             self._typed_jobs.pop(frame.job_id, None)
 
     async def _flush_pending_typed_inputs(self) -> None:
-        if (
-            self._active_client_turn_id is not None
-            or self._pre_ready_dropped_turn_id is not None
-            or self._function_epoch_active
-        ):
-            return
-        pending, self._pending_typed_requests = self._pending_typed_requests, []
-        for frame in pending:
-            await self._admit_typed_input(frame)
+        async with self._pending_typed_flush_lock:
+            while self._pending_typed_requests:
+                if (
+                    self._input_failed
+                    or not self._live_input_ready()
+                    or self._active_client_turn_id is not None
+                    or self._pre_ready_dropped_turn_id is not None
+                    or self._function_epoch_active
+                ):
+                    return
+                frame = self._pending_typed_requests.pop(0)
+                await self._admit_typed_input(frame)
 
     async def _handle_context(self, context: LLMContext):
         first_context = self._context is None
@@ -511,8 +859,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             if self._session_ready.is_set() and not self._audio_sent and settings_changed:
                 await self._update_session_and_wait()
             self._context_ready.set()
-            if self._live_input_ready():
-                self._emit_pre_ready_drop_summary(reason="model_ready")
+            await self._activate_live_input_if_ready()
         else:
             await self._process_completed_function_calls(send_new_results=True)
 
@@ -846,7 +1193,9 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
 
     def _emit_pre_ready_drop_summary(self, *, reason: str) -> None:
         if self._pre_ready_drop_summary_emitted or not (
-            self._pre_ready_audio_chunks_dropped or self._pre_ready_turns_dropped
+            self._pre_ready_audio_chunks_dropped
+            or self._pre_ready_turns_dropped
+            or self._pre_ready_typed_requests_dropped
         ):
             return
         if self._pre_ready_dropped_turn_id is not None and reason != "disconnect":
@@ -855,7 +1204,8 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             "voicechat.pre_ready_input_dropped "
             f"reason={reason} chunks={self._pre_ready_audio_chunks_dropped} "
             f"bytes={self._pre_ready_audio_bytes_dropped} "
-            f"turns={self._pre_ready_turns_dropped}"
+            f"turns={self._pre_ready_turns_dropped} "
+            f"typed_requests={self._pre_ready_typed_requests_dropped}"
         )
         self._pre_ready_drop_summary_emitted = True
 
@@ -864,6 +1214,7 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._pre_ready_audio_chunks_dropped = 0
         self._pre_ready_audio_bytes_dropped = 0
         self._pre_ready_turns_dropped = 0
+        self._pre_ready_typed_requests_dropped = 0
         self._pre_ready_drop_summary_emitted = False
 
     async def _liveness_loop(self):
@@ -914,11 +1265,30 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
             capabilities = event.get("capabilities") or {}
             if capabilities.get("input_turn_detection") != "client_smart_turn_v1":
                 raise events.ProtocolError("server does not support client Smart Turn v1")
+            model_output_capability = capabilities.get("function_output_model_output")
+            self._function_output_model_output_advertised = bool(
+                isinstance(model_output_capability, dict)
+                and model_output_capability.get("mode")
+                == FUNCTION_OUTPUT_MODEL_OUTPUT_MODE
+            )
             self._session_created.set()
         elif event_type == "session.updated":
             session = event.get("session") or {}
             if session.get("protocol_version") != events.PROTOCOL_VERSION:
                 raise events.ProtocolError("session.updated did not confirm protocol v3")
+            negotiated = (session.get("capabilities") or {}).get(
+                "function_output_model_output"
+            )
+            if self._function_output_model_output_advertised:
+                if negotiated != FUNCTION_OUTPUT_MODEL_OUTPUT_MODE:
+                    raise events.ProtocolError(
+                        "session.updated did not negotiate concise tool results"
+                    )
+                self._function_output_model_output_negotiated = True
+            elif negotiated is not None:
+                raise events.ProtocolError(
+                    "session.updated negotiated an unadvertised concise tool-result capability"
+                )
             self._session_ready.set()
         elif event_type == "input_text.accepted":
             await self._typed_input_accepted(event)
@@ -1268,7 +1638,11 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
                 if async_payload.kind != "final":
                     continue
                 if send_new_results:
-                    await self._send_tool_result(async_payload.tool_call_id, async_payload.result)
+                    await self._send_tool_result(
+                        async_payload.tool_call_id,
+                        async_payload.result,
+                        model_output=self._model_output_for_call(async_payload.tool_call_id),
+                    )
                 self._completed_tool_calls.add(async_payload.tool_call_id)
                 continue
             if not isinstance(message, dict) or message.get("content") == "IN_PROGRESS":
@@ -1282,14 +1656,37 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
                         error_msg=f"Ignoring result for unknown Voicechat call_id={call_id}"
                     )
                 else:
-                    await self._send_tool_result(call_id, message.get("content"))
+                    await self._send_tool_result(
+                        call_id,
+                        message.get("content"),
+                        model_output=self._model_output_for_call(call_id),
+                    )
             self._completed_tool_calls.add(call_id)
 
-    async def _send_tool_result(self, call_id: str, result: Any):
+    def _model_output_for_call(self, call_id: str) -> str | None:
+        if isinstance(self._context, VoicechatLLMContext):
+            return self._context.voicechat_model_output(call_id)
+        return None
+
+    async def _send_tool_result(
+        self, call_id: str, result: Any, *, model_output: str | None = None
+    ):
         if call_id != self._function_epoch_call_id:
             raise events.ProtocolError("tool result does not match the active function epoch")
         output = result if isinstance(result, str) else json.dumps(result)
-        await self._send(events.function_call_output(call_id, output))
+        await self._send(
+            events.function_call_output(
+                call_id,
+                output,
+                model_output=(
+                    model_output
+                    if self._function_output_model_output_negotiated
+                    else None
+                ),
+            )
+        )
+        if isinstance(self._context, VoicechatLLMContext):
+            self._context.discard_voicechat_model_output(call_id)
         if self._function_output_ack_timeout_task is not None:
             self._function_output_ack_timeout_task.cancel()
         self._function_output_ack_timeout_task = asyncio.create_task(
@@ -1319,3 +1716,294 @@ class NemotronVoicechatLLMService(LLMService[NemotronVoicechatLLMAdapter]):
         self._function_epoch_call_id = None
         await self._flush_pending_typed_inputs()
         await self._release_held_input()
+
+
+class _TracedNemotronVoicechatLLMService(NemotronVoicechatLLMService):
+    """Qualification-only service variant with observational playout tracing."""
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        path = os.environ.get(PLAYOUT_TRACE_ENV, "").strip()
+        if not path:
+            raise RuntimeError("traced Voicechat service requires a trace path")
+        path = _connection_playout_trace_path(path)
+        try:
+            close_timeout = float(
+                os.environ.get("NEMOTRON_VOICECHAT_PLAYOUT_TRACE_CLOSE_TIMEOUT", "2")
+            )
+        except ValueError as exc:
+            raise ValueError(
+                "NEMOTRON_VOICECHAT_PLAYOUT_TRACE_CLOSE_TIMEOUT must be finite and positive"
+            ) from exc
+        if not math.isfinite(close_timeout) or close_timeout <= 0:
+            raise ValueError(
+                "NEMOTRON_VOICECHAT_PLAYOUT_TRACE_CLOSE_TIMEOUT must be finite and positive"
+            )
+        super().__init__(*args, **kwargs)
+        self._playout_trace = _PlayoutTraceWriter(
+            path,
+            queue_records=int(os.environ.get("NEMOTRON_VOICECHAT_PLAYOUT_TRACE_QUEUE", "256")),
+            batch_records=int(os.environ.get("NEMOTRON_VOICECHAT_PLAYOUT_TRACE_BATCH", "32")),
+        )
+        self._playout_trace_close_timeout = close_timeout
+        self._playout_trace_ordinals: dict[str, int] = {}
+        self._playout_trace_text_ordinals: dict[str, int] = {}
+        self._playout_trace_frame_ordinals: dict[int, int] = {}
+        self._playout_trace_interruption_observed = False
+        self._playout_trace.record(
+            "voicechat.playout.config",
+            timestamp_field="client_configured_monotonic_s",
+            configured_prebuffer_ms=self._prebuffer_ms,
+            sample_rate_hz=events.OUTPUT_SAMPLE_RATE,
+            channels=1,
+        )
+
+    async def cleanup(self):
+        try:
+            await super().cleanup()
+        finally:
+            try:
+                await asyncio.wait_for(
+                    asyncio.to_thread(
+                        self._playout_trace.close,
+                        timeout=self._playout_trace_close_timeout,
+                    ),
+                    timeout=self._playout_trace_close_timeout + 0.25,
+                )
+            except TimeoutError:
+                self._playout_trace._invalidate("async-cleanup-timeout")
+
+    def live_input_readiness_status(self) -> dict[str, Any]:
+        return {
+            **super().live_input_readiness_status(),
+            "playout_trace": self._playout_trace.status(),
+        }
+
+    async def _receive_loop(self):
+        websocket = self._websocket
+        try:
+            async for message in websocket:
+                received_monotonic_s = time.monotonic()
+                self._last_server_event_at = received_monotonic_s
+                event = events.parse_server_event(message)
+                event["_voicechat_received_monotonic_s"] = received_monotonic_s
+                await self._handle_server_event(event)
+            if not self._disconnecting and not self._session_closed.is_set():
+                await self.push_error(
+                    error_msg="Voicechat websocket closed without session.closed",
+                    fatal=True,
+                )
+                await self._disconnect()
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - surface transport/protocol failures
+            if not self._disconnecting:
+                await self.push_error(
+                    error_msg=f"Voicechat receive failed: {exc}",
+                    exception=exc,
+                    fatal=True,
+                )
+
+    def _receipt_time(self, event: dict[str, Any]) -> float:
+        timestamp = event.get("_voicechat_received_monotonic_s")
+        return float(timestamp) if isinstance(timestamp, Real) else time.monotonic()
+
+    async def _handle_server_event(self, event: dict[str, Any]):
+        event_type = event.get("type")
+        received = self._receipt_time(event)
+        response_id = event.get("response_id")
+        accepted_text_delta = (
+            event_type == "response.output_text.delta"
+            and self._is_current_response(event)
+            and not self._response_cancelling
+            and isinstance(event.get("delta"), str)
+            and bool(event["delta"])
+        )
+        if event_type == "input_audio_buffer.speech_started" and event.get(
+            "source"
+        ) == "typed":
+            self._playout_trace_interruption_observed = self._response_open
+            self._playout_trace.record(
+                event_type,
+                timestamp_field="client_received_monotonic_s",
+                timestamp=received,
+                source="typed",
+                response_id=self._response_id,
+            )
+        accepted_done = event_type == "response.done" and self._is_current_response(event)
+        if accepted_done:
+            self._playout_trace.record(
+                event_type,
+                timestamp_field="client_received_monotonic_s",
+                timestamp=received,
+                response_id=response_id,
+                status=event.get("status"),
+            )
+        elif accepted_text_delta:
+            assert isinstance(response_id, str)
+            ordinal = self._playout_trace_text_ordinals.get(response_id, 0) + 1
+            self._playout_trace_text_ordinals[response_id] = ordinal
+            self._playout_trace.record(
+                event_type,
+                timestamp_field="client_received_monotonic_s",
+                timestamp=received,
+                response_id=response_id,
+                ordinal=ordinal,
+                delta=event["delta"],
+            )
+        await super()._handle_server_event(event)
+        if event_type == "response.created" and isinstance(response_id, str):
+            self._playout_trace_ordinals[response_id] = 0
+            self._playout_trace_text_ordinals[response_id] = 0
+            self._playout_trace.record(
+                event_type,
+                timestamp_field="client_received_monotonic_s",
+                timestamp=received,
+                response_id=response_id,
+                turn_id=event.get("turn_id"),
+            )
+        elif accepted_done:
+            if isinstance(response_id, str):
+                self._playout_trace_ordinals.pop(response_id, None)
+                self._playout_trace_text_ordinals.pop(response_id, None)
+        elif event_type == "voicechat.metrics":
+            self._playout_trace.record(
+                event_type,
+                timestamp_field="client_received_monotonic_s",
+                timestamp=received,
+                **{
+                    name: value
+                    for name, value in event.items()
+                    if name not in {"type", "_voicechat_received_monotonic_s"}
+                },
+            )
+
+    async def _audio_delta(self, event: dict[str, Any]):
+        if not self._is_current_response(event) or self._response_cancelling:
+            return
+        audio = events.decode_audio_delta(event)
+        if not audio:
+            return
+        response_id = self._response_id
+        if not isinstance(response_id, str):
+            raise events.ProtocolError("accepted audio delta lacks current response")
+        ordinal = self._playout_trace_ordinals.get(response_id, 0) + 1
+        self._playout_trace_ordinals[response_id] = ordinal
+        self._playout_trace.record(
+            "response.output_audio.delta",
+            timestamp_field="client_received_monotonic_s",
+            timestamp=self._receipt_time(event),
+            response_id=response_id,
+            ordinal=ordinal,
+            sample_count=len(audio) // 2,
+            encoding=event.get("encoding"),
+            sample_rate=event.get("sample_rate"),
+            sample_rate_hz=event.get("sample_rate"),
+            channels=event.get("channels"),
+            delta=event.get("delta"),
+        )
+        await self.stop_ttfb_metrics()
+        audio_frame = TTSAudioRawFrame(
+            audio=audio,
+            sample_rate=events.OUTPUT_SAMPLE_RATE,
+            num_channels=1,
+        )
+        await self.process_ttfa_metrics(audio_frame)
+        self._playout_trace_frame_ordinals[id(audio_frame)] = ordinal
+        if self._playout_started or self._prebuffer_ms == 0:
+            if not self._playout_started:
+                self._trace_playout_release("threshold", [audio_frame])
+            await self._start_playout()
+            await self._push_playout_audio(audio_frame)
+            return
+
+        self._playout_buffer.append(audio_frame)
+        self._playout_buffer_ms += (
+            len(audio_frame.audio)
+            * 1000.0
+            / (2 * audio_frame.sample_rate * audio_frame.num_channels)
+        )
+        if self._playout_buffer_ms >= self._prebuffer_ms:
+            await self._release_playout_buffer(reason="threshold")
+
+    async def _release_playout_buffer(self, *, reason: str = "done") -> None:
+        if not self._playout_buffer:
+            return
+        buffered, self._playout_buffer = self._playout_buffer, []
+        self._playout_buffer_ms = 0.0
+        self._trace_playout_release(reason, buffered)
+        await self._start_playout()
+        for frame in buffered:
+            await self._push_playout_audio(frame)
+
+    async def _push_playout_audio(self, frame: TTSAudioRawFrame) -> None:
+        ordinal = self._playout_trace_frame_ordinals.pop(id(frame))
+        self._playout_trace.record(
+            "voicechat.playout.downstream_push",
+            timestamp_field="client_downstream_push_monotonic_s",
+            response_id=self._response_id,
+            ordinal=ordinal,
+            sample_count=len(frame.audio) // (2 * frame.num_channels),
+            sample_rate_hz=frame.sample_rate,
+            channels=frame.num_channels,
+        )
+        await self.push_frame(frame)
+
+    def _trace_playout_release(
+        self,
+        reason: str,
+        frames: list[TTSAudioRawFrame],
+        *,
+        frames_cleared: int = 0,
+    ) -> None:
+        ordinals = [self._playout_trace_frame_ordinals[id(frame)] for frame in frames]
+        self._playout_trace.record(
+            "voicechat.playout.release",
+            timestamp_field="client_release_monotonic_s",
+            response_id=self._response_id,
+            reason=reason,
+            ordinals=ordinals,
+            frames_released=len(frames),
+            frames_cleared=frames_cleared,
+            sample_count=sum(
+                len(frame.audio) // (2 * frame.num_channels) for frame in frames
+            ),
+        )
+
+    def _clear_playout_buffer(self, *, reason: str | None = None) -> None:
+        buffered = list(self._playout_buffer)
+        if reason is not None:
+            ordinals = [
+                self._playout_trace_frame_ordinals[id(frame)] for frame in buffered
+            ]
+            self._playout_trace.record(
+                "voicechat.playout.release",
+                timestamp_field="client_release_monotonic_s",
+                response_id=self._response_id,
+                reason=reason,
+                ordinals=ordinals,
+                frames_released=0,
+                frames_cleared=len(buffered),
+                sample_count=0,
+            )
+        for frame in buffered:
+            self._playout_trace_frame_ordinals.pop(id(frame), None)
+        super()._clear_playout_buffer()
+
+    async def _reset_response_after_interruption(self):
+        self._sentence_buffer.reset()
+        if self._response_open and not self._playout_trace_interruption_observed:
+            self._playout_trace.record(
+                "voicechat.playout.interruption",
+                timestamp_field="client_interruption_monotonic_s",
+                response_id=self._response_id,
+            )
+        self._clear_playout_buffer(
+            reason="interruption-clear" if self._response_open else None
+        )
+        self._playout_trace_interruption_observed = False
+        tts_was_open = self._tts_open
+        self._tts_open = False
+        self._response_cancelling = self._response_open
+        await self.stop_all_metrics()
+        if tts_was_open:
+            await self.push_frame(TTSStoppedFrame())

@@ -1,0 +1,19 @@
+{
+  "after": {
+    "v1/core/sched/scheduler.py": "3fd6482d728b88918fe4e4bd7931e060c364b929f71a57b65292c3f21f2f32df",
+    "v1/engine/async_llm.py": "f6fc8f5ea7959090e944d77ab1702b427bb88dc5a009609c671f3108577e0781",
+    "v1/engine/core.py": "9afd21f0572e10f171572334d2896ca631572b5e560d8314258bf00a8dc0ec52",
+    "v1/wedge_boundary_trace.py": "1b0463c8c08f8e061d20d3da805539fbf1487e5bcbe79464c30344e1c5087848",
+    "v1/worker/gpu_model_runner.py": "f0ab93b0a1f02344cd3b4a866abc056a9e20756783bd46b8d8e75a2a3df3b5fa"
+  },
+  "baseline_tree_sha256": "d66baad763ef5fdd021047391f8b76718f7c97115993bb080a663709c34259e2",
+  "before": {
+    "v1/core/sched/scheduler.py": "988ecb28f4383e6a9b8ab9595ab6ec5b9d08e267409c014304bb14fabe528ff3",
+    "v1/engine/async_llm.py": "9834b3325cee6fe263545d642d4497310fda40179c3c503bc5ec2a7600fac3ca",
+    "v1/engine/core.py": "590925b3823b0bcb4153329441e8e83b1a3ca06b4746082956bdb8afd4004f29",
+    "v1/worker/gpu_model_runner.py": "2ce42b6fcafa1ff3320b78efe1d9c36462e646982c47ab088eed60d47605925f"
+  },
+  "marker": "step5_wedge_boundary_trace",
+  "patcher_sha256": "1d6eede4676eff46c99b0cb8309beddc3d82d4e62d6efc50bffd0bd3a90287fd",
+  "trace_source_sha256": "1b0463c8c08f8e061d20d3da805539fbf1487e5bcbe79464c30344e1c5087848"
+}

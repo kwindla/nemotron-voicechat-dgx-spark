@@ -1,0 +1,35 @@
+{
+  "application_revision": "cf0e9ca89d2048717a83c15570c2c39630b7e558",
+  "checked_at_utc": "2026-08-14T19:28:17Z",
+  "failure": {
+    "classification": "unrecoverable-before-materialization",
+    "message": "No real Phase1Executor adapter is present. The only concrete subclass is the synthetic FakeExecutor, which is inadmissible for the GPU campaign.",
+    "missing_capabilities": [
+      "replay retained PCM and typed carrier through the pinned perception/fusion stack",
+      "export exactly two real 4480-wide fused rows",
+      "export complete frame-22 KV, Mamba conv/SSM, rollback-shadow, pointer and construction state",
+      "construct and destroy fresh real engine epochs",
+      "restore independent S/B/A lanes to the sealed prefix",
+      "execute the real case matrix and return typed exactness snapshots"
+    ]
+  },
+  "fixture_materialization_seal_written": false,
+  "gpu": {
+    "active_compute_processes": 0,
+    "cuda_version": "13.0",
+    "driver_version": "580.142",
+    "name": "NVIDIA GB10",
+    "utilization_percent": 0
+  },
+  "ledger_written": false,
+  "phase1_executor_subclasses": [
+    "FakeExecutor"
+  ],
+  "production_health_before_stop_path": "reports/step5-wedge/phase1-preflight/production-health-before-stop.json",
+  "production_health_before_stop_sha256": "da0c5e17e4bc09fa99f90a2ee56f56422a24f0ce7c710bea76db5a83f11bbb22",
+  "production_stack_running_containers": 0,
+  "real_executor_count": 0,
+  "replicate_zero_created": false,
+  "result": "INCOMPLETE",
+  "synthetic_fallback_used": false
+}

@@ -1,0 +1,11 @@
+{
+  "argmax_agreement": 1.0,
+  "argmax_agreement_required": 0.999,
+  "kind": "fhw8_g0b_head_numerics",
+  "passed": true,
+  "strong_margin_checked": 1172,
+  "strong_margin_threshold": 0.25,
+  "strong_margin_violations": 0,
+  "vectors": 1172,
+  "vectors_dumped_total": 2836
+}

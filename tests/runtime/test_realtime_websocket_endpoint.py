@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import base64
+import hashlib
 import json
 import tempfile
 import time
@@ -12,7 +14,7 @@ from unittest import mock
 
 import numpy as np
 from fastapi.testclient import TestClient
-from starlette.websockets import WebSocketDisconnect
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from nemotron_voicechat_runtime.pocket_controller import PocketSynthesis, PocketSynthesisCancelled
 from nemotron_voicechat_runtime.server import (
@@ -393,7 +395,27 @@ class DeferredToolTimeoutFakeEngine(PreparedEpochFakeEngine):
         self.invalidations: list[str] = []
         self.tool_results: list[str] = []
         self._tool_started = False
+        self.publication_delay = 0.01
+        self.unpublished_interrupts = 0
+        self.function_worker_finished = False
+        self.function_worker_registered = Event()
+        self.abort_join_timed_out = False
+        self.cleanup_completed = Event()
+        self.pipeline._fc_async_bg = {}
         self.wrapper._build_fc_response_tokens = lambda value: list(value.encode())
+
+    def interrupt_unpublished_function_cycle(self, _timeout_seconds=5.0):
+        self.unpublished_interrupts += 1
+        return {
+            "schema": 1,
+            "requested": True,
+            "reason": "client_turn_start",
+            "quit_to_normal": True,
+            "async_steps": 1,
+        }
+
+    def function_cycle_quiescent(self):
+        return self.unpublished_interrupts > 0 and self.function_worker_finished
 
     def invalidate_eartts_epoch(self, reason: str) -> dict:
         self.invalidations.append(reason)
@@ -430,13 +452,84 @@ class DeferredToolTimeoutFakeEngine(PreparedEpochFakeEngine):
             "effective_token_is_pad": False,
         }
         handler = next(iter(self.tools.values()))
+        worker: Thread
 
         def invoke_after_publication() -> None:
-            time.sleep(0.01)
-            self.tool_results.append(handler({}))
+            time.sleep(self.publication_delay)
+            self.pipeline._fc_async_bg[self.stream_id] = worker
+            self.function_worker_registered.set()
+            try:
+                self.tool_results.append(handler({}))
+            finally:
+                self.pipeline._fc_async_bg.pop(self.stream_id, None)
+                self.function_worker_finished = True
 
-        Thread(target=invoke_after_publication, daemon=True).start()
+        worker = Thread(target=invoke_after_publication, daemon=True)
+        worker.start()
         return result
+
+    def abort(self) -> None:
+        worker = self.pipeline._fc_async_bg.get(self.stream_id)
+        if isinstance(worker, Thread):
+            worker.join(timeout=5.0)
+            self.abort_join_timed_out = worker.is_alive()
+        super().abort()
+        self.cleanup_completed.set()
+
+
+class BlockingAbortFakeEngine(FakeEngine):
+    def __init__(self) -> None:
+        super().__init__()
+        self.abort_entered = Event()
+        self.abort_release = Event()
+        self.abort_completed = Event()
+        self.abort_wait_timed_out = False
+
+    def abort(self) -> None:
+        self.abort_entered.set()
+        if not self.abort_release.wait(timeout=2.0):
+            self.abort_wait_timed_out = True
+        super().abort()
+        self.abort_completed.set()
+
+
+class RecordingAsyncWebSocket:
+    def __init__(self, engine: FakeEngine) -> None:
+        self.engine = engine
+        self.inbound: asyncio.Queue[dict] = asyncio.Queue()
+        self.sent: list[dict] = []
+        self.fatal_abort_completed: list[bool] = []
+        self.closed: list[tuple[int, str | None, bool]] = []
+        self.accepted = False
+
+    def queue_json(self, body: dict) -> None:
+        self.inbound.put_nowait(
+            {"type": "websocket.receive", "text": json.dumps(body)}
+        )
+
+    async def accept(self) -> None:
+        self.accepted = True
+
+    async def receive(self) -> dict:
+        return await self.inbound.get()
+
+    async def send_json(self, data: dict) -> None:
+        self.sent.append(data)
+        if data.get("type") == "error" and data.get("error", {}).get("fatal"):
+            completed = getattr(self.engine, "abort_completed", None)
+            self.fatal_abort_completed.append(
+                bool(completed.is_set()) if isinstance(completed, Event) else True
+            )
+
+    async def close(self, code: int = 1000, reason: str | None = None) -> None:
+        completed = getattr(self.engine, "abort_completed", None)
+        self.closed.append(
+            (
+                code,
+                reason,
+                bool(completed.is_set()) if isinstance(completed, Event) else True,
+            )
+        )
 
 
 def audio_event(event_id: str = "audio-1", *, amplitude: float = 0.1) -> dict:
@@ -490,21 +583,296 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
             time.sleep(0.01)
         self.fail(f"trace did not emit {event_name}")
 
-    def configure(self, websocket, *, tools=None):
+    def configure(self, websocket, *, tools=None, model_output=False):
+        session = {
+            "protocol_version": 3,
+            "instructions": "Be brief.",
+            "tools": [] if tools is None else tools,
+        }
+        if model_output:
+            session["capabilities"] = {
+                "function_output_model_output": "client_authored_v1"
+            }
         websocket.send_json(
+            {
+                "type": "session.update",
+                "event_id": "config-1",
+                "session": session,
+            }
+        )
+        updated = websocket.receive_json()
+        self.assertEqual(updated["type"], "session.updated")
+        return updated
+
+    @staticmethod
+    async def wait_until(predicate, *, timeout: float = 1.0) -> bool:
+        deadline = asyncio.get_running_loop().time() + timeout
+        while not predicate():
+            if asyncio.get_running_loop().time() >= deadline:
+                return False
+            await asyncio.sleep(0.001)
+        return True
+
+    @staticmethod
+    def realtime_endpoint(app):
+        return next(route.endpoint for route in app.routes if route.path == "/v1/realtime")
+
+    @staticmethod
+    def health_endpoint(app):
+        return next(route.endpoint for route in app.routes if route.path == "/health")
+
+    @staticmethod
+    def queue_configuration(websocket: RecordingAsyncWebSocket) -> None:
+        websocket.queue_json(
             {
                 "type": "session.update",
                 "event_id": "config-1",
                 "session": {
                     "protocol_version": 3,
                     "instructions": "Be brief.",
-                    "tools": [] if tools is None else tools,
+                    "tools": [],
                 },
             }
         )
-        updated = websocket.receive_json()
-        self.assertEqual(updated["type"], "session.updated")
-        return updated
+
+    def test_terminal_owner_drains_abort_when_directly_cancelled(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = BlockingAbortFakeEngine()
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def reproduce() -> tuple[bool, bool, bool]:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "fatal-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            endpoint_task = asyncio.create_task(
+                self.realtime_endpoint(app)(websocket),
+                name="cancelled-owner-endpoint",
+            )
+            self.assertTrue(
+                await self.wait_until(engine.abort_entered.is_set, timeout=1.0)
+            )
+            cleanup_task = next(
+                task
+                for task in asyncio.all_tasks()
+                if task.get_name().startswith("voicechat-terminal-cleanup-")
+            )
+            cleanup_task.cancel()
+            await asyncio.sleep(0.02)
+            fatal_before_abort = bool(websocket.fatal_abort_completed)
+            close_before_abort = bool(websocket.closed)
+            trace_stopped_before_abort = any(
+                event["event"] == "session_trace_stopped"
+                for event in self.trace_events(temporary)
+            )
+            health_while_abort_blocked = await self.health_endpoint(app)()
+            engine.abort_release.set()
+            self.assertTrue(await self.wait_until(endpoint_task.done, timeout=1.0))
+            await asyncio.gather(endpoint_task, return_exceptions=True)
+            self.assertTrue(cleanup_task.done())
+            self.assertFalse(cleanup_task.cancelled())
+            self.assertEqual(cleanup_task.exception(), None)
+            self.assertTrue(engine.abort_completed.is_set())
+            self.assertFalse(engine.abort_wait_timed_out)
+            self.assertEqual(engine.abort_count, 1)
+            self.assertEqual(websocket.fatal_abort_completed, [True])
+            self.assertEqual(websocket.closed, [(1002, "input_turn_conflict", True)])
+            self.assertTrue(health_while_abort_blocked["active_client"])
+            self.assertFalse((await self.health_endpoint(app)())["active_client"])
+            return fatal_before_abort, close_before_abort, trace_stopped_before_abort
+
+        try:
+            premature = asyncio.run(reproduce())
+        finally:
+            engine.abort_release.set()
+        self.assertEqual(premature, (False, False, False))
+        self.wait_for_trace_event(temporary, "session_trace_stopped")
+
+    def test_terminal_owner_drains_abort_during_all_task_shutdown_cancellation(
+        self,
+    ) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = BlockingAbortFakeEngine()
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def reproduce() -> tuple[bool, bool, bool]:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "shutdown-fatal-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            endpoint_task = asyncio.create_task(
+                self.realtime_endpoint(app)(websocket),
+                name="shutdown-cancelled-endpoint",
+            )
+            self.assertTrue(
+                await self.wait_until(engine.abort_entered.is_set, timeout=1.0)
+            )
+            cleanup_task = next(
+                task
+                for task in asyncio.all_tasks()
+                if task.get_name().startswith("voicechat-terminal-cleanup-")
+            )
+            current_task = asyncio.current_task()
+            self.assertIsNotNone(current_task)
+            for task in list(asyncio.all_tasks()):
+                task.cancel()
+            try:
+                await asyncio.sleep(0)
+            except asyncio.CancelledError:
+                while current_task is not None and current_task.cancelling():
+                    current_task.uncancel()
+            await asyncio.sleep(0.02)
+            fatal_before_abort = bool(websocket.fatal_abort_completed)
+            close_before_abort = bool(websocket.closed)
+            trace_stopped_before_abort = any(
+                event["event"] == "session_trace_stopped"
+                for event in self.trace_events(temporary)
+            )
+            self.assertTrue((await self.health_endpoint(app)())["active_client"])
+            engine.abort_release.set()
+            self.assertTrue(await self.wait_until(endpoint_task.done, timeout=1.0))
+            await asyncio.gather(endpoint_task, return_exceptions=True)
+            self.assertTrue(cleanup_task.done())
+            self.assertFalse(cleanup_task.cancelled())
+            self.assertEqual(cleanup_task.exception(), None)
+            self.assertTrue(engine.abort_completed.is_set())
+            self.assertFalse(engine.abort_wait_timed_out)
+            self.assertEqual(engine.abort_count, 1)
+            self.assertEqual(websocket.fatal_abort_completed, [True])
+            self.assertEqual(websocket.closed, [(1002, "input_turn_conflict", True)])
+            self.assertFalse((await self.health_endpoint(app)())["active_client"])
+            return fatal_before_abort, close_before_abort, trace_stopped_before_abort
+
+        try:
+            premature = asyncio.run(reproduce())
+        finally:
+            engine.abort_release.set()
+        self.assertEqual(premature, (False, False, False))
+        self.wait_for_trace_event(temporary, "session_trace_stopped")
+
+    def test_racing_endpoint_and_typed_fatals_complete_without_wait_cycle(
+        self,
+    ) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.block_process = True
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            pocket_worker=FakePocketWorker(),
+            client_turn_detection=True,
+            max_session_model_frames=1,
+        )
+
+        async def reproduce() -> tuple[float, bool]:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            endpoint_task = asyncio.create_task(
+                self.realtime_endpoint(app)(websocket),
+                name="two-fatal-branch-endpoint",
+            )
+            self.assertTrue(
+                await self.wait_until(
+                    lambda: any(
+                        event.get("type") == "session.updated"
+                        for event in websocket.sent
+                    )
+                )
+            )
+            websocket.queue_json(
+                {
+                    "type": "input_text.request",
+                    "job_id": "typed-fatal-race",
+                    "text": "Race the terminal owner",
+                }
+            )
+            self.assertTrue(
+                await self.wait_until(engine.process_started.is_set, timeout=1.0)
+            )
+            typed_task = next(
+                task
+                for task in asyncio.all_tasks()
+                if task.get_name() == "typed-input-typed-fatal-race"
+            )
+            started_at = time.monotonic()
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "conflicting-turn",
+                    "client_turn_id": 1,
+                }
+            )
+            self.assertTrue(
+                await self.wait_until(
+                    lambda: any(
+                        task.get_name().startswith("voicechat-terminal-cleanup-")
+                        for task in asyncio.all_tasks()
+                    )
+                )
+            )
+            cleanup_task = next(
+                task
+                for task in asyncio.all_tasks()
+                if task.get_name().startswith("voicechat-terminal-cleanup-")
+            )
+            engine.process_release.set()
+            bounded = await self.wait_until(
+                lambda: bool(websocket.fatal_abort_completed), timeout=1.0
+            )
+            elapsed = time.monotonic() - started_at
+            if not bounded:
+                cleanup_task.cancel()
+            self.assertTrue(await self.wait_until(endpoint_task.done, timeout=1.0))
+            await asyncio.gather(endpoint_task, return_exceptions=True)
+            self.assertTrue(typed_task.done())
+            self.assertTrue(cleanup_task.done())
+            self.assertEqual(engine.abort_count, 1)
+            self.assertEqual(websocket.fatal_abort_completed, [True])
+            self.assertEqual(websocket.closed, [(1002, "input_turn_conflict", True)])
+            self.assertFalse((await self.health_endpoint(app)())["active_client"])
+            return elapsed, bounded
+
+        try:
+            elapsed, bounded = asyncio.run(reproduce())
+        finally:
+            engine.process_release.set()
+        self.assertTrue(bounded)
+        self.assertLess(elapsed, 1.0)
+        events = self.trace_events(temporary)
+        self.assertEqual(
+            [event["reason"] for event in events if event["event"] == "terminal_session_claimed"],
+            ["input_turn_conflict"],
+        )
+        self.assertEqual(
+            [
+                event["reason"]
+                for event in events
+                if event["event"] == "terminal_cleanup_wait_skipped"
+            ],
+            ["session_position_limit"],
+        )
+        self.assertTrue(any(event["event"] == "session_trace_stopped" for event in events))
 
     def test_strict_handshake_and_permanent_stop(self) -> None:
         temporary, engine, client = self.make_client()
@@ -550,6 +918,43 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
         self.assertEqual(completed["reason"], "session_update_initial")
         self.assertEqual(completed["start_evidence"]["schema"], 1)
         self.assertEqual(completed["start_evidence"]["timings_ms"]["total"], 0.7)
+
+    def test_unnegotiated_model_output_is_rejected_before_tool_submission(self) -> None:
+        temporary, _engine, client = self.make_client(
+            function_template_path=Path("/unused/test-template.jinja")
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {
+                    "type": "conversation.item.create",
+                    "event_id": "unnegotiated-model-output",
+                    "item": {
+                        "type": "function_call_output",
+                        "call_id": "call-unknown",
+                        "output": "full",
+                        "model_output": "concise",
+                    },
+                }
+            )
+            error = websocket.receive_json()
+            self.assertEqual(error["error"]["code"], "invalid_function_call_output")
+            self.assertIn("not negotiated", error["error"]["message"])
 
     def test_identical_pre_frame_update_reacks_without_restart(self) -> None:
         temporary, engine, client = self.make_client()
@@ -969,6 +1374,27 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                 engine = DeferredToolTimeoutFakeEngine(
                     invalidation_failure=invalidation_failure
                 )
+                fatal_abort_counts: list[int] = []
+                endpoint_tasks: list[asyncio.Task] = []
+                original_send_json = WebSocket.send_json
+
+                async def observe_fatal_send(websocket, data, *args, **kwargs):
+                    current_task = asyncio.current_task()
+                    if not endpoint_tasks and current_task is not None:
+                        endpoint_tasks.append(current_task)
+                    if (
+                        data.get("type") == "error"
+                        and data.get("error", {}).get("code")
+                        == "function_call_output_timeout"
+                    ):
+                        fatal_abort_counts.append(engine.abort_count)
+                        result = await original_send_json(
+                            websocket, data, *args, **kwargs
+                        )
+                        endpoint_tasks[0].cancel()
+                        return result
+                    return await original_send_json(websocket, data, *args, **kwargs)
+
                 temporary, engine, client = self.make_client(
                     engine=engine,
                     client_turn_detection=True,
@@ -984,6 +1410,7 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                         "nemotron_voicechat_runtime.server.FUNCTION_CALL_TIMEOUT_SECONDS",
                         0.03,
                     ),
+                    mock.patch.object(WebSocket, "send_json", new=observe_fatal_send),
                     client.websocket_connect("/v1/realtime") as websocket,
                 ):
                     websocket.receive_json()
@@ -998,6 +1425,7 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                     receive_until(websocket, "input_audio_buffer.turn_started")
                     websocket.send_json(audio_event("deferred-timeout-audio"))
                     receive_until(websocket, "voicechat.metrics")
+                    fatal_started_at = time.monotonic()
                     websocket.send_json(
                         {
                             "type": "input_audio_buffer.commit",
@@ -1018,13 +1446,21 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                         "response.function_call.failed",
                         [event["type"] for event in events],
                     )
+                    with self.assertRaises(WebSocketDisconnect) as closed:
+                        websocket.receive_json()
+                    fatal_boundary_seconds = time.monotonic() - fatal_started_at
+                    self.assertEqual(closed.exception.code, 1011)
 
                 self.assertEqual(engine.invalidations, ["function_call_output_timeout"])
-                for _ in range(100):
-                    if engine.abort_count:
-                        break
-                    time.sleep(0.01)
+                self.assertEqual(fatal_abort_counts, [1])
                 self.assertGreaterEqual(engine.abort_count, 1)
+                self.assertLess(fatal_boundary_seconds, 1.0)
+                self.assertTrue(engine.cleanup_completed.wait(timeout=0.5))
+                self.assertTrue(engine.function_worker_registered.is_set())
+                self.assertTrue(engine.function_worker_finished)
+                self.assertFalse(engine.abort_join_timed_out)
+                self.assertEqual(engine.pipeline._fc_async_bg, {})
+                self.wait_for_trace_event(temporary, "session_trace_stopped")
                 terminated = [
                     event
                     for event in self.trace_events(temporary)
@@ -1035,6 +1471,164 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                     terminated[0]["epoch_invalidation_error"],
                     "RuntimeError" if invalidation_failure else None,
                 )
+
+    def test_deferred_tool_closes_turn_and_barge_cancels_before_publication(self) -> None:
+        engine = DeferredToolTimeoutFakeEngine()
+        engine.publication_delay = 0.2
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "first-start",
+                    "client_turn_id": 1,
+                }
+            )
+            first_started, _events = receive_until(
+                websocket, "input_audio_buffer.turn_started"
+            )
+            first_turn_id = first_started["turn_id"]
+            websocket.send_json(audio_event("first-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "first-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            committed, commit_events = receive_until(
+                websocket, "input_audio_buffer.committed"
+            )
+            self.assertEqual(committed["turn_id"], first_turn_id)
+
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "barge-start",
+                    "client_turn_id": 2,
+                }
+            )
+            second_started, turn_events = receive_until(
+                websocket, "input_audio_buffer.turn_started", limit=30
+            )
+            self.assertNotEqual(second_started["turn_id"], first_turn_id)
+            lifecycle = commit_events + turn_events
+            self.assertIn(
+                "conversation.item.input_audio_transcription.completed",
+                [event["type"] for event in lifecycle],
+            )
+
+            websocket.send_json(audio_event("barge-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            self.assertEqual(engine.unpublished_interrupts, 1)
+            time.sleep(engine.publication_delay + 0.05)
+            websocket.send_json(audio_event("barge-reconcile"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed")
+
+        trace_events = self.trace_events(temporary)
+        self.assertEqual(
+            len(
+                [
+                    event
+                    for event in trace_events
+                    if event["event"] == "unpublished_function_cycle_interrupt"
+                ]
+            ),
+            1,
+        )
+        self.assertEqual(
+            len(
+                [
+                    event
+                    for event in trace_events
+                    if event["event"] == "function_call_publication_suppressed"
+                ]
+            ),
+            1,
+        )
+        self.assertEqual(
+            len(
+                [
+                    event
+                    for event in trace_events
+                    if event["event"] == "deferred_bos_superseded_by_client_turn"
+                ]
+            ),
+            1,
+        )
+
+    def test_typed_finished_is_immediate_readiness_barrier_during_deferred_tool(self) -> None:
+        engine = DeferredToolTimeoutFakeEngine()
+        engine.publication_delay = 0.2
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            typed_input=True,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {"type": "input_text.request", "job_id": "typed-tool", "text": "Use it"}
+            )
+            receive_until(websocket, "input_text.injection_finished", limit=100)
+
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "immediate-after-typed",
+                    "client_turn_id": 2,
+                }
+            )
+            started, events = receive_until(
+                websocket, "input_audio_buffer.turn_started", limit=30
+            )
+            self.assertEqual(started["client_event_id"], "immediate-after-typed")
+            self.assertEqual(started["client_turn_id"], 2)
+            self.assertNotIn("error", [event["type"] for event in events])
+
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed")
+
+        self.assertEqual(engine.unpublished_interrupts, 1)
 
     def test_deferred_tool_recovery_timeout_clears_epoch_and_closes(self) -> None:
         engine = DeferredToolTimeoutFakeEngine()
@@ -1067,7 +1661,11 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
             client.websocket_connect("/v1/realtime") as websocket,
         ):
             websocket.receive_json()
-            self.configure(websocket, tools=tools)
+            updated = self.configure(websocket, tools=tools, model_output=True)
+            self.assertEqual(
+                updated["session"]["capabilities"]["function_output_model_output"],
+                "client_authored_v1",
+            )
             websocket.send_json(
                 {
                     "type": "input_audio_buffer.turn_start",
@@ -1096,6 +1694,7 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
                         "type": "function_call_output",
                         "call_id": function_call["call_id"],
                         "output": '{"spoken":"ordinary words"}',
+                        "model_output": "Short answer.",
                     },
                 }
             )
@@ -1104,6 +1703,22 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
             self.assertTrue(error["error"]["fatal"])
 
         self.assertEqual(engine.invalidations, ["function_output_apply_timeout"])
+        self.assertEqual(engine.tool_results, ["Short answer."])
+        received = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "function_call_output_received"
+        )
+        self.assertEqual(received["injection_source"], "model_output")
+        self.assertEqual(received["model_output_tokens"], received["injection_tokens"])
+        self.assertEqual(
+            received["output_sha256"],
+            hashlib.sha256(b'{"spoken":"ordinary words"}').hexdigest(),
+        )
+        self.assertEqual(
+            received["model_output_sha256"],
+            hashlib.sha256(b"Short answer.").hexdigest(),
+        )
         terminated = [
             event
             for event in self.trace_events(temporary)

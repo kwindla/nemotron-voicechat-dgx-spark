@@ -1,0 +1,10 @@
+{
+  "files": {
+    "calibration-receipt.json": {
+      "bytes": 62730283,
+      "sha256": "a5a45dc07ad5981c77600b7bd68b9f3bb40899835937168fcf4a4602897f0ec8"
+    }
+  },
+  "schema_version": 1,
+  "self_canonical_sha256": "a695ed58272efae9d666cb96f152144aab875be5d0806ae2c93fccaeb44dd3eb"
+}

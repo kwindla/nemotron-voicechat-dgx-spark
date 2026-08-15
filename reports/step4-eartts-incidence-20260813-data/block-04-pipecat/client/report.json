@@ -1,0 +1,48 @@
+{
+  "audio_bytes": 539784,
+  "audio_frames": 153,
+  "drain_seconds": 15.0,
+  "duration_seconds": 120.0,
+  "job_records": [
+    {
+      "injection_monotonic_s": 4833876.865429963,
+      "injection_wall_time_s": 1786640629.6385672,
+      "job_id": "step4-0000",
+      "prompt_id": "prompt-01",
+      "prompt_ordinal": 1,
+      "prompt_text": "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+      "response_id": "response_b624df5b-1814-4251-a734-cbc75ad57083_1",
+      "terminal_monotonic_s": 4833905.265983379,
+      "terminal_status": "completed",
+      "terminal_wall_time_s": 1786640658.0391204
+    }
+  ],
+  "passed": true,
+  "playout_trace_enabled": true,
+  "playout_trace_status": {
+    "artifact_published": true,
+    "closed": true,
+    "dropped_records": 0,
+    "enabled": true,
+    "error": null,
+    "invalid_reason": null,
+    "queued_records": 0,
+    "valid": true,
+    "writer_alive": false,
+    "written_records": 1803
+  },
+  "prompt_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+  "prompts": [
+    "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate."
+  ],
+  "prompts_sent": 1,
+  "qualification_fixture": "step4c-l1",
+  "responses_done": 1,
+  "schema": "nemotron_voicechat.step4_pipecat_soak.v3",
+  "session_id": "b624df5b-1814-4251-a734-cbc75ad57083",
+  "source_frames": 1500,
+  "system_instruction": "Qualification latency fixture: when the user supplies a script, speak the supplied script aloud completely and exactly, then stop.",
+  "terminal_errors": [],
+  "typed_interval_seconds": 120.0,
+  "warmup_seconds": 10.0
+}

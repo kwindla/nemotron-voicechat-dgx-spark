@@ -7,6 +7,8 @@ from nemotron_voicechat_runtime.protocol import (
     FUNCTION_OUTPUT_ACK_TIMEOUT_SECONDS,
     FUNCTION_OUTPUT_MAX_BYTES,
     FUNCTION_OUTPUT_MAX_TOKENS,
+    FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+    FUNCTION_OUTPUT_MODEL_OUTPUT_TARGET_TOKENS,
     FUNCTION_OUTPUT_RECOVERY_FRAME_SECONDS,
     FUNCTION_OUTPUT_RECOVERY_MAX_FRAMES,
     MAX_FUNCTION_CALLS_PER_RESPONSE,
@@ -75,6 +77,15 @@ class RealtimeProtocolContractTest(unittest.TestCase):
         self.assertEqual(
             created["capabilities"]["function_output_max_tokens"],
             FUNCTION_OUTPUT_MAX_TOKENS,
+        )
+        self.assertEqual(
+            created["capabilities"]["function_output_model_output"],
+            {
+                "mode": FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+                "max_bytes": FUNCTION_OUTPUT_MAX_BYTES,
+                "max_tokens": FUNCTION_OUTPUT_MAX_TOKENS,
+                "target_tokens": FUNCTION_OUTPUT_MODEL_OUTPUT_TARGET_TOKENS,
+            },
         )
         self.assertLess(
             FUNCTION_OUTPUT_RECOVERY_MAX_FRAMES * FUNCTION_OUTPUT_RECOVERY_FRAME_SECONDS,
@@ -163,6 +174,54 @@ class RealtimeProtocolContractTest(unittest.TestCase):
             if event["type"] == "conversation.item.input_audio_transcription.completed"
         )
         self.assertEqual(completed["transcript"], "hello")
+
+    def test_deferred_tool_closes_input_and_preserves_function_turn_correlation(
+        self,
+    ) -> None:
+        protocol = RealtimeProtocolSession(
+            "deferred-tool",
+            protocol_capabilities(
+                function_call_timeout_seconds=20.0,
+                max_session_model_frames=12_000,
+                client_turn_detection=True,
+            ),
+        )
+        first = protocol.begin_input_turn("typed", "job-1", job_id="job-1")
+        protocol.step_events(
+            result(user_text="use the tool", decoded_token_count=3),
+            output_pcm=b"",
+            audio_delivered=False,
+            output_sample_rate=22_050,
+        )
+        finished = protocol.finish_committed_input_turn(
+            "use the tool", decoded_token_count=3
+        )
+        self.assertEqual(
+            [event["type"] for event in finished],
+            [
+                "input_audio_buffer.speech_stopped",
+                "conversation.item.input_audio_transcription.completed",
+            ],
+        )
+        second = protocol.begin_input_turn("microphone", 2)
+        self.assertNotEqual(second["turn_id"], first["turn_id"])
+
+        function_events = protocol.function_call_events(
+            call_id="call-1",
+            name="lookup",
+            arguments="{}",
+            turn_id=first["turn_id"],
+        )
+        self.assertTrue(
+            all(event["turn_id"] == first["turn_id"] for event in function_events)
+        )
+        with self.assertRaisesRegex(ValueError, "does not own"):
+            protocol.function_call_events(
+                call_id="call-2",
+                name="lookup",
+                arguments="{}",
+                turn_id=second["turn_id"],
+            )
 
     def test_full_turn_lifecycle_is_ordered_and_scoped(self) -> None:
         first = self.events(result(user_text="hello", speech_confirmed=True))

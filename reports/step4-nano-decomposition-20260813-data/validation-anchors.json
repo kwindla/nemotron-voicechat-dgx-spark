@@ -1,0 +1,482 @@
+{
+  "checks": [
+    {
+      "actual": "166ec35a5e74045384c80042e01fe20e4795137719797634145dde6f6d9a74fd",
+      "anchor": "preflight.source.sha256",
+      "difference": null,
+      "expected": "166ec35a5e74045384c80042e01fe20e4795137719797634145dde6f6d9a74fd",
+      "passed": true
+    },
+    {
+      "actual": "acb205f6b6e5c786a039a2e3e238f12a15dc0fc0dcc971341dd8838b33f7353f",
+      "anchor": "aged.source.sha256",
+      "difference": null,
+      "expected": "acb205f6b6e5c786a039a2e3e238f12a15dc0fc0dcc971341dd8838b33f7353f",
+      "passed": true
+    },
+    {
+      "actual": "aba32f50ad8c7c03fce4c3c1663ea0d42da119d4a9a52c1d90379bb4596ea1f3",
+      "anchor": "pair.source.sha256",
+      "difference": null,
+      "expected": "aba32f50ad8c7c03fce4c3c1663ea0d42da119d4a9a52c1d90379bb4596ea1f3",
+      "passed": true
+    },
+    {
+      "actual": "baabf0a1203e8fa4bdcef9ebcbd9b2aeb7db952ec0eb83c58e18898fdcb2f880",
+      "anchor": "high_mode.source.sha256",
+      "difference": null,
+      "expected": "baabf0a1203e8fa4bdcef9ebcbd9b2aeb7db952ec0eb83c58e18898fdcb2f880",
+      "passed": true
+    },
+    {
+      "actual": "2815a4e99d5ade234ade161cc83acd9e4b7fa93a4297bd55fb5e3f5ae596693d",
+      "anchor": "function_cycle.source.sha256",
+      "difference": null,
+      "expected": "2815a4e99d5ade234ade161cc83acd9e4b7fa93a4297bd55fb5e3f5ae596693d",
+      "passed": true
+    },
+    {
+      "actual": "05295ce9e58ce7bd1685fb9a1a3f0f0e04f9f01d5ac923e0b6fdb13e6a64a155",
+      "anchor": "preflight.delivered.membership.sha256",
+      "difference": null,
+      "expected": "05295ce9e58ce7bd1685fb9a1a3f0f0e04f9f01d5ac923e0b6fdb13e6a64a155",
+      "passed": true
+    },
+    {
+      "actual": "3a5e63cffe022bf56d2d1444a3350a5f5e869e1d3682a4888f8ac2c987c49221",
+      "anchor": "preflight.response-null.membership.sha256",
+      "difference": null,
+      "expected": "3a5e63cffe022bf56d2d1444a3350a5f5e869e1d3682a4888f8ac2c987c49221",
+      "passed": true
+    },
+    {
+      "actual": "3f832f89b89e367c590e23cacda854b963a9f78a1960f615c85fc7db977ddb5e",
+      "anchor": "aged.delivered.membership.sha256",
+      "difference": null,
+      "expected": "3f832f89b89e367c590e23cacda854b963a9f78a1960f615c85fc7db977ddb5e",
+      "passed": true
+    },
+    {
+      "actual": "e4afedeb26f6bcd04194100475f4a53c733e50400d4d11ea9fdbcbd5529930fb",
+      "anchor": "aged.delivered-nonBOS.membership.sha256",
+      "difference": null,
+      "expected": "e4afedeb26f6bcd04194100475f4a53c733e50400d4d11ea9fdbcbd5529930fb",
+      "passed": true
+    },
+    {
+      "actual": "fbe75b398c42f6252b08dba96784724329d3a9867869077f0ed1437e0fb4f366",
+      "anchor": "aged.response-null.membership.sha256",
+      "difference": null,
+      "expected": "fbe75b398c42f6252b08dba96784724329d3a9867869077f0ed1437e0fb4f366",
+      "passed": true
+    },
+    {
+      "actual": "98f712d2c6b8e4da32454a687ed2713a637a214f12378d2a83b67e9af8cf78ef",
+      "anchor": "aged.idle.membership.sha256",
+      "difference": null,
+      "expected": "98f712d2c6b8e4da32454a687ed2713a637a214f12378d2a83b67e9af8cf78ef",
+      "passed": true
+    },
+    {
+      "actual": "02b104caf316b636297f7a33ceff4d1253ff2c3ddada53495264aabd4f84dd9a",
+      "anchor": "aged.function-cycle.membership.sha256",
+      "difference": null,
+      "expected": "02b104caf316b636297f7a33ceff4d1253ff2c3ddada53495264aabd4f84dd9a",
+      "passed": true
+    },
+    {
+      "actual": "95ea829c87154c81b39e1154e6e67e02f22f39cb5ae1748c3746065eb4a67890",
+      "anchor": "pair.delivered.membership.sha256",
+      "difference": null,
+      "expected": "95ea829c87154c81b39e1154e6e67e02f22f39cb5ae1748c3746065eb4a67890",
+      "passed": true
+    },
+    {
+      "actual": "d3bc56bd3fc35cd3e0f1638027836ba437de7de322823e01cb4c0532e6ae0a0e",
+      "anchor": "high_mode.EarTTS-high.membership.sha256",
+      "difference": null,
+      "expected": "d3bc56bd3fc35cd3e0f1638027836ba437de7de322823e01cb4c0532e6ae0a0e",
+      "passed": true
+    },
+    {
+      "actual": "8c9142aadcc4881c2543aad4e222e8b7691d5a40ff9a6b333629b429cd216c57",
+      "anchor": "function_cycle.function-cycle.membership.sha256",
+      "difference": null,
+      "expected": "8c9142aadcc4881c2543aad4e222e8b7691d5a40ff9a6b333629b429cd216c57",
+      "passed": true
+    },
+    {
+      "actual": "c598fc6d6439a52109612cbe8712ad2bcb8ce09a7ae5ffc0f810f1cf39d183d4",
+      "anchor": "function_cycle.BOS-transition.membership.sha256",
+      "difference": null,
+      "expected": "c598fc6d6439a52109612cbe8712ad2bcb8ce09a7ae5ffc0f810f1cf39d183d4",
+      "passed": true
+    },
+    {
+      "actual": "209cba67016bc59f950585878e82f82a633d6a0ce7a6bb4c12155bfd2d1252b2",
+      "anchor": "function_cycle.abort-prefill-reset.membership.sha256",
+      "difference": null,
+      "expected": "209cba67016bc59f950585878e82f82a633d6a0ce7a6bb4c12155bfd2d1252b2",
+      "passed": true
+    },
+    {
+      "actual": "b7908f96bb0eedfab203e54df198c6786fdd0352e75247fdbd66c6e72560cc45",
+      "anchor": "function_cycle.residual-high.membership.sha256",
+      "difference": null,
+      "expected": "b7908f96bb0eedfab203e54df198c6786fdd0352e75247fdbd66c6e72560cc45",
+      "passed": true
+    },
+    {
+      "actual": 34,
+      "anchor": "preflight.delivered.server.n",
+      "difference": null,
+      "expected": 34,
+      "passed": true
+    },
+    {
+      "actual": 86.16844117647058,
+      "anchor": "preflight.delivered.server.mean_ms",
+      "difference": 0.0004411764705736232,
+      "expected": 86.168,
+      "passed": true
+    },
+    {
+      "actual": 2692,
+      "anchor": "preflight.response-null.server.n",
+      "difference": null,
+      "expected": 2692,
+      "passed": true
+    },
+    {
+      "actual": 70.92618424962853,
+      "anchor": "preflight.response-null.server.mean_ms",
+      "difference": 0.00018424962853202942,
+      "expected": 70.926,
+      "passed": true
+    },
+    {
+      "actual": 193,
+      "anchor": "aged.delivered.server.n",
+      "difference": null,
+      "expected": 193,
+      "passed": true
+    },
+    {
+      "actual": 85.40333160621762,
+      "anchor": "aged.delivered.server.mean_ms",
+      "difference": 0.0003316062176139667,
+      "expected": 85.403,
+      "passed": true
+    },
+    {
+      "actual": 188,
+      "anchor": "aged.delivered-nonBOS.server.n",
+      "difference": null,
+      "expected": 188,
+      "passed": true
+    },
+    {
+      "actual": 82.91935638297872,
+      "anchor": "aged.delivered-nonBOS.server.mean_ms",
+      "difference": 0.0003563829787225359,
+      "expected": 82.919,
+      "passed": true
+    },
+    {
+      "actual": 2454,
+      "anchor": "aged.response-null.server.n",
+      "difference": null,
+      "expected": 2454,
+      "passed": true
+    },
+    {
+      "actual": 70.62677546862265,
+      "anchor": "aged.response-null.server.mean_ms",
+      "difference": -0.00022453137734146367,
+      "expected": 70.627,
+      "passed": true
+    },
+    {
+      "actual": 2424,
+      "anchor": "aged.idle.server.n",
+      "difference": null,
+      "expected": 2424,
+      "passed": true
+    },
+    {
+      "actual": 71.46925288778878,
+      "anchor": "aged.idle.server.mean_ms",
+      "difference": 0.00025288778878973517,
+      "expected": 71.469,
+      "passed": true
+    },
+    {
+      "actual": 32,
+      "anchor": "pair.delivered.server.n",
+      "difference": null,
+      "expected": 32,
+      "passed": true
+    },
+    {
+      "actual": 75.11634375,
+      "anchor": "pair.delivered.server.mean_ms",
+      "difference": 0.0003437499999989768,
+      "expected": 75.116,
+      "passed": true
+    },
+    {
+      "actual": 245,
+      "anchor": "high_mode.response-null.literal_count",
+      "difference": null,
+      "expected": 245,
+      "passed": true
+    },
+    {
+      "actual": 190,
+      "anchor": "high_mode.idle.normative_count",
+      "difference": null,
+      "expected": 190,
+      "passed": true
+    },
+    {
+      "actual": 490,
+      "anchor": "function_cycle.response-null.literal_count",
+      "difference": null,
+      "expected": 490,
+      "passed": true
+    },
+    {
+      "actual": 326,
+      "anchor": "function_cycle.idle.normative_count",
+      "difference": null,
+      "expected": 326,
+      "passed": true
+    },
+    {
+      "actual": 10,
+      "anchor": "high_mode.EarTTS-high.semantic_count",
+      "difference": null,
+      "expected": 10,
+      "passed": true
+    },
+    {
+      "actual": 30,
+      "anchor": "function_cycle.function-cycle.semantic_count",
+      "difference": null,
+      "expected": 30,
+      "passed": true
+    },
+    {
+      "actual": 293.88899974524975,
+      "anchor": "preflight.zero_reserve_prefix_debt_ms",
+      "difference": -2.5475026177446125e-07,
+      "expected": 293.889,
+      "passed": true
+    },
+    {
+      "actual": 4.530000574886799,
+      "anchor": "pair.zero_reserve_prefix_debt_ms",
+      "difference": 5.748867986099526e-07,
+      "expected": 4.53,
+      "passed": true
+    },
+    {
+      "actual": "REJECT",
+      "anchor": "preflight.structural.audio_delta.verdict",
+      "difference": null,
+      "expected": "REJECT",
+      "passed": true
+    },
+    {
+      "actual": 1009.9339997395873,
+      "anchor": "preflight.structural.audio_delta.worst_window_ms",
+      "difference": -2.604126621008618e-07,
+      "expected": 1009.934,
+      "passed": true
+    },
+    {
+      "actual": 13,
+      "anchor": "preflight.structural.audio_delta.failing_window_count",
+      "difference": null,
+      "expected": 13,
+      "passed": true
+    },
+    {
+      "actual": 151.67099982500076,
+      "anchor": "preflight.structural.audio_delta.max_gap_ms",
+      "difference": -1.749992293298419e-07,
+      "expected": 151.671,
+      "passed": true
+    },
+    {
+      "actual": 1009.95699968189,
+      "anchor": "preflight.structural.metrics_receipt.worst_window_ms",
+      "difference": -3.1810998279979685e-07,
+      "expected": 1009.957,
+      "passed": true
+    },
+    {
+      "actual": null,
+      "anchor": "preflight.structural.metrics_receipt.verdict",
+      "difference": null,
+      "expected": null,
+      "passed": true
+    },
+    {
+      "actual": "UNAVAILABLE",
+      "anchor": "pair.structural.verdict",
+      "difference": null,
+      "expected": "UNAVAILABLE",
+      "passed": true
+    },
+    {
+      "actual": "ACCEPT",
+      "anchor": "pair.structural.server_emit.diagnostic_outcome",
+      "difference": null,
+      "expected": "ACCEPT",
+      "passed": true
+    },
+    {
+      "actual": 877.8710002079606,
+      "anchor": "pair.structural.server_emit.worst_window_ms",
+      "difference": 2.0796062472072663e-07,
+      "expected": 877.871,
+      "passed": true
+    },
+    {
+      "actual": 0,
+      "anchor": "pair.structural.server_emit.failing_window_count",
+      "difference": null,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "actual": 120.93899957835674,
+      "anchor": "pair.structural.server_emit.max_gap_ms",
+      "difference": -4.2164325009252934e-07,
+      "expected": 120.939,
+      "passed": true
+    },
+    {
+      "actual": 6,
+      "anchor": "a6.reserve_160.responses",
+      "difference": null,
+      "expected": 6,
+      "passed": true
+    },
+    {
+      "actual": 4,
+      "anchor": "a6.reserve_160.responses_starved",
+      "difference": null,
+      "expected": 4,
+      "passed": true
+    },
+    {
+      "actual": 797.183999158442,
+      "anchor": "a6.reserve_160.total_starvation_ms",
+      "difference": -8.415579486609204e-07,
+      "expected": 797.184,
+      "passed": true
+    },
+    {
+      "actual": 116.20150009791057,
+      "anchor": "a6.reserve_160.mean_added_release_delay_ms",
+      "difference": -0.000499902089430293,
+      "expected": 116.202,
+      "passed": true
+    },
+    {
+      "actual": 6,
+      "anchor": "a6.reserve_240.responses",
+      "difference": null,
+      "expected": 6,
+      "passed": true
+    },
+    {
+      "actual": 4,
+      "anchor": "a6.reserve_240.responses_starved",
+      "difference": null,
+      "expected": 4,
+      "passed": true
+    },
+    {
+      "actual": 438.7889991700649,
+      "anchor": "a6.reserve_240.total_starvation_ms",
+      "difference": -8.299350611196132e-07,
+      "expected": 438.789,
+      "passed": true
+    },
+    {
+      "actual": 202.73366679127017,
+      "anchor": "a6.reserve_240.mean_added_release_delay_ms",
+      "difference": -0.00033320872984177186,
+      "expected": 202.734,
+      "passed": true
+    },
+    {
+      "actual": 6,
+      "anchor": "a6.reserve_320.responses",
+      "difference": null,
+      "expected": 6,
+      "passed": true
+    },
+    {
+      "actual": 2,
+      "anchor": "a6.reserve_320.responses_starved",
+      "difference": null,
+      "expected": 2,
+      "passed": true
+    },
+    {
+      "actual": 136.07399940490723,
+      "anchor": "a6.reserve_320.total_starvation_ms",
+      "difference": -5.950927857156785e-07,
+      "expected": 136.074,
+      "passed": true
+    },
+    {
+      "actual": 289.8186668753624,
+      "anchor": "a6.reserve_320.mean_added_release_delay_ms",
+      "difference": -0.0003331246376205854,
+      "expected": 289.819,
+      "passed": true
+    },
+    {
+      "actual": 6,
+      "anchor": "a6.reserve_400.responses",
+      "difference": null,
+      "expected": 6,
+      "passed": true
+    },
+    {
+      "actual": 0,
+      "anchor": "a6.reserve_400.responses_starved",
+      "difference": null,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "actual": 0.0,
+      "anchor": "a6.reserve_400.total_starvation_ms",
+      "difference": 0.0,
+      "expected": 0.0,
+      "passed": true
+    },
+    {
+      "actual": 375.56266676013666,
+      "anchor": "a6.reserve_400.mean_added_release_delay_ms",
+      "difference": -0.00033323986332334243,
+      "expected": 375.563,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "paths": {
+    "aged": "/home/khkramer/.local/state/nemotron-voicechat/qualification/sustained-aged-26h-20260812/events.jsonl",
+    "function_cycle": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/2a0fa2ae-766d-4455-bfb0-885f67cc958a/events.jsonl",
+    "high_mode": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/209fe177-bbb8-403d-ba50-740d3b6f3bf4/events.jsonl",
+    "pair": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/f110f063-8c9a-46e1-87a9-97dc682b8022/events.jsonl",
+    "preflight": "/home/khkramer/.local/state/nemotron-voicechat/qualification/nano-sequential-preflight-20260810-r1/events.jsonl"
+  },
+  "tolerance_ms": 0.001
+}

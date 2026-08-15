@@ -1,0 +1,468 @@
+{
+  "file_count": 92,
+  "files": [
+    {
+      "bytes": 4121876,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/analyzer.json",
+      "sha256": "5169e8b667d1a0842a46607c049378d9f22db608460f4848a59dd2e6a3fa0111"
+    },
+    {
+      "bytes": 8276747,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/client/events.jsonl",
+      "sha256": "e10f9e0d9dbe1460bfa365cf688fa86dd38f2c6b125e180f24c33f537f83892f"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/client/health-immediately-before.json",
+      "sha256": "e0af0f49df9571f881fac003c463e6a5fd972e2778b501ccf221eb4e1693183b"
+    },
+    {
+      "bytes": 3530,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/client/report.json",
+      "sha256": "23b221b256fdaf4c8833d17a8552913d2ca7944bc79f43a17c78ced080c99860"
+    },
+    {
+      "bytes": 543356,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/client/response-001.wav",
+      "sha256": "ae0328a1b953785a393f2f8631978602a0b3e1e93355ee03558dfaa253a09858"
+    },
+    {
+      "bytes": 265,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/client/timing-evidence.json",
+      "sha256": "5754f30d4ed9b391502b15125977989f4dff5a2bae10ec177cb8d1cc9a024cd2"
+    },
+    {
+      "bytes": 7325572,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/server-trace/events.jsonl",
+      "sha256": "f8d2693dbd843299a5e7c5e91aa4f66420bbeea70663e1551d341265303acc2e"
+    },
+    {
+      "bytes": 210247,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-01-direct/telemetry.jsonl",
+      "sha256": "c6c588f7928c59800737386a9b0da994daa5c1f85cf8e90d8a7d5370a9973f68"
+    },
+    {
+      "bytes": 4033499,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-02-pipecat/analyzer.json",
+      "sha256": "7a77d9fed0026190a0a38d9fee35a81900fe371df7b7fbb95ce3dd95cab025d4"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-02-pipecat/client/health-immediately-before.json",
+      "sha256": "2c53b40f7cb17f464746448b395d0e8ea2b5e7334301caa36ac8ad379dbda845"
+    },
+    {
+      "bytes": 1608,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-02-pipecat/client/report.json",
+      "sha256": "7de0f1d60913652e969bdf4d4682af02f0faf6df7432e4b3638d58a6f229ede3"
+    },
+    {
+      "bytes": 5259,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-02-pipecat/client-stdout.log",
+      "sha256": "f7e1b727cd8fee9c8b5c32381c38e1094b3e6f13178b6b7da343672cdceb9af3"
+    },
+    {
+      "bytes": 7280737,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-02-pipecat/server-trace/events.jsonl",
+      "sha256": "143775d947e27e41fd52c4bbb2661131a8ddcf46470eb99ce44ce99d90aa5f76"
+    },
+    {
+      "bytes": 210279,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-02-pipecat/telemetry.jsonl",
+      "sha256": "511d94f406509d761ffd4c557707997f127704585dd5fd3afcbab28f448f022b"
+    },
+    {
+      "bytes": 2704171,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/analyzer.json",
+      "sha256": "e4b2be976683e93895f173ef5bbe9185b2c62992313f45034cdd7ff61dbeae19"
+    },
+    {
+      "bytes": 32,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/browser-test.log",
+      "sha256": "d9a19ff854eacaa654bf94eb1c9c18a5cd25e85d1ba8c6188cead5ad1fab9b4e"
+    },
+    {
+      "bytes": 0,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/driver/.pipecat-playout-0001.jsonl.pending.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1324,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/driver/.step2-live-fixture-session",
+      "sha256": "e263010eabac0af95ac703844fc9368a70bee189a59f79bd7c46fbf14972ccc3"
+    },
+    {
+      "bytes": 26049980,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/driver/browser-playout.jsonl",
+      "sha256": "41540c86b54e8f7b9f58eb3ac6382b6f373dc2c0916764b0d055e5ad4481ae34"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/driver/health-immediately-before.json",
+      "sha256": "74bcf56f63fc3290a8f456510f9391cfe803a1ec67e7133be7fc928f4d81b5c2"
+    },
+    {
+      "bytes": 8565866,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/driver/pipecat-playout-0001.jsonl",
+      "sha256": "41f0e641352f780b68d36d747b6be337dfe1883bceb24d667ab4b31b35b72c41"
+    },
+    {
+      "bytes": 28113,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/driver/step4c-browser-summary.json",
+      "sha256": "487ea44105ff1524b27a8708adccfc525c5786f7618145398603fb167f0fa5ef"
+    },
+    {
+      "bytes": 2793467,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/playout-analyzer.json",
+      "sha256": "23d06387bcdbd111198a096d76d197729e48883bba49e99732f190e43b7968ee"
+    },
+    {
+      "bytes": 9589607,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/server-trace/events.jsonl",
+      "sha256": "33bf68fac0348132eda535e7eccdb4c9031b06472207a456ba39579df053ab22"
+    },
+    {
+      "bytes": 238194,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-03-browser/telemetry.jsonl",
+      "sha256": "18ee698bba43e3a96226051fa36f694798e94ca42137cd0ab1e06279380bf169"
+    },
+    {
+      "bytes": 0,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/.client-playout.jsonl.pending.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 4100287,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/analyzer.json",
+      "sha256": "f0386578c52093a5ef712282b1893152d87fa23072b754061db84137fa4a7a4b"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/client/health-immediately-before.json",
+      "sha256": "0022897fa7e8d3952b08798b7c7965a8e1276fcf15b606882981eb4e0e25da9c"
+    },
+    {
+      "bytes": 1854,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/client/report.json",
+      "sha256": "e9392d37175176f6cd708a695680c6a1ef306240ae4e26a771c3b941f6146c41"
+    },
+    {
+      "bytes": 7858569,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/client-playout.jsonl",
+      "sha256": "9d59acb8282e8bed849f13057cd244ffb7c89556b0ce8ad136fe3af179f3cf06"
+    },
+    {
+      "bytes": 5561,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/client-stdout.log",
+      "sha256": "f4556b01d27b5990c04e2075dd4732da594a1aa223d5bc55c1e89fff4a2a283c"
+    },
+    {
+      "bytes": 4178481,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/playout-analyzer.json",
+      "sha256": "1447b83ae5f2e5856bc93358e7a98f30c4be47b20d8d426fb772872c00bc27e7"
+    },
+    {
+      "bytes": 7351439,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/server-trace/events.jsonl",
+      "sha256": "f5bc248ba0ec3ad3c756564a8fff4fd68891b83b4da9aca87deb95e56cba81a3"
+    },
+    {
+      "bytes": 210330,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/telemetry.jsonl",
+      "sha256": "3eabae04fe36435862cd666b571b5a16af091424483b040d7733b3f7f1867e80"
+    },
+    {
+      "bytes": 4142233,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/analyzer.json",
+      "sha256": "21a7d8c6a5b81c695b26db5c32c14a1e10b1a5715d377639c9e51fb5d5b9cfec"
+    },
+    {
+      "bytes": 32,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/browser-test.log",
+      "sha256": "c07de178607ceef7ac30ca7219b929e4690644c29e6dec20369a429195e642e4"
+    },
+    {
+      "bytes": 0,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/driver/.pipecat-playout-0001.jsonl.pending.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1324,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/driver/.step2-live-fixture-session",
+      "sha256": "7f7ef4b380196dc4a8fc10d79b501a064b6766bb4f8aadf8f1fca664c8bb6b8d"
+    },
+    {
+      "bytes": 26152550,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/driver/browser-playout.jsonl",
+      "sha256": "e67b0d41e8bdf32cdc30956dce47db0d7bd21910184194f2efeee21794494acb"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/driver/health-immediately-before.json",
+      "sha256": "60d92d53ea4c63b61784592e19bd877794cc976e16fb16f3d3ecee62e3b3ed5b"
+    },
+    {
+      "bytes": 8927006,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/driver/pipecat-playout-0001.jsonl",
+      "sha256": "43d956da9045b3df7ef938e3240c7a3a6dae1f0ccd02e5409aa13b14f5a4c3d5"
+    },
+    {
+      "bytes": 30519,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/driver/step4c-browser-summary.json",
+      "sha256": "3f6c82c1519676943328d48b546ba6c9c4f2e20345660d46847047c163bf25b2"
+    },
+    {
+      "bytes": 4227963,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/playout-analyzer.json",
+      "sha256": "bcd37b675c56b79e8649e0e93eb3dc573bb2a7976cdd1db55d504508370c8e3d"
+    },
+    {
+      "bytes": 9624371,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/server-trace/events.jsonl",
+      "sha256": "a7469513ea1682b5050be66137cab2a08678a5a79157e29a054f2d4b4287377c"
+    },
+    {
+      "bytes": 238304,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-05-browser/telemetry.jsonl",
+      "sha256": "ae9b50359e0625d5b0b32e1745a09468782550d4c1bf1ac423973da796b81bfa"
+    },
+    {
+      "bytes": 4160204,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/analyzer.json",
+      "sha256": "804099cbebf69feaa2f979b7017890f99c0e6c123b298b8acfec14ea453ccd15"
+    },
+    {
+      "bytes": 8320138,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/client/events.jsonl",
+      "sha256": "1dc865621a9ddf393374725654282059c62c041a2cbff790d91ba13ec148a9b2"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/client/health-immediately-before.json",
+      "sha256": "048ad1b3c5d4b88a4378b19bb357c87f2f2eb5a00ec2af7d9bbf6bb2a9ffee2e"
+    },
+    {
+      "bytes": 3554,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/client/report.json",
+      "sha256": "2fb5a3a8e13da478d20081cb98f9e434b3cc596e0a71ba4148683ae979548c68"
+    },
+    {
+      "bytes": 550412,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/client/response-001.wav",
+      "sha256": "2cab9f832e62d76350c7a9398f5ba796134ef86f0960a6721916754d336e4543"
+    },
+    {
+      "bytes": 3554,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/client-stdout.log",
+      "sha256": "2fb5a3a8e13da478d20081cb98f9e434b3cc596e0a71ba4148683ae979548c68"
+    },
+    {
+      "bytes": 7356426,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/server-trace/events.jsonl",
+      "sha256": "968aea7ed6c8560aa6c8be0216f85518c68b4729e185c7923ca02eb2c35b4e7a"
+    },
+    {
+      "bytes": 210315,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-06-direct/telemetry.jsonl",
+      "sha256": "e9b30cff5f21a49e1f9c744e7f241723d0500c57508636c6fcfc95ff6fda24e0"
+    },
+    {
+      "bytes": 4257856,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/analyzer.json",
+      "sha256": "320ad66e339dd9499069aae434be5a2d419c868601ce774bcc7559193803d78a"
+    },
+    {
+      "bytes": 32,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/browser-test.log",
+      "sha256": "097e47456ad48c15aeeba679b1cada6026edc2cb8e67db62d5b29b55f2c09c8e"
+    },
+    {
+      "bytes": 0,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/driver/.pipecat-playout-0001.jsonl.pending.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1324,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/driver/.step2-live-fixture-session",
+      "sha256": "ea40de2dda38beb091ac03944c05a0ce9253c54873ca8ed47fcb08d5860e227e"
+    },
+    {
+      "bytes": 26180982,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/driver/browser-playout.jsonl",
+      "sha256": "53ff8c1c8ff3798e8d052fa1a68f9757a42fe91c900d2ee2b609e86c6e516bbe"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/driver/health-immediately-before.json",
+      "sha256": "0cc3e2e8ab365bc59433f6c849a09d941c54c6e764553dea012eb4e3e2e97dd7"
+    },
+    {
+      "bytes": 8932984,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/driver/pipecat-playout-0001.jsonl",
+      "sha256": "626aaba0336a75a2a09c301c62fc4806faaa7224e87d347eab50956397a0971e"
+    },
+    {
+      "bytes": 30706,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/driver/step4c-browser-summary.json",
+      "sha256": "269a246338b793098914bc7ebbe89febf67e4ca40a479f44792741c2ad2f703a"
+    },
+    {
+      "bytes": 4341916,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/playout-analyzer.json",
+      "sha256": "b72afb4a371ecf18d8e8fe94f42bda31b0b0e6f4c73f91e74b5df93c9a0d507c"
+    },
+    {
+      "bytes": 9594058,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/server-trace/events.jsonl",
+      "sha256": "0a5963f714b892d4564002a19aed7cd731e9c284dce97e70219f93905c547c0e"
+    },
+    {
+      "bytes": 238253,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-07-browser/telemetry.jsonl",
+      "sha256": "817c83bf01eca4cd3de3730d61b4506aab57f509b55879b27e186c85a7d03fe8"
+    },
+    {
+      "bytes": 4039500,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/analyzer.json",
+      "sha256": "4252f3ac67dda3341dbac7b50359904cbe2d747d0f0f8bf83955f5d0382c7539"
+    },
+    {
+      "bytes": 8261505,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/client/events.jsonl",
+      "sha256": "0f18d9be00e4a2ecedcbdf2b5fc15494d1a3d15b2bd59ab441787c994a255ace"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/client/health-immediately-before.json",
+      "sha256": "7acc8735ef3c871f4cbefcaa0bf9b7d5698c553792995b714258b2b60c665206"
+    },
+    {
+      "bytes": 3554,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/client/report.json",
+      "sha256": "bac03d3faa679b6023d384cf25d0698b127f658bee6a484d4e4ceae462df1139"
+    },
+    {
+      "bytes": 532772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/client/response-001.wav",
+      "sha256": "927f011620ae5cbf65567bc7b56ad3070c9e7c668cc8a6817afffa0373ad9713"
+    },
+    {
+      "bytes": 3554,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/client-stdout.log",
+      "sha256": "bac03d3faa679b6023d384cf25d0698b127f658bee6a484d4e4ceae462df1139"
+    },
+    {
+      "bytes": 7325860,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/server-trace/events.jsonl",
+      "sha256": "ccaf9704d28d949ada3f3ed83cfbac4b60e8df945e8a64cfec7b1622d94f7347"
+    },
+    {
+      "bytes": 210342,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-08-direct/telemetry.jsonl",
+      "sha256": "23a1f2e40b27512c9bc66c72e3f0475e22efc7e7c72304a208349c585c36d062"
+    },
+    {
+      "bytes": 0,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/.client-playout.jsonl.pending.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 4145523,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/analyzer.json",
+      "sha256": "7bb1cbf49f36ac290b3dae43c498791ab81f2d26d1b4ca35c7e4de522c4e8fd1"
+    },
+    {
+      "bytes": 15772,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/client/health-immediately-before.json",
+      "sha256": "44423be5e276e8075d655fb50376ba2bd71c10a928a5f804c2b740a56466d319"
+    },
+    {
+      "bytes": 1853,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/client/report.json",
+      "sha256": "d703546da6cf0929d1d617e373aca3eaf9470c72dfa62a4ee9e4220335bf6df4"
+    },
+    {
+      "bytes": 7827226,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/client-playout.jsonl",
+      "sha256": "697a68e5dd79dd8f4f185fe9d7cf5a0f11164b800aa637b66e1ce1aacafa457e"
+    },
+    {
+      "bytes": 5560,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/client-stdout.log",
+      "sha256": "4cabc9a047b9487d3c82b0c9897a93d44f211ecd1fccd62f391e8293ee03af28"
+    },
+    {
+      "bytes": 4222362,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/playout-analyzer.json",
+      "sha256": "e33cd53530b55494ad0fa16eecb3e02b5547989e3303cf1c775d835bc39c3952"
+    },
+    {
+      "bytes": 7308226,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/server-trace/events.jsonl",
+      "sha256": "604140519cd37fe6a8204d92e4d2ebe61f50d431720235f9e827c40d296df45c"
+    },
+    {
+      "bytes": 210318,
+      "path": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/telemetry.jsonl",
+      "sha256": "ed41771e457100e4b7132e5f9ebfe1bf34e3f3cdbb91b2a8b7751370b99b2574"
+    },
+    {
+      "bytes": 7871,
+      "path": "reports/step4-eartts-incidence-20260813-data/campaign-manifest.json",
+      "sha256": "b724a93687deece4d965e95d8435a3eb3a48549f4ef82ead4a24b788d2561e05"
+    },
+    {
+      "bytes": 9620,
+      "path": "reports/step4-eartts-incidence-20260813-data/incidence-analysis.json",
+      "sha256": "896068f0a92154deaa1b07e2c5f83ebfca0cf4504de71594d4b258289013a3c5"
+    },
+    {
+      "bytes": 85,
+      "path": "reports/step4-eartts-incidence-20260813-data/matched-states.json",
+      "sha256": "ba6b78fb89eab2441b9fc0d2411ea65706aed5c237a273d97e5a855b7b20307e"
+    },
+    {
+      "bytes": 12870,
+      "path": "reports/step4-eartts-incidence-20260813-data/preflight/container-inspect-after.json",
+      "sha256": "b9a7e28505adfe91970537f9a104bc8524fb2cf5e99271e71774b6b7edf3b0f5"
+    },
+    {
+      "bytes": 12870,
+      "path": "reports/step4-eartts-incidence-20260813-data/preflight/container-inspect-before.json",
+      "sha256": "0e95f6449485c148f549ab82aa5647c5b24a40617041f302442a40ba17c7cfa5"
+    },
+    {
+      "bytes": 11847,
+      "path": "reports/step4-eartts-incidence-20260813-data/preflight/health-before.json",
+      "sha256": "1168e916dd6f01d9e21f4539472294436cee8e3284b28d342a2b954fb5ff045d"
+    },
+    {
+      "bytes": 15840044,
+      "path": "reports/step4-eartts-incidence-20260813-data/preflight/silent-microphone-165s.wav",
+      "sha256": "cdda3dc8ebd955aa60b778692607a2f8ce1777dafb99a01a8f15143e783d5cc0"
+    },
+    {
+      "bytes": 539,
+      "path": "reports/step4-eartts-incidence-20260813-data/preflight/step4c-browser-plan.json",
+      "sha256": "0b669e25ed463b97f8f962eedee5fc25a346308b980eec155556e597824e2cd4"
+    },
+    {
+      "bytes": 2634,
+      "path": "reports/step4-eartts-incidence-20260813-data/preflight/tooling-and-source.txt",
+      "sha256": "dd4d8446d7c808520dca6ca3df8cb8e4f813514f5064ea564c66870a6ea86552"
+    },
+    {
+      "bytes": 992,
+      "path": "reports/step4-eartts-incidence-20260813-data/validation.txt",
+      "sha256": "1c69c8feba0fc1a04c3cb8c8cda62439a0a1b66bac6abd652af5945fe3376097"
+    },
+    {
+      "bytes": 17752,
+      "path": "reports/step4-eartts-incidence-20260813.md",
+      "sha256": "e106ec6d489773fcdaf2540cbf7a08cb1352d5a10a53eb7b353cafef2fb0f588"
+    }
+  ],
+  "hash": "sha256",
+  "schema": "nemotron_voicechat.step4c_artifact_sha256.v1",
+  "self_excluded": "reports/step4-eartts-incidence-20260813-data/artifact-sha256.json"
+}

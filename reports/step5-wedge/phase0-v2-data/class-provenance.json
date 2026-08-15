@@ -1,0 +1,30 @@
+{
+  "v1/core/sched/output.py": {
+    "execution": "AST-selected exact qualified definition",
+    "sha256": "6bdfd74344149579c4835ce5ba13af61385ef09606965108fd3ebc02aed03d39"
+  },
+  "v1/core/sched/scheduler.py": {
+    "execution": "AST-selected exact qualified definition",
+    "sha256": "988ecb28f4383e6a9b8ab9595ab6ec5b9d08e267409c014304bb14fabe528ff3"
+  },
+  "v1/engine/__init__.py": {
+    "execution": "AST-selected exact qualified definition",
+    "sha256": "64e70a26c5dfde87262e0d7a47ba96eee3e191f30204ae7a2696e184648c3f89"
+  },
+  "v1/engine/async_llm.py": {
+    "execution": "AST-selected exact qualified definition",
+    "sha256": "9834b3325cee6fe263545d642d4497310fda40179c3c503bc5ec2a7600fac3ca"
+  },
+  "v1/engine/core.py": {
+    "execution": "AST-selected exact qualified definition",
+    "sha256": "590925b3823b0bcb4153329441e8e83b1a3ca06b4746082956bdb8afd4004f29"
+  },
+  "v1/engine/output_processor.py": {
+    "execution": "AST-selected exact qualified definition",
+    "sha256": "92fcde44138193422a150a7a0a12c1efc5133c59d85864ba67966fb2e0fa8719"
+  },
+  "v1/request.py": {
+    "execution": "AST-selected exact qualified definition",
+    "sha256": "73ba3c6ca3ca6bfc93cf01cb5ebbcc995f8f4d3e301ead9f155a0d6cf1143218"
+  }
+}

@@ -1,0 +1,3696 @@
+[NeMo W 2026-08-13 19:14:25 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:323: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+", " ", text)
+    
+[NeMo W 2026-08-13 19:14:25 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:324: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+\.\s+", ".", text)
+    
+[NeMo W 2026-08-13 19:14:26 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:300: SyntaxWarning: invalid escape sequence '\('
+      m = re.match('([su]([0-9]{1,2})p?) \(([0-9]{1,2}) bit\)$', token)
+    
+[NeMo W 2026-08-13 19:14:26 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:301: SyntaxWarning: invalid escape sequence '\('
+      m2 = re.match('([su]([0-9]{1,2})p?)( \(default\))?$', token)
+    
+[NeMo W 2026-08-13 19:14:26 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:310: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(flt)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-13 19:14:26 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:314: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(dbl)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-13 19:14:26 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:170: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+      warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+    
+[NeMo I 2026-08-13 19:14:29 nemo_logging:393] Triton available & CUDA detected. Using Triton kernel for batch_matmul.
+[NeMo W 2026-08-13 19:14:29 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/whisper_normalizer/basic.py:97: SyntaxWarning: invalid escape sequence '\X'
+      """
+    
+INFO 08-13 19:14:32 [__init__.py:224] Automatically detected platform cuda.
+[NeMo I 2026-08-13 19:14:33 nemo_logging:393] LLMStreamingEngine initialized for model: /models/derived/nano
+[NeMo I 2026-08-13 19:14:33 nemo_logging:393] Initializing vLLM engine (this may take a moment)...
+[NeMo I 2026-08-13 19:14:33 nemo_logging:393] Initializing vLLM engine...
+ERROR 08-13 19:14:33 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+ERROR 08-13 19:14:33 [__init__.py:57] Traceback (most recent call last):
+ERROR 08-13 19:14:33 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+ERROR 08-13 19:14:33 [__init__.py:57]     func = plugin.load()
+ERROR 08-13 19:14:33 [__init__.py:57]            ^^^^^^^^^^^^^
+ERROR 08-13 19:14:33 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+ERROR 08-13 19:14:33 [__init__.py:57]     module = import_module(match.group('module'))
+ERROR 08-13 19:14:33 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-13 19:14:33 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+ERROR 08-13 19:14:33 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+ERROR 08-13 19:14:33 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-13 19:14:33 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+ERROR 08-13 19:14:33 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+ERROR 08-13 19:14:33 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ERROR 08-13 19:14:33 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+INFO 08-13 19:14:33 [arg_utils.py:535] HF_HUB_OFFLINE is True, replace model_id [/models/derived/nano] to model_path [/models/derived/nano]
+INFO 08-13 19:14:38 [model.py:653] Resolved architecture: NemotronHForCausalLM
+INFO 08-13 19:14:38 [model.py:1729] Using max model len 12288
+`torch_dtype` is deprecated! Use `dtype` instead!
+INFO 08-13 19:14:38 [gptq_marlin.py:226] The model is convertible to gptq_marlin during runtime. Using gptq_marlin kernel.
+INFO 08-13 19:14:38 [scheduler.py:225] Chunked prefill is enabled with max_num_batched_tokens=768.
+INFO 08-13 19:14:38 [config.py:313] Disabling cascade attention since it is not supported for hybrid models.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 08-13 19:14:38 [config.py:403] Setting attention block size to 1312 tokens to ensure that attention page size is >= mamba page size.
+INFO 08-13 19:14:38 [config.py:427] Padding mamba page size by 1.08% to ensure that mamba page size and attention page size are exactly equal.
+WARNING 08-13 19:14:39 [__init__.py:3134] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+INFO 08-13 19:14:40 [__init__.py:224] Automatically detected platform cuda.
+/usr/local/lib/python3.12/dist-packages/torch/library.py:356: UserWarning: Warning only once for all operators,  other operators may also be overridden.
+  Overriding a previously registered kernel for the same operator and the same dispatch key
+  operator: flash_attn::_flash_attn_backward(Tensor dout, Tensor q, Tensor k, Tensor v, Tensor out, Tensor softmax_lse, Tensor(a6!)? dq, Tensor(a7!)? dk, Tensor(a8!)? dv, float dropout_p, float softmax_scale, bool causal, SymInt window_size_left, SymInt window_size_right, float softcap, Tensor? alibi_slopes, bool deterministic, Tensor? rng_state=None) -> Tensor
+    registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922
+  dispatch key: ADInplaceOrView
+  previous kernel: no debug info
+       new kernel: registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922 (Triggered internally at /opt/pytorch/pytorch/aten/src/ATen/core/dispatch/OperatorEntry.cpp:208.)
+  self.m.impl(
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:43 [core.py:721] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57] Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]     func = plugin.load()
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]            ^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]     module = import_module(match.group('module'))
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+[1;36m(EngineCore_DP0 pid=260)[0;0m ERROR 08-13 19:14:43 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:43 [core.py:96] Initializing a V1 LLM engine (v0.17.1.dev0+gb31e9326a.fi065) with config: model='/models/derived/nano', speculative_config=None, tokenizer='/models/derived/nano', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=12288, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=gptq_marlin, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=/models/derived/nano, enable_prefix_caching=False, chunked_prefill_enabled=True, pooler_config=None, compilation_config={'level': 3, 'debug_dump_path': None, 'cache_dir': '', 'backend': '', 'custom_ops': [], 'splitting_ops': ['vllm.unified_attention', 'vllm.unified_attention_with_output', 'vllm.mamba_mixer2', 'vllm.mamba_mixer', 'vllm.short_conv', 'vllm.linear_attention', 'vllm.plamo2_mamba_mixer', 'vllm.gdn_attention', 'vllm.sparse_attn_indexer'], 'use_inductor': True, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'use_cudagraph': True, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [256, 248, 240, 232, 224, 216, 208, 200, 192, 184, 176, 168, 160, 152, 144, 136, 128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1], 'cudagraph_copy_inputs': False, 'full_cuda_graph': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_capture_size': 256, 'local_cache_dir': None}
+[1;36m(EngineCore_DP0 pid=260)[0;0m /usr/local/lib/python3.12/dist-packages/vllm/executor/uniproc_executor.py:57: UserWarning: Failed to get the IP address, using 0.0.0.0 by default.The value can be set by the environment variable VLLM_HOST_IP or HOST_IP.
+[1;36m(EngineCore_DP0 pid=260)[0;0m   distributed_init_method = get_distributed_init_method(get_ip(), get_open_port())
+[W813 19:14:44.726493919 socket.cpp:209] [c10d] The hostname of the client socket cannot be retrieved. err=-3
+[rank0]:[W813 19:14:44.745044546 ProcessGroupGloo.cpp:516] Warning: Unable to resolve hostname to a (local) address. Using the loopback address as fallback. Manually set the network interface to bind to with GLOO_SOCKET_IFNAME. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:44 [parallel_state.py:1231] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:44 [topk_topp_sampler.py:59] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:44 [gpu_model_runner.py:3224] Starting to load model /models/derived/nano...
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:44 [gpu_model_runner.py:3254] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:45 [gptq_marlin.py:374] Using MarlinLinearKernel for GPTQMarlinLinearMethod
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:14:45 [cuda.py:347] Using Triton backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:16<00:49, 16.48s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:30<00:29, 14.91s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:30<00:08,  8.38s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:37<00:00,  7.82s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:37<00:00,  9.46s/it]
+[1;36m(EngineCore_DP0 pid=260)[0;0m 
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:23 [default_loader.py:309] Loading weights took 38.08 seconds
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:24 [gpu_model_runner.py:3286] Model loading took 10.2843 GiB and 38.871373 seconds
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:25 [backends.py:594] Using cache directory: /root/.cache/vllm/torch_compile_cache/d6aba81093/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:25 [backends.py:608] Dynamo bytecode transform time: 1.40 s
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:26 [backends.py:214] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=260)[0;0m [rank0]:W0813 19:15:28.253000 260 torch/_inductor/utils.py:1725] [0/0] Not enough SMs to use max_autotune_gemm mode
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:30 [backends.py:241] Compiling a graph for dynamic shape takes 4.80 s
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:52 [monitor.py:33] torch.compile takes 6.20 s in total
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:52 [gpu_worker.py:314] Available KV cache memory: 39.42 GiB
+[1;36m(EngineCore_DP0 pid=260)[0;0m WARNING 08-13 19:15:53 [kv_cache_utils.py:1022] Add 1 padding layers, may waste at most 3.70% KV cache memory
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:53 [kv_cache_utils.py:1133] GPU KV cache size: 322,752 tokens
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:15:53 [kv_cache_utils.py:1138] Maximum concurrency for 12,288 tokens per request: 115.76x
+[1;36m(EngineCore_DP0 pid=260)[0;0m 2026-08-13 19:15:54,706 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=260)[0;0m 2026-08-13 19:15:55,212 - INFO - autotuner.py:268 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=260)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 1/35 [00:00<00:09,  3.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 2/35 [00:00<00:08,  3.81it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▊         | 3/35 [00:00<00:08,  3.83it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  11%|█▏        | 4/35 [00:01<00:08,  3.86it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  14%|█▍        | 5/35 [00:01<00:07,  3.86it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  17%|█▋        | 6/35 [00:01<00:07,  3.88it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|██        | 7/35 [00:01<00:07,  3.91it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  23%|██▎       | 8/35 [00:02<00:06,  3.92it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  26%|██▌       | 9/35 [00:02<00:06,  4.19it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▊       | 10/35 [00:02<00:05,  4.42it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 11/35 [00:02<00:05,  4.60it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 12/35 [00:02<00:04,  4.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 13/35 [00:03<00:04,  4.88it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 14/35 [00:03<00:04,  4.96it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 15/35 [00:03<00:03,  5.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  46%|████▌     | 16/35 [00:03<00:03,  5.14it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▊     | 17/35 [00:03<00:03,  5.64it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████▏    | 18/35 [00:03<00:02,  5.95it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  54%|█████▍    | 19/35 [00:04<00:02,  6.20it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 20/35 [00:04<00:02,  6.35it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|██████    | 21/35 [00:04<00:02,  6.54it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 22/35 [00:04<00:01,  6.69it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  66%|██████▌   | 23/35 [00:04<00:01,  6.83it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 24/35 [00:04<00:01,  6.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  74%|███████▍  | 26/35 [00:04<00:01,  8.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 28/35 [00:05<00:00,  9.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▌ | 30/35 [00:05<00:00, 10.60it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  91%|█████████▏| 32/35 [00:05<00:00, 11.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  97%|█████████▋| 34/35 [00:05<00:00, 12.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:05<00:00,  6.22it/s]
+[1;36m(EngineCore_DP0 pid=260)[0;0m Capturing CUDA graphs (decode, FULL):   0%|          | 0/19 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   5%|▌         | 1/19 [00:01<00:21,  1.17s/it]Capturing CUDA graphs (decode, FULL):  11%|█         | 2/19 [00:01<00:14,  1.21it/s]Capturing CUDA graphs (decode, FULL):  16%|█▌        | 3/19 [00:01<00:08,  1.97it/s]Capturing CUDA graphs (decode, FULL):  21%|██        | 4/19 [00:02<00:05,  2.80it/s]Capturing CUDA graphs (decode, FULL):  26%|██▋       | 5/19 [00:02<00:03,  3.67it/s]Capturing CUDA graphs (decode, FULL):  32%|███▏      | 6/19 [00:02<00:02,  4.53it/s]Capturing CUDA graphs (decode, FULL):  37%|███▋      | 7/19 [00:02<00:02,  5.35it/s]Capturing CUDA graphs (decode, FULL):  42%|████▏     | 8/19 [00:02<00:01,  6.06it/s]Capturing CUDA graphs (decode, FULL):  53%|█████▎    | 10/19 [00:02<00:01,  8.12it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 12/19 [00:02<00:00,  9.82it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▎  | 14/19 [00:02<00:00, 11.40it/s]Capturing CUDA graphs (decode, FULL):  84%|████████▍ | 16/19 [00:03<00:00,  5.45it/s]Capturing CUDA graphs (decode, FULL):  95%|█████████▍| 18/19 [00:03<00:00,  7.05it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 19/19 [00:04<00:00,  4.05it/s]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:16:06 [gpu_model_runner.py:4203] Graph capturing finished in 11 secs, took 0.20 GiB
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:16:06 [core.py:237] init engine (profile, create kv cache, warmup model) took 41.96 seconds
+INFO 08-13 19:16:06 [loggers.py:148] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 1968
+[NeMo I 2026-08-13 19:16:06 nemo_logging:393] Engine initialized with custom input specs:
+[NeMo I 2026-08-13 19:16:06 nemo_logging:393]   - CustomInputSpec(name='combined_embeds', dtype='bfloat16', dim=4480)
+[NeMo I 2026-08-13 19:16:06 nemo_logging:393] text_pad_id resolved to: 12
+[NeMo I 2026-08-13 19:16:06 nemo_logging:393] vLLM engine ready!
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:16:06 [gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+[NeMo I 2026-08-13 19:16:06 nemo_logging:393] Starting generation session with request_id: step4d-exact-warmup-000
+[NeMo I 2026-08-13 19:16:06 nemo_logging:393] Initializing generation for request step4d-exact-warmup-000 with first embedding
+WARNING 08-13 19:16:06 [async_llm.py:283] Processor has been moved under OpenAIServing and will be removed from AsyncLLM in v0.13.
+[NeMo I 2026-08-13 19:16:42 nemo_logging:393] Aborted generation for request: step4d-exact-warmup-000
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:16:42 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [1, 2, 3, 4, 5, 6, 7, 8]
+[NeMo I 2026-08-13 19:16:42 nemo_logging:393] Starting generation session with request_id: step4d-exact-warmup-001
+[NeMo I 2026-08-13 19:16:42 nemo_logging:393] Initializing generation for request step4d-exact-warmup-001 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:16:42 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:17:19 nemo_logging:393] Aborted generation for request: step4d-exact-warmup-001
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:17:19 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [9, 10, 11, 12, 13, 14, 15, 16]
+[NeMo I 2026-08-13 19:17:19 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-000
+[NeMo I 2026-08-13 19:17:19 nemo_logging:393] Initializing generation for request step4d-exact-measured-000 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:17:19 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:17:55 nemo_logging:393] Aborted generation for request: step4d-exact-measured-000
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:17:55 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [17, 18, 19, 20, 21, 22, 23, 24]
+[NeMo I 2026-08-13 19:17:55 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-001
+[NeMo I 2026-08-13 19:17:55 nemo_logging:393] Initializing generation for request step4d-exact-measured-001 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:17:55 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:18:32 nemo_logging:393] Aborted generation for request: step4d-exact-measured-001
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:18:32 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [25, 26, 27, 28, 29, 30, 31, 32]
+[NeMo I 2026-08-13 19:18:32 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-002
+[NeMo I 2026-08-13 19:18:32 nemo_logging:393] Initializing generation for request step4d-exact-measured-002 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:18:32 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:19:08 nemo_logging:393] Aborted generation for request: step4d-exact-measured-002
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:19:08 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [33, 34, 35, 36, 37, 38, 39, 40]
+[NeMo I 2026-08-13 19:19:08 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-003
+[NeMo I 2026-08-13 19:19:08 nemo_logging:393] Initializing generation for request step4d-exact-measured-003 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:19:08 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:19:45 nemo_logging:393] Aborted generation for request: step4d-exact-measured-003
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:19:45 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [41, 42, 43, 44, 45, 46, 47, 48]
+[NeMo I 2026-08-13 19:19:45 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-004
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:19:45 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:19:45 nemo_logging:393] Initializing generation for request step4d-exact-measured-004 with first embedding
+[NeMo I 2026-08-13 19:20:21 nemo_logging:393] Aborted generation for request: step4d-exact-measured-004
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:20:21 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [49, 50, 51, 52, 53, 54, 55, 56]
+[NeMo I 2026-08-13 19:20:21 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-005
+[NeMo I 2026-08-13 19:20:21 nemo_logging:393] Initializing generation for request step4d-exact-measured-005 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:20:21 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:20:58 nemo_logging:393] Aborted generation for request: step4d-exact-measured-005
+[NeMo I 2026-08-13 19:20:58 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-006
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:20:58 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [57, 58, 59, 60, 61, 62, 63, 64]
+[NeMo I 2026-08-13 19:20:58 nemo_logging:393] Initializing generation for request step4d-exact-measured-006 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:20:58 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:21:34 nemo_logging:393] Aborted generation for request: step4d-exact-measured-006
+[NeMo I 2026-08-13 19:21:34 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-007
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:21:34 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [65, 66, 67, 68, 69, 70, 71, 72]
+[NeMo I 2026-08-13 19:21:34 nemo_logging:393] Initializing generation for request step4d-exact-measured-007 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:21:34 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:22:10 nemo_logging:393] Aborted generation for request: step4d-exact-measured-007
+[NeMo I 2026-08-13 19:22:10 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-008
+[NeMo I 2026-08-13 19:22:10 nemo_logging:393] Initializing generation for request step4d-exact-measured-008 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:22:10 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [73, 74, 75, 76, 77, 78, 79, 80]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:22:10 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:22:46 nemo_logging:393] Aborted generation for request: step4d-exact-measured-008
+[NeMo I 2026-08-13 19:22:46 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-009
+[NeMo I 2026-08-13 19:22:46 nemo_logging:393] Initializing generation for request step4d-exact-measured-009 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:22:46 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [81, 82, 83, 84, 85, 86, 87, 88]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:22:46 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:23:22 nemo_logging:393] Aborted generation for request: step4d-exact-measured-009
+[NeMo I 2026-08-13 19:23:22 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-010
+[NeMo I 2026-08-13 19:23:22 nemo_logging:393] Initializing generation for request step4d-exact-measured-010 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:23:22 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [89, 90, 91, 92, 93, 94, 95, 96]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:23:22 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:23:58 nemo_logging:393] Aborted generation for request: step4d-exact-measured-010
+[NeMo I 2026-08-13 19:23:58 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-011
+[NeMo I 2026-08-13 19:23:58 nemo_logging:393] Initializing generation for request step4d-exact-measured-011 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:23:58 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [97, 98, 99, 100, 101, 102, 103, 104]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:23:58 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:24:34 nemo_logging:393] Aborted generation for request: step4d-exact-measured-011
+[NeMo I 2026-08-13 19:24:34 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-012
+[NeMo I 2026-08-13 19:24:34 nemo_logging:393] Initializing generation for request step4d-exact-measured-012 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:24:34 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [105, 106, 107, 108, 109, 110, 111, 112]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:24:34 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:25:11 nemo_logging:393] Aborted generation for request: step4d-exact-measured-012
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:25:11 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [113, 114, 115, 116, 117, 118, 119, 120]
+[NeMo I 2026-08-13 19:25:11 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-013
+[NeMo I 2026-08-13 19:25:11 nemo_logging:393] Initializing generation for request step4d-exact-measured-013 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:25:11 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:25:47 nemo_logging:393] Aborted generation for request: step4d-exact-measured-013
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:25:47 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [121, 122, 123, 124, 125, 126, 127, 128]
+[NeMo I 2026-08-13 19:25:47 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-014
+[NeMo I 2026-08-13 19:25:47 nemo_logging:393] Initializing generation for request step4d-exact-measured-014 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:25:47 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:26:24 nemo_logging:393] Aborted generation for request: step4d-exact-measured-014
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:26:24 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [129, 130, 131, 132, 133, 134, 135, 136]
+[NeMo I 2026-08-13 19:26:24 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-015
+[NeMo I 2026-08-13 19:26:24 nemo_logging:393] Initializing generation for request step4d-exact-measured-015 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:26:24 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:27:00 nemo_logging:393] Aborted generation for request: step4d-exact-measured-015
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:27:00 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [137, 138, 139, 140, 141, 142, 143, 144]
+[NeMo I 2026-08-13 19:27:00 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-016
+[NeMo I 2026-08-13 19:27:00 nemo_logging:393] Initializing generation for request step4d-exact-measured-016 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:27:00 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:27:37 nemo_logging:393] Aborted generation for request: step4d-exact-measured-016
+[NeMo I 2026-08-13 19:27:37 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-017
+[NeMo I 2026-08-13 19:27:37 nemo_logging:393] Initializing generation for request step4d-exact-measured-017 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:27:37 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [145, 146, 147, 148, 149, 150, 151, 152]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:27:37 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:28:13 nemo_logging:393] Aborted generation for request: step4d-exact-measured-017
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:28:13 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [153, 154, 155, 156, 157, 158, 159, 160]
+[NeMo I 2026-08-13 19:28:13 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-018
+[NeMo I 2026-08-13 19:28:13 nemo_logging:393] Initializing generation for request step4d-exact-measured-018 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:28:13 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:28:49 nemo_logging:393] Aborted generation for request: step4d-exact-measured-018
+[NeMo I 2026-08-13 19:28:49 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-019
+[NeMo I 2026-08-13 19:28:49 nemo_logging:393] Initializing generation for request step4d-exact-measured-019 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:28:49 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [161, 162, 163, 164, 165, 166, 167, 168]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:28:49 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:29:25 nemo_logging:393] Aborted generation for request: step4d-exact-measured-019
+[NeMo I 2026-08-13 19:29:25 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-020
+[NeMo I 2026-08-13 19:29:25 nemo_logging:393] Initializing generation for request step4d-exact-measured-020 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:29:25 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [169, 170, 171, 172, 173, 174, 175, 176]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:29:25 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:30:01 nemo_logging:393] Aborted generation for request: step4d-exact-measured-020
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:30:01 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [177, 178, 179, 180, 181, 182, 183, 184]
+[NeMo I 2026-08-13 19:30:01 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-021
+[NeMo I 2026-08-13 19:30:01 nemo_logging:393] Initializing generation for request step4d-exact-measured-021 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:30:01 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:30:37 nemo_logging:393] Aborted generation for request: step4d-exact-measured-021
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:30:37 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [185, 186, 187, 188, 189, 190, 191, 192]
+[NeMo I 2026-08-13 19:30:37 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-022
+[NeMo I 2026-08-13 19:30:37 nemo_logging:393] Initializing generation for request step4d-exact-measured-022 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:30:37 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:31:13 nemo_logging:393] Aborted generation for request: step4d-exact-measured-022
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:31:13 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [193, 194, 195, 196, 197, 198, 199, 200]
+[NeMo I 2026-08-13 19:31:13 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-023
+[NeMo I 2026-08-13 19:31:13 nemo_logging:393] Initializing generation for request step4d-exact-measured-023 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:31:13 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:31:50 nemo_logging:393] Aborted generation for request: step4d-exact-measured-023
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:31:50 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [201, 202, 203, 204, 205, 206, 207, 208]
+[NeMo I 2026-08-13 19:31:50 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-024
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:31:50 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:31:50 nemo_logging:393] Initializing generation for request step4d-exact-measured-024 with first embedding
+[NeMo I 2026-08-13 19:32:27 nemo_logging:393] Aborted generation for request: step4d-exact-measured-024
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:32:27 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [209, 210, 211, 212, 213, 214, 215, 216]
+[NeMo I 2026-08-13 19:32:27 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-025
+[NeMo I 2026-08-13 19:32:27 nemo_logging:393] Initializing generation for request step4d-exact-measured-025 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:32:27 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:33:03 nemo_logging:393] Aborted generation for request: step4d-exact-measured-025
+[NeMo I 2026-08-13 19:33:03 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-026
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:33:03 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [217, 218, 219, 220, 221, 222, 223, 224]
+[NeMo I 2026-08-13 19:33:03 nemo_logging:393] Initializing generation for request step4d-exact-measured-026 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:33:03 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:33:39 nemo_logging:393] Aborted generation for request: step4d-exact-measured-026
+[NeMo I 2026-08-13 19:33:39 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-027
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:33:39 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [225, 226, 227, 228, 229, 230, 231, 232]
+[NeMo I 2026-08-13 19:33:39 nemo_logging:393] Initializing generation for request step4d-exact-measured-027 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:33:39 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:34:15 nemo_logging:393] Aborted generation for request: step4d-exact-measured-027
+[NeMo I 2026-08-13 19:34:15 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-028
+[NeMo I 2026-08-13 19:34:15 nemo_logging:393] Initializing generation for request step4d-exact-measured-028 with first embedding
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:34:15 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [233, 234, 235, 236, 237, 238, 239, 240]
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:34:16 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:34:52 nemo_logging:393] Aborted generation for request: step4d-exact-measured-028
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:34:52 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [241, 242, 243, 244, 245, 246, 247, 248]
+[NeMo I 2026-08-13 19:34:52 nemo_logging:393] Starting generation session with request_id: step4d-exact-measured-029
+[1;36m(EngineCore_DP0 pid=260)[0;0m INFO 08-13 19:34:52 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-13 19:34:52 nemo_logging:393] Initializing generation for request step4d-exact-measured-029 with first embedding
+[NeMo I 2026-08-13 19:35:29 nemo_logging:393] Aborted generation for request: step4d-exact-measured-029
+[NeMo I 2026-08-13 19:35:29 nemo_logging:393] Shutting down engine...
+[rank0]:[W813 19:35:29.776934758 ProcessGroupNCCL.cpp:1564] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[NeMo I 2026-08-13 19:35:30 nemo_logging:393] Engine shutdown complete.
+{
+  "blocks": [
+    {
+      "block": 0,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "warmup",
+      "request_id": "step4d-exact-warmup-000",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 52.86575295031071,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.122860819101334,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.211350597441196,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.816057085990906,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.48321466892958,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.51846336573362,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 35959.13033466786
+    },
+    {
+      "block": 1,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "warmup",
+      "request_id": "step4d-exact-warmup-001",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.902045495808125,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.6692323833704,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.56704969704151,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 51.05291586369276,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.57781578600407,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 51.75223480910063,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36371.76661007106
+    },
+    {
+      "block": 0,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-000",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.26949306577444,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.517603151500225,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.636344753205776,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.15127223730087,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.316809237003326,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.80304420739412,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36672.37597517669
+    },
+    {
+      "block": 1,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-001",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 55.402206256985664,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.581106312572956,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.06309910863638,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.4766081944108,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.437678910791874,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.766167394816875,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36609.16635859758
+    },
+    {
+      "block": 2,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-002",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.8333837389946,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.47099681198597,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.004114888608456,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.34385281801224,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.7413504421711,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.321355789899826,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36430.07797468454
+    },
+    {
+      "block": 3,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-003",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.95937382429838,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.88101530075073,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.98382197320461,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.611428149044514,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.26152001321316,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.901626728475094,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36530.74296377599
+    },
+    {
+      "block": 4,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-004",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.3430405408144,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.227427415549755,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.42166465520859,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.55725032091141,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.804100163280964,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 50.642200745642185,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36352.15227026492
+    },
+    {
+      "block": 5,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-005",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.16574592143297,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.608738489449024,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.015990018844604,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.13450361043215,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.4641979932785,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.429471001029015,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36525.47356300056
+    },
+    {
+      "block": 6,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-006",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.512587048113346,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.62988433241844,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.5172965824604,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.5734992697835,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.85715388506651,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.02254296839237,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36165.08829500526
+    },
+    {
+      "block": 7,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-007",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.200194120407104,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 50.922601483762264,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.56044755131006,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.55051127076149,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.558968774974346,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.37138271331787,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36105.59489578009
+    },
+    {
+      "block": 8,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-008",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.390557549893856,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 55.48285413533449,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.50450409948826,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.1352207288146,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.06848308444023,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.129260428249836,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36296.31494078785
+    },
+    {
+      "block": 9,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-009",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.112777553498745,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.04789696633816,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.71083642542362,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.94723326712847,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.054456271231174,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.61292029172182,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 35794.78601273149
+    },
+    {
+      "block": 10,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-010",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.83201562613249,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.999419160187244,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.00884956866503,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.20709724724293,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.7896039634943,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.146616227924824,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36113.51770814508
+    },
+    {
+      "block": 11,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-011",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.9277158677578,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.42436362802982,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.673906691372395,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.091280929744244,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.8417844325304,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.28301586955786,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36050.109897740185
+    },
+    {
+      "block": 12,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-012",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 54.33647148311138,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.6476643756032,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.60608219355345,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.23318561911583,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.979439333081245,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.06873547285795,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36488.69354929775
+    },
+    {
+      "block": 13,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-013",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.83038657903671,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.21025103330612,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.28430591523647,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.69168596714735,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 54.20512519776821,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.4098901078105,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36625.812005251646
+    },
+    {
+      "block": 14,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-014",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.290305495262146,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.73961664736271,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.13588755577803,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 54.12368383258581,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.04298456758261,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.4047434553504,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36632.85402022302
+    },
+    {
+      "block": 15,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-015",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.04756744205952,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.89543683081865,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.93507468700409,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.508680917322636,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.94069554656744,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.74801032990217,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36449.99241549522
+    },
+    {
+      "block": 16,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-016",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.92185379564762,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 54.03190664947033,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.84424186497927,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.05000361800194,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.657481119036674,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.049086429178715,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36094.24864500761
+    },
+    {
+      "block": 17,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-017",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.80401711165905,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 50.45012570917606,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.853025168180466,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.116980612277985,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.041219383478165,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 49.96168799698353,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36017.48578250408
+    },
+    {
+      "block": 18,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-018",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.1519278883934,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.19561327248812,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.62695236504078,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.661522291600704,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.11242940276861,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.726578898727894,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36216.80993027985
+    },
+    {
+      "block": 19,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-019",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.7831834256649,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.01405938714743,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.761871971189976,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.966405637562275,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.155172288417816,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.68135371059179,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 35873.89064859599
+    },
+    {
+      "block": 20,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-020",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.823509089648724,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 50.875648856163025,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.71086250245571,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.2285420447588,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.61185359954834,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 54.31678704917431,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 35955.24356979877
+    },
+    {
+      "block": 21,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-021",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.055819891393185,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.86739580333233,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.634060986340046,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.532805897295475,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.4228426143527,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.520357839763165,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36351.95917263627
+    },
+    {
+      "block": 22,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-022",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.1441830098629,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.92193016409874,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.96299201250076,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.060786470770836,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.4402717128396,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.143101580441,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36444.337892346084
+    },
+    {
+      "block": 23,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-023",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.94966883957386,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.01756302267313,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.7922006547451,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.10740941017866,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.483177579939365,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.668417036533356,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36821.97643537074
+    },
+    {
+      "block": 24,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-024",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 54.380184039473534,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.0770355835557,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.37327127158642,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.88528201729059,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.6689233481884,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.17448512464762,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36803.870043717325
+    },
+    {
+      "block": 25,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-025",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.25457218289375,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.7736060321331,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.667673513293266,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.80066730827093,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.65873949974775,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.34387779980898,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36224.49490427971
+    },
+    {
+      "block": 26,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-026",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.910758182406425,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 50.69740675389767,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.268046885728836,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.48908884823322,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.76496971398592,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 50.81844795495272,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36015.708884224296
+    },
+    {
+      "block": 27,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-027",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.583463326096535,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.62451975047588,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.71081905812025,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.13986802846193,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.727819584310055,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 51.83935258537531,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36207.60057400912
+    },
+    {
+      "block": 28,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-028",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.474073737859726,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.53025609999895,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.25176161527634,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 53.70309855788946,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 50.999983213841915,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.647423930466175,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36617.889400571585
+    },
+    {
+      "block": 29,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-exact-measured-029",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 51.34605057537556,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.14789789170027,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 53.11854835599661,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 54.75554149597883,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": true,
+          "expected_token": 1046,
+          "interface_ms": 52.263994701206684,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": true,
+          "expected_token": 12,
+          "interface_ms": 52.70007997751236,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 36842.47038979083
+    }
+  ],
+  "capture": {
+    "capture_calls": 1172,
+    "capture_manifest_sha256": "55d9e815ec235a588b0aa6eacb4a97a2d5a77f19aa00954d0c2e205d4108d1aa",
+    "capture_metadata_sha256": "7f4eecced31a79b0504ef5ddb5720461fd86939d1bbd4d38c97baffe4d5f5471",
+    "capture_root": "/corpus",
+    "kind": "step4d_nano_matched_state_selection",
+    "max_replayed_call": 686,
+    "pairs": [
+      {
+        "content": {
+          "call_index": 45,
+          "current_step": 45,
+          "expected_token": 1046,
+          "file": "nano-call-000045.pt",
+          "sha256": "4504dc68c6de534a2f1e9e70a33de48ae7e7d7652db948d3ad51fe4b02684fea"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 46,
+          "current_step": 46,
+          "expected_token": 12,
+          "file": "nano-call-000046.pt",
+          "sha256": "44db1da01a77558bf472efcc93ff62c16ceaa7c00c3c233ce20fec0d5c3df542"
+        },
+        "pair": 1,
+        "request_id": "1",
+        "sequence_epoch": 0
+      },
+      {
+        "content": {
+          "call_index": 326,
+          "current_step": 326,
+          "expected_token": 1046,
+          "file": "nano-call-000326.pt",
+          "sha256": "9c8246e75dea73cd0378e187d56588657530cb2be33d81e1f1bb6513d493f63c"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 327,
+          "current_step": 327,
+          "expected_token": 12,
+          "file": "nano-call-000327.pt",
+          "sha256": "5a136ada55a2d61202d2bf8ec4621076580a02cfbf62838aa2a871d40d168d64"
+        },
+        "pair": 2,
+        "request_id": "1",
+        "sequence_epoch": 0
+      },
+      {
+        "content": {
+          "call_index": 685,
+          "current_step": 685,
+          "expected_token": 1046,
+          "file": "nano-call-000685.pt",
+          "sha256": "5545684267d3c4457a42c94d58a14b9170ac34f06f5d307d6f76aac9f26b0258"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 686,
+          "current_step": 686,
+          "expected_token": 12,
+          "file": "nano-call-000686.pt",
+          "sha256": "27ea43d1e7fdc22db6a20f8a65ce152776fa2753ce7590eed78147d8af011fb3"
+        },
+        "pair": 3,
+        "request_id": "1",
+        "sequence_epoch": 0
+      }
+    ],
+    "rules": {
+      "boundary": "last lexical state immediately followed by PAD",
+      "causal_replay": "every call from zero through max_replayed_call",
+      "content": "predicted_token > 12",
+      "controls_excluded": [
+        1,
+        2
+      ],
+      "pad": "predicted_token == 12"
+    },
+    "schema": 1
+  },
+  "component": {
+    "config_sha256": "2a0576a8b71aa09a5a6683d5a0d2e3fc099839ea9fe559d69a3458e828530391",
+    "enforce_eager": false,
+    "gpu_memory_utilization": 0.42,
+    "max_model_len": 12288,
+    "path": "/models/derived/nano",
+    "sampling": {
+      "repetition_penalty": 1.0,
+      "temperature": 0.0,
+      "top_p": 1.0
+    }
+  },
+  "kind": "step4d_nano_component_replay",
+  "measured_blocks": 30,
+  "mode": "exact",
+  "passed": false,
+  "reference_output_digests": {
+    "pair-1-content": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+    "pair-1-pad": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+    "pair-2-content": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+    "pair-2-pad": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+    "pair-3-content": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+    "pair-3-pad": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f"
+  },
+  "reference_source": "first-measured-block",
+  "schema": 1,
+  "warmup_blocks": 2
+}

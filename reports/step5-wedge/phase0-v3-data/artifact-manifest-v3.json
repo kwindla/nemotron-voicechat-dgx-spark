@@ -1,0 +1,48 @@
+{
+  "campaign_passed": true,
+  "files": {
+    "batches-v3.jsonl": {
+      "bytes": 2438244471,
+      "sha256": "d34822e2614904916d2ff68bc3a1e68da9c458705d02096b0f085be74b6ff006"
+    },
+    "class-provenance.json": {
+      "bytes": 1416,
+      "sha256": "12061df2f1944181d3f9723f8d8e91b1d5dfd9bebdd7bdcdc8c086cb0064cea7"
+    },
+    "compatibility-identity-preregistered.json": {
+      "bytes": 1881,
+      "sha256": "81cccaa6113290020e2605d068da031853c123c6d80a42e8a05583f287376ff2"
+    },
+    "diagnostic-patch-manifest-preregistered.json": {
+      "bytes": 1304,
+      "sha256": "7c36cb5d64c7cfe2debf132a3ea53a87897cb90174a2e3bc3748f818465668f3"
+    },
+    "equivalence-summary-v3.json": {
+      "bytes": 150,
+      "sha256": "406c6b55fbddd882ed46a0bfd614683992ee2e55c72b9261aaf5e3b1ce9140c5"
+    },
+    "fault-matrices-v3.json": {
+      "bytes": 5103,
+      "sha256": "51854cfa817d335c7fcff6848d9397197410dfee65e262231855fb3ce8a3bdbd"
+    },
+    "noninterference-trace/wedge-trace-2211720-phase0-v3-on.ring": {
+      "bytes": 2097152,
+      "sha256": "4ef032e5ce438be77d710f03763c4f2d9cf3bade7ebf7d1a15538f9dc51a3290"
+    },
+    "noninterference-v3.json": {
+      "bytes": 1601,
+      "sha256": "f1e9db05be6104812c112c9b46a8b4acd7acd51484a8c222ec8352118fa5ed48"
+    },
+    "phase0-summary-v3.json": {
+      "bytes": 601,
+      "sha256": "3be9774a2ad917a641232ebbb32363e1ab8698d08379173ac42042d93f6fce69"
+    },
+    "source-identity.json": {
+      "bytes": 252,
+      "sha256": "6fd7b1346ea92218020fa6cc3de0e9acbb801bde1d70354ebd9683968dfa49d6"
+    }
+  },
+  "schema_version": 3,
+  "self_canonical_sha256": "3a3b77ae4a974033071e2bfdb58066c743cb7abeb61fdb96d08bfe82fd9d780a",
+  "self_hash_definition": "SHA-256 of canonical manifest JSON with self_canonical_sha256 omitted"
+}

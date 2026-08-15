@@ -1,0 +1,11 @@
+{
+  "container_id": "6efe0b3ed9e24df9830a3b5666652ec57d3991d01a3bbf4a876b2dfd1b7ff650",
+  "container_name": "nemotron-voicechat-model",
+  "exit_code": 143,
+  "image_id": "sha256:ea15693c2c7931516a366fe886a00caabe09f441abadc2a461cdaa51d0ed232a",
+  "kind": "step4d_authorized_standalone_profile_container_stop",
+  "schema": 1,
+  "stop_command": "docker stop --time 30 nemotron-voicechat-model",
+  "stop_completed_utc": "2026-08-13T18:34:36.227682098+00:00",
+  "stop_started_utc": "2026-08-13T18:34:33.531742732+00:00"
+}

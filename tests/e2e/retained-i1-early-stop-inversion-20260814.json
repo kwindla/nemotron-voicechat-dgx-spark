@@ -1,0 +1,214 @@
+[
+ {
+  "type": "bot-interrupted",
+  "received_performance_ms": 119607.19999980927
+ },
+ {
+  "type": "user-transcription",
+  "received_performance_ms": 123809.80000019073
+ },
+ {
+  "type": "user-started-speaking",
+  "received_performance_ms": 123810.5
+ },
+ {
+  "type": "bot-interrupted",
+  "received_performance_ms": 123810.80000019073
+ },
+ {
+  "type": "user-stopped-speaking",
+  "received_performance_ms": 133330.89999961853
+ },
+ {
+  "type": "bot-llm-started",
+  "received_performance_ms": 133331.5
+ },
+ {
+  "type": "metrics",
+  "received_performance_ms": 133331.60000038147
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133409.5
+ },
+ {
+  "type": "bot-tts-started",
+  "received_performance_ms": 133409.80000019073
+ },
+ {
+  "type": "bot-started-speaking",
+  "received_performance_ms": 133410.0
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133487.39999961853
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133568.30000019073
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133643.0
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133721.19999980927
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133798.30000019073
+ },
+ {
+  "type": "metrics",
+  "received_performance_ms": 133798.60000038147
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133872.89999961853
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 133950.30000019073
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 134027.0
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 134106.89999961853
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 134185.10000038147
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 134266.10000038147
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 134344.60000038147
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 134426.5
+ },
+ {
+  "type": "bot-tts-stopped",
+  "received_performance_ms": 137140.0
+ },
+ {
+  "type": "bot-llm-stopped",
+  "received_performance_ms": 137140.30000019073
+ },
+ {
+  "type": "metrics",
+  "received_performance_ms": 137140.5
+ },
+ {
+  "type": "bot-output",
+  "received_performance_ms": 137281.89999961853
+ },
+ {
+  "type": "bot-tts-text",
+  "received_performance_ms": 137282.60000038147
+ },
+ {
+  "type": "bot-stopped-speaking",
+  "received_performance_ms": 137325.80000019073
+ },
+ {
+  "type": "bot-interrupted",
+  "received_performance_ms": 137484.69999980927
+ },
+ {
+  "type": "user-transcription",
+  "received_performance_ms": 138421.5
+ },
+ {
+  "type": "user-started-speaking",
+  "received_performance_ms": 138422.19999980927
+ },
+ {
+  "type": "bot-interrupted",
+  "received_performance_ms": 138422.39999961853
+ },
+ {
+  "type": "user-stopped-speaking",
+  "received_performance_ms": 141017.10000038147
+ },
+ {
+  "type": "bot-llm-started",
+  "received_performance_ms": 141017.5
+ },
+ {
+  "type": "metrics",
+  "received_performance_ms": 141017.80000019073
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 141096.19999980927
+ },
+ {
+  "type": "bot-tts-started",
+  "received_performance_ms": 141096.5
+ },
+ {
+  "type": "bot-started-speaking",
+  "received_performance_ms": 141096.69999980927
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 141170.19999980927
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 141246.5
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 141320.69999980927
+ },
+ {
+  "type": "metrics",
+  "received_performance_ms": 141321.0
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 141394.39999961853
+ },
+ {
+  "type": "bot-llm-text",
+  "received_performance_ms": 141470.39999961853
+ },
+ {
+  "type": "bot-transcription",
+  "received_performance_ms": 141470.69999980927
+ },
+ {
+  "type": "bot-tts-stopped",
+  "received_performance_ms": 143970.89999961853
+ },
+ {
+  "type": "bot-llm-stopped",
+  "received_performance_ms": 143971.19999980927
+ },
+ {
+  "type": "metrics",
+  "received_performance_ms": 143971.69999980927
+ },
+ {
+  "type": "bot-output",
+  "received_performance_ms": 143971.89999961853
+ },
+ {
+  "type": "bot-tts-text",
+  "received_performance_ms": 143972.5
+ },
+ {
+  "type": "bot-stopped-speaking",
+  "received_performance_ms": 144011.69999980927
+ }
+]

@@ -1,0 +1,16 @@
+{
+  "artifact_manifest_verified": true,
+  "b_missing_or_inexact_replicates": 0,
+  "campaign_execution_started": false,
+  "complete": false,
+  "exactness_failure_replicates": 0,
+  "fixture_materialization_sha256": null,
+  "preflight_error": "UnrecoverablePreflightError: no real Phase1Executor adapter exists; the only concrete executor is the inadmissible CPU FakeExecutor",
+  "preflight_status": "INCOMPLETE",
+  "qualifying_discordant_replicates": 0,
+  "post_forward_localized_losses": 0,
+  "replicates_completed": 0,
+  "replicates_planned": 12,
+  "synthetic_fallback_used": false,
+  "verdict": "INCOMPLETE"
+}

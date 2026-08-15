@@ -17,6 +17,15 @@ def test_session_update_selects_only_protocol_v3():
         "tools": [],
     }
 
+    negotiated = events.session_update(
+        instructions="Be useful",
+        tools=[],
+        function_output_model_output="client_authored_v1",
+    )
+    assert negotiated["session"]["capabilities"] == {
+        "function_output_model_output": "client_authored_v1"
+    }
+
 
 def test_audio_append_is_explicit_pcm16_mono_16khz():
     message = events.audio_append(b"\x01\x02")
@@ -71,6 +80,18 @@ def test_function_result_is_not_double_json_encoded():
     encoded = json.dumps(message)
     decoded = json.loads(encoded)
     assert decoded["item"]["output"] == '{"value":18}'
+
+    concise = events.function_call_output(
+        "call_1",
+        '{"value":18}',
+        model_output="The value is eighteen.",
+    )
+    assert concise["item"] == {
+        "type": "function_call_output",
+        "call_id": "call_1",
+        "output": '{"value":18}',
+        "model_output": "The value is eighteen.",
+    }
 
 
 def test_tool_names_that_collide_after_server_normalization_are_rejected():

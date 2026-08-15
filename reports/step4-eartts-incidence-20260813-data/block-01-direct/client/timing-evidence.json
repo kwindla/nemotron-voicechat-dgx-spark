@@ -1,0 +1,8 @@
+{
+  "schema": "nemotron_voicechat.step4c_timing_evidence.v1",
+  "session_id": "0405013f-dbd5-4344-a8ff-9a58f71a46e7",
+  "warmup_seconds": 10.0,
+  "duration_seconds": 120.0,
+  "drain_seconds": 15.0,
+  "derivation": "client first metric to completed session.close"
+}

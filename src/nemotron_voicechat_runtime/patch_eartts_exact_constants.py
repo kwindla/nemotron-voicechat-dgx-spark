@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Hoist bitwise-exact EarTTS constants in two independently gated stages."""
 
+# The long embedded lines below are byte-sensitive source-patch anchors.
+# ruff: noqa: E501
+
 from __future__ import annotations
 
 import argparse
@@ -8,7 +11,6 @@ import hashlib
 import py_compile
 import sysconfig
 from pathlib import Path
-
 
 QUALIFIED_EARTTS_SHA256 = (
     "e86ff2197e5b086ae1c6b3e91c1df778ae6ade8a8386a3e38f84495cfd3e9f3a"

@@ -1,0 +1,26 @@
+{
+  "files": {
+    "compatibility-identity-preregistered-v3.json": {
+      "bytes": 3756,
+      "sha256": "6d5a703ae456deea9600be8ff64c33838ac45a5b7c2dae82b40ccb3ea1902496"
+    },
+    "frozen-hash-check.json": {
+      "bytes": 2149,
+      "sha256": "7cca6b8613bbca23055083fb2c16132e5b07d04a3669cb2aecdd26237317dcc6"
+    },
+    "patch-manifest.json": {
+      "bytes": 1552,
+      "sha256": "818906e4c83ecbd8a62a82193a3df86b563f8fc402d07fbf3453deec1f946786"
+    },
+    "phase1-summary.json": {
+      "bytes": 611,
+      "sha256": "4ab4d471045d3f7e735cdae5a26d62516ec120598cb36032473afb5f34d7fa08"
+    },
+    "preflight-audit.json": {
+      "bytes": 1532,
+      "sha256": "acec0ce403de20ca5c3379ac66b56fe48a5febc7efb9a49981b0a297e47dcaa8"
+    }
+  },
+  "schema_version": 1,
+  "self_canonical_sha256": "0e7a30c0eed470494b97c5977cbb31d34ea0e6c38b54f36e7ca3ab6b1646441a"
+}

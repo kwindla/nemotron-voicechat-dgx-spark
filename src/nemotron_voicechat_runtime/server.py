@@ -49,6 +49,7 @@ from .pocket_controller import (
 from .protocol import (
     FUNCTION_OUTPUT_MAX_BYTES,
     FUNCTION_OUTPUT_MAX_TOKENS,
+    FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
     FUNCTION_OUTPUT_RECOVERY_MAX_FRAMES,
     MAX_FUNCTION_CALLS_PER_RESPONSE,
     PROTOCOL_NAME,
@@ -59,8 +60,14 @@ from .protocol import (
 from .provenance import (
     NANO_PAD_PAIR_PRODUCTION_POLICY,
     PRODUCTION_ENVIRONMENT,
+    QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV,
+    QUALIFICATION_MODE_ENV,
     RUNTIME_SOURCE_PATHS,
+    ValidatedQualificationMode,
+    is_validated_qualification_mode,
     validate_nano_pad_pair_production_policy,
+    validate_qualification_watchdog_production_policy,
+    validated_qualification_mode_fields,
 )
 
 PINNED_COMMIT = "911ec674ab40f04302ef33672be4179f45a7310f"
@@ -130,6 +137,9 @@ PRODUCTION_NANO_CUSTOM_OUTPUTS = ["function_tokens", "function_logits"]
 DIAGNOSTIC_NANO_CUSTOM_OUTPUTS = ["text_logits", *PRODUCTION_NANO_CUSTOM_OUTPUTS]
 SKIP_TEXT_LOGITS_CONTRACT = "temperature=0, top_p=1, repetition_penalty=1"
 FC_ASYNC_HEARTBEAT_ENV = "S2S_FC_ASYNC_HEARTBEAT"
+FC_ASYNC_BENCHMARK_ENV = "S2S_FC_ASYNC_BENCHMARK"
+FC_FAST_TOOL_GRACE_MS_ENV = "VOICECHAT_FC_FAST_TOOL_GRACE_MS"
+FC_ALWAYS_ACKNOWLEDGE_TOOLS_ENV = "VOICECHAT_FC_ALWAYS_ACKNOWLEDGE_TOOLS"
 FC_ASYNC_HEARTBEAT_KEYS = frozenset(
     {
         "schema",
@@ -172,9 +182,7 @@ FC_ASYNC_HEARTBEAT_STAGES = frozenset(
         "aborted",
     }
 )
-FC_ASYNC_HEARTBEAT_STATES = frozenset(
-    {"started", "idle", "complete", "failed", "aborted"}
-)
+FC_ASYNC_HEARTBEAT_STATES = frozenset({"started", "idle", "complete", "failed", "aborted"})
 
 
 def accepted_vllm_manifest_kinds() -> frozenset[str]:
@@ -679,9 +687,7 @@ class UserEouSettlement:
         transition_start = self.eartts_transition_count_starting
         reuse_start = self.eartts_reuse_count_starting
         terminal_step_start = None
-        step = (getattr(result, "turn_state", None) or {}).get(
-            "eartts_bos_epoch_step"
-        )
+        step = (getattr(result, "turn_state", None) or {}).get("eartts_bos_epoch_step")
         violations: list[str] = []
         if self.deferred_terminal_bos:
             required_step = {
@@ -779,16 +785,14 @@ class UserEouSettlement:
             violations.append("eartts_bos_whole_turn_accounting")
         if terminal_step_start is not None:
             preterminal_reset_delta = (
-                terminal_step_start["reset_count_before"]
-                - self.eartts_reset_count_starting
+                terminal_step_start["reset_count_before"] - self.eartts_reset_count_starting
             )
             preterminal_transition_delta = (
                 terminal_step_start["transition_count_before"]
                 - self.eartts_transition_count_starting
             )
             preterminal_reuse_delta = (
-                terminal_step_start["reuse_count_before"]
-                - self.eartts_reuse_count_starting
+                terminal_step_start["reuse_count_before"] - self.eartts_reuse_count_starting
             )
             if (
                 min(
@@ -802,8 +806,7 @@ class UserEouSettlement:
             ):
                 violations.append("eartts_preterminal_fc_accounting")
             if (
-                terminal_step_start["request_id_before"]
-                != terminal_step_start["request_id_after"]
+                terminal_step_start["request_id_before"] != terminal_step_start["request_id_after"]
                 or terminal_step_start["request_id_after"] != expected_request_id
             ):
                 violations.append("eartts_bos_step_request_mismatch")
@@ -842,8 +845,7 @@ class UserEouSettlement:
             if expected_backend_identity is None:
                 violations.append("eartts_bos_event_backend_identity_missing")
             elif (
-                event.get("backend_request_id")
-                != expected_backend_identity["backend_request_id"]
+                event.get("backend_request_id") != expected_backend_identity["backend_request_id"]
                 or event.get("backend_generation")
                 != expected_backend_identity["backend_generation"]
             ):
@@ -971,14 +973,23 @@ class UserEouSettlement:
         return evidence
 
 
-def validate_function_output(engine: Any, output: Any) -> tuple[str, int]:
-    """Validate bounded tool output before unblocking model-side injection."""
+@dataclass(frozen=True)
+class ValidatedFunctionOutput:
+    """Canonical full result plus the exact client-authored injection value."""
 
-    if not isinstance(output, str):
-        raise ValueError("function_call_output output must be a string")
-    output_bytes = len(output.encode("utf-8"))
-    if output_bytes > FUNCTION_OUTPUT_MAX_BYTES:
-        raise ValueError(f"function_call_output exceeds {FUNCTION_OUTPUT_MAX_BYTES} UTF-8 bytes")
+    output: str
+    output_bytes: int
+    output_tokens: int
+    model_output: str | None
+    model_output_bytes: int | None
+    model_output_tokens: int | None
+    injection_output: str
+    injection_tokens: int
+
+
+def _function_output_token_count(engine: Any, output: str) -> int:
+    """Size one value in the exact wrapper consumed by NVIDIA Speech."""
+
     wrapper = engine.pipeline.s2s_model
     build_tokens = getattr(wrapper, "_build_fc_response_tokens", None)
     if not callable(build_tokens):
@@ -988,16 +999,61 @@ def validate_function_output(engine: Any, output: Any) -> tuple[str, int]:
         convert_numbers = getattr(wrapper, "_convert_tool_response_nums_to_text", None)
         if not callable(convert_numbers):
             raise ValueError("model cannot normalize function_call_output injection")
-        # The Speech worker performs this conversion before handing the wrapped
-        # response to _build_fc_response_tokens(), so size the exact same form.
         wrapped = convert_numbers(wrapped)
-    token_count = len(build_tokens(wrapped))
-    if token_count > FUNCTION_OUTPUT_MAX_TOKENS:
+    return len(build_tokens(wrapped))
+
+
+def validate_function_output(
+    engine: Any,
+    output: Any,
+    *,
+    model_output: Any = None,
+    model_output_negotiated: bool = False,
+) -> ValidatedFunctionOutput:
+    """Validate full and model-visible tool results without deriving either one."""
+
+    if not isinstance(output, str):
+        raise ValueError("function_call_output output must be a string")
+    output_bytes = len(output.encode("utf-8"))
+    if output_bytes > FUNCTION_OUTPUT_MAX_BYTES:
+        raise ValueError(f"function_call_output exceeds {FUNCTION_OUTPUT_MAX_BYTES} UTF-8 bytes")
+    if model_output is not None and not model_output_negotiated:
+        raise ValueError("function_call_output model_output was not negotiated")
+    output_tokens = _function_output_token_count(engine, output)
+
+    if model_output is not None:
+        if not isinstance(model_output, str) or not model_output.strip():
+            raise ValueError("function_call_output model_output must be a non-empty string")
+        model_output_bytes = len(model_output.encode("utf-8"))
+        if model_output_bytes > FUNCTION_OUTPUT_MAX_BYTES:
+            raise ValueError(
+                "function_call_output model_output exceeds "
+                f"{FUNCTION_OUTPUT_MAX_BYTES} UTF-8 bytes"
+            )
+        model_output_tokens = _function_output_token_count(engine, model_output)
+        injection_output = model_output
+        injection_tokens = model_output_tokens
+    else:
+        model_output_bytes = None
+        model_output_tokens = None
+        injection_output = output
+        injection_tokens = output_tokens
+
+    if injection_tokens > FUNCTION_OUTPUT_MAX_TOKENS:
         raise ValueError(
             "function_call_output expands to "
-            f"{token_count} tokens; maximum is {FUNCTION_OUTPUT_MAX_TOKENS}"
+            f"{injection_tokens} tokens; maximum is {FUNCTION_OUTPUT_MAX_TOKENS}"
         )
-    return output, token_count
+    return ValidatedFunctionOutput(
+        output=output,
+        output_bytes=output_bytes,
+        output_tokens=output_tokens,
+        model_output=model_output,
+        model_output_bytes=model_output_bytes,
+        model_output_tokens=model_output_tokens,
+        injection_output=injection_output,
+        injection_tokens=injection_tokens,
+    )
 
 
 async def advance_function_output_recovery(
@@ -1012,9 +1068,7 @@ async def advance_function_output_recovery(
     next_frame_at = time.monotonic()
     for frame_index in range(max_frames):
         result = await step()
-        if not function_cycle_active(result) and (
-            completion is None or bool(completion(result))
-        ):
+        if not function_cycle_active(result) and (completion is None or bool(completion(result))):
             return True
         if frame_index + 1 < max_frames:
             next_frame_at += frame_seconds
@@ -1088,6 +1142,394 @@ def fc_async_heartbeat_enabled() -> bool:
     return env_bool(FC_ASYNC_HEARTBEAT_ENV, False)
 
 
+def fc_async_benchmark_enabled() -> bool:
+    """Return whether the opt-in FC latency ledger is enabled."""
+    return env_bool(FC_ASYNC_BENCHMARK_ENV, False)
+
+
+def fc_fast_tool_grace_ms() -> float:
+    """Return the bounded opt-in grace before an on-hold utterance."""
+    raw = os.environ.get(FC_FAST_TOOL_GRACE_MS_ENV, "0")
+    try:
+        value = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise SystemExit(f"{FC_FAST_TOOL_GRACE_MS_ENV} must be a finite number") from exc
+    if not math.isfinite(value) or not 0.0 <= value <= 1000.0:
+        raise SystemExit(f"{FC_FAST_TOOL_GRACE_MS_ENV} must be between zero and 1000")
+    return value
+
+
+def fc_always_acknowledge_tools() -> list[str]:
+    """Return explicitly named tools that always retain layer-one audio."""
+    raw = os.environ.get(FC_ALWAYS_ACKNOWLEDGE_TOOLS_ENV, "")
+    names = [name.strip() for name in raw.split(",") if name.strip()]
+    if len(names) != len(set(names)):
+        raise SystemExit(f"{FC_ALWAYS_ACKNOWLEDGE_TOOLS_ENV} contains duplicate tool names")
+    return names
+
+
+def _finite_number(value: Any, *, nonnegative: bool = True) -> bool:
+    return bool(
+        not isinstance(value, bool)
+        and isinstance(value, (int, float))
+        and math.isfinite(float(value))
+        and (not nonnegative or float(value) >= 0)
+    )
+
+
+def _validated_tool_wait_evidence(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    item = dict(value)
+    expected = {
+        "schema",
+        "tool_name",
+        "policy",
+        "grace_ms",
+        "tool_started_monotonic_s",
+        "tool_completed_monotonic_s",
+        "grace_expired_monotonic_s",
+        "tool_completed_before_reminder",
+        "reminder_text",
+        "reminder_variant_sha256",
+        "reminder_tokens",
+        "reminder_started_monotonic_s",
+        "reminder_ended_monotonic_s",
+        "reminder_samples",
+        "phase2_started_monotonic_s",
+        "result_available_to_phase2_ms",
+        "fast_path",
+    }
+    if set(item) != expected or item["schema"] != 1:
+        return None
+    if not isinstance(item["tool_name"], str):
+        return None
+    if item["policy"] not in {"disabled", "fast_grace", "always_acknowledge"}:
+        return None
+    if not _finite_number(item["grace_ms"]) or float(item["grace_ms"]) > 1000.0:
+        return None
+    for key in (
+        "tool_started_monotonic_s",
+        "tool_completed_monotonic_s",
+        "phase2_started_monotonic_s",
+        "result_available_to_phase2_ms",
+    ):
+        if not _finite_number(item[key]):
+            return None
+    if not isinstance(item["tool_completed_before_reminder"], bool) or not isinstance(
+        item["fast_path"], bool
+    ):
+        return None
+    for key in ("reminder_tokens", "reminder_samples"):
+        if not isinstance(item[key], int) or isinstance(item[key], bool) or item[key] < 0:
+            return None
+    optional_numbers = (
+        "grace_expired_monotonic_s",
+        "reminder_started_monotonic_s",
+        "reminder_ended_monotonic_s",
+    )
+    if any(item[key] is not None and not _finite_number(item[key]) for key in optional_numbers):
+        return None
+    for key in ("reminder_text", "reminder_variant_sha256"):
+        if item[key] is not None and not isinstance(item[key], str):
+            return None
+    start = float(item["tool_started_monotonic_s"])
+    complete = float(item["tool_completed_monotonic_s"])
+    phase2 = float(item["phase2_started_monotonic_s"])
+    if not start <= complete <= phase2:
+        return None
+    expected_delay = (phase2 - complete) * 1000.0
+    if not math.isclose(
+        float(item["result_available_to_phase2_ms"]),
+        expected_delay,
+        rel_tol=0.0,
+        abs_tol=0.05,
+    ):
+        return None
+    reminder_fields = (
+        item["reminder_text"],
+        item["reminder_variant_sha256"],
+        item["reminder_started_monotonic_s"],
+        item["reminder_ended_monotonic_s"],
+    )
+    has_reminder = any(field is not None for field in reminder_fields)
+    if has_reminder and any(field is None for field in reminder_fields):
+        return None
+    if has_reminder:
+        if not (
+            start
+            <= float(item["reminder_started_monotonic_s"])
+            <= float(item["reminder_ended_monotonic_s"])
+            <= phase2
+        ):
+            return None
+        if item["reminder_tokens"] <= 0 or item["reminder_samples"] <= 0:
+            return None
+        digest = item["reminder_variant_sha256"]
+        if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
+            return None
+    elif item["reminder_samples"] != 0:
+        return None
+    elif item["tool_completed_before_reminder"]:
+        return None
+    if item["fast_path"]:
+        if item["policy"] != "fast_grace" or has_reminder:
+            return None
+        if item["grace_expired_monotonic_s"] is not None:
+            return None
+    elif item["policy"] == "fast_grace" and item["grace_expired_monotonic_s"] is None:
+        return None
+    grace_expired = item["grace_expired_monotonic_s"]
+    if grace_expired is not None:
+        if not start <= float(grace_expired) <= phase2:
+            return None
+        if has_reminder and float(grace_expired) > float(item["reminder_started_monotonic_s"]):
+            return None
+    if item["policy"] == "disabled" and float(item["grace_ms"]) != 0.0:
+        return None
+    if item["policy"] == "fast_grace" and float(item["grace_ms"]) <= 0.0:
+        return None
+    return item
+
+
+def _validated_nano_engine_benchmark(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    item = dict(value)
+    expected = {
+        "schema",
+        "request_id",
+        "backend_request_id",
+        "backend_generation",
+        "position",
+        "action",
+        "input_copy_ms",
+        "submit_ms",
+        "output_wait_ms",
+        "parse_ms",
+        "named_sum_ms",
+        "total_ms",
+        "residual_ms",
+    }
+    if set(item) != expected or item["schema"] != 1:
+        return None
+    if not all(
+        isinstance(item[key], str) and item[key] for key in ("request_id", "backend_request_id")
+    ):
+        return None
+    if item["action"] not in {"initial_submit", "append"}:
+        return None
+    for key in ("backend_generation", "position"):
+        if not isinstance(item[key], int) or isinstance(item[key], bool) or item[key] < 0:
+            return None
+    for key in (
+        "input_copy_ms",
+        "submit_ms",
+        "output_wait_ms",
+        "parse_ms",
+        "named_sum_ms",
+        "total_ms",
+    ):
+        if not _finite_number(item[key]):
+            return None
+    if not _finite_number(item["residual_ms"], nonnegative=False):
+        return None
+    expected_sum = sum(
+        float(item[key]) for key in ("input_copy_ms", "submit_ms", "output_wait_ms", "parse_ms")
+    )
+    if not math.isclose(float(item["named_sum_ms"]), expected_sum, rel_tol=0.0, abs_tol=0.05):
+        return None
+    if not math.isclose(
+        float(item["total_ms"]),
+        expected_sum + float(item["residual_ms"]),
+        rel_tol=0.0,
+        abs_tol=0.05,
+    ):
+        return None
+    return item
+
+
+def _validated_fc_async_benchmark_phase(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    item = dict(value)
+    expected = {
+        "schema",
+        "cycle_sotc_frame",
+        "phase",
+        "invocation",
+        "request_id",
+        "phase_start_monotonic_s",
+        "phase_end_monotonic_s",
+        "wall_ms",
+        "positions_count",
+        "positions_retained",
+        "positions_truncated",
+        "nano_position_start",
+        "nano_position_end",
+        "real_audio_frames",
+        "perception_calls",
+        "rnnt_steps",
+        "tts_calls",
+        "eotr_wait_steps",
+        "stage_totals_ms",
+        "named_sum_ms",
+        "residual_ms",
+        "positions",
+    }
+    if set(item) != expected or item["schema"] != 1:
+        return None
+    if item["phase"] not in {"tool_call", "tool_response"} or item["invocation"] not in {1, 2}:
+        return None
+    if (item["phase"], item["invocation"]) not in {("tool_call", 1), ("tool_response", 2)}:
+        return None
+    if not isinstance(item["request_id"], str) or not item["request_id"]:
+        return None
+    integer_keys = (
+        "cycle_sotc_frame",
+        "positions_count",
+        "positions_retained",
+        "nano_position_start",
+        "nano_position_end",
+        "real_audio_frames",
+        "perception_calls",
+        "rnnt_steps",
+        "tts_calls",
+        "eotr_wait_steps",
+    )
+    if any(
+        not isinstance(item[key], int) or isinstance(item[key], bool) or item[key] < 0
+        for key in integer_keys
+    ):
+        return None
+    if not isinstance(item["positions_truncated"], bool):
+        return None
+    if any(
+        not _finite_number(item[key], nonnegative=key != "residual_ms")
+        for key in (
+            "phase_start_monotonic_s",
+            "phase_end_monotonic_s",
+            "wall_ms",
+            "named_sum_ms",
+            "residual_ms",
+        )
+    ):
+        return None
+    if float(item["phase_end_monotonic_s"]) < float(item["phase_start_monotonic_s"]):
+        return None
+    stage_keys = {
+        "embed_ms",
+        "perception_poll_ms",
+        "fusion_ms",
+        "nano_interface_ms",
+        "eartts_infer_ms",
+        "codec_decode_ms",
+        "codec_cpu_copy_ms",
+        "rnnt_ms",
+        "perception_join_ms",
+    }
+    stages = item["stage_totals_ms"]
+    if (
+        not isinstance(stages, dict)
+        or set(stages) != stage_keys
+        or any(not _finite_number(value) for value in stages.values())
+    ):
+        return None
+    positions = item["positions"]
+    if (
+        not isinstance(positions, list)
+        or len(positions) != item["positions_retained"]
+        or len(positions) > 512
+    ):
+        return None
+    position_keys = {
+        "schema",
+        "async_step",
+        "nano_position",
+        "monotonic_s",
+        "embed_ms",
+        "perception_poll_ms",
+        "fusion_ms",
+        "nano_interface_ms",
+        "nano_engine",
+        "eartts_infer_ms",
+        "codec_decode_ms",
+        "codec_cpu_copy_ms",
+        "rnnt_ms",
+        "named_sum_ms",
+        "total_ms",
+        "residual_ms",
+    }
+    copied_positions = []
+    for position in positions:
+        if (
+            not isinstance(position, dict)
+            or set(position) != position_keys
+            or position["schema"] != 1
+        ):
+            return None
+        for key in ("async_step", "nano_position"):
+            if (
+                not isinstance(position[key], int)
+                or isinstance(position[key], bool)
+                or position[key] < 0
+            ):
+                return None
+        number_keys = position_keys - {
+            "schema",
+            "async_step",
+            "nano_position",
+            "nano_engine",
+            "residual_ms",
+        }
+        if any(not _finite_number(position[key]) for key in number_keys) or not _finite_number(
+            position["residual_ms"], nonnegative=False
+        ):
+            return None
+        engine = _validated_nano_engine_benchmark(position["nano_engine"])
+        if engine is None:
+            return None
+        position_named_keys = (
+            "embed_ms",
+            "perception_poll_ms",
+            "fusion_ms",
+            "nano_interface_ms",
+            "eartts_infer_ms",
+            "codec_decode_ms",
+            "codec_cpu_copy_ms",
+            "rnnt_ms",
+        )
+        position_named_sum = sum(float(position[key]) for key in position_named_keys)
+        if not math.isclose(
+            float(position["named_sum_ms"]),
+            position_named_sum,
+            rel_tol=0.0,
+            abs_tol=0.05,
+        ):
+            return None
+        if not math.isclose(
+            float(position["total_ms"]),
+            position_named_sum + float(position["residual_ms"]),
+            rel_tol=0.0,
+            abs_tol=0.05,
+        ):
+            return None
+        copied = dict(position)
+        copied["nano_engine"] = engine
+        copied_positions.append(copied)
+    if not item["positions_truncated"] and item["positions_count"] != len(copied_positions):
+        return None
+    named_sum = sum(float(value) for value in stages.values())
+    if not math.isclose(float(item["named_sum_ms"]), named_sum, rel_tol=0.0, abs_tol=0.05):
+        return None
+    if not math.isclose(
+        float(item["wall_ms"]), named_sum + float(item["residual_ms"]), rel_tol=0.0, abs_tol=0.05
+    ):
+        return None
+    item["positions"] = copied_positions
+    return item
+
+
 def configure_fc_async_thread_dump() -> bool:
     """Install SIGUSR1 stack dumping only for an explicitly instrumented run."""
     enabled = fc_async_heartbeat_enabled()
@@ -1097,9 +1539,7 @@ def configure_fc_async_thread_dump() -> bool:
 
 
 def _valid_optional_nonnegative_int(value: Any) -> bool:
-    return value is None or (
-        isinstance(value, int) and not isinstance(value, bool) and value >= 0
-    )
+    return value is None or (isinstance(value, int) and not isinstance(value, bool) and value >= 0)
 
 
 def _validated_fc_async_heartbeat(value: Any) -> dict[str, Any] | None:
@@ -1138,8 +1578,7 @@ def _validated_fc_async_heartbeat(value: Any) -> dict[str, Any] | None:
         (snapshot["stage"] == "between_stages") != (snapshot["state"] == "idle")
         or (snapshot["stage"] == "complete") != (snapshot["state"] == "complete")
         or (snapshot["stage"] == "aborted") != (snapshot["state"] == "aborted")
-        or (snapshot["stage"] in {"stage_failed", "failed"})
-        != (snapshot["state"] == "failed")
+        or (snapshot["stage"] in {"stage_failed", "failed"}) != (snapshot["state"] == "failed")
     ):
         return None
     for key in ("stage_started_monotonic", "last_completed_monotonic"):
@@ -1154,9 +1593,7 @@ def _validated_fc_async_heartbeat(value: Any) -> dict[str, Any] | None:
     for key in ("last_completed_stage", "last_failed_stage"):
         if snapshot[key] is not None and snapshot[key] not in FC_ASYNC_HEARTBEAT_STAGES:
             return None
-    if (snapshot["last_completed_stage"] is None) != (
-        snapshot["last_completed_monotonic"] is None
-    ):
+    if (snapshot["last_completed_stage"] is None) != (snapshot["last_completed_monotonic"] is None):
         return None
     if (
         not isinstance(snapshot["thread_ident"], int)
@@ -1172,9 +1609,7 @@ def _validated_fc_async_heartbeat(value: Any) -> dict[str, Any] | None:
     ):
         item = snapshot[key]
         if item is not None and (
-            not isinstance(item, int)
-            or isinstance(item, bool)
-            or not 0 <= item <= 1_000_000
+            not isinstance(item, int) or isinstance(item, bool) or not 0 <= item <= 1_000_000
         ):
             return None
     return snapshot
@@ -1310,9 +1745,7 @@ def prepare_agent_logit_diagnostic_nano(
             "S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK must be an integer from 0 through 20"
         ) from exc
     if not 0 <= top_k <= 20:
-        raise SystemExit(
-            "S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK must be an integer from 0 through 20"
-        )
+        raise SystemExit("S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK must be an integer from 0 through 20")
     if not top_k:
         return source, None
     try:
@@ -1345,9 +1778,9 @@ def prepare_agent_logit_diagnostic_nano(
     diagnostic_config = dict(source_config)
     diagnostic_config["custom_outputs"] = DIAGNOSTIC_NANO_CUSTOM_OUTPUTS
     diagnostic_config.pop("voicechat_skip_custom_text_logits")
-    diagnostic_bytes = (
-        json.dumps(diagnostic_config, indent=2, sort_keys=True) + "\n"
-    ).encode("utf-8")
+    diagnostic_bytes = (json.dumps(diagnostic_config, indent=2, sort_keys=True) + "\n").encode(
+        "utf-8"
+    )
     if scratch.exists():
         shutil.rmtree(scratch)
     scratch.mkdir(parents=True)
@@ -1702,6 +2135,8 @@ class PendingExternalToolCall:
     arguments: str
     completed: threading.Event
     output: str | None = None
+    model_output: str | None = None
+    injection_output: str | None = None
 
 
 class ExternalToolBridge:
@@ -1782,9 +2217,13 @@ class ExternalToolBridge:
             return json.dumps({"error": "function_call_output_timeout"})
         with self._lock:
             self._pending.pop(call.call_id, None)
-        return call.output if call.output is not None else json.dumps({"error": "empty_output"})
+        return (
+            call.injection_output
+            if call.injection_output is not None
+            else json.dumps({"error": "empty_output"})
+        )
 
-    def submit(self, call_id: str, output: Any) -> None:
+    def submit(self, call_id: str, output: ValidatedFunctionOutput) -> None:
         if not isinstance(call_id, str) or not call_id:
             raise ValueError("function_call_output requires call_id")
         with self._lock:
@@ -1793,16 +2232,22 @@ class ExternalToolBridge:
                 raise ValueError(f"unknown or completed call_id: {call_id}")
             if call.completed.is_set():
                 raise ValueError(f"duplicate function output for call_id: {call_id}")
-            call.output = output if isinstance(output, str) else json.dumps(output)
+            if not isinstance(output, ValidatedFunctionOutput):
+                raise TypeError("function output must be validated before submission")
+            call.output = output.output
+            call.model_output = output.model_output
+            call.injection_output = output.injection_output
             call.completed.set()
 
     def close(self) -> None:
         with self._lock:
             self._closed = True
-            pending = list(self._pending.values())
-        for call in pending:
-            call.output = json.dumps({"error": "session_closed"})
-            call.completed.set()
+            for call in self._pending.values():
+                if call.completed.is_set():
+                    continue
+                call.output = json.dumps({"error": "session_closed"})
+                call.injection_output = call.output
+                call.completed.set()
 
 
 def audio_stats(samples: np.ndarray) -> dict[str, float | int]:
@@ -1978,6 +2423,8 @@ class AgentSilenceEosWatchdog:
     required_frames: int = 12
     no_text_required_frames: int = 30
     no_audio_required_frames: int = 30
+    function_call_emission_limit: int = 4
+    function_call_emissions: int = 0
     agent_open: bool = False
     text_seen: bool = False
     function_seen: bool = False
@@ -1989,6 +2436,7 @@ class AgentSilenceEosWatchdog:
     request_reason: str | None = None
 
     def reset(self) -> None:
+        self.function_call_emissions = 0
         self.agent_open = False
         self.text_seen = False
         self.function_seen = False
@@ -2015,6 +2463,7 @@ class AgentSilenceEosWatchdog:
             self.silent_frames = 0
             self.no_text_frames = 0
             self.no_audio_frames = 0
+            self.function_call_emissions = 0
             self.request_pending = False
             self.request_reason = None
 
@@ -2025,6 +2474,7 @@ class AgentSilenceEosWatchdog:
             self.text_seen = True
         if function_delta:
             self.function_seen = True
+            self.function_call_emissions += function_delta.count("<TOOLCALL>")
         if output_dbfs > self.threshold_dbfs:
             self.audible_seen = True
         if function_delta or text_delta:
@@ -2048,12 +2498,18 @@ class AgentSilenceEosWatchdog:
             and self.no_audio_frames >= self.no_audio_required_frames
         )
         decoded_silence = self.required_frames > 0 and self.silent_frames >= self.required_frames
+        function_repetition = (
+            self.function_call_emission_limit > 0
+            and self.function_call_emissions > self.function_call_emission_limit
+        )
         should_request = (
-            no_text_stalled or no_audio_stalled or decoded_silence
+            no_text_stalled or no_audio_stalled or decoded_silence or function_repetition
         ) and not self.request_pending
         if should_request:
             self.request_pending = True
-            if no_text_stalled:
+            if function_repetition:
+                self.request_reason = "function_repetition_watchdog"
+            elif no_text_stalled:
                 self.request_reason = "no_text_since_bos_watchdog"
             elif no_audio_stalled:
                 self.request_reason = "no_audio_since_bos_watchdog"
@@ -2068,6 +2524,7 @@ class AgentSilenceEosWatchdog:
             self.silent_frames = 0
             self.no_text_frames = 0
             self.no_audio_frames = 0
+            self.function_call_emissions = 0
             self.request_pending = False
             self.request_reason = None
             return False
@@ -2079,6 +2536,8 @@ class AgentSilenceEosWatchdog:
             "required_frames": self.required_frames,
             "no_text_required_frames": self.no_text_required_frames,
             "no_audio_required_frames": self.no_audio_required_frames,
+            "function_call_emission_limit": self.function_call_emission_limit,
+            "function_call_emissions": self.function_call_emissions,
             "agent_open": self.agent_open,
             "text_seen": self.text_seen,
             "function_seen": self.function_seen,
@@ -2088,6 +2547,35 @@ class AgentSilenceEosWatchdog:
             "no_audio_frames": self.no_audio_frames,
             "request_pending": self.request_pending,
             "request_reason": self.request_reason,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class _QualificationModeIdentity:
+    """Engine-owned copy of every field sealed by the validator."""
+
+    label: str
+    candidate: str
+    no_text_watchdog_override_frames: int
+    environment_sha256: str
+
+
+@dataclass
+class QualificationAgentSilenceEosWatchdog(AgentSilenceEosWatchdog):
+    """Qualification variant selected once; production snapshot stays unchanged."""
+
+    qualification_mode: _QualificationModeIdentity | None = None
+
+    def snapshot(self) -> dict[str, Any]:
+        if self.qualification_mode is None:
+            raise RuntimeError("qualification watchdog lacks validated identity")
+        return {
+            **super().snapshot(),
+            "qualification_no_text_watchdog_override_frames": (
+                self.qualification_mode.no_text_watchdog_override_frames
+            ),
+            "qualification_mode": self.qualification_mode.label,
+            "qualification_candidate": self.qualification_mode.candidate,
         }
 
 
@@ -2412,6 +2900,7 @@ class VoiceChatEngine:
         agent_silence_eos_frames: int = 12,
         agent_no_text_frames: int = 30,
         agent_no_audio_frames: int = 30,
+        qualification_mode: ValidatedQualificationMode | None = None,
         response_tail_dbfs: float = -60.0,
         response_tail_silence_frames: int = 3,
         response_tail_max_frames: int = 25,
@@ -2430,12 +2919,30 @@ class VoiceChatEngine:
         self.user_text_segment = ""
         self.last_rnnt_decoded_count = 0
         self.vllm_request_position_baseline: dict[str, int] = {}
-        self.agent_silence_watchdog = AgentSilenceEosWatchdog(
-            threshold_dbfs=agent_silence_eos_dbfs,
-            required_frames=agent_silence_eos_frames,
-            no_text_required_frames=agent_no_text_frames,
-            no_audio_required_frames=agent_no_audio_frames,
+        qualification_identity: _QualificationModeIdentity | None = None
+        if qualification_mode is not None:
+            qualification_identity = _QualificationModeIdentity(
+                *validated_qualification_mode_fields(qualification_mode)
+            )
+        self.qualification_mode = qualification_identity
+        watchdog_type = (
+            QualificationAgentSilenceEosWatchdog
+            if qualification_identity is not None
+            else AgentSilenceEosWatchdog
         )
+        watchdog_kwargs: dict[str, Any] = {
+            "threshold_dbfs": agent_silence_eos_dbfs,
+            "required_frames": agent_silence_eos_frames,
+            "no_text_required_frames": (
+                qualification_identity.no_text_watchdog_override_frames
+                if qualification_identity is not None
+                else agent_no_text_frames
+            ),
+            "no_audio_required_frames": agent_no_audio_frames,
+        }
+        if qualification_identity is not None:
+            watchdog_kwargs["qualification_mode"] = qualification_identity
+        self.agent_silence_watchdog = watchdog_type(**watchdog_kwargs)
         self.response_boundary = AcousticResponseBoundary(
             threshold_dbfs=response_tail_dbfs,
             required_silent_frames=response_tail_silence_frames,
@@ -2446,6 +2953,7 @@ class VoiceChatEngine:
         self.pad_pair_watchdog_emitted = False
         self.pad_pair_trace_errors = 0
         self.external_user_eou_mode = False
+        self.cleanup_failure: str | None = None
 
     def _reset_wrapper_session_state(self) -> None:
         reset_fn = getattr(self.pipeline.s2s_model, "reset_transport_session_state", None)
@@ -2455,14 +2963,10 @@ class VoiceChatEngine:
                 "to risk carrying wrapper-global turn state across sessions"
             )
         reset_fn()
-        reset_prepared = getattr(
-            self.pipeline.s2s_model, "_reset_eartts_prepared_epoch", None
-        )
+        reset_prepared = getattr(self.pipeline.s2s_model, "_reset_eartts_prepared_epoch", None)
         if callable(reset_prepared):
             reset_prepared("transport_session_reset")
-        tts_model = getattr(
-            getattr(self.pipeline.s2s_model, "model", None), "tts_model", None
-        )
+        tts_model = getattr(getattr(self.pipeline.s2s_model, "model", None), "tts_model", None)
         if hasattr(tts_model, "_reset_on_bos_last_timing_ms"):
             tts_model._reset_on_bos_last_timing_ms = None
 
@@ -2489,9 +2993,7 @@ class VoiceChatEngine:
         return None
 
     @staticmethod
-    def _validated_model_stage_timings(
-        value: Any, frame_position: int
-    ) -> dict[str, Any] | None:
+    def _validated_model_stage_timings(value: Any, frame_position: int) -> dict[str, Any] | None:
         if value is None:
             return None
         if not isinstance(value, dict):
@@ -2533,8 +3035,7 @@ class VoiceChatEngine:
         if (
             integers["positions"] <= 0
             or integers["frame_start"] > integers["frame_end"]
-            or integers["positions"]
-            != integers["frame_end"] - integers["frame_start"] + 1
+            or integers["positions"] != integers["frame_end"] - integers["frame_start"] + 1
         ):
             raise RuntimeError("model stage timing frame range is inconsistent")
         timing_keys = required - {
@@ -2607,9 +3108,7 @@ class VoiceChatEngine:
                     raise RuntimeError(f"EarTTS reset timing {key} must be numeric")
                 number = float(item)
                 if not math.isfinite(number) or number < 0:
-                    raise RuntimeError(
-                        f"EarTTS reset timing {key} must be finite and nonnegative"
-                    )
+                    raise RuntimeError(f"EarTTS reset timing {key} must be finite and nonnegative")
                 reset_timings[key] = number
             if not math.isclose(
                 reset_timings["reset_total_ms"],
@@ -2620,8 +3119,7 @@ class VoiceChatEngine:
                 raise RuntimeError("EarTTS reset timing arithmetic is inconsistent")
             if not math.isclose(
                 timings["eartts_total_ms"],
-                reset_timings["reset_total_ms"]
-                + reset_timings["eartts_non_reset_remainder_ms"],
+                reset_timings["reset_total_ms"] + reset_timings["eartts_non_reset_remainder_ms"],
                 rel_tol=0.0,
                 abs_tol=0.05,
             ):
@@ -2665,15 +3163,11 @@ class VoiceChatEngine:
             raise RuntimeError("EarTTS idle-PAD bypass frame evidence is invalid")
         skipped = bool(frames)
         expected_mode = (
-            "bypassed"
-            if skipped
-            else ("enabled_no_skip" if bypass["enabled"] else "disabled")
+            "bypassed" if skipped else ("enabled_no_skip" if bypass["enabled"] else "disabled")
         )
         if bypass["mode"] != expected_mode:
             raise RuntimeError("EarTTS idle-PAD bypass mode is inconsistent")
-        expected_reason = (
-            "ordinary_pcm_agent_idle_effective_pad_fc_quiescent" if skipped else None
-        )
+        expected_reason = "ordinary_pcm_agent_idle_effective_pad_fc_quiescent" if skipped else None
         if bypass["reason"] != expected_reason:
             raise RuntimeError("EarTTS idle-PAD bypass reason is inconsistent")
         expected_recurrent = "preserved_input_identity" if skipped else None
@@ -2738,8 +3232,7 @@ class VoiceChatEngine:
         ):
             raise RuntimeError("EarTTS prepared epoch request ID is invalid")
         if value["backend_request_id"] is not None and (
-            not isinstance(value["backend_request_id"], str)
-            or not value["backend_request_id"]
+            not isinstance(value["backend_request_id"], str) or not value["backend_request_id"]
         ):
             raise RuntimeError("EarTTS prepared epoch backend request ID is invalid")
         backend_generation = value["backend_generation"]
@@ -2862,13 +3355,9 @@ class VoiceChatEngine:
         if stage_timings is not None:
             reset_timing = stage_timings.get("eartts_reset")
             if isinstance(reset_timing, dict):
-                expected_request_id = str(
-                    self.pipeline._request_id_for_stream(self.stream_id)
-                )
+                expected_request_id = str(self.pipeline._request_id_for_stream(self.stream_id))
                 if reset_timing["request_id"] != expected_request_id:
-                    raise RuntimeError(
-                        "EarTTS reset stage timing belongs to another request"
-                    )
+                    raise RuntimeError("EarTTS reset stage timing belongs to another request")
             result["model_stage_timings_ms"] = stage_timings
         rnnt = getattr(context, "rnnt_partial_hypotheses", None)
         if isinstance(rnnt, dict):
@@ -2903,9 +3392,7 @@ class VoiceChatEngine:
         fc_state = getattr(context, "fc_state", None)
         if isinstance(fc_state, dict):
             drain_post_fc_trace = getattr(wrapper, "drain_post_fc_token_trace", None)
-            post_fc_token_trace = (
-                drain_post_fc_trace() if callable(drain_post_fc_trace) else []
-            )
+            post_fc_token_trace = drain_post_fc_trace() if callable(drain_post_fc_trace) else []
             suppressed_frame = getattr(wrapper, "_pre_eou_function_suppressed_frame", None)
             function_token_id = (
                 int(context.gen_function_text[0, frame_position].item())
@@ -2928,20 +3415,14 @@ class VoiceChatEngine:
                 "eotr_wait_steps": int(fc_state.get("eotr_wait_steps", 0)),
                 "eotr_timeout": bool(fc_state.get("eotr_timeout", False)),
                 "eotr_unexpected_token_id": fc_state.get("eotr_unexpected_token_id"),
-                "eotr_unexpected_token_frame": fc_state.get(
-                    "eotr_unexpected_token_frame"
-                ),
-                "eotr_first_post_drain_token_id": fc_state.get(
-                    "eotr_first_post_drain_token_id"
-                ),
+                "eotr_unexpected_token_frame": fc_state.get("eotr_unexpected_token_frame"),
+                "eotr_first_post_drain_token_id": fc_state.get("eotr_first_post_drain_token_id"),
                 "eotr_first_post_drain_token_frame": fc_state.get(
                     "eotr_first_post_drain_token_frame"
                 ),
                 "eotr_feedback_token_id": fc_state.get("eotr_feedback_token_id"),
                 "eotr_feedback_frame": fc_state.get("eotr_feedback_frame"),
-                "eotr_feedback_committed": bool(
-                    fc_state.get("eotr_feedback_committed", False)
-                ),
+                "eotr_feedback_committed": bool(fc_state.get("eotr_feedback_committed", False)),
                 "background_active": self.stream_id in getattr(self.pipeline, "_fc_async_bg", {}),
                 "agent_eos_edge_pending": bool(getattr(wrapper, "_agent_eos_just_fired", False)),
                 "pre_eou_suppressed_tokens": int(
@@ -2982,6 +3463,21 @@ class VoiceChatEngine:
             async_heartbeat = fc_async_heartbeat_snapshot(fc_state)
             if async_heartbeat is not None:
                 result["function_calling"]["async_heartbeat"] = async_heartbeat
+            raw_tool_wait = fc_state.get("tool_wait_evidence")
+            if raw_tool_wait is not None:
+                tool_wait = _validated_tool_wait_evidence(raw_tool_wait)
+                if tool_wait is None:
+                    raise RuntimeError("FC async emitted invalid tool-wait evidence")
+                result["function_calling"]["tool_wait_evidence"] = tool_wait
+            drain_benchmark = getattr(wrapper, "drain_fc_async_benchmark", None)
+            benchmark_records = drain_benchmark() if callable(drain_benchmark) else []
+            if benchmark_records:
+                validated_records = [
+                    _validated_fc_async_benchmark_phase(record) for record in benchmark_records
+                ]
+                if any(record is None for record in validated_records):
+                    raise RuntimeError("FC async benchmark emitted an invalid phase record")
+                result["function_calling"]["async_benchmark_phases"] = validated_records
             if post_fc_token_trace:
                 result["function_calling"]["post_fc_token_trace"] = post_fc_token_trace
         function_logit_trace = getattr(context, "function_logit_trace", None)
@@ -3207,6 +3703,10 @@ class VoiceChatEngine:
         }
 
     def start(self, system_prompt: str = "") -> dict[str, Any]:
+        if self.cleanup_failure is not None:
+            raise RuntimeError(
+                f"engine is unavailable after failed session cleanup: {self.cleanup_failure}"
+            )
         if self.started:
             raise RuntimeError("session already started")
         transaction_started_at = time.perf_counter()
@@ -3234,17 +3734,13 @@ class VoiceChatEngine:
             self.pad_pair_idle_no_buffer_frames = 0
             self.pad_pair_watchdog_emitted = False
             self.pad_pair_trace_errors = 0
-            timings_ms["reset"] = round(
-                (time.perf_counter() - phase_started_at) * 1000.0, 3
-            )
+            timings_ms["reset"] = round((time.perf_counter() - phase_started_at) * 1000.0, 3)
 
             phase = "open_session"
             phase_started_at = time.perf_counter()
             cleanup_required = True
             self.pipeline.open_session()
-            timings_ms["open_session"] = round(
-                (time.perf_counter() - phase_started_at) * 1000.0, 3
-            )
+            timings_ms["open_session"] = round((time.perf_counter() - phase_started_at) * 1000.0, 3)
             self.system_prompt = system_prompt.strip()
 
             # Prime the two vLLM request streams without consuming an audio
@@ -3264,9 +3760,7 @@ class VoiceChatEngine:
             )
             if callable(prepared_attest):
                 prepared_attest(self._stream_request_id())
-            timings_ms["prefill"] = round(
-                (time.perf_counter() - phase_started_at) * 1000.0, 3
-            )
+            timings_ms["prefill"] = round((time.perf_counter() - phase_started_at) * 1000.0, 3)
 
             # Prefill resets RNNT turn-taking state after creating the context.
             # Activate external EOU only after that reset.
@@ -3280,20 +3774,12 @@ class VoiceChatEngine:
                 if count is not None:
                     self.vllm_request_position_baseline[name] = count
             self.started = True
-            timings_ms["finalize"] = round(
-                (time.perf_counter() - phase_started_at) * 1000.0, 3
-            )
-            timings_ms["total"] = round(
-                (time.perf_counter() - transaction_started_at) * 1000.0, 3
-            )
+            timings_ms["finalize"] = round((time.perf_counter() - phase_started_at) * 1000.0, 3)
+            timings_ms["total"] = round((time.perf_counter() - transaction_started_at) * 1000.0, 3)
             return {"schema": 1, "timings_ms": timings_ms}
         except Exception as exc:
-            timings_ms[phase] = round(
-                (time.perf_counter() - phase_started_at) * 1000.0, 3
-            )
-            timings_ms["total"] = round(
-                (time.perf_counter() - transaction_started_at) * 1000.0, 3
-            )
+            timings_ms[phase] = round((time.perf_counter() - phase_started_at) * 1000.0, 3)
+            timings_ms["total"] = round((time.perf_counter() - transaction_started_at) * 1000.0, 3)
             if cleanup_required:
                 try:
                     self.pipeline.reset_session()
@@ -3339,12 +3825,23 @@ class VoiceChatEngine:
             return False
         return True
 
+    def function_cycle_quiescent(self) -> bool:
+        """Expose the exact FC ownership predicate used by prepared EarTTS."""
+
+        return self._eartts_function_cycle_quiescent()
+
+    def interrupt_unpublished_function_cycle(self, timeout_seconds: float = 5.0) -> dict[str, Any]:
+        """Stop a pre-publication FC worker at a committed client BOU edge."""
+
+        interrupt = getattr(self.pipeline, "interrupt_fc_async", None)
+        if not callable(interrupt):
+            raise RuntimeError("pipeline has no bounded FC async interrupt hook")
+        return interrupt(self.stream_id, timeout_seconds)
+
     def prepare_eartts_epoch(self) -> dict[str, Any]:
         if not self.started:
             return {"passed": False, "reason": "session_not_started"}
-        prepare = getattr(
-            self.pipeline.s2s_model, "_prepare_eartts_prepared_epoch", None
-        )
+        prepare = getattr(self.pipeline.s2s_model, "_prepare_eartts_prepared_epoch", None)
         if not callable(prepare):
             return {"passed": False, "reason": "prepared_epoch_disabled"}
         return prepare(
@@ -3366,9 +3863,7 @@ class VoiceChatEngine:
         )
 
     def invalidate_eartts_epoch(self, reason: str) -> None:
-        controller = getattr(
-            self.pipeline.s2s_model, "_eartts_prepared_epoch_controller", None
-        )
+        controller = getattr(self.pipeline.s2s_model, "_eartts_prepared_epoch_controller", None)
         invalidate = getattr(controller, "invalidate", None)
         if callable(invalidate):
             invalidate(reason)
@@ -3376,9 +3871,7 @@ class VoiceChatEngine:
     def _eartts_epoch_before_model_step(self) -> dict[str, Any] | None:
         """Snapshot a quiescent host step without racing the FC worker."""
 
-        controller = getattr(
-            self.pipeline.s2s_model, "_eartts_prepared_epoch_controller", None
-        )
+        controller = getattr(self.pipeline.s2s_model, "_eartts_prepared_epoch_controller", None)
         if controller is None:
             return None
         background = getattr(self.pipeline, "_fc_async_bg", None)
@@ -3466,13 +3959,10 @@ class VoiceChatEngine:
             None,
         )
         fused_phrase_reset = bool(
-            isinstance(fused_eou, dict)
-            and fused_eou.get("frame") == self.frame_index
+            isinstance(fused_eou, dict) and fused_eou.get("frame") == self.frame_index
         )
         if fused_phrase_reset and rnnt_decoded_count != 0:
-            raise RuntimeError(
-                "fused client EOU marker did not clear the RNNT hypothesis"
-            )
+            raise RuntimeError("fused client EOU marker did not clear the RNNT hypothesis")
         self._update_user_transcript(
             rnnt_display,
             rnnt_decoded_count,
@@ -3514,9 +4004,7 @@ class VoiceChatEngine:
         server_step_ms = (time.perf_counter() - started_at) * 1000.0
 
         turn_state = self._turn_state(context, total_frames - 1)
-        prepared_epoch = self._validated_eartts_prepared_epoch(
-            _eartts_epoch_status(self)
-        )
+        prepared_epoch = self._validated_eartts_prepared_epoch(_eartts_epoch_status(self))
         if prepared_epoch is not None:
             turn_state["eartts_prepared_epoch"] = prepared_epoch
         if turn_state.get("agent_control") == "agent_bos" and prepared_epoch is not None:
@@ -3632,9 +4120,16 @@ class VoiceChatEngine:
         return result
 
     def abort(self) -> None:
+        cleanup_error: Exception | None = None
         try:
             if self.started:
-                if self.frame_index == 0:
+                background = getattr(self.pipeline, "_fc_async_bg", None)
+                if isinstance(background, dict) and self.stream_id in background:
+                    # A background worker owns the same Nano/EarTTS requests.
+                    # Reset_session first aborts and joins it, then releases the
+                    # request/context state without a racy synthetic model tick.
+                    self.pipeline.reset_session()
+                elif self.frame_index == 0:
                     # Eager prefill created request state but no model position,
                     # codec work, or tool decision exists to drain. Reset it
                     # directly; a synthetic is_last position could trigger an
@@ -3651,8 +4146,8 @@ class VoiceChatEngine:
         except Exception:
             try:
                 self.pipeline.reset_session()
-            except Exception:
-                pass
+            except Exception as exc:
+                cleanup_error = exc
         finally:
             self._reset_wrapper_session_state()
             self.started = False
@@ -3664,6 +4159,8 @@ class VoiceChatEngine:
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
             self.last_rnnt_decoded_count = 0
+            if cleanup_error is not None:
+                self.cleanup_failure = f"{type(cleanup_error).__name__}: {cleanup_error}"
 
     def request_user_eou(self) -> None:
         request_fn = getattr(self.pipeline.s2s_model, "request_user_eou", None)
@@ -3674,23 +4171,15 @@ class VoiceChatEngine:
     def request_user_eou_at_blank_fence(self, target_blank_frames: int) -> None:
         """Arm the post-RNNT fused BOS path used only by tool-free sessions."""
 
-        request_fn = getattr(
-            self.pipeline.s2s_model, "request_user_eou_at_blank_fence", None
-        )
+        request_fn = getattr(self.pipeline.s2s_model, "request_user_eou_at_blank_fence", None)
         if not callable(request_fn):
-            raise RuntimeError(
-                "inference wrapper has no request_user_eou_at_blank_fence()"
-            )
+            raise RuntimeError("inference wrapper has no request_user_eou_at_blank_fence()")
         request_fn(target_blank_frames)
 
     def cancel_user_eou_at_blank_fence(self) -> None:
-        cancel_fn = getattr(
-            self.pipeline.s2s_model, "cancel_user_eou_at_blank_fence", None
-        )
+        cancel_fn = getattr(self.pipeline.s2s_model, "cancel_user_eou_at_blank_fence", None)
         if not callable(cancel_fn):
-            raise RuntimeError(
-                "inference wrapper has no cancel_user_eou_at_blank_fence()"
-            )
+            raise RuntimeError("inference wrapper has no cancel_user_eou_at_blank_fence()")
         cancel_fn()
 
     def user_eou_settlement_blank_frames(self) -> int:
@@ -3953,22 +4442,15 @@ def _install_step9_capture_sizes() -> None:
             or len(parsed) != len(set(parsed))
             or parsed != sorted(parsed, reverse=True)
         ):
-            raise RuntimeError(
-                f"{name} must be unique positive integers in descending order"
-            )
+            raise RuntimeError(f"{name} must be unique positive integers in descending order")
         return parsed
 
     sizes = parse_sizes(raw, "VOICECHAT_STEP9_CAPTURE_SIZES")
-    eartts_sizes = parse_sizes(
-        eartts_raw, "VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES"
-    )
+    eartts_sizes = parse_sizes(eartts_raw, "VOICECHAT_STEP9_EARTTS_CAPTURE_SIZES")
     from vllm.engine.arg_utils import AsyncEngineArgs
 
     installed_contract = (sizes, eartts_sizes)
-    if (
-        getattr(AsyncEngineArgs, "_voicechat_step9_capture_sizes", None)
-        == installed_contract
-    ):
+    if getattr(AsyncEngineArgs, "_voicechat_step9_capture_sizes", None) == installed_contract:
         return
     if hasattr(AsyncEngineArgs, "_voicechat_step9_original_init"):
         raise RuntimeError("Step-9 capture sizes were already installed with another inventory")
@@ -3996,6 +4478,7 @@ def _install_step9_capture_sizes() -> None:
 def build_public_pipeline(args: argparse.Namespace) -> Any:
     """Build NVIDIA's streamer from the exact public combined weights."""
     validate_nano_pad_pair_production_policy(os.environ)
+    qualification_mode = validate_qualification_watchdog_production_policy(os.environ)
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     os.environ.setdefault("VLLM_ATTENTION_BACKEND", "TRITON_ATTN")
@@ -4122,6 +4605,8 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
         ),
         "s2s.tts_text_token_ratio_cap": float(os.environ.get("S2S_TTS_TEXT_TOKEN_RATIO_CAP", "16")),
         "s2s.tts_text_token_min": int(os.environ.get("S2S_TTS_TEXT_TOKEN_MIN", "5")),
+        "s2s.fc_fast_tool_grace_ms": fc_fast_tool_grace_ms(),
+        "s2s.fc_always_acknowledge_tools": fc_always_acknowledge_tools(),
         "streaming.chunk_size_in_secs": FRAME_SECONDS,
         "streaming.max_len": int(os.environ.get("VOICECHAT_STREAMING_MAX_LEN", "12288")),
     }
@@ -4165,9 +4650,7 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
         OmegaConf.update(cfg, key, value, force_add=True)
     OmegaConf.resolve(cfg)
 
-    nano_runtime_optimization = validate_nano_runtime_optimization(
-        production_nano_root, cfg.s2s
-    )
+    nano_runtime_optimization = validate_nano_runtime_optimization(production_nano_root, cfg.s2s)
     nano_pad_pair_runtime = validate_nano_pad_pair_runtime(
         production_nano_root,
         manifest,
@@ -4233,6 +4716,7 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
         "fixed_stage_optimizations": fixed_stage_optimizations,
         "host_runtime": host_runtime_provenance(),
     }
+    pipeline.qualification_mode = qualification_mode
     print(
         f"Checkpoint provenance: {json.dumps(pipeline.checkpoint_provenance, sort_keys=True)}",
         flush=True,
@@ -4245,9 +4729,7 @@ def build_pipeline(args: argparse.Namespace) -> Any:
     return build_public_pipeline(args)
 
 
-def warm_pipeline(
-    pipeline: Any, warmup_wav: str | None, *, system_prompt: str = ""
-) -> None:
+def warm_pipeline(pipeline: Any, warmup_wav: str | None, *, system_prompt: str = "") -> None:
     if not warmup_wav:
         exact_prompt = env_bool("VOICECHAT_STEP9_EXACT_PROMPT_WARMUP", False)
         pipeline.warmup(system_prompt=system_prompt if exact_prompt else None)
@@ -4563,15 +5045,23 @@ def _runtime_source_provenance(engine: VoiceChatEngine) -> dict[str, Any]:
             name: os.environ.get(name) for name in sorted(PRODUCTION_ENVIRONMENT)
         },
         "nano_pad_pair_policy": {
-            name: os.environ.get(name, "0")
-            for name in sorted(NANO_PAD_PAIR_PRODUCTION_POLICY)
+            name: os.environ.get(name, "0") for name in sorted(NANO_PAD_PAIR_PRODUCTION_POLICY)
+        },
+        "tool_wait_policy": {
+            "fast_tool_grace_ms": fc_fast_tool_grace_ms(),
+            "always_acknowledge_tools": fc_always_acknowledge_tools(),
         },
     }
+    diagnostics: dict[str, bool] = {}
     if fc_async_heartbeat_enabled():
-        provenance["diagnostics"] = {
-            "fc_async_heartbeat": True,
-            "sigusr1_all_thread_dump": True,
-        }
+        diagnostics.update(
+            fc_async_heartbeat=True,
+            sigusr1_all_thread_dump=True,
+        )
+    if fc_async_benchmark_enabled():
+        diagnostics["fc_async_benchmark"] = True
+    if diagnostics:
+        provenance["diagnostics"] = diagnostics
     return provenance
 
 
@@ -5408,11 +5898,15 @@ def create_app(
         except (AttributeError, ImportError):
             pass
         typed_input_health = pocket_worker.health if pocket_worker is not None else {"ready": False}
+        cleanup_failure = getattr(engine, "cleanup_failure", None)
+        model_ready = cleanup_failure is None
         result = {
-            "status": "ready"
-            if pocket_worker is None or typed_input_health["ready"]
-            else "degraded",
-            "model": "ready",
+            "status": (
+                "ready"
+                if model_ready and (pocket_worker is None or typed_input_health["ready"])
+                else "degraded"
+            ),
+            "model": "ready" if model_ready else "cleanup_failed",
             "protocol": {"name": PROTOCOL_NAME, "version": PROTOCOL_VERSION},
             "auth_required": False,
             "checkpoint": checkpoint_provenance,
@@ -5425,16 +5919,52 @@ def create_app(
             "active_client": active_client.locked(),
             "uptime_seconds": round(time.time() - loaded_at, 1),
         }
-        if fc_async_heartbeat_enabled():
-            result["diagnostics"] = {
-                "fc_async_heartbeat": True,
-                "sigusr1_all_thread_dump": True,
+        qualification_mode = getattr(engine, "qualification_mode", None)
+        if type(qualification_mode) is _QualificationModeIdentity:
+            result["qualification_no_text_watchdog_override"] = {
+                "environment": QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV,
+                "frames": qualification_mode.no_text_watchdog_override_frames,
+                "mode_environment": QUALIFICATION_MODE_ENV,
+                "mode": qualification_mode.label,
+                "candidate": qualification_mode.candidate,
+                "environment_sha256": qualification_mode.environment_sha256,
             }
+        if cleanup_failure is not None:
+            result["model_cleanup_failure"] = cleanup_failure
+        diagnostics: dict[str, bool] = {}
+        if fc_async_heartbeat_enabled():
+            diagnostics.update(
+                fc_async_heartbeat=True,
+                sigusr1_all_thread_dump=True,
+            )
+        if fc_async_benchmark_enabled():
+            diagnostics["fc_async_benchmark"] = True
+        if diagnostics:
+            result["diagnostics"] = diagnostics
         return result
 
     @app.websocket("/v1/realtime")
     async def realtime(websocket: WebSocket) -> None:
         await websocket.accept()
+        if getattr(engine, "cleanup_failure", None) is not None:
+            failed_id = str(uuid.uuid4())
+            failed_protocol = RealtimeProtocolSession(
+                failed_id,
+                protocol_capabilities(
+                    function_call_timeout_seconds=FUNCTION_CALL_TIMEOUT_SECONDS,
+                    max_session_model_frames=max_session_model_frames,
+                ),
+            )
+            await websocket.send_json(failed_protocol.session_created())
+            await websocket.send_json(
+                failed_protocol.error(
+                    "model_cleanup_failed",
+                    "The model session could not be restored after a prior failure",
+                    fatal=True,
+                )
+            )
+            await websocket.close(code=1011, reason="model_cleanup_failed")
+            return
         if active_client.locked():
             busy_id = str(uuid.uuid4())
             busy_protocol = RealtimeProtocolSession(
@@ -5470,6 +6000,7 @@ def create_app(
         gate_preroll = GatePrerollBuffer(speech_gate_preroll_frames)
         last_user_text = ""
         configured = False
+        function_output_model_output_negotiated = False
         session_started = False
         close_reason = "disconnect"
         transport_frame = -1
@@ -5492,12 +6023,167 @@ def create_app(
         completed_client_turns: dict[int, str | None] = {}
         function_cycle_call_id: str | None = None
         pending_bos_settlement: UserEouSettlement | None = None
+        pending_function_turn_id: str | None = None
+        cancelling_unpublished_function_turn_id: str | None = None
         function_cycle_finished = asyncio.Event()
         function_cycle_finished.set()
         terminal_session = asyncio.Event()
         function_call_budget = FunctionCallBudget()
         deferred_client_input = DeferredClientInputQueue()
         last_model_result: StepResult | None = None
+        terminal_cleanup_task: asyncio.Task[None] | None = None
+        terminal_origin_task: asyncio.Task[Any] | None = None
+
+        def clear_current_task_cancellation() -> None:
+            current = asyncio.current_task()
+            if current is not None:
+                while current.cancelling():
+                    current.uncancel()
+
+        async def drain_cancellation_safe(future: asyncio.Future[Any]) -> Any:
+            """Drain protected work even when this task is directly cancelled."""
+
+            clear_current_task_cancellation()
+            while not future.done():
+                try:
+                    await asyncio.shield(future)
+                except asyncio.CancelledError:
+                    clear_current_task_cancellation()
+            return future.result()
+
+        async def run_session_cleanup(
+            *,
+            terminal_events: list[dict[str, Any]] | None = None,
+            terminal_close_code: int = 1011,
+            prepare_terminal_events: (
+                Callable[[], Awaitable[list[dict[str, Any]]]] | None
+            ) = None,
+        ) -> None:
+            """Own model teardown and terminal publication independently of callers."""
+
+            nonlocal active_typed, typed_task
+            try:
+                if active_typed is not None:
+                    active_typed.cancel_event.set()
+                try:
+                    tool_bridge.close()
+                except Exception as exc:
+                    trace.event(
+                        "tool_bridge_cleanup_error",
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                if (
+                    typed_task is not None
+                    and typed_task is not terminal_origin_task
+                    and not typed_task.done()
+                ):
+                    try:
+                        await asyncio.wait_for(asyncio.shield(typed_task), timeout=3.0)
+                    except TimeoutError:
+                        typed_task.cancel()
+                        await asyncio.gather(typed_task, return_exceptions=True)
+                    except (Exception, asyncio.CancelledError) as exc:
+                        trace.event(
+                            "typed_task_cleanup_error",
+                            error=f"{type(exc).__name__}: {exc}",
+                        )
+                if prepare_terminal_events is not None:
+                    try:
+                        terminal_events = await prepare_terminal_events()
+                    except (Exception, asyncio.CancelledError) as exc:
+                        trace.event(
+                            "terminal_event_preparation_error",
+                            error=f"{type(exc).__name__}: {exc}",
+                        )
+                abort_call = functools.partial(engine.abort)
+                abort_future = loop.run_in_executor(model_executor, abort_call)
+                try:
+                    await drain_cancellation_safe(abort_future)
+                except Exception as exc:
+                    trace.event(
+                        "model_abort_cleanup_error",
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                if terminal_events is not None:
+                    try:
+                        async with send_lock:
+                            for event in terminal_events:
+                                await websocket.send_json(event)
+                    except (Exception, asyncio.CancelledError) as exc:
+                        trace.event(
+                            "terminal_publication_error",
+                            error=f"{type(exc).__name__}: {exc}",
+                        )
+                    finally:
+                        try:
+                            await websocket.close(
+                                code=terminal_close_code,
+                                reason=close_reason,
+                            )
+                        except Exception:
+                            pass
+            finally:
+                try:
+                    trace.close(close_reason)
+                finally:
+                    active_client.release()
+
+        def start_terminal_cleanup(
+            reason: str,
+            *,
+            events: list[dict[str, Any]] | None = None,
+            close_code: int = 1011,
+            prepare_events: Callable[[], Awaitable[list[dict[str, Any]]]] | None = None,
+        ) -> asyncio.Task[None]:
+            """End input ownership and transfer teardown to one uncancelled task."""
+
+            nonlocal close_reason, terminal_cleanup_task, terminal_origin_task
+            if terminal_cleanup_task is not None:
+                return terminal_cleanup_task
+            close_reason = reason
+            terminal_origin_task = asyncio.current_task()
+            terminal_session.set()
+            trace.event("terminal_session_claimed", reason=reason)
+            terminal_cleanup_task = asyncio.create_task(
+                run_session_cleanup(
+                    terminal_events=events,
+                    terminal_close_code=close_code,
+                    prepare_terminal_events=prepare_events,
+                ),
+                name=f"voicechat-terminal-cleanup-{session_id}",
+            )
+            return terminal_cleanup_task
+
+        async def terminate_model_session(
+            reason: str,
+            *,
+            events: list[dict[str, Any]] | None = None,
+            close_code: int = 1011,
+            prepare_events: Callable[[], Awaitable[list[dict[str, Any]]]] | None = None,
+        ) -> None:
+            """Publish a fatal boundary only after cancellation-safe model abort."""
+
+            task = start_terminal_cleanup(
+                reason,
+                events=events,
+                close_code=close_code,
+                prepare_events=prepare_events,
+            )
+            current = asyncio.current_task()
+            if current is typed_task and terminal_origin_task is not current:
+                trace.event(
+                    "terminal_cleanup_wait_skipped",
+                    reason=reason,
+                    owner_reason=close_reason,
+                    task="typed_input",
+                )
+                return
+            await asyncio.shield(task)
+
+        async def await_cleanup_cancellation_safe(task: asyncio.Task[None]) -> None:
+            """Wait through endpoint cancellation until transferred cleanup finishes."""
+
+            await drain_cancellation_safe(task)
 
         def select_gate_preroll(*, reason: str) -> list[GatePrerollEntry]:
             selection = gate_preroll.drain_onset_suffix(
@@ -5591,24 +6277,24 @@ def create_app(
                         model_frames=engine.frame_index,
                         max_model_frames=max_session_model_frames,
                     )
-                    async with send_lock:
-                        await websocket.send_json(
+                    await terminate_model_session(
+                        "session_position_limit",
+                        events=[
                             protocol.error(
                                 "session_position_limit",
                                 limit_event["error"]["message"],
                                 fatal=True,
                                 model_frames=engine.frame_index,
                                 max_model_frames=max_session_model_frames,
-                            )
-                        )
-                        for event in protocol.close_events(
-                            "session_position_limit",
-                            cumulative_user_text=last_user_text,
-                            status="failed",
-                        ):
-                            await websocket.send_json(event)
-                    close_reason = "session_position_limit"
-                    await websocket.close(code=1000, reason=close_reason)
+                            ),
+                            *protocol.close_events(
+                                "session_position_limit",
+                                cumulative_user_text=last_user_text,
+                                status="failed",
+                            ),
+                        ],
+                        close_code=1000,
+                    )
                     raise SessionTerminated
                 result = await model_call(
                     engine.process,
@@ -5662,7 +6348,8 @@ def create_app(
             """Feed PCM through the single RNNT-owned model input path."""
 
             nonlocal transport_frame, session_started, last_user_text, close_reason
-            nonlocal last_model_result
+            nonlocal last_model_result, pending_bos_settlement, pending_function_turn_id
+            nonlocal cancelling_unpublished_function_turn_id
             decoded_packet = pcm16_bytes_to_float32(payload)
             last_result: StepResult | None = None
             trace.input_pcm(payload)
@@ -5731,24 +6418,24 @@ def create_app(
                             model_frames=engine.frame_index,
                             max_model_frames=max_session_model_frames,
                         )
-                        async with send_lock:
-                            await websocket.send_json(
+                        await terminate_model_session(
+                            "session_position_limit",
+                            events=[
                                 protocol.error(
                                     "session_position_limit",
                                     limit_event["error"]["message"],
                                     fatal=True,
                                     model_frames=engine.frame_index,
                                     max_model_frames=max_session_model_frames,
-                                )
-                            )
-                            for event in protocol.close_events(
-                                "session_position_limit",
-                                cumulative_user_text=last_user_text,
-                                status="failed",
-                            ):
-                                await websocket.send_json(event)
-                        close_reason = "session_position_limit"
-                        await websocket.close(code=1000, reason=close_reason)
+                                ),
+                                *protocol.close_events(
+                                    "session_position_limit",
+                                    cumulative_user_text=last_user_text,
+                                    status="failed",
+                                ),
+                            ],
+                            close_code=1000,
+                        )
                         raise SessionTerminated
                     result = await model_call(
                         engine.process,
@@ -5757,6 +6444,38 @@ def create_app(
                     )
                     last_result = result
                     last_model_result = result
+                    if (
+                        cancelling_unpublished_function_turn_id is not None
+                        and function_cycle_call_id is None
+                        and engine.function_cycle_quiescent()
+                    ):
+                        trace.event(
+                            "deferred_bos_superseded_by_client_turn",
+                            initiating_turn_id=cancelling_unpublished_function_turn_id,
+                            responding_turn_id=protocol.turn_id,
+                            settlement=(
+                                None
+                                if pending_bos_settlement is None
+                                else pending_bos_settlement.evidence()
+                            ),
+                        )
+                        pending_bos_settlement = None
+                        pending_function_turn_id = None
+                        cancelling_unpublished_function_turn_id = None
+                    if (
+                        pending_bos_settlement is not None
+                        and function_cycle_call_id is None
+                        and (result.turn_state or {}).get("agent_control") == "agent_bos"
+                        and protocol.turn_id != pending_function_turn_id
+                    ):
+                        trace.event(
+                            "deferred_bos_superseded_by_interrupt",
+                            initiating_turn_id=pending_function_turn_id,
+                            responding_turn_id=protocol.turn_id,
+                            settlement=pending_bos_settlement.evidence(),
+                        )
+                        pending_bos_settlement = None
+                        pending_function_turn_id = None
                     result.turn_state["transport"] = transport_gate.snapshot(
                         float(frame_stats["rms_dbfs"]), True
                     )
@@ -5812,12 +6531,9 @@ def create_app(
                     if (
                         fuse_final_bos
                         and not latch_armed
-                        and settlement.ending_blank_frames
-                        == settlement.target_blank_frames - 1
+                        and settlement.ending_blank_frames == settlement.target_blank_frames - 1
                     ):
-                        engine.request_user_eou_at_blank_fence(
-                            settlement.target_blank_frames
-                        )
+                        engine.request_user_eou_at_blank_fence(settlement.target_blank_frames)
                         latch_armed = True
                     await process_pcm(
                         b"\x00\x00" * FRAME_SAMPLES,
@@ -5826,22 +6542,36 @@ def create_app(
                         before_send=observe_settlement,
                     )
             except UserEouSettlementFailure as exc:
-                invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
-                if callable(invalidate_epoch):
-                    await model_call(invalidate_epoch, "settlement_failed")
-                close_reason = exc.code
-                async with send_lock:
-                    await websocket.send_json(
+                failure_code = exc.code
+                failure_message = str(exc)
+                failure_evidence = exc.evidence
+                cancel_blank_fence = latch_armed and not settlement.fused_terminal_bos
+                latch_armed = False
+
+                async def prepare_failure_event() -> list[dict[str, Any]]:
+                    if cancel_blank_fence:
+                        engine.cancel_user_eou_at_blank_fence()
+                    invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
+                    if callable(invalidate_epoch):
+                        try:
+                            await model_call(invalidate_epoch, "settlement_failed")
+                        except (Exception, asyncio.CancelledError):
+                            pass
+                    return [
                         protocol.error(
-                            exc.code,
-                            str(exc),
+                            failure_code,
+                            failure_message,
                             fatal=True,
                             source=source,
                             job_id=job_id,
-                            settlement=exc.evidence,
+                            settlement=failure_evidence,
                         )
-                    )
-                await websocket.close(code=1011, reason=close_reason)
+                    ]
+
+                await terminate_model_session(
+                    failure_code,
+                    prepare_events=prepare_failure_event,
+                )
                 raise SessionTerminated from exc
             finally:
                 if latch_armed and not settlement.fused_terminal_bos:
@@ -5855,16 +6585,15 @@ def create_app(
             )
             return settlement
 
-        def observe_separate_bos_or_defer(
+        async def observe_separate_bos_or_defer(
             settlement: UserEouSettlement, result: StepResult
         ) -> None:
             """Validate an immediate BOS or retain the expectation across FC."""
 
-            nonlocal pending_bos_settlement
-            if settlement.eartts_transition_count_starting is None:
-                return
+            nonlocal pending_bos_settlement, pending_function_turn_id
             if (result.turn_state or {}).get("agent_control") == "agent_bos":
-                settlement.observe_separate_terminal(engine, result)
+                if settlement.eartts_transition_count_starting is not None:
+                    settlement.observe_separate_terminal(engine, result)
                 pending_bos_settlement = None
                 return
             if function_cycle_active(result):
@@ -5876,6 +6605,23 @@ def create_app(
                     )
                 settlement.deferred_terminal_bos = True
                 pending_bos_settlement = settlement
+                pending_function_turn_id = protocol.turn_id
+                rnnt = ((result.turn_state or {}).get("rnnt") or {})
+                lifecycle_events = protocol.finish_committed_input_turn(
+                    result.user_text,
+                    decoded_token_count=int(rnnt.get("decoded_token_count") or 0),
+                )
+                if not lifecycle_events or pending_function_turn_id is None:
+                    raise UserEouSettlementFailure(
+                        "deferred_input_lifecycle_failure",
+                        "Deferred function cycle did not close its committed input turn",
+                        settlement.evidence(),
+                    )
+                async with send_lock:
+                    for lifecycle_event in lifecycle_events:
+                        await websocket.send_json(lifecycle_event)
+                return
+            if settlement.eartts_transition_count_starting is None:
                 return
             raise UserEouSettlementFailure(
                 "missing_terminal_bos",
@@ -5889,47 +6635,50 @@ def create_app(
             message: str,
             call_id: str,
             client_event_id: str | None = None,
+            wait_for_cleanup: bool = True,
         ) -> bool:
-            """Invalidate and close a deferred BOS contract without fail-open awaits."""
+            """Transfer a deferred-BOS failure to the common terminal owner."""
 
-            nonlocal pending_bos_settlement, close_reason
+            nonlocal pending_bos_settlement
             pending = pending_bos_settlement
             pending_bos_settlement = None
             if pending is None:
                 return False
-            invalidation_error: str | None = None
-            invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
-            if callable(invalidate_epoch):
-                try:
-                    await model_call(invalidate_epoch, code)
-                except (Exception, asyncio.CancelledError) as exc:
-                    invalidation_error = type(exc).__name__
-            trace.event(
-                "pending_bos_expectation_terminated",
-                code=code,
-                call_id=call_id,
-                epoch_invalidation_error=invalidation_error,
-                settlement=pending.evidence(),
-            )
-            try:
-                async with send_lock:
-                    await websocket.send_json(
-                        protocol.error(
-                            code,
-                            message,
-                            fatal=True,
-                            client_event_id=client_event_id,
-                            call_id=call_id,
-                            settlement=pending.evidence(),
-                            epoch_invalidation_error=invalidation_error,
-                        )
+            settlement_evidence = pending.evidence()
+
+            async def prepare_failure_event() -> list[dict[str, Any]]:
+                invalidation_error: str | None = None
+                invalidate_epoch = getattr(engine, "invalidate_eartts_epoch", None)
+                if callable(invalidate_epoch):
+                    try:
+                        await model_call(invalidate_epoch, code)
+                    except (Exception, asyncio.CancelledError) as exc:
+                        invalidation_error = type(exc).__name__
+                trace.event(
+                    "pending_bos_expectation_terminated",
+                    code=code,
+                    call_id=call_id,
+                    epoch_invalidation_error=invalidation_error,
+                    settlement=settlement_evidence,
+                )
+                return [
+                    protocol.error(
+                        code,
+                        message,
+                        fatal=True,
+                        client_event_id=client_event_id,
+                        call_id=call_id,
+                        settlement=settlement_evidence,
+                        epoch_invalidation_error=invalidation_error,
                     )
-            finally:
-                close_reason = code
-                try:
-                    await websocket.close(code=1011, reason=close_reason)
-                finally:
-                    terminal_session.set()
+                ]
+
+            task = start_terminal_cleanup(
+                code,
+                prepare_events=prepare_failure_event,
+            )
+            if wait_for_cleanup:
+                await asyncio.shield(task)
             return True
 
         async def cancel_response_to_terminal(reason: str) -> None:
@@ -5950,17 +6699,82 @@ def create_app(
                 )
                 if not protocol.response_open:
                     return
-            async with send_lock:
-                await websocket.send_json(
+            await terminate_model_session(
+                "response_cancel_timeout",
+                events=[
                     protocol.error(
                         "response_cancel_timeout",
                         "Cancelled response did not reach its acoustic terminal",
                         fatal=True,
                     )
-                )
-            close_reason = "response_cancel_timeout"
-            await websocket.close(code=1011, reason=close_reason)
+                ],
+            )
             raise SessionTerminated
+
+        async def recover_pre_eou_activity(context: str) -> dict[str, Any] | None:
+            """Settle model self-start before an explicit client EOU recoverably.
+
+            The strict settlement contract treats effective model activity at
+            the client's commit edge as unattributable and fatal. A live model
+            may legitimately self-start inside an open client turn, so drive
+            that activity to its terminal with the existing bounded machinery
+            first; the settlement's fail-closed rejection remains the backstop
+            if recovery leaves activity effective.
+            """
+            result = last_model_result
+            active_function = function_cycle_active(result) if result is not None else False
+            response_open_flag = protocol.response_open
+            if not active_function and not response_open_flag:
+                return None
+            evidence: dict[str, Any] = {
+                "context": context,
+                "response_open": response_open_flag,
+                "function_cycle_effective": active_function,
+            }
+            trace.event("pre_eou_activity_recovery", **evidence)
+            if active_function:
+                interrupt = getattr(engine, "interrupt_unpublished_function_cycle", None)
+                if callable(interrupt):
+                    evidence["function_interrupt"] = await model_call(interrupt)
+            turn_state = (result.turn_state or {}) if result is not None else {}
+            model_quiescent = (
+                turn_state.get("agent_control") == "pad"
+                and not response_audio_is_deliverable(turn_state)
+                and not function_cycle_active(result)
+            )
+            if response_open_flag and model_quiescent:
+                # The model self-started and then self-interrupted back to
+                # listening; only the protocol response is dangling. Close it
+                # administratively without fabricating output and let the
+                # explicit user EOU settle normally.
+                closure_events = protocol.fail_active_response("pre_eou_selfstart_reset")
+                async with send_lock:
+                    for closure_event in closure_events:
+                        await websocket.send_json(closure_event)
+                evidence["dangling_response_closed"] = True
+                trace.event("pre_eou_activity_recovered", **evidence)
+                return evidence
+            # Drain the self-started response to its natural terminal first: a
+            # freshly opened response cannot reach the cancelled-acoustic
+            # terminal, and finishing the utterance is the correct full-duplex
+            # behavior. Escalate to the bounded cancel only if the drain
+            # exhausts its frame budget.
+            drain_budget = int(engine.response_boundary.max_tail_frames) + 400
+            drained_frames = 0
+            while protocol.response_open and drained_frames < drain_budget:
+                await process_pcm(
+                    b"\x00\x00" * FRAME_SAMPLES,
+                    source="microphone",
+                    job_id=None,
+                    synthetic_control=True,
+                )
+                drained_frames += 1
+            evidence["drained_frames"] = drained_frames
+            if protocol.response_open:
+                await cancel_response_to_terminal(f"pre_eou_activity_recovery:{context}")
+                evidence["escalated_to_cancel"] = True
+            trace.event("pre_eou_activity_recovered", **evidence)
+            return evidence
 
         async def inject_trailing_silence(job: ActiveTypedInput) -> None:
             rnnt_eou_frames = int(os.environ.get("VOICECHAT_RNNT_EOU_FRAMES", "20"))
@@ -6048,21 +6862,31 @@ def create_app(
                     job_id=job.job_id,
                     error=f"{type(exc).__name__}: {exc}",
                 )
-                try:
-                    async with send_lock:
-                        await websocket.send_json(
+                if fatal_after_mutation:
+                    start_terminal_cleanup(
+                        "typed_input_failed_after_mutation",
+                        events=[
                             protocol.error(
                                 "typed_input_failed",
                                 str(exc),
-                                fatal=fatal_after_mutation,
+                                fatal=True,
                                 client_event_id=job.job_id,
                             )
-                        )
-                        if fatal_after_mutation:
-                            close_reason = "typed_input_failed_after_mutation"
-                            await websocket.close(code=1011, reason=close_reason)
-                except Exception:
-                    pass
+                        ],
+                    )
+                else:
+                    try:
+                        async with send_lock:
+                            await websocket.send_json(
+                                protocol.error(
+                                    "typed_input_failed",
+                                    str(exc),
+                                    fatal=False,
+                                    client_event_id=job.job_id,
+                                )
+                            )
+                    except Exception:
+                        pass
             finally:
                 # Once model mutation begins the typed turn is non-cancellable.
                 if (
@@ -6079,6 +6903,9 @@ def create_app(
                                     source="typed",
                                     job_id=job.job_id,
                                 )
+                            # No recovery here: the typed path owns deliberate
+                            # cancel-then-replace interruption semantics; recovery
+                            # would drain a response the client intends to cancel.
                             typed_settlement = await settle_user_eou(
                                 source="typed",
                                 job_id=job.job_id,
@@ -6087,8 +6914,8 @@ def create_app(
                             if not typed_settlement.fused_terminal_bos:
                                 engine.request_user_eou()
 
-                                def validate_typed_terminal(result: StepResult) -> None:
-                                    observe_separate_bos_or_defer(
+                                async def validate_typed_terminal(result: StepResult) -> None:
+                                    await observe_separate_bos_or_defer(
                                         typed_settlement, result
                                     )
 
@@ -6113,26 +6940,42 @@ def create_app(
                         job_id=job.job_id,
                         samples=discarded,
                     )
-                try:
-                    async with send_lock:
-                        await websocket.send_json(
-                            protocol.typed_input_finished(job.job_id, disposition)
-                        )
-                except Exception:
-                    pass
+                # The public finished event is a readiness barrier. Clear the
+                # internal owner before publishing it so an immediately
+                # following client turn cannot observe stale typed ownership.
+                if active_typed is job:
+                    active_typed = None
+                if not fatal_after_mutation:
+                    try:
+                        async with send_lock:
+                            await websocket.send_json(
+                                protocol.typed_input_finished(job.job_id, disposition)
+                            )
+                    except Exception:
+                        pass
                 trace.event(
                     "typed_input_injection_finished",
                     job_id=job.job_id,
                     disposition=disposition,
                     audio_started=job.audio_started,
                 )
-                if active_typed is job:
-                    active_typed = None
                 job.done.set()
 
         async def emit_external_tool_call(call: PendingExternalToolCall) -> None:
-            nonlocal function_cycle_call_id, close_reason
-            allowed, attempt = function_call_budget.consume(protocol.turn_id)
+            nonlocal function_cycle_call_id, pending_function_turn_id, close_reason
+            function_turn_id = pending_function_turn_id or protocol.turn_id
+            if cancelling_unpublished_function_turn_id == function_turn_id:
+                call.output = json.dumps({"error": "cancelled_by_new_client_turn"})
+                call.completed.set()
+                trace.event(
+                    "function_call_publication_suppressed",
+                    call_id=call.call_id,
+                    name=call.name,
+                    turn_id=function_turn_id,
+                    reason="client_turn_start",
+                )
+                return
+            allowed, attempt = function_call_budget.consume(function_turn_id)
             if not allowed:
                 trace.event(
                     "function_call_loop_limit",
@@ -6141,19 +6984,18 @@ def create_app(
                     arguments=call.arguments,
                     attempt=attempt,
                     limit=function_call_budget.limit,
-                    turn_id=protocol.turn_id,
+                    turn_id=function_turn_id,
                     response_id=protocol.response_id,
                 )
-                async with send_lock:
-                    for event in function_call_loop_terminal_events(
+                start_terminal_cleanup(
+                    "function_call_loop_limit",
+                    events=function_call_loop_terminal_events(
                         protocol,
                         call_id=call.call_id,
                         attempt=attempt,
                         limit=function_call_budget.limit,
-                    ):
-                        await websocket.send_json(event)
-                close_reason = "function_call_loop_limit"
-                await websocket.close(code=1011, reason=close_reason)
+                    ),
+                )
                 raise SessionTerminated
             if client_turn_detection:
                 if function_cycle_call_id is not None:
@@ -6165,14 +7007,17 @@ def create_app(
                 call_id=call.call_id,
                 name=call.name,
                 arguments=call.arguments,
+                turn_id=function_turn_id,
             )
             async with send_lock:
                 for event in protocol.function_call_events(
                     call_id=call.call_id,
                     name=call.name,
                     arguments=call.arguments,
+                    turn_id=function_turn_id,
                 ):
                     await websocket.send_json(event)
+            pending_function_turn_id = None
 
         async def emit_external_tool_timeout(call: PendingExternalToolCall) -> None:
             nonlocal function_cycle_call_id, pending_bos_settlement, close_reason
@@ -6205,6 +7050,7 @@ def create_app(
                     code="function_call_output_timeout",
                     message="Function cycle timed out before its terminal BOS",
                     call_id=call.call_id,
+                    wait_for_cleanup=False,
                 )
                 return
             if matched_cycle:
@@ -6302,17 +7148,17 @@ def create_app(
                     "input_audio_buffer.commit",
                 }:
                     if not deferred_client_input.append(body, message_bytes):
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "deferred_input_overflow",
+                            events=[protocol.error(
                                 "deferred_input_overflow",
                                 "Client sent too much input during a function cycle",
                                 fatal=True,
                                 client_event_id=client_event_id,
                                 call_id=function_cycle_call_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "deferred_input_overflow"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     trace.event(
                         "client_input_deferred_for_function",
@@ -6373,6 +7219,47 @@ def create_app(
                             )
                         )
                         continue
+                    requested_capabilities = session_update.get("capabilities", {})
+                    if not isinstance(requested_capabilities, dict):
+                        await websocket.send_json(
+                            protocol.error(
+                                "invalid_session_capabilities",
+                                "session.update capabilities must be an object",
+                                client_event_id=client_event_id,
+                            )
+                        )
+                        continue
+                    requested_model_output_mode = requested_capabilities.get(
+                        "function_output_model_output"
+                    )
+                    if requested_model_output_mode not in (
+                        None,
+                        FUNCTION_OUTPUT_MODEL_OUTPUT_MODE,
+                    ):
+                        await websocket.send_json(
+                            protocol.error(
+                                "unsupported_session_capability",
+                                "Unsupported function_output_model_output capability",
+                                client_event_id=client_event_id,
+                            )
+                        )
+                        continue
+                    candidate_model_output_negotiated = (
+                        requested_model_output_mode == FUNCTION_OUTPUT_MODEL_OUTPUT_MODE
+                    )
+                    if (
+                        configured
+                        and candidate_model_output_negotiated
+                        != function_output_model_output_negotiated
+                    ):
+                        await websocket.send_json(
+                            protocol.error(
+                                "settings_locked",
+                                "Negotiated session capabilities cannot change",
+                                client_event_id=client_event_id,
+                            )
+                        )
+                        continue
                     candidate_system_message = system_message
                     candidate_tools = session_tools
                     if "instructions" in session_update:
@@ -6394,16 +7281,15 @@ def create_app(
                             continue
                     if candidate_tools:
                         if function_template_path is None:
-                            await websocket.send_json(
-                                protocol.error(
+                            await terminate_model_session(
+                                "function_calling_unavailable",
+                                events=[protocol.error(
                                     "function_calling_unavailable",
                                     "Function-calling template is unavailable",
                                     fatal=True,
                                     client_event_id=client_event_id,
-                                )
+                                )],
                             )
-                            close_reason = "function_calling_unavailable"
-                            await websocket.close(code=1011, reason=close_reason)
                             return
                         candidate_prompt = render_tool_system_prompt(
                             function_template_path,
@@ -6464,6 +7350,9 @@ def create_app(
                                 session_tools = candidate_tools
                                 system_prompt = candidate_prompt
                             configured = True
+                            function_output_model_output_negotiated = (
+                                candidate_model_output_negotiated
+                            )
                     if settings_locked_after_validation:
                         await websocket.send_json(
                             protocol.error(
@@ -6479,6 +7368,11 @@ def create_app(
                         rendered_prompt_bytes=len(system_prompt.encode("utf-8")),
                         configuration_changed=configuration_changed,
                         model_ready=session_started,
+                        function_output_model_output=(
+                            FUNCTION_OUTPUT_MODEL_OUTPUT_MODE
+                            if function_output_model_output_negotiated
+                            else None
+                        ),
                     )
                     await websocket.send_json(
                         protocol.session_updated(
@@ -6489,6 +7383,13 @@ def create_app(
                                 "input_audio_sample_rate": INPUT_SAMPLE_RATE,
                                 "output_audio_format": "pcm16",
                                 "output_audio_sample_rate": OUTPUT_SAMPLE_RATE,
+                                "capabilities": {
+                                    "function_output_model_output": (
+                                        FUNCTION_OUTPUT_MODEL_OUTPUT_MODE
+                                        if function_output_model_output_negotiated
+                                        else None
+                                    )
+                                },
                             }
                         )
                     )
@@ -6524,8 +7425,13 @@ def create_app(
                         continue
                     call_id = item.get("call_id")
                     try:
-                        function_output, function_output_tokens = validate_function_output(
-                            engine, item.get("output", "")
+                        function_output = validate_function_output(
+                            engine,
+                            item.get("output", ""),
+                            model_output=item.get("model_output"),
+                            model_output_negotiated=(
+                                function_output_model_output_negotiated
+                            ),
                         )
                         tool_bridge.submit(call_id, function_output)
                     except ValueError as exc:
@@ -6542,8 +7448,27 @@ def create_app(
                     trace.event(
                         "function_call_output_received",
                         call_id=call_id,
-                        output_bytes=len(function_output.encode("utf-8")),
-                        injection_tokens=function_output_tokens,
+                        output_bytes=function_output.output_bytes,
+                        output_sha256=hashlib.sha256(
+                            function_output.output.encode("utf-8")
+                        ).hexdigest(),
+                        output_tokens=function_output.output_tokens,
+                        model_output_supplied=function_output.model_output is not None,
+                        model_output_bytes=function_output.model_output_bytes,
+                        model_output_sha256=(
+                            hashlib.sha256(
+                                function_output.model_output.encode("utf-8")
+                            ).hexdigest()
+                            if function_output.model_output is not None
+                            else None
+                        ),
+                        model_output_tokens=function_output.model_output_tokens,
+                        injection_source=(
+                            "model_output"
+                            if function_output.model_output is not None
+                            else "output"
+                        ),
+                        injection_tokens=function_output.injection_tokens,
                     )
                     if not client_turn_detection:
                         continue
@@ -6589,31 +7514,28 @@ def create_app(
                             client_event_id=client_event_id,
                         )
                         if not terminated:
-                            async with send_lock:
-                                await websocket.send_json(
-                                    protocol.error(
+                            await terminate_model_session(
+                                "function_output_apply_timeout",
+                                events=[protocol.error(
                                         "function_output_apply_timeout",
                                         "Function output did not leave post-FC recovery",
                                         fatal=True,
                                         client_event_id=client_event_id,
                                         call_id=call_id,
-                                    )
-                                )
-                            close_reason = "function_output_apply_timeout"
-                            await websocket.close(code=1011, reason=close_reason)
+                                    )],
+                            )
                         return
                     if function_cycle_call_id != call_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "function_cycle_mismatch",
+                            events=[protocol.error(
                                 "function_cycle_mismatch",
                                 "Applied function output did not match active cycle",
                                 fatal=True,
                                 call_id=call_id,
                                 active_call_id=function_cycle_call_id,
-                            )
+                            )],
                         )
-                        close_reason = "function_cycle_mismatch"
-                        await websocket.close(code=1011, reason=close_reason)
                         return
                     await websocket.send_json(protocol.function_call_output_applied(call_id))
                     function_cycle_call_id = None
@@ -6639,28 +7561,28 @@ def create_app(
                         )
                         continue
                     if not isinstance(client_event_id, str) or not client_event_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_event_id",
+                            events=[protocol.error(
                                 "invalid_event_id",
                                 "Client turn barriers require a non-empty event_id",
                                 fatal=True,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_event_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     client_turn_id = body.get("client_turn_id")
                     if not isinstance(client_turn_id, int) or client_turn_id < 1:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_client_turn_id",
+                            events=[protocol.error(
                                 "invalid_client_turn_id",
                                 "client_turn_id must be a positive integer",
                                 fatal=True,
                                 client_event_id=client_event_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_client_turn_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     if client_turn_id in started_client_turns:
                         await websocket.send_json(
@@ -6672,23 +7594,63 @@ def create_app(
                         )
                         continue
                     if open_client_turn_id is not None or active_typed is not None:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "input_turn_conflict",
+                            events=[protocol.error(
                                 "input_turn_conflict",
                                 "A different input turn is already active",
                                 fatal=True,
                                 client_event_id=client_event_id,
                                 client_turn_id=client_turn_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "input_turn_conflict"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     # Freeze real onset audio before synthetic cancellation
-                    # steps can advance or clear RNNT evidence.
+                    # steps can advance or clear RNNT evidence.  A function
+                    # call that publishes while this handler waits for the
+                    # model lock wins the race and keeps the established
+                    # post-publication deferred-input contract.
+                    publication_race = False
+                    interrupt_evidence: dict[str, Any] | None = None
                     async with model_input_lock:
-                        preroll_entries = select_gate_preroll(reason="client_turn_start")
-                        partial_onset = pcm_buffer.take_pending()
+                        if function_cycle_call_id is not None:
+                            publication_race = True
+                            preroll_entries = []
+                            partial_onset = np.array([], dtype=np.float32)
+                        else:
+                            preroll_entries = select_gate_preroll(reason="client_turn_start")
+                            partial_onset = pcm_buffer.take_pending()
+                            if pending_bos_settlement is not None:
+                                if pending_function_turn_id is None:
+                                    raise RuntimeError(
+                                        "deferred FC settlement has no initiating turn"
+                                    )
+                                cancelling_unpublished_function_turn_id = (
+                                    pending_function_turn_id
+                                )
+                                interrupt_evidence = await model_call(
+                                    engine.interrupt_unpublished_function_cycle
+                                )
+                    if publication_race:
+                        if not deferred_client_input.append(body, message_bytes):
+                            raise RuntimeError(
+                                "function publication race overflowed deferred input"
+                            )
+                        trace.event(
+                            "client_turn_start_lost_function_publication_race",
+                            client_turn_id=client_turn_id,
+                            call_id=function_cycle_call_id,
+                            queued_bytes=deferred_client_input.bytes,
+                        )
+                        continue
+                    if interrupt_evidence is not None:
+                        trace.event(
+                            "unpublished_function_cycle_interrupt",
+                            client_turn_id=client_turn_id,
+                            initiating_turn_id=cancelling_unpublished_function_turn_id,
+                            evidence=interrupt_evidence,
+                        )
                     await cancel_response_to_terminal("client_vad")
                     prepare_evidence: dict[str, Any] = {
                         "passed": False,
@@ -6744,28 +7706,28 @@ def create_app(
                         )
                         continue
                     if not isinstance(client_event_id, str) or not client_event_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_event_id",
+                            events=[protocol.error(
                                 "invalid_event_id",
                                 "Client turn barriers require a non-empty event_id",
                                 fatal=True,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_event_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     client_turn_id = body.get("client_turn_id")
                     if not isinstance(client_turn_id, int) or client_turn_id < 1:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "invalid_client_turn_id",
+                            events=[protocol.error(
                                 "invalid_client_turn_id",
                                 "client_turn_id must be a positive integer",
                                 fatal=True,
                                 client_event_id=client_event_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "invalid_client_turn_id"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     if client_turn_id in completed_client_turns:
                         await websocket.send_json(
@@ -6777,26 +7739,24 @@ def create_app(
                         )
                         continue
                     if client_turn_id != open_client_turn_id:
-                        await websocket.send_json(
-                            protocol.error(
+                        await terminate_model_session(
+                            "input_turn_conflict",
+                            events=[protocol.error(
                                 "input_turn_conflict",
                                 "Commit does not match the open client turn",
                                 fatal=True,
                                 client_event_id=client_event_id,
                                 client_turn_id=client_turn_id,
                                 open_client_turn_id=open_client_turn_id,
-                            )
+                            )],
+                            close_code=1002,
                         )
-                        close_reason = "input_turn_conflict"
-                        await websocket.close(code=1002, reason=close_reason)
                         return
                     raw_diagnostics = body.get("diagnostics")
                     client_diagnostics = {
                         key: value
                         for key, value in (
-                            raw_diagnostics.items()
-                            if isinstance(raw_diagnostics, dict)
-                            else ()
+                            raw_diagnostics.items() if isinstance(raw_diagnostics, dict) else ()
                         )
                         if key
                         in {
@@ -6839,9 +7799,7 @@ def create_app(
                     arm_fn = getattr(engine, "arm_eartts_epoch", None)
                     if callable(arm_fn):
                         async with model_input_lock:
-                            arm_evidence = await model_call(
-                                arm_fn, client_turn_id
-                            )
+                            arm_evidence = await model_call(arm_fn, client_turn_id)
                     else:
                         arm_evidence = {
                             "passed": False,
@@ -6865,12 +7823,11 @@ def create_app(
                         )
                         async with send_lock:
                             await websocket.send_json(
-                                protocol.input_turn_committed_ack(
-                                    client_event_id, client_turn_id
-                                )
+                                protocol.input_turn_committed_ack(client_event_id, client_turn_id)
                             )
                         commit_ack_sent = True
 
+                    await recover_pre_eou_activity("microphone_commit")
                     microphone_settlement = await settle_user_eou(
                         source="microphone",
                         job_id=None,
@@ -6887,15 +7844,13 @@ def create_app(
                             protocol.turn_id,
                         )
                         await websocket.send_json(
-                            protocol.input_turn_committed_ack(
-                                client_event_id, client_turn_id
-                            )
+                            protocol.input_turn_committed_ack(client_event_id, client_turn_id)
                         )
                     if not fused_terminal:
                         engine.request_user_eou()
 
-                        def validate_microphone_terminal(result: StepResult) -> None:
-                            observe_separate_bos_or_defer(
+                        async def validate_microphone_terminal(result: StepResult) -> None:
+                            await observe_separate_bos_or_defer(
                                 microphone_settlement, result
                             )
 
@@ -7118,34 +8073,33 @@ def create_app(
         except WebSocketDisconnect:
             pass
         except Exception as exc:
-            try:
-                await websocket.send_json(
+            await terminate_model_session(
+                "internal_error",
+                events=[
                     protocol.error(
                         "internal_error",
                         f"{type(exc).__name__}: {exc}",
                         fatal=True,
-                    )
-                )
-                await websocket.send_json(
-                    protocol.session_closed("internal_error", status="failed")
-                )
-                close_reason = "internal_error"
-                await websocket.close(code=1011, reason=close_reason)
-            except Exception:
-                pass
+                    ),
+                    protocol.session_closed("internal_error", status="failed"),
+                ],
+            )
         finally:
-            if active_typed is not None:
-                active_typed.cancel_event.set()
-            if typed_task is not None and not typed_task.done():
-                try:
-                    await asyncio.wait_for(typed_task, timeout=3.0)
-                except TimeoutError:
-                    typed_task.cancel()
-                    await asyncio.gather(typed_task, return_exceptions=True)
-            tool_bridge.close()
-            await model_call(engine.abort)
-            trace.close(close_reason)
-            active_client.release()
+            if terminal_cleanup_task is None:
+                if active_typed is not None:
+                    active_typed.cancel_event.set()
+                if typed_task is not None and not typed_task.done():
+                    try:
+                        await asyncio.wait_for(typed_task, timeout=3.0)
+                    except TimeoutError:
+                        typed_task.cancel()
+                        await asyncio.gather(typed_task, return_exceptions=True)
+                tool_bridge.close()
+                await model_call(engine.abort)
+                trace.close(close_reason)
+                active_client.release()
+            else:
+                await await_cleanup_cancellation_safe(terminal_cleanup_task)
 
     return app
 
@@ -7243,9 +8197,7 @@ def main() -> None:
         "VOICECHAT_DIRECT_POSITION_RECURRENCE_PROBE_DIR", ""
     ).strip()
     direct_semantic_probe_dir = os.environ.get("VOICECHAT_DIRECT_SEMANTIC_PROBE_DIR", "").strip()
-    voice_function_probe_dir = os.environ.get(
-        "VOICECHAT_VOICE_FUNCTION_PROBE_DIR", ""
-    ).strip()
+    voice_function_probe_dir = os.environ.get("VOICECHAT_VOICE_FUNCTION_PROBE_DIR", "").strip()
     diagnostic_probe_dir = (
         direct_probe_dir
         or direct_safety_probe_dir
@@ -7261,6 +8213,11 @@ def main() -> None:
         warm_pipeline(pipeline, args.warmup_wav, system_prompt=args.system_prompt)
         startup_event("pipeline_warmup_finished")
     agent_no_text_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES", "30"))
+    qualification_mode = getattr(pipeline, "qualification_mode", None)
+    if qualification_mode is not None and not is_validated_qualification_mode(
+        qualification_mode
+    ):
+        raise RuntimeError("pipeline retained an invalid qualification identity")
     agent_no_audio_frames = int(os.environ.get("VOICECHAT_WEB_AGENT_NO_AUDIO_FRAMES", "30"))
     agent_decoded_silence_frames = int(
         os.environ.get("VOICECHAT_WEB_AGENT_SILENCE_EOS_FRAMES", "20")
@@ -7292,6 +8249,7 @@ def main() -> None:
         agent_silence_eos_frames=agent_decoded_silence_frames,
         agent_no_text_frames=agent_no_text_frames,
         agent_no_audio_frames=agent_no_audio_frames,
+        qualification_mode=qualification_mode,
         response_tail_dbfs=float(os.environ.get("VOICECHAT_WEB_RESPONSE_TAIL_DBFS", "-60")),
         response_tail_silence_frames=int(
             os.environ.get("VOICECHAT_WEB_RESPONSE_TAIL_SILENCE_FRAMES", "3")
@@ -7342,9 +8300,7 @@ def main() -> None:
                 ),
             )
         except BaseException as exc:
-            trace_enabled = bool(
-                int(os.environ.get("S2S_FUNCTION_LOGIT_TRACE_TOPK", "0") or "0")
-            )
+            trace_enabled = bool(int(os.environ.get("S2S_FUNCTION_LOGIT_TRACE_TOPK", "0") or "0"))
             report = {
                 "schema": 2 if trace_enabled else 1,
                 "kind": "voice_function_logit_probe",

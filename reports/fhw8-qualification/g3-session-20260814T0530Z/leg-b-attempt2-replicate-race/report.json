@@ -1,0 +1,6 @@
+{
+  "error": "RuntimeError: server did not negotiate strict protocol v3",
+  "kind": "tool_call_latency_benchmark",
+  "passed": false,
+  "schema": 1
+}

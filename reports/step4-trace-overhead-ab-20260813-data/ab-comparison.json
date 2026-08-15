@@ -1,0 +1,4138 @@
+{
+  "arms": {
+    "A_trace_on": {
+      "analyzer_source": {
+        "bytes": 20036821,
+        "path": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/310af616-906b-4b14-905a-81176f97e387/events.jsonl",
+        "sha256": "1f3a61aeb2b75d06ba2e1646f404977fa579ccb5d52ab63dd276fb0ddcb64333"
+      },
+      "delivered_nonbos_membership": {
+        "members": [
+          {
+            "event_ordinal": 234,
+            "frame": 48,
+            "monotonic_timestamp_s": 4827809.274935,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 236,
+            "frame": 49,
+            "monotonic_timestamp_s": 4827809.365161,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 238,
+            "frame": 50,
+            "monotonic_timestamp_s": 4827809.449804,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 240,
+            "frame": 51,
+            "monotonic_timestamp_s": 4827809.535183,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 242,
+            "frame": 52,
+            "monotonic_timestamp_s": 4827809.620454,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 244,
+            "frame": 53,
+            "monotonic_timestamp_s": 4827809.708516,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 246,
+            "frame": 54,
+            "monotonic_timestamp_s": 4827809.79424,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 248,
+            "frame": 55,
+            "monotonic_timestamp_s": 4827809.881582,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 250,
+            "frame": 56,
+            "monotonic_timestamp_s": 4827809.965828,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 252,
+            "frame": 57,
+            "monotonic_timestamp_s": 4827810.050501,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 254,
+            "frame": 58,
+            "monotonic_timestamp_s": 4827810.137238,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 256,
+            "frame": 59,
+            "monotonic_timestamp_s": 4827810.226958,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 258,
+            "frame": 60,
+            "monotonic_timestamp_s": 4827810.313409,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 260,
+            "frame": 61,
+            "monotonic_timestamp_s": 4827810.400662,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 262,
+            "frame": 62,
+            "monotonic_timestamp_s": 4827810.486548,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 264,
+            "frame": 63,
+            "monotonic_timestamp_s": 4827810.572835,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 266,
+            "frame": 64,
+            "monotonic_timestamp_s": 4827810.659631,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 268,
+            "frame": 65,
+            "monotonic_timestamp_s": 4827810.745237,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 270,
+            "frame": 66,
+            "monotonic_timestamp_s": 4827810.832213,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 272,
+            "frame": 67,
+            "monotonic_timestamp_s": 4827810.917576,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 274,
+            "frame": 68,
+            "monotonic_timestamp_s": 4827811.003221,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 276,
+            "frame": 69,
+            "monotonic_timestamp_s": 4827811.089989,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 278,
+            "frame": 70,
+            "monotonic_timestamp_s": 4827811.176997,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 280,
+            "frame": 71,
+            "monotonic_timestamp_s": 4827811.263043,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 282,
+            "frame": 72,
+            "monotonic_timestamp_s": 4827811.349798,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 284,
+            "frame": 73,
+            "monotonic_timestamp_s": 4827811.436819,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 286,
+            "frame": 74,
+            "monotonic_timestamp_s": 4827811.523681,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 288,
+            "frame": 75,
+            "monotonic_timestamp_s": 4827811.613314,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 290,
+            "frame": 76,
+            "monotonic_timestamp_s": 4827811.700676,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 292,
+            "frame": 77,
+            "monotonic_timestamp_s": 4827811.78676,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 294,
+            "frame": 78,
+            "monotonic_timestamp_s": 4827811.873814,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 296,
+            "frame": 79,
+            "monotonic_timestamp_s": 4827811.960601,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 298,
+            "frame": 80,
+            "monotonic_timestamp_s": 4827812.046226,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 300,
+            "frame": 81,
+            "monotonic_timestamp_s": 4827812.132794,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 302,
+            "frame": 82,
+            "monotonic_timestamp_s": 4827812.222433,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 304,
+            "frame": 83,
+            "monotonic_timestamp_s": 4827812.309094,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 306,
+            "frame": 84,
+            "monotonic_timestamp_s": 4827812.396733,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 308,
+            "frame": 85,
+            "monotonic_timestamp_s": 4827812.483053,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 310,
+            "frame": 86,
+            "monotonic_timestamp_s": 4827812.568032,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 312,
+            "frame": 87,
+            "monotonic_timestamp_s": 4827812.656441,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 314,
+            "frame": 88,
+            "monotonic_timestamp_s": 4827812.743868,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 316,
+            "frame": 89,
+            "monotonic_timestamp_s": 4827812.831827,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1478,
+            "frame": 599,
+            "monotonic_timestamp_s": 4827854.921195,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1480,
+            "frame": 600,
+            "monotonic_timestamp_s": 4827855.009352,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1482,
+            "frame": 601,
+            "monotonic_timestamp_s": 4827855.094821,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1484,
+            "frame": 602,
+            "monotonic_timestamp_s": 4827855.180507,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1486,
+            "frame": 603,
+            "monotonic_timestamp_s": 4827855.269025,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1488,
+            "frame": 604,
+            "monotonic_timestamp_s": 4827855.355492,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1490,
+            "frame": 605,
+            "monotonic_timestamp_s": 4827855.441441,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1492,
+            "frame": 606,
+            "monotonic_timestamp_s": 4827855.527873,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1494,
+            "frame": 607,
+            "monotonic_timestamp_s": 4827855.612221,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1496,
+            "frame": 608,
+            "monotonic_timestamp_s": 4827855.7009,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1498,
+            "frame": 609,
+            "monotonic_timestamp_s": 4827855.787889,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1500,
+            "frame": 610,
+            "monotonic_timestamp_s": 4827855.873585,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1502,
+            "frame": 611,
+            "monotonic_timestamp_s": 4827855.96082,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1504,
+            "frame": 612,
+            "monotonic_timestamp_s": 4827856.047742,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1506,
+            "frame": 613,
+            "monotonic_timestamp_s": 4827856.134166,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1508,
+            "frame": 614,
+            "monotonic_timestamp_s": 4827856.222354,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1510,
+            "frame": 615,
+            "monotonic_timestamp_s": 4827856.307972,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1512,
+            "frame": 616,
+            "monotonic_timestamp_s": 4827856.394288,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1514,
+            "frame": 617,
+            "monotonic_timestamp_s": 4827856.480734,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1516,
+            "frame": 618,
+            "monotonic_timestamp_s": 4827856.568677,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1518,
+            "frame": 619,
+            "monotonic_timestamp_s": 4827856.655159,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1520,
+            "frame": 620,
+            "monotonic_timestamp_s": 4827856.74108,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1522,
+            "frame": 621,
+            "monotonic_timestamp_s": 4827856.825925,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1524,
+            "frame": 622,
+            "monotonic_timestamp_s": 4827856.912937,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1526,
+            "frame": 623,
+            "monotonic_timestamp_s": 4827856.999564,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1528,
+            "frame": 624,
+            "monotonic_timestamp_s": 4827857.086775,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1530,
+            "frame": 625,
+            "monotonic_timestamp_s": 4827857.171874,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1532,
+            "frame": 626,
+            "monotonic_timestamp_s": 4827857.261704,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1534,
+            "frame": 627,
+            "monotonic_timestamp_s": 4827857.347279,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1536,
+            "frame": 628,
+            "monotonic_timestamp_s": 4827857.432994,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1538,
+            "frame": 629,
+            "monotonic_timestamp_s": 4827857.518266,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1540,
+            "frame": 630,
+            "monotonic_timestamp_s": 4827857.605166,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1542,
+            "frame": 631,
+            "monotonic_timestamp_s": 4827857.691986,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1544,
+            "frame": 632,
+            "monotonic_timestamp_s": 4827857.779859,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1546,
+            "frame": 633,
+            "monotonic_timestamp_s": 4827857.866347,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1548,
+            "frame": 634,
+            "monotonic_timestamp_s": 4827857.952829,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1550,
+            "frame": 635,
+            "monotonic_timestamp_s": 4827858.040329,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1552,
+            "frame": 636,
+            "monotonic_timestamp_s": 4827858.126844,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1554,
+            "frame": 637,
+            "monotonic_timestamp_s": 4827858.213514,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1556,
+            "frame": 638,
+            "monotonic_timestamp_s": 4827858.300134,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2612,
+            "frame": 1122,
+            "monotonic_timestamp_s": 4827897.634297,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2614,
+            "frame": 1123,
+            "monotonic_timestamp_s": 4827897.717939,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2616,
+            "frame": 1124,
+            "monotonic_timestamp_s": 4827897.802169,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2618,
+            "frame": 1125,
+            "monotonic_timestamp_s": 4827897.88531,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2620,
+            "frame": 1126,
+            "monotonic_timestamp_s": 4827897.967465,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2622,
+            "frame": 1127,
+            "monotonic_timestamp_s": 4827898.050768,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2624,
+            "frame": 1128,
+            "monotonic_timestamp_s": 4827898.132043,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2626,
+            "frame": 1129,
+            "monotonic_timestamp_s": 4827898.215038,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2628,
+            "frame": 1130,
+            "monotonic_timestamp_s": 4827898.29851,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2630,
+            "frame": 1131,
+            "monotonic_timestamp_s": 4827898.380478,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2632,
+            "frame": 1132,
+            "monotonic_timestamp_s": 4827898.466738,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2634,
+            "frame": 1133,
+            "monotonic_timestamp_s": 4827898.550891,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2636,
+            "frame": 1134,
+            "monotonic_timestamp_s": 4827898.633704,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2638,
+            "frame": 1135,
+            "monotonic_timestamp_s": 4827898.715933,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2640,
+            "frame": 1136,
+            "monotonic_timestamp_s": 4827898.799573,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2642,
+            "frame": 1137,
+            "monotonic_timestamp_s": 4827898.882684,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2644,
+            "frame": 1138,
+            "monotonic_timestamp_s": 4827898.967461,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2646,
+            "frame": 1139,
+            "monotonic_timestamp_s": 4827899.050878,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2648,
+            "frame": 1140,
+            "monotonic_timestamp_s": 4827899.133546,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2650,
+            "frame": 1141,
+            "monotonic_timestamp_s": 4827899.216477,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2652,
+            "frame": 1142,
+            "monotonic_timestamp_s": 4827899.300333,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2654,
+            "frame": 1143,
+            "monotonic_timestamp_s": 4827899.384287,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2656,
+            "frame": 1144,
+            "monotonic_timestamp_s": 4827899.467262,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2658,
+            "frame": 1145,
+            "monotonic_timestamp_s": 4827899.551763,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2660,
+            "frame": 1146,
+            "monotonic_timestamp_s": 4827899.637541,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2662,
+            "frame": 1147,
+            "monotonic_timestamp_s": 4827899.724337,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2664,
+            "frame": 1148,
+            "monotonic_timestamp_s": 4827899.81143,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2666,
+            "frame": 1149,
+            "monotonic_timestamp_s": 4827899.894796,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2668,
+            "frame": 1150,
+            "monotonic_timestamp_s": 4827899.980802,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2670,
+            "frame": 1151,
+            "monotonic_timestamp_s": 4827900.06561,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2672,
+            "frame": 1152,
+            "monotonic_timestamp_s": 4827900.150265,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2674,
+            "frame": 1153,
+            "monotonic_timestamp_s": 4827900.235563,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2676,
+            "frame": 1154,
+            "monotonic_timestamp_s": 4827900.322223,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2678,
+            "frame": 1155,
+            "monotonic_timestamp_s": 4827900.409506,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2680,
+            "frame": 1156,
+            "monotonic_timestamp_s": 4827900.49361,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2682,
+            "frame": 1157,
+            "monotonic_timestamp_s": 4827900.5808,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2684,
+            "frame": 1158,
+            "monotonic_timestamp_s": 4827900.665843,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2686,
+            "frame": 1159,
+            "monotonic_timestamp_s": 4827900.748663,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2688,
+            "frame": 1160,
+            "monotonic_timestamp_s": 4827900.834371,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2690,
+            "frame": 1161,
+            "monotonic_timestamp_s": 4827900.918725,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2692,
+            "frame": 1162,
+            "monotonic_timestamp_s": 4827901.004451,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2694,
+            "frame": 1163,
+            "monotonic_timestamp_s": 4827901.088935,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2696,
+            "frame": 1164,
+            "monotonic_timestamp_s": 4827901.17591,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2698,
+            "frame": 1165,
+            "monotonic_timestamp_s": 4827901.262461,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3767,
+            "frame": 1669,
+            "monotonic_timestamp_s": 4827941.67219,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3769,
+            "frame": 1670,
+            "monotonic_timestamp_s": 4827941.752985,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3771,
+            "frame": 1671,
+            "monotonic_timestamp_s": 4827941.833836,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3773,
+            "frame": 1672,
+            "monotonic_timestamp_s": 4827941.914589,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3775,
+            "frame": 1673,
+            "monotonic_timestamp_s": 4827941.995544,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3777,
+            "frame": 1674,
+            "monotonic_timestamp_s": 4827942.078406,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3779,
+            "frame": 1675,
+            "monotonic_timestamp_s": 4827942.162531,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3781,
+            "frame": 1676,
+            "monotonic_timestamp_s": 4827942.244783,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3783,
+            "frame": 1677,
+            "monotonic_timestamp_s": 4827942.329257,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3785,
+            "frame": 1678,
+            "monotonic_timestamp_s": 4827942.413473,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3787,
+            "frame": 1679,
+            "monotonic_timestamp_s": 4827942.496072,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3789,
+            "frame": 1680,
+            "monotonic_timestamp_s": 4827942.57751,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3791,
+            "frame": 1681,
+            "monotonic_timestamp_s": 4827942.661746,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3793,
+            "frame": 1682,
+            "monotonic_timestamp_s": 4827942.745024,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3795,
+            "frame": 1683,
+            "monotonic_timestamp_s": 4827942.82829,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3797,
+            "frame": 1684,
+            "monotonic_timestamp_s": 4827942.911716,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3799,
+            "frame": 1685,
+            "monotonic_timestamp_s": 4827942.996204,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3801,
+            "frame": 1686,
+            "monotonic_timestamp_s": 4827943.081234,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3803,
+            "frame": 1687,
+            "monotonic_timestamp_s": 4827943.165499,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3805,
+            "frame": 1688,
+            "monotonic_timestamp_s": 4827943.248456,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3807,
+            "frame": 1689,
+            "monotonic_timestamp_s": 4827943.332917,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3809,
+            "frame": 1690,
+            "monotonic_timestamp_s": 4827943.41725,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5054,
+            "frame": 2249,
+            "monotonic_timestamp_s": 4827989.063966,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5056,
+            "frame": 2250,
+            "monotonic_timestamp_s": 4827989.147933,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5058,
+            "frame": 2251,
+            "monotonic_timestamp_s": 4827989.232284,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5060,
+            "frame": 2252,
+            "monotonic_timestamp_s": 4827989.315097,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5062,
+            "frame": 2253,
+            "monotonic_timestamp_s": 4827989.400181,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5064,
+            "frame": 2254,
+            "monotonic_timestamp_s": 4827989.484328,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5066,
+            "frame": 2255,
+            "monotonic_timestamp_s": 4827989.56784,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5068,
+            "frame": 2256,
+            "monotonic_timestamp_s": 4827989.650724,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5070,
+            "frame": 2257,
+            "monotonic_timestamp_s": 4827989.734563,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5072,
+            "frame": 2258,
+            "monotonic_timestamp_s": 4827989.817569,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5074,
+            "frame": 2259,
+            "monotonic_timestamp_s": 4827989.902657,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5076,
+            "frame": 2260,
+            "monotonic_timestamp_s": 4827989.987967,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5078,
+            "frame": 2261,
+            "monotonic_timestamp_s": 4827990.075413,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5080,
+            "frame": 2262,
+            "monotonic_timestamp_s": 4827990.162112,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5082,
+            "frame": 2263,
+            "monotonic_timestamp_s": 4827990.246359,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5084,
+            "frame": 2264,
+            "monotonic_timestamp_s": 4827990.33163,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5086,
+            "frame": 2265,
+            "monotonic_timestamp_s": 4827990.419709,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5088,
+            "frame": 2266,
+            "monotonic_timestamp_s": 4827990.505698,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5090,
+            "frame": 2267,
+            "monotonic_timestamp_s": 4827990.591951,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5092,
+            "frame": 2268,
+            "monotonic_timestamp_s": 4827990.676353,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5094,
+            "frame": 2269,
+            "monotonic_timestamp_s": 4827990.763634,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5096,
+            "frame": 2270,
+            "monotonic_timestamp_s": 4827990.847778,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5098,
+            "frame": 2271,
+            "monotonic_timestamp_s": 4827990.929938,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5100,
+            "frame": 2272,
+            "monotonic_timestamp_s": 4827991.013942,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5102,
+            "frame": 2273,
+            "monotonic_timestamp_s": 4827991.09906,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5104,
+            "frame": 2274,
+            "monotonic_timestamp_s": 4827991.186176,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5106,
+            "frame": 2275,
+            "monotonic_timestamp_s": 4827991.271402,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5108,
+            "frame": 2276,
+            "monotonic_timestamp_s": 4827991.356612,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5110,
+            "frame": 2277,
+            "monotonic_timestamp_s": 4827991.442754,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5112,
+            "frame": 2278,
+            "monotonic_timestamp_s": 4827991.527597,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5114,
+            "frame": 2279,
+            "monotonic_timestamp_s": 4827991.614321,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5116,
+            "frame": 2280,
+            "monotonic_timestamp_s": 4827991.699458,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5118,
+            "frame": 2281,
+            "monotonic_timestamp_s": 4827991.784503,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5120,
+            "frame": 2282,
+            "monotonic_timestamp_s": 4827991.868131,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5122,
+            "frame": 2283,
+            "monotonic_timestamp_s": 4827991.952423,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5124,
+            "frame": 2284,
+            "monotonic_timestamp_s": 4827992.036147,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5126,
+            "frame": 2285,
+            "monotonic_timestamp_s": 4827992.120889,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5128,
+            "frame": 2286,
+            "monotonic_timestamp_s": 4827992.205694,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6300,
+            "frame": 2801,
+            "monotonic_timestamp_s": 4828034.553089,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6302,
+            "frame": 2802,
+            "monotonic_timestamp_s": 4828034.637641,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6304,
+            "frame": 2803,
+            "monotonic_timestamp_s": 4828034.721653,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6306,
+            "frame": 2804,
+            "monotonic_timestamp_s": 4828034.805401,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6308,
+            "frame": 2805,
+            "monotonic_timestamp_s": 4828034.889615,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6310,
+            "frame": 2806,
+            "monotonic_timestamp_s": 4828034.973455,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6312,
+            "frame": 2807,
+            "monotonic_timestamp_s": 4828035.057295,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6314,
+            "frame": 2808,
+            "monotonic_timestamp_s": 4828035.142656,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6316,
+            "frame": 2809,
+            "monotonic_timestamp_s": 4828035.227405,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6318,
+            "frame": 2810,
+            "monotonic_timestamp_s": 4828035.311741,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6320,
+            "frame": 2811,
+            "monotonic_timestamp_s": 4828035.39723,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6322,
+            "frame": 2812,
+            "monotonic_timestamp_s": 4828035.484966,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6324,
+            "frame": 2813,
+            "monotonic_timestamp_s": 4828035.569451,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6326,
+            "frame": 2814,
+            "monotonic_timestamp_s": 4828035.654775,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6328,
+            "frame": 2815,
+            "monotonic_timestamp_s": 4828035.740115,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6330,
+            "frame": 2816,
+            "monotonic_timestamp_s": 4828035.825635,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6332,
+            "frame": 2817,
+            "monotonic_timestamp_s": 4828035.911561,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6334,
+            "frame": 2818,
+            "monotonic_timestamp_s": 4828035.998179,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6336,
+            "frame": 2819,
+            "monotonic_timestamp_s": 4828036.082683,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6338,
+            "frame": 2820,
+            "monotonic_timestamp_s": 4828036.17026,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6340,
+            "frame": 2821,
+            "monotonic_timestamp_s": 4828036.255579,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6342,
+            "frame": 2822,
+            "monotonic_timestamp_s": 4828036.340622,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6344,
+            "frame": 2823,
+            "monotonic_timestamp_s": 4828036.425397,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6346,
+            "frame": 2824,
+            "monotonic_timestamp_s": 4828036.509957,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6348,
+            "frame": 2825,
+            "monotonic_timestamp_s": 4828036.596226,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6350,
+            "frame": 2826,
+            "monotonic_timestamp_s": 4828036.681941,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6352,
+            "frame": 2827,
+            "monotonic_timestamp_s": 4828036.768253,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6354,
+            "frame": 2828,
+            "monotonic_timestamp_s": 4828036.854449,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6356,
+            "frame": 2829,
+            "monotonic_timestamp_s": 4828036.939246,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6358,
+            "frame": 2830,
+            "monotonic_timestamp_s": 4828037.024737,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6360,
+            "frame": 2831,
+            "monotonic_timestamp_s": 4828037.109733,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6362,
+            "frame": 2832,
+            "monotonic_timestamp_s": 4828037.193929,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6364,
+            "frame": 2833,
+            "monotonic_timestamp_s": 4828037.279672,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6366,
+            "frame": 2834,
+            "monotonic_timestamp_s": 4828037.365239,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6368,
+            "frame": 2835,
+            "monotonic_timestamp_s": 4828037.452541,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6370,
+            "frame": 2836,
+            "monotonic_timestamp_s": 4828037.537674,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6372,
+            "frame": 2837,
+            "monotonic_timestamp_s": 4828037.623421,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6374,
+            "frame": 2838,
+            "monotonic_timestamp_s": 4828037.709018,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6376,
+            "frame": 2839,
+            "monotonic_timestamp_s": 4828037.794646,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7440,
+            "frame": 3327,
+            "monotonic_timestamp_s": 4828077.614741,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7442,
+            "frame": 3328,
+            "monotonic_timestamp_s": 4828077.700911,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7444,
+            "frame": 3329,
+            "monotonic_timestamp_s": 4828077.786944,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7446,
+            "frame": 3330,
+            "monotonic_timestamp_s": 4828077.872847,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7448,
+            "frame": 3331,
+            "monotonic_timestamp_s": 4828077.959036,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7450,
+            "frame": 3332,
+            "monotonic_timestamp_s": 4828078.046426,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7452,
+            "frame": 3333,
+            "monotonic_timestamp_s": 4828078.131708,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7454,
+            "frame": 3334,
+            "monotonic_timestamp_s": 4828078.217792,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7456,
+            "frame": 3335,
+            "monotonic_timestamp_s": 4828078.303884,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7458,
+            "frame": 3336,
+            "monotonic_timestamp_s": 4828078.390644,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7460,
+            "frame": 3337,
+            "monotonic_timestamp_s": 4828078.479551,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7462,
+            "frame": 3338,
+            "monotonic_timestamp_s": 4828078.568398,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7464,
+            "frame": 3339,
+            "monotonic_timestamp_s": 4828078.655264,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7466,
+            "frame": 3340,
+            "monotonic_timestamp_s": 4828078.742584,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7468,
+            "frame": 3341,
+            "monotonic_timestamp_s": 4828078.830458,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7470,
+            "frame": 3342,
+            "monotonic_timestamp_s": 4828078.917283,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7472,
+            "frame": 3343,
+            "monotonic_timestamp_s": 4828079.005127,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7474,
+            "frame": 3344,
+            "monotonic_timestamp_s": 4828079.091469,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7476,
+            "frame": 3345,
+            "monotonic_timestamp_s": 4828079.17878,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7478,
+            "frame": 3346,
+            "monotonic_timestamp_s": 4828079.26625,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7480,
+            "frame": 3347,
+            "monotonic_timestamp_s": 4828079.352764,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7482,
+            "frame": 3348,
+            "monotonic_timestamp_s": 4828079.440842,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7484,
+            "frame": 3349,
+            "monotonic_timestamp_s": 4828079.531087,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7486,
+            "frame": 3350,
+            "monotonic_timestamp_s": 4828079.617695,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7488,
+            "frame": 3351,
+            "monotonic_timestamp_s": 4828079.705122,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7490,
+            "frame": 3352,
+            "monotonic_timestamp_s": 4828079.790645,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7492,
+            "frame": 3353,
+            "monotonic_timestamp_s": 4828079.87809,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7494,
+            "frame": 3354,
+            "monotonic_timestamp_s": 4828079.964672,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7496,
+            "frame": 3355,
+            "monotonic_timestamp_s": 4828080.052469,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7498,
+            "frame": 3356,
+            "monotonic_timestamp_s": 4828080.140362,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7500,
+            "frame": 3357,
+            "monotonic_timestamp_s": 4828080.227369,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7502,
+            "frame": 3358,
+            "monotonic_timestamp_s": 4828080.314565,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7504,
+            "frame": 3359,
+            "monotonic_timestamp_s": 4828080.400566,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7506,
+            "frame": 3360,
+            "monotonic_timestamp_s": 4828080.490903,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7508,
+            "frame": 3361,
+            "monotonic_timestamp_s": 4828080.57789,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7510,
+            "frame": 3362,
+            "monotonic_timestamp_s": 4828080.664523,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7512,
+            "frame": 3363,
+            "monotonic_timestamp_s": 4828080.751018,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7514,
+            "frame": 3364,
+            "monotonic_timestamp_s": 4828080.838078,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7516,
+            "frame": 3365,
+            "monotonic_timestamp_s": 4828080.924604,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7518,
+            "frame": 3366,
+            "monotonic_timestamp_s": 4828081.010575,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7520,
+            "frame": 3367,
+            "monotonic_timestamp_s": 4828081.097677,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7522,
+            "frame": 3368,
+            "monotonic_timestamp_s": 4828081.183942,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7524,
+            "frame": 3369,
+            "monotonic_timestamp_s": 4828081.268916,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7526,
+            "frame": 3370,
+            "monotonic_timestamp_s": 4828081.355111,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          }
+        ],
+        "n": 269,
+        "sha256": "e840942dc7782605a5d574b32721d44a66cd3e07558d0b80191b0b5a8d4499a5"
+      },
+      "residual_high_membership": {
+        "members": [],
+        "n": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    },
+    "B_trace_off": {
+      "analyzer_source": {
+        "bytes": 20022505,
+        "path": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/bb89df0d-33ef-45c5-9fbe-0238fa789e40/events.jsonl",
+        "sha256": "e613be6d646a3171a86d34551d856599e867fa16493c4deea80edacb8a5591d1"
+      },
+      "delivered_nonbos_membership": {
+        "members": [
+          {
+            "event_ordinal": 234,
+            "frame": 48,
+            "monotonic_timestamp_s": 4828139.380116,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 236,
+            "frame": 49,
+            "monotonic_timestamp_s": 4828139.461747,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 238,
+            "frame": 50,
+            "monotonic_timestamp_s": 4828139.54357,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 240,
+            "frame": 51,
+            "monotonic_timestamp_s": 4828139.623681,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 242,
+            "frame": 52,
+            "monotonic_timestamp_s": 4828139.705109,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 244,
+            "frame": 53,
+            "monotonic_timestamp_s": 4828139.786121,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 246,
+            "frame": 54,
+            "monotonic_timestamp_s": 4828139.865246,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 248,
+            "frame": 55,
+            "monotonic_timestamp_s": 4828139.946807,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 250,
+            "frame": 56,
+            "monotonic_timestamp_s": 4828140.0263,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 252,
+            "frame": 57,
+            "monotonic_timestamp_s": 4828140.107223,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 254,
+            "frame": 58,
+            "monotonic_timestamp_s": 4828140.188411,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 256,
+            "frame": 59,
+            "monotonic_timestamp_s": 4828140.268591,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 258,
+            "frame": 60,
+            "monotonic_timestamp_s": 4828140.348991,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 260,
+            "frame": 61,
+            "monotonic_timestamp_s": 4828140.431228,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 262,
+            "frame": 62,
+            "monotonic_timestamp_s": 4828140.511934,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 264,
+            "frame": 63,
+            "monotonic_timestamp_s": 4828140.594666,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 266,
+            "frame": 64,
+            "monotonic_timestamp_s": 4828140.675223,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 268,
+            "frame": 65,
+            "monotonic_timestamp_s": 4828140.765636,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 270,
+            "frame": 66,
+            "monotonic_timestamp_s": 4828140.847312,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 272,
+            "frame": 67,
+            "monotonic_timestamp_s": 4828140.928433,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 274,
+            "frame": 68,
+            "monotonic_timestamp_s": 4828141.008471,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 276,
+            "frame": 69,
+            "monotonic_timestamp_s": 4828141.089951,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 278,
+            "frame": 70,
+            "monotonic_timestamp_s": 4828141.170085,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 280,
+            "frame": 71,
+            "monotonic_timestamp_s": 4828141.250957,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 282,
+            "frame": 72,
+            "monotonic_timestamp_s": 4828141.332967,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 284,
+            "frame": 73,
+            "monotonic_timestamp_s": 4828141.414053,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 286,
+            "frame": 74,
+            "monotonic_timestamp_s": 4828141.495473,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 288,
+            "frame": 75,
+            "monotonic_timestamp_s": 4828141.578967,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 290,
+            "frame": 76,
+            "monotonic_timestamp_s": 4828141.65938,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 292,
+            "frame": 77,
+            "monotonic_timestamp_s": 4828141.740619,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 294,
+            "frame": 78,
+            "monotonic_timestamp_s": 4828141.820588,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 296,
+            "frame": 79,
+            "monotonic_timestamp_s": 4828141.901808,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 298,
+            "frame": 80,
+            "monotonic_timestamp_s": 4828141.98255,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 300,
+            "frame": 81,
+            "monotonic_timestamp_s": 4828142.064752,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 302,
+            "frame": 82,
+            "monotonic_timestamp_s": 4828142.144295,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 304,
+            "frame": 83,
+            "monotonic_timestamp_s": 4828142.224501,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 306,
+            "frame": 84,
+            "monotonic_timestamp_s": 4828142.305228,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 308,
+            "frame": 85,
+            "monotonic_timestamp_s": 4828142.387979,
+            "response_id": "inferred-response-0001",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1478,
+            "frame": 599,
+            "monotonic_timestamp_s": 4828185.053649,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1480,
+            "frame": 600,
+            "monotonic_timestamp_s": 4828185.134594,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1482,
+            "frame": 601,
+            "monotonic_timestamp_s": 4828185.216052,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1484,
+            "frame": 602,
+            "monotonic_timestamp_s": 4828185.296394,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1486,
+            "frame": 603,
+            "monotonic_timestamp_s": 4828185.377952,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1488,
+            "frame": 604,
+            "monotonic_timestamp_s": 4828185.460422,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1490,
+            "frame": 605,
+            "monotonic_timestamp_s": 4828185.542647,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1492,
+            "frame": 606,
+            "monotonic_timestamp_s": 4828185.625786,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1494,
+            "frame": 607,
+            "monotonic_timestamp_s": 4828185.706251,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1496,
+            "frame": 608,
+            "monotonic_timestamp_s": 4828185.787072,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1498,
+            "frame": 609,
+            "monotonic_timestamp_s": 4828185.868276,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1500,
+            "frame": 610,
+            "monotonic_timestamp_s": 4828185.949056,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1502,
+            "frame": 611,
+            "monotonic_timestamp_s": 4828186.028542,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1504,
+            "frame": 612,
+            "monotonic_timestamp_s": 4828186.110139,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1506,
+            "frame": 613,
+            "monotonic_timestamp_s": 4828186.191558,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1508,
+            "frame": 614,
+            "monotonic_timestamp_s": 4828186.273204,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1510,
+            "frame": 615,
+            "monotonic_timestamp_s": 4828186.355845,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1512,
+            "frame": 616,
+            "monotonic_timestamp_s": 4828186.437495,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1514,
+            "frame": 617,
+            "monotonic_timestamp_s": 4828186.518928,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1516,
+            "frame": 618,
+            "monotonic_timestamp_s": 4828186.601301,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1518,
+            "frame": 619,
+            "monotonic_timestamp_s": 4828186.681534,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1520,
+            "frame": 620,
+            "monotonic_timestamp_s": 4828186.763872,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1522,
+            "frame": 621,
+            "monotonic_timestamp_s": 4828186.845068,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1524,
+            "frame": 622,
+            "monotonic_timestamp_s": 4828186.925714,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1526,
+            "frame": 623,
+            "monotonic_timestamp_s": 4828187.007754,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1528,
+            "frame": 624,
+            "monotonic_timestamp_s": 4828187.089352,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1530,
+            "frame": 625,
+            "monotonic_timestamp_s": 4828187.172655,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1532,
+            "frame": 626,
+            "monotonic_timestamp_s": 4828187.255185,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1534,
+            "frame": 627,
+            "monotonic_timestamp_s": 4828187.337291,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1536,
+            "frame": 628,
+            "monotonic_timestamp_s": 4828187.417706,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1538,
+            "frame": 629,
+            "monotonic_timestamp_s": 4828187.500514,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1540,
+            "frame": 630,
+            "monotonic_timestamp_s": 4828187.583144,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1542,
+            "frame": 631,
+            "monotonic_timestamp_s": 4828187.667262,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1544,
+            "frame": 632,
+            "monotonic_timestamp_s": 4828187.75003,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1546,
+            "frame": 633,
+            "monotonic_timestamp_s": 4828187.832604,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1548,
+            "frame": 634,
+            "monotonic_timestamp_s": 4828187.914488,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1550,
+            "frame": 635,
+            "monotonic_timestamp_s": 4828187.996794,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1552,
+            "frame": 636,
+            "monotonic_timestamp_s": 4828188.080221,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 1554,
+            "frame": 637,
+            "monotonic_timestamp_s": 4828188.163885,
+            "response_id": "inferred-response-0002",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2614,
+            "frame": 1123,
+            "monotonic_timestamp_s": 4828227.732691,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2616,
+            "frame": 1124,
+            "monotonic_timestamp_s": 4828227.813394,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2618,
+            "frame": 1125,
+            "monotonic_timestamp_s": 4828227.894965,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2620,
+            "frame": 1126,
+            "monotonic_timestamp_s": 4828227.977284,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2622,
+            "frame": 1127,
+            "monotonic_timestamp_s": 4828228.058105,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2624,
+            "frame": 1128,
+            "monotonic_timestamp_s": 4828228.139759,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2626,
+            "frame": 1129,
+            "monotonic_timestamp_s": 4828228.222686,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2628,
+            "frame": 1130,
+            "monotonic_timestamp_s": 4828228.304928,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2630,
+            "frame": 1131,
+            "monotonic_timestamp_s": 4828228.387487,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2632,
+            "frame": 1132,
+            "monotonic_timestamp_s": 4828228.468931,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2634,
+            "frame": 1133,
+            "monotonic_timestamp_s": 4828228.551345,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2636,
+            "frame": 1134,
+            "monotonic_timestamp_s": 4828228.633829,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2638,
+            "frame": 1135,
+            "monotonic_timestamp_s": 4828228.715715,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2640,
+            "frame": 1136,
+            "monotonic_timestamp_s": 4828228.797606,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2642,
+            "frame": 1137,
+            "monotonic_timestamp_s": 4828228.88254,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2644,
+            "frame": 1138,
+            "monotonic_timestamp_s": 4828228.964348,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2646,
+            "frame": 1139,
+            "monotonic_timestamp_s": 4828229.046247,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2648,
+            "frame": 1140,
+            "monotonic_timestamp_s": 4828229.129202,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2650,
+            "frame": 1141,
+            "monotonic_timestamp_s": 4828229.212638,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2652,
+            "frame": 1142,
+            "monotonic_timestamp_s": 4828229.294644,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2654,
+            "frame": 1143,
+            "monotonic_timestamp_s": 4828229.377771,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2656,
+            "frame": 1144,
+            "monotonic_timestamp_s": 4828229.460034,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2658,
+            "frame": 1145,
+            "monotonic_timestamp_s": 4828229.542403,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2660,
+            "frame": 1146,
+            "monotonic_timestamp_s": 4828229.623969,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2662,
+            "frame": 1147,
+            "monotonic_timestamp_s": 4828229.707341,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2664,
+            "frame": 1148,
+            "monotonic_timestamp_s": 4828229.789744,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2666,
+            "frame": 1149,
+            "monotonic_timestamp_s": 4828229.87141,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2668,
+            "frame": 1150,
+            "monotonic_timestamp_s": 4828229.953823,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2670,
+            "frame": 1151,
+            "monotonic_timestamp_s": 4828230.036714,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2672,
+            "frame": 1152,
+            "monotonic_timestamp_s": 4828230.119304,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2674,
+            "frame": 1153,
+            "monotonic_timestamp_s": 4828230.201825,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2676,
+            "frame": 1154,
+            "monotonic_timestamp_s": 4828230.284968,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2678,
+            "frame": 1155,
+            "monotonic_timestamp_s": 4828230.367632,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2680,
+            "frame": 1156,
+            "monotonic_timestamp_s": 4828230.450511,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2682,
+            "frame": 1157,
+            "monotonic_timestamp_s": 4828230.533055,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2684,
+            "frame": 1158,
+            "monotonic_timestamp_s": 4828230.616329,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2686,
+            "frame": 1159,
+            "monotonic_timestamp_s": 4828230.701849,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2688,
+            "frame": 1160,
+            "monotonic_timestamp_s": 4828230.783316,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2690,
+            "frame": 1161,
+            "monotonic_timestamp_s": 4828230.865257,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2692,
+            "frame": 1162,
+            "monotonic_timestamp_s": 4828230.947812,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2694,
+            "frame": 1163,
+            "monotonic_timestamp_s": 4828231.031569,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2696,
+            "frame": 1164,
+            "monotonic_timestamp_s": 4828231.113229,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2698,
+            "frame": 1165,
+            "monotonic_timestamp_s": 4828231.195572,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2700,
+            "frame": 1166,
+            "monotonic_timestamp_s": 4828231.276586,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 2702,
+            "frame": 1167,
+            "monotonic_timestamp_s": 4828231.360136,
+            "response_id": "inferred-response-0003",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3771,
+            "frame": 1671,
+            "monotonic_timestamp_s": 4828272.024987,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3773,
+            "frame": 1672,
+            "monotonic_timestamp_s": 4828272.10968,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3775,
+            "frame": 1673,
+            "monotonic_timestamp_s": 4828272.194447,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3777,
+            "frame": 1674,
+            "monotonic_timestamp_s": 4828272.279346,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3779,
+            "frame": 1675,
+            "monotonic_timestamp_s": 4828272.364035,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3781,
+            "frame": 1676,
+            "monotonic_timestamp_s": 4828272.449779,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3783,
+            "frame": 1677,
+            "monotonic_timestamp_s": 4828272.535686,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3785,
+            "frame": 1678,
+            "monotonic_timestamp_s": 4828272.620285,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3787,
+            "frame": 1679,
+            "monotonic_timestamp_s": 4828272.706726,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3789,
+            "frame": 1680,
+            "monotonic_timestamp_s": 4828272.790379,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3791,
+            "frame": 1681,
+            "monotonic_timestamp_s": 4828272.876522,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3793,
+            "frame": 1682,
+            "monotonic_timestamp_s": 4828272.962487,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3795,
+            "frame": 1683,
+            "monotonic_timestamp_s": 4828273.049485,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3797,
+            "frame": 1684,
+            "monotonic_timestamp_s": 4828273.135196,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3799,
+            "frame": 1685,
+            "monotonic_timestamp_s": 4828273.219372,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3801,
+            "frame": 1686,
+            "monotonic_timestamp_s": 4828273.303703,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3803,
+            "frame": 1687,
+            "monotonic_timestamp_s": 4828273.388647,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3805,
+            "frame": 1688,
+            "monotonic_timestamp_s": 4828273.473594,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3807,
+            "frame": 1689,
+            "monotonic_timestamp_s": 4828273.559652,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3809,
+            "frame": 1690,
+            "monotonic_timestamp_s": 4828273.645683,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 3811,
+            "frame": 1691,
+            "monotonic_timestamp_s": 4828273.732208,
+            "response_id": "inferred-response-0004",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5054,
+            "frame": 2249,
+            "monotonic_timestamp_s": 4828319.794565,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5056,
+            "frame": 2250,
+            "monotonic_timestamp_s": 4828319.881213,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5058,
+            "frame": 2251,
+            "monotonic_timestamp_s": 4828319.967391,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5060,
+            "frame": 2252,
+            "monotonic_timestamp_s": 4828320.054218,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5062,
+            "frame": 2253,
+            "monotonic_timestamp_s": 4828320.141273,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5064,
+            "frame": 2254,
+            "monotonic_timestamp_s": 4828320.226752,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5066,
+            "frame": 2255,
+            "monotonic_timestamp_s": 4828320.312846,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5068,
+            "frame": 2256,
+            "monotonic_timestamp_s": 4828320.398236,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5070,
+            "frame": 2257,
+            "monotonic_timestamp_s": 4828320.484162,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5072,
+            "frame": 2258,
+            "monotonic_timestamp_s": 4828320.569687,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5074,
+            "frame": 2259,
+            "monotonic_timestamp_s": 4828320.657059,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5076,
+            "frame": 2260,
+            "monotonic_timestamp_s": 4828320.744798,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5078,
+            "frame": 2261,
+            "monotonic_timestamp_s": 4828320.834143,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5080,
+            "frame": 2262,
+            "monotonic_timestamp_s": 4828320.920453,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5082,
+            "frame": 2263,
+            "monotonic_timestamp_s": 4828321.007385,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5084,
+            "frame": 2264,
+            "monotonic_timestamp_s": 4828321.096041,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5086,
+            "frame": 2265,
+            "monotonic_timestamp_s": 4828321.183877,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5088,
+            "frame": 2266,
+            "monotonic_timestamp_s": 4828321.271231,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5090,
+            "frame": 2267,
+            "monotonic_timestamp_s": 4828321.36036,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5092,
+            "frame": 2268,
+            "monotonic_timestamp_s": 4828321.449199,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5094,
+            "frame": 2269,
+            "monotonic_timestamp_s": 4828321.535737,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5096,
+            "frame": 2270,
+            "monotonic_timestamp_s": 4828321.623298,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5098,
+            "frame": 2271,
+            "monotonic_timestamp_s": 4828321.70967,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5100,
+            "frame": 2272,
+            "monotonic_timestamp_s": 4828321.798626,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5102,
+            "frame": 2273,
+            "monotonic_timestamp_s": 4828321.886713,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5104,
+            "frame": 2274,
+            "monotonic_timestamp_s": 4828321.974185,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5106,
+            "frame": 2275,
+            "monotonic_timestamp_s": 4828322.060429,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5108,
+            "frame": 2276,
+            "monotonic_timestamp_s": 4828322.147312,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5110,
+            "frame": 2277,
+            "monotonic_timestamp_s": 4828322.234383,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5112,
+            "frame": 2278,
+            "monotonic_timestamp_s": 4828322.321272,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5114,
+            "frame": 2279,
+            "monotonic_timestamp_s": 4828322.409198,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5116,
+            "frame": 2280,
+            "monotonic_timestamp_s": 4828322.496067,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5118,
+            "frame": 2281,
+            "monotonic_timestamp_s": 4828322.582507,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5120,
+            "frame": 2282,
+            "monotonic_timestamp_s": 4828322.669953,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5122,
+            "frame": 2283,
+            "monotonic_timestamp_s": 4828322.757818,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5124,
+            "frame": 2284,
+            "monotonic_timestamp_s": 4828322.846692,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5126,
+            "frame": 2285,
+            "monotonic_timestamp_s": 4828322.932667,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5128,
+            "frame": 2286,
+            "monotonic_timestamp_s": 4828323.019531,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5130,
+            "frame": 2287,
+            "monotonic_timestamp_s": 4828323.10772,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5132,
+            "frame": 2288,
+            "monotonic_timestamp_s": 4828323.196214,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5134,
+            "frame": 2289,
+            "monotonic_timestamp_s": 4828323.28544,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5136,
+            "frame": 2290,
+            "monotonic_timestamp_s": 4828323.372114,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5138,
+            "frame": 2291,
+            "monotonic_timestamp_s": 4828323.459466,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 5140,
+            "frame": 2292,
+            "monotonic_timestamp_s": 4828323.54677,
+            "response_id": "inferred-response-0005",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6284,
+            "frame": 2793,
+            "monotonic_timestamp_s": 4828364.788123,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6286,
+            "frame": 2794,
+            "monotonic_timestamp_s": 4828364.876693,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6288,
+            "frame": 2795,
+            "monotonic_timestamp_s": 4828364.964449,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6290,
+            "frame": 2796,
+            "monotonic_timestamp_s": 4828365.051739,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6292,
+            "frame": 2797,
+            "monotonic_timestamp_s": 4828365.138692,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6294,
+            "frame": 2798,
+            "monotonic_timestamp_s": 4828365.226039,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6296,
+            "frame": 2799,
+            "monotonic_timestamp_s": 4828365.313683,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6298,
+            "frame": 2800,
+            "monotonic_timestamp_s": 4828365.40187,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6300,
+            "frame": 2801,
+            "monotonic_timestamp_s": 4828365.489925,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6302,
+            "frame": 2802,
+            "monotonic_timestamp_s": 4828365.576785,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6304,
+            "frame": 2803,
+            "monotonic_timestamp_s": 4828365.664979,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6306,
+            "frame": 2804,
+            "monotonic_timestamp_s": 4828365.752912,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6308,
+            "frame": 2805,
+            "monotonic_timestamp_s": 4828365.842288,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6310,
+            "frame": 2806,
+            "monotonic_timestamp_s": 4828365.929387,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6312,
+            "frame": 2807,
+            "monotonic_timestamp_s": 4828366.015719,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6314,
+            "frame": 2808,
+            "monotonic_timestamp_s": 4828366.103142,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6316,
+            "frame": 2809,
+            "monotonic_timestamp_s": 4828366.191926,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6318,
+            "frame": 2810,
+            "monotonic_timestamp_s": 4828366.279988,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6320,
+            "frame": 2811,
+            "monotonic_timestamp_s": 4828366.367891,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6322,
+            "frame": 2812,
+            "monotonic_timestamp_s": 4828366.456161,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6324,
+            "frame": 2813,
+            "monotonic_timestamp_s": 4828366.544361,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6326,
+            "frame": 2814,
+            "monotonic_timestamp_s": 4828366.634599,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6328,
+            "frame": 2815,
+            "monotonic_timestamp_s": 4828366.722813,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6330,
+            "frame": 2816,
+            "monotonic_timestamp_s": 4828366.812282,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6332,
+            "frame": 2817,
+            "monotonic_timestamp_s": 4828366.900618,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6334,
+            "frame": 2818,
+            "monotonic_timestamp_s": 4828366.986696,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6336,
+            "frame": 2819,
+            "monotonic_timestamp_s": 4828367.073387,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6338,
+            "frame": 2820,
+            "monotonic_timestamp_s": 4828367.160019,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6340,
+            "frame": 2821,
+            "monotonic_timestamp_s": 4828367.247416,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6342,
+            "frame": 2822,
+            "monotonic_timestamp_s": 4828367.334381,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6344,
+            "frame": 2823,
+            "monotonic_timestamp_s": 4828367.421653,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6346,
+            "frame": 2824,
+            "monotonic_timestamp_s": 4828367.508603,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6348,
+            "frame": 2825,
+            "monotonic_timestamp_s": 4828367.594792,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6350,
+            "frame": 2826,
+            "monotonic_timestamp_s": 4828367.683083,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6352,
+            "frame": 2827,
+            "monotonic_timestamp_s": 4828367.770049,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6354,
+            "frame": 2828,
+            "monotonic_timestamp_s": 4828367.859524,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6356,
+            "frame": 2829,
+            "monotonic_timestamp_s": 4828367.946447,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6358,
+            "frame": 2830,
+            "monotonic_timestamp_s": 4828368.034545,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6360,
+            "frame": 2831,
+            "monotonic_timestamp_s": 4828368.122508,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6362,
+            "frame": 2832,
+            "monotonic_timestamp_s": 4828368.210054,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6364,
+            "frame": 2833,
+            "monotonic_timestamp_s": 4828368.296844,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6366,
+            "frame": 2834,
+            "monotonic_timestamp_s": 4828368.385188,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 6368,
+            "frame": 2835,
+            "monotonic_timestamp_s": 4828368.47454,
+            "response_id": "inferred-response-0006",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7424,
+            "frame": 3319,
+            "monotonic_timestamp_s": 4828407.540306,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7426,
+            "frame": 3320,
+            "monotonic_timestamp_s": 4828407.624913,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7428,
+            "frame": 3321,
+            "monotonic_timestamp_s": 4828407.709652,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7430,
+            "frame": 3322,
+            "monotonic_timestamp_s": 4828407.793945,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7432,
+            "frame": 3323,
+            "monotonic_timestamp_s": 4828407.878832,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7434,
+            "frame": 3324,
+            "monotonic_timestamp_s": 4828407.964047,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7436,
+            "frame": 3325,
+            "monotonic_timestamp_s": 4828408.046292,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7438,
+            "frame": 3326,
+            "monotonic_timestamp_s": 4828408.13093,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7440,
+            "frame": 3327,
+            "monotonic_timestamp_s": 4828408.213469,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7442,
+            "frame": 3328,
+            "monotonic_timestamp_s": 4828408.296866,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7444,
+            "frame": 3329,
+            "monotonic_timestamp_s": 4828408.381243,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7446,
+            "frame": 3330,
+            "monotonic_timestamp_s": 4828408.467511,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7448,
+            "frame": 3331,
+            "monotonic_timestamp_s": 4828408.552775,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7450,
+            "frame": 3332,
+            "monotonic_timestamp_s": 4828408.638561,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7452,
+            "frame": 3333,
+            "monotonic_timestamp_s": 4828408.722117,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7454,
+            "frame": 3334,
+            "monotonic_timestamp_s": 4828408.804289,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7456,
+            "frame": 3335,
+            "monotonic_timestamp_s": 4828408.887378,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7458,
+            "frame": 3336,
+            "monotonic_timestamp_s": 4828408.969581,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7460,
+            "frame": 3337,
+            "monotonic_timestamp_s": 4828409.050581,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7462,
+            "frame": 3338,
+            "monotonic_timestamp_s": 4828409.13393,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7464,
+            "frame": 3339,
+            "monotonic_timestamp_s": 4828409.216693,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7466,
+            "frame": 3340,
+            "monotonic_timestamp_s": 4828409.298143,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7468,
+            "frame": 3341,
+            "monotonic_timestamp_s": 4828409.382861,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7470,
+            "frame": 3342,
+            "monotonic_timestamp_s": 4828409.466607,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7472,
+            "frame": 3343,
+            "monotonic_timestamp_s": 4828409.54936,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7474,
+            "frame": 3344,
+            "monotonic_timestamp_s": 4828409.633603,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7476,
+            "frame": 3345,
+            "monotonic_timestamp_s": 4828409.717837,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7478,
+            "frame": 3346,
+            "monotonic_timestamp_s": 4828409.802085,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7480,
+            "frame": 3347,
+            "monotonic_timestamp_s": 4828409.884979,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7482,
+            "frame": 3348,
+            "monotonic_timestamp_s": 4828409.966634,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7484,
+            "frame": 3349,
+            "monotonic_timestamp_s": 4828410.049667,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7486,
+            "frame": 3350,
+            "monotonic_timestamp_s": 4828410.133376,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7488,
+            "frame": 3351,
+            "monotonic_timestamp_s": 4828410.216491,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7490,
+            "frame": 3352,
+            "monotonic_timestamp_s": 4828410.296784,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7492,
+            "frame": 3353,
+            "monotonic_timestamp_s": 4828410.378529,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7494,
+            "frame": 3354,
+            "monotonic_timestamp_s": 4828410.460162,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7496,
+            "frame": 3355,
+            "monotonic_timestamp_s": 4828410.540486,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7498,
+            "frame": 3356,
+            "monotonic_timestamp_s": 4828410.619185,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7500,
+            "frame": 3357,
+            "monotonic_timestamp_s": 4828410.698,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7502,
+            "frame": 3358,
+            "monotonic_timestamp_s": 4828410.780233,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7504,
+            "frame": 3359,
+            "monotonic_timestamp_s": 4828410.861934,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          },
+          {
+            "event_ordinal": 7506,
+            "frame": 3360,
+            "monotonic_timestamp_s": 4828410.944179,
+            "response_id": "inferred-response-0007",
+            "timestamp_field": "monotonic_s"
+          }
+        ],
+        "n": 272,
+        "sha256": "7339a1b6b99d08c53e6c1e937e5e84ee9380ef772724149ad11e45486ffa0e1d"
+      },
+      "residual_high_membership": {
+        "members": [],
+        "n": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    }
+  },
+  "delivered_generation_server_step_ms": {
+    "arm_a": {
+      "count_over_80_ms": 259,
+      "max": 87.361,
+      "mean": 82.93531970260223,
+      "n": 269,
+      "p50": 83.015,
+      "p95": 85.282,
+      "p99": 87.017
+    },
+    "arm_b": {
+      "count_over_80_ms": 167,
+      "max": 86.733,
+      "mean": 81.45619485294117,
+      "n": 272,
+      "p50": 80.993,
+      "p95": 85.446,
+      "p99": 86.45
+    },
+    "paired_response_clustered_difference": {
+      "bootstrap_95_ci_ms": [
+        -0.7579243763633059,
+        3.4890442953020084
+      ],
+      "bootstrap_iterations": 10000,
+      "bootstrap_seed": 20260813,
+      "effect_definition": "arm A trace-on minus arm B trace-off",
+      "effect_ms": 1.479124849661062,
+      "n_paired_response_clusters": 7,
+      "per_response": [
+        {
+          "arm_a_mean_ms": 83.6405,
+          "arm_a_n": 42,
+          "arm_a_response_id": "inferred-response-0001",
+          "arm_b_mean_ms": 78.85355263157895,
+          "arm_b_n": 38,
+          "arm_b_response_id": "inferred-response-0001",
+          "response_ordinal": 1,
+          "trace_on_minus_trace_off_ms": 4.786947368421053
+        },
+        {
+          "arm_a_mean_ms": 83.755075,
+          "arm_a_n": 40,
+          "arm_a_response_id": "inferred-response-0002",
+          "arm_b_mean_ms": 79.07061538461538,
+          "arm_b_n": 39,
+          "arm_b_response_id": "inferred-response-0002",
+          "response_ordinal": 2,
+          "trace_on_minus_trace_off_ms": 4.684459615384625
+        },
+        {
+          "arm_a_mean_ms": 82.04861363636364,
+          "arm_a_n": 44,
+          "arm_a_response_id": "inferred-response-0003",
+          "arm_b_mean_ms": 79.70862222222222,
+          "arm_b_n": 45,
+          "arm_b_response_id": "inferred-response-0003",
+          "response_ordinal": 3,
+          "trace_on_minus_trace_off_ms": 2.339991414141423
+        },
+        {
+          "arm_a_mean_ms": 80.89418181818182,
+          "arm_a_n": 22,
+          "arm_a_response_id": "inferred-response-0004",
+          "arm_b_mean_ms": 83.04190476190476,
+          "arm_b_n": 21,
+          "arm_b_response_id": "inferred-response-0004",
+          "response_ordinal": 4,
+          "trace_on_minus_trace_off_ms": -2.1477229437229397
+        },
+        {
+          "arm_a_mean_ms": 82.10223684210527,
+          "arm_a_n": 38,
+          "arm_a_response_id": "inferred-response-0005",
+          "arm_b_mean_ms": 84.1635,
+          "arm_b_n": 44,
+          "arm_b_response_id": "inferred-response-0005",
+          "response_ordinal": 5,
+          "trace_on_minus_trace_off_ms": -2.0612631578947287
+        },
+        {
+          "arm_a_mean_ms": 83.20133333333332,
+          "arm_a_n": 39,
+          "arm_a_response_id": "inferred-response-0006",
+          "arm_b_mean_ms": 84.67637209302325,
+          "arm_b_n": 43,
+          "arm_b_response_id": "inferred-response-0006",
+          "response_ordinal": 6,
+          "trace_on_minus_trace_off_ms": -1.475038759689923
+        },
+        {
+          "arm_a_mean_ms": 83.90793181818182,
+          "arm_a_n": 44,
+          "arm_a_response_id": "inferred-response-0007",
+          "arm_b_mean_ms": 80.97261904761905,
+          "arm_b_n": 42,
+          "arm_b_response_id": "inferred-response-0007",
+          "response_ordinal": 7,
+          "trace_on_minus_trace_off_ms": 2.935312770562774
+        }
+      ]
+    }
+  },
+  "delivered_generation_wrapper_residual_ms": {
+    "arm_a": {
+      "count_over_80_ms": 0,
+      "max": 5.2161384373903275,
+      "mean": 4.385639117082034,
+      "n": 269,
+      "p50": 4.587222822010517,
+      "p95": 4.9552228301763535,
+      "p99": 5.048215389251709
+    },
+    "arm_b": {
+      "count_over_80_ms": 0,
+      "max": 5.394460633397102,
+      "mean": 3.397678894757786,
+      "n": 272,
+      "p50": 3.4479666501283646,
+      "p95": 5.034040659666061,
+      "p99": 5.346718244254589
+    },
+    "paired_response_clustered_difference": {
+      "bootstrap_95_ci_ms": [
+        0.058148808301994315,
+        1.85061272624064
+      ],
+      "bootstrap_iterations": 10000,
+      "bootstrap_seed": 20260813,
+      "effect_definition": "arm A trace-on minus arm B trace-off",
+      "effect_ms": 0.9879602223242481,
+      "n_paired_response_clusters": 7,
+      "per_response": [
+        {
+          "arm_a_mean_ms": 4.607109375120628,
+          "arm_a_n": 42,
+          "arm_a_response_id": "inferred-response-0001",
+          "arm_b_mean_ms": 2.272635257165683,
+          "arm_b_n": 38,
+          "arm_b_response_id": "inferred-response-0001",
+          "response_ordinal": 1,
+          "trace_on_minus_trace_off_ms": 2.334474117954945
+        },
+        {
+          "arm_a_mean_ms": 4.636148316785693,
+          "arm_a_n": 40,
+          "arm_a_response_id": "inferred-response-0002",
+          "arm_b_mean_ms": 2.284309038749108,
+          "arm_b_n": 39,
+          "arm_b_response_id": "inferred-response-0002",
+          "response_ordinal": 2,
+          "trace_on_minus_trace_off_ms": 2.3518392780365853
+        },
+        {
+          "arm_a_mean_ms": 4.168581238693812,
+          "arm_a_n": 44,
+          "arm_a_response_id": "inferred-response-0003",
+          "arm_b_mean_ms": 2.315989757577578,
+          "arm_b_n": 45,
+          "arm_b_response_id": "inferred-response-0003",
+          "response_ordinal": 3,
+          "trace_on_minus_trace_off_ms": 1.8525914811162338
+        },
+        {
+          "arm_a_mean_ms": 3.8190825672989543,
+          "arm_a_n": 22,
+          "arm_a_response_id": "inferred-response-0004",
+          "arm_b_mean_ms": 4.08843212894031,
+          "arm_b_n": 21,
+          "arm_b_response_id": "inferred-response-0004",
+          "response_ordinal": 4,
+          "trace_on_minus_trace_off_ms": -0.2693495616413557
+        },
+        {
+          "arm_a_mean_ms": 4.188210752449538,
+          "arm_a_n": 38,
+          "arm_a_response_id": "inferred-response-0005",
+          "arm_b_mean_ms": 4.605901258235628,
+          "arm_b_n": 44,
+          "arm_b_response_id": "inferred-response-0005",
+          "response_ordinal": 5,
+          "trace_on_minus_trace_off_ms": -0.4176905057860898
+        },
+        {
+          "arm_a_mean_ms": 4.352955314784478,
+          "arm_a_n": 39,
+          "arm_a_response_id": "inferred-response-0006",
+          "arm_b_mean_ms": 4.806860826563003,
+          "arm_b_n": 43,
+          "arm_b_response_id": "inferred-response-0006",
+          "response_ordinal": 6,
+          "trace_on_minus_trace_off_ms": -0.4539055117785251
+        },
+        {
+          "arm_a_mean_ms": 4.646312254904346,
+          "arm_a_n": 44,
+          "arm_a_response_id": "inferred-response-0007",
+          "arm_b_mean_ms": 3.554504342554581,
+          "arm_b_n": 42,
+          "arm_b_response_id": "inferred-response-0007",
+          "response_ordinal": 7,
+          "trace_on_minus_trace_off_ms": 1.0918079123497648
+        }
+      ]
+    }
+  },
+  "qualified_delivered_clustered_server_step_ms": {
+    "arm_a": {
+      "bootstrap_95_ci_ms": [
+        84.29261785714286,
+        85.42220401337794
+      ],
+      "bootstrap_iterations": 10000,
+      "bootstrap_seed": 20260812,
+      "mean_ms": 84.88663405797101,
+      "n_responses": 7,
+      "n_rows": 276,
+      "per_response": [
+        {
+          "mean_ms": 85.33718604651163,
+          "n": 43,
+          "response_id": "inferred-response-0001"
+        },
+        {
+          "mean_ms": 85.59497560975609,
+          "n": 41,
+          "response_id": "inferred-response-0002"
+        },
+        {
+          "mean_ms": 83.77506666666667,
+          "n": 45,
+          "response_id": "inferred-response-0003"
+        },
+        {
+          "mean_ms": 84.21569565217392,
+          "n": 23,
+          "response_id": "inferred-response-0004"
+        },
+        {
+          "mean_ms": 84.01558974358974,
+          "n": 39,
+          "response_id": "inferred-response-0005"
+        },
+        {
+          "mean_ms": 85.230775,
+          "n": 40,
+          "response_id": "inferred-response-0006"
+        },
+        {
+          "mean_ms": 85.71422222222222,
+          "n": 45,
+          "response_id": "inferred-response-0007"
+        }
+      ]
+    },
+    "arm_b": {
+      "bootstrap_95_ci_ms": [
+        81.85065799256506,
+        85.2523389121339
+      ],
+      "bootstrap_iterations": 10000,
+      "bootstrap_seed": 20260812,
+      "mean_ms": 83.4938458781362,
+      "n_responses": 7,
+      "n_rows": 279,
+      "per_response": [
+        {
+          "mean_ms": 80.66600000000001,
+          "n": 39,
+          "response_id": "inferred-response-0001"
+        },
+        {
+          "mean_ms": 80.995525,
+          "n": 40,
+          "response_id": "inferred-response-0002"
+        },
+        {
+          "mean_ms": 82.22754347826087,
+          "n": 46,
+          "response_id": "inferred-response-0003"
+        },
+        {
+          "mean_ms": 86.41381818181819,
+          "n": 22,
+          "response_id": "inferred-response-0004"
+        },
+        {
+          "mean_ms": 85.85048888888889,
+          "n": 45,
+          "response_id": "inferred-response-0005"
+        },
+        {
+          "mean_ms": 86.35179545454545,
+          "n": 44,
+          "response_id": "inferred-response-0006"
+        },
+        {
+          "mean_ms": 82.85269767441861,
+          "n": 43,
+          "response_id": "inferred-response-0007"
+        }
+      ]
+    }
+  },
+  "residual_high": {
+    "arm_a_n": 0,
+    "arm_b_n": 0,
+    "definition": "qualified delivered-nonBOS wrapper_residual_ms >= 10 ms",
+    "effect_status": "unavailable-empty-both-arms"
+  },
+  "schema": "nemotron_voicechat.step4_trace_overhead_ab.v1"
+}

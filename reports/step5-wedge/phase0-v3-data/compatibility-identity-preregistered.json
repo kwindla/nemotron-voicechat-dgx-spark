@@ -1,0 +1,51 @@
+{
+  "application_revision": "7e2e47fddb0da8288651d3158fc5a93b46ca202e",
+  "configuration": {
+    "batch_size": 10000,
+    "concurrency": 128,
+    "distinct_interleavings": 64,
+    "root_seed": 6840222466841362654,
+    "schedule_version": 3,
+    "schedules": 1000000,
+    "yield_points": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ]
+  },
+  "design_sha256": "a7c8c44419d9d7eb53d559e82e2cb0402985601487e9702751a29253dff322af",
+  "frozen_harness": {
+    "src/nemotron_voicechat_runtime/patch_step5_wedge_boundary_trace.py": "2b2e0c09fbcbc0b63ed84c69c68fbe3685276a8cec3e62d1d9d0d9896b7b496a",
+    "src/nemotron_voicechat_runtime/runtime_optimizations.py": "7c0dcb45c5d47a71693984916276247326fda35882b50b919c3aab41baf3025e",
+    "src/nemotron_voicechat_runtime/wedge_boundary_trace.py": "bce4a62b640c24d575915fba4781fb94b315d4d6e35ac51d32fd6c473448a481",
+    "tests/runtime/test_step5_phase0_protocol_race.py": "08eb1beaa3dcb071ac6e81648d8c6af802f5e2987ae3767e6148be26045c2843",
+    "tests/runtime/test_step5_wedge_boundary_trace.py": "bfbcdad1627ee8cc2509e3162f2f8921206e47ce4587dda09fbed94100b43050",
+    "tools/qualification/step5_phase0_protocol_race.py": "3e1eea9db7d0f2c14da23a4da81ea4cc76dba082f2399b6ff03188f9dce74af2"
+  },
+  "identity_sha256": "da11f267a6aad3de556d5c75899a16ae6206cb816bb3a69cc54dac3514bd3507",
+  "patch_manifest_sha256": "c2166d03d95793ac7b515ecb1e745d46c8f56eb2efca53964eeeb4a010215e3e",
+  "preregistration_sha256": "cd8a184b6042c628d0f6ddb39d2d6007e3f94f87740a09b7f0414d2152837038",
+  "qualified_tree_sha256": "d66baad763ef5fdd021047391f8b76718f7c97115993bb080a663709c34259e2",
+  "runner_sha256": "3e1eea9db7d0f2c14da23a4da81ea4cc76dba082f2399b6ff03188f9dce74af2"
+}

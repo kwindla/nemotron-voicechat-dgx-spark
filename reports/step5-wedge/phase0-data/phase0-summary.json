@@ -1,0 +1,18 @@
+{
+  "elapsed_seconds": 34.26446228567511,
+  "fault_injection": {
+    "detected": 10,
+    "required": 10
+  },
+  "noninterference_passed": true,
+  "passed": true,
+  "root_seed": 6840222466841362654,
+  "totals": {
+    "cancellations": 62553,
+    "missing_completions": 0,
+    "requests": 1500113,
+    "routing_mismatches": 0,
+    "schedules": 1000000,
+    "task_errors": 29158
+  }
+}

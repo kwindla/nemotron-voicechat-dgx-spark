@@ -1,0 +1,17 @@
+{
+  "diagnostic_config_sha256": "1a673171131c362a52b7cfee8b03294f46592fd614c902957ba75d0955208dea",
+  "diagnostic_custom_outputs": [
+    "text_logits",
+    "function_tokens",
+    "function_logits"
+  ],
+  "mode": "temporary-text-logit-overlay",
+  "sampling_contract": "temperature=0, top_p=1, repetition_penalty=1",
+  "source_config_sha256": "2a0576a8b71aa09a5a6683d5a0d2e3fc099839ea9fe559d69a3458e828530391",
+  "source_custom_outputs": [
+    "function_tokens",
+    "function_logits"
+  ],
+  "weight_files": 11,
+  "weights_changed": false
+}

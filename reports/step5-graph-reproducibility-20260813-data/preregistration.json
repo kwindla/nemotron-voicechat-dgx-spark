@@ -1,0 +1,53 @@
+{
+  "artifact": "released_w8_nano",
+  "bounded_gate": {
+    "control_token_mismatches": 0,
+    "fresh_graph_engines": 5,
+    "first_mismatch_min_call": 39,
+    "max_call39_top2_margin": 0.05,
+    "max_divergence_run_calls": 1,
+    "max_token_mismatches_per_687_call_block": 1,
+    "measured_blocks": 30,
+    "production_output_digest_match_rate": 1.0,
+    "require_lexical_divergences": true,
+    "valid_block_rate": 1.0
+  },
+  "classification": [
+    "BENIGN-NONDETERMINISM",
+    "REAL STATE DEFECT",
+    "INCOMPLETE"
+  ],
+  "classification_rule": {
+    "BENIGN-NONDETERMINISM": "Identical controlled production executions vary intrinsically; no state/seed/scheduler defect discriminator is positive; a near-tied greedy decision is established; and the complete bounded gate passes.",
+    "INCOMPLETE": "Neither complete classification rule is satisfied.",
+    "REAL STATE DEFECT": "A graph/eager, cache/history, seed, request-ID, synchronization, initialization, capture, or scheduling control selects divergence, or any bounded safety clause fails."
+  },
+  "confirmation": {
+    "calls": 687,
+    "measured_blocks_per_engine": 2,
+    "warmup_blocks_per_engine": 1
+  },
+  "created_utc": "2026-08-13T23:00:30Z",
+  "evidence_sha256": {
+    "reports/step4-candidate-ranking-20260813.md": "83e35fcbda04c2ce3e97aa08cb0cb51ce439fffc13f3f42b4b3bd8229c8624b9",
+    "reports/step4-nano-decomposition-20260813-data/exact-output-benchmark.json": "a75b9efe41f5f83f3fb3017c1396a62154f1c32bb43643916bfdcd477198b7d7",
+    "reports/step4-nano-decomposition-20260813-data/state-selection.json": "fd3fe3338e61f89f3eab80f6a5276d07cd9a724d5c87038bf7131e9595504daa",
+    "reports/step4-nano-decomposition-20260813.md": "757d3d905a4551b3119f12f3351e7c7063fac48990c2b09f701f29beb0214d72",
+    "tools/benchmark/nano_interface_decomposition.py": "ab138889cfac0249b0b5f7f06c88f180f8985e4520e14f74ab0586e82a5efd73"
+  },
+  "hypotheses": [
+    "graph_capture_state_dependence",
+    "nondeterministic_graph_kernels_or_atomics",
+    "sampler_or_seed_state",
+    "kv_ssm_cache_initialization_or_cleanup",
+    "vllm_scheduling_state"
+  ],
+  "localization": {
+    "calls": 47,
+    "fresh_engines_per_primary_mode": 3,
+    "request_blocks_per_engine": 3
+  },
+  "schema": 1,
+  "single_client_required": true,
+  "weights_changed": false
+}

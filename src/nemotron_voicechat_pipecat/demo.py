@@ -25,10 +25,10 @@ _PROCESS_WS_URL = os.getenv("NEMOTRON_VOICECHAT_WS_URL")
 from loguru import logger
 from pipecat.adapters.schemas.function_schema import FunctionSchema
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
-from pipecat.frames.frames import LLMRunFrame
+from pipecat.frames.frames import ErrorFrame, LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker
-from pipecat.processors.aggregators.llm_context import LLMContext
+from pipecat.processors.frameworks.rtvi.processor import RTVIProcessor
 from pipecat.runner.types import RunnerArguments, SmallWebRTCRunnerArguments
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.transports.base_transport import BaseTransport, TransportParams
@@ -38,23 +38,60 @@ from pipecat.workers.runner import WorkerRunner
 from .aggregators import create_voicechat_context_aggregators
 from .llm import NemotronVoicechatLLMService
 from .text_input import VoicechatTypedInputRouter
+from .tool_results import VoicechatLLMContext, VoicechatToolResult
 
 SYSTEM_INSTRUCTION = """You are a helpful voice assistant in a live conversation.
 Keep answers concise, natural, and easy to understand when spoken aloud.
 Use a tool only when the user's request matches that tool's purpose. Never use an
 available tool as a substitute for an unrelated or unavailable capability. After a
 tool returns, state its result accurately and continue the conversation normally."""
+STEP4C_FIXTURE_ENV = "NEMOTRON_VOICECHAT_QUALIFICATION_FIXTURE"
+STEP4C_FIXTURE = "step4c-l1"
+STEP4C_SYSTEM_INSTRUCTION = (
+    "Qualification latency fixture: when the user supplies a script, speak the "
+    "supplied script aloud completely and exactly, then stop."
+)
+
+
+class VoicechatReadyRTVIProcessor(RTVIProcessor):
+    """Publish browser bot-ready only after the model session can accept input."""
+
+    def __init__(self, service: NemotronVoicechatLLMService):
+        super().__init__()
+        self._voicechat_service = service
+
+    async def set_client_ready(self):
+        """Serialize every later RTVI message behind model input readiness."""
+        try:
+            await self._voicechat_service.wait_for_live_input_ready()
+        except TimeoutError:
+            readiness = self._voicechat_service.live_input_readiness_status()
+            message = "Voicechat model input did not become ready: " + " ".join(
+                f"{key}={value}" for key, value in readiness.items()
+            )
+            logger.error(message)
+            await self._send_error_frame(ErrorFrame(error=message, fatal=True))
+            await self._voicechat_service.abort_live_input_startup()
+            return
+        await super().set_client_ready()
+
+    async def set_bot_ready(self, about=None):
+        await self._voicechat_service.wait_for_live_input_ready()
+        await super().set_bot_ready(about=about)
 
 
 async def get_current_utc_time(params: FunctionCallParams):
     """Get the current time in UTC."""
     now = datetime.now(UTC)
     await params.result_callback(
-        {
-            "timezone": "UTC",
-            "iso_utc": now.isoformat(),
-            "spoken": now.strftime("%H:%M UTC"),
-        }
+        VoicechatToolResult(
+            output={
+                "timezone": "UTC",
+                "iso_utc": now.isoformat(),
+                "spoken": now.strftime("%H:%M UTC"),
+            },
+            model_output=f"It is currently {now.strftime('%H:%M UTC')}.",
+        )
     )
 
 
@@ -71,6 +108,17 @@ def create_tools() -> ToolsSchema:
             )
         ]
     )
+
+
+def qualification_settings() -> tuple[str, ToolsSchema | list[object]]:
+    """Freeze the optional Step 4c browser configuration at process startup."""
+
+    fixture = os.getenv(STEP4C_FIXTURE_ENV, "").strip()
+    if not fixture:
+        return SYSTEM_INSTRUCTION, create_tools()
+    if fixture != STEP4C_FIXTURE:
+        raise RuntimeError(f"unsupported browser qualification fixture: {fixture}")
+    return STEP4C_SYSTEM_INSTRUCTION, []
 
 
 def create_transport(runner_args: SmallWebRTCRunnerArguments) -> SmallWebRTCTransport:
@@ -94,14 +142,14 @@ def create_pipeline(
     transport: BaseTransport,
 ):
     """Build the server-turn-driven realtime pipeline and shared context."""
-    tools = create_tools()
-    context = LLMContext(messages=[], tools=tools)
+    system_instruction, tools = qualification_settings()
+    context = VoicechatLLMContext(messages=[], tools=tools)
     user_aggregator, assistant_aggregator = create_voicechat_context_aggregators(context)
     typed_input = VoicechatTypedInputRouter()
     service = NemotronVoicechatLLMService(
         base_url=_PROCESS_WS_URL
         or os.getenv("NEMOTRON_VOICECHAT_WS_URL", "ws://127.0.0.1:8786/v1/realtime"),
-        system_instruction=SYSTEM_INSTRUCTION,
+        system_instruction=system_instruction,
         tools=tools,
     )
     pipeline = Pipeline(
@@ -132,6 +180,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
             enable_usage_metrics=True,
         ),
         idle_timeout_secs=runner_args.pipeline_idle_timeout_secs,
+        rtvi_processor=VoicechatReadyRTVIProcessor(service),
     )
 
     @transport.event_handler("on_client_connected")

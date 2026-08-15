@@ -1,0 +1,131 @@
+{
+  "architectures": [
+    "NemotronHForCausalLM"
+  ],
+  "attention_bias": false,
+  "attention_dropout": 0.0,
+  "auto_map": {
+    "AutoConfig": "configuration_nemotron_h.NemotronHConfig",
+    "AutoModelForCausalLM": "modeling_nemotron_h.NemotronHForCausalLM"
+  },
+  "bos_token_id": 1,
+  "chunk_size": 1,
+  "conv_kernel": 4,
+  "custom_input_specs": [
+    {
+      "dim": 4480,
+      "dtype": "bfloat16",
+      "name": "combined_embeds"
+    }
+  ],
+  "custom_outputs": [
+    "text_logits",
+    "function_tokens",
+    "function_logits"
+  ],
+  "dtype": "bfloat16",
+  "ea_quantized_output_heads": false,
+  "eos_token_id": 12,
+  "expand": 2,
+  "head_dim": 128,
+  "hidden_dropout": 0.0,
+  "hidden_size": 4480,
+  "hybrid_override_pattern": "M-M-M-MM-M-M-M*-M-M-M*-M-M-M-M*-M-M-M-M*-M-MM-M-M-M-M-M-",
+  "initializer_range": 0.02,
+  "intermediate_size": 15680,
+  "layer_norm_epsilon": 1e-05,
+  "mamba_head_dim": 80,
+  "mamba_hidden_act": "silu",
+  "mamba_num_groups": 8,
+  "mamba_num_heads": 128,
+  "mamba_proj_bias": false,
+  "mamba_state_dim": 128,
+  "max_position_embeddings": 131072,
+  "mlp_bias": false,
+  "mlp_hidden_act": "relu2",
+  "model_type": "nemotron_h",
+  "n_groups": 8,
+  "num_attention_heads": 40,
+  "num_hidden_layers": 56,
+  "num_key_value_heads": 8,
+  "num_logits_to_keep": 1,
+  "num_query_groups": 8,
+  "pad_token_id": 0,
+  "quantization_config": {
+    "bits": 8,
+    "checkpoint_format": "gptq",
+    "desc_act": false,
+    "dynamic": {
+      "-:.*(?:embed_tokens|embed_asr_tokens)$": {},
+      "-:.*(?:q_proj|k_proj|v_proj|o_proj)$": {},
+      "-:.*function_head$": {}
+    },
+    "group_size": 128,
+    "lm_head": true,
+    "modules_in_block_to_quantize": [
+      "mixer.up_proj",
+      "mixer.down_proj",
+      "mixer.in_proj",
+      "mixer.out_proj",
+      "lm_head"
+    ],
+    "quant_method": "gptq",
+    "sym": true
+  },
+  "rescale_prenorm_residual": true,
+  "residual_in_fp32": false,
+  "rms_norm_eps": 1e-05,
+  "sliding_window": null,
+  "ssm_state_size": 128,
+  "tie_word_embeddings": false,
+  "time_step_floor": 0.0001,
+  "time_step_limit": [
+    0.0,
+    Infinity
+  ],
+  "time_step_max": 0.1,
+  "time_step_min": 0.001,
+  "time_step_rank": 256,
+  "transformers_version": "4.56.0",
+  "use_bias": false,
+  "use_cache": true,
+  "use_conv_bias": true,
+  "use_mamba_kernels": true,
+  "vocab_size": 131072,
+  "voicechat_checkpoint_repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+  "voicechat_checkpoint_revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+  "voicechat_checkpoint_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+  "voicechat_derived_from_ea": false,
+  "voicechat_gptq_calibrated_on_fused_embeddings": true,
+  "voicechat_gptq_policy": "w8-all-g128",
+  "voicechat_has_asr_head": false,
+  "voicechat_has_function_head": true,
+  "voicechat_marlin_group128_input_padding": {
+    "original_input_size": 15680,
+    "padded_input_size": 15744,
+    "selector": "backbone.layers.*.mixer.down_proj"
+  },
+  "voicechat_pad_pair_contract": {
+    "agent_decoded_silence_frames": 20,
+    "agent_no_audio_frames": 30,
+    "agent_no_text_frames": 30,
+    "conditional_previous_effective_pad": true,
+    "function_async_pending_drain": true,
+    "function_async_sequential_latch": true,
+    "function_channel_rejection": true,
+    "mamba_chunk_size": 1,
+    "max_positions": 2,
+    "max_session_model_frames": 12000,
+    "post_fc_fusion_correction": true,
+    "production_candidate": 1,
+    "production_mamba_rollback": true,
+    "scope": "production live runtime",
+    "source_config_sha256": "caf9fe075b3baae60d39990bc6a48d48413857b7dd5f321350b3e236cc6681b9",
+    "streaming_max_len": 12288,
+    "vllm_max_model_len": 12288
+  },
+  "voicechat_pad_pair_token_id": 12,
+  "voicechat_quantized_output_heads": [
+    "lm_head"
+  ]
+}

@@ -1,0 +1,916 @@
+{
+  "families": {
+    "attention_core": {
+      "instances_per_range": 4.0,
+      "kernel_names": [
+        "reshape_and_cache_kernel_flash"
+      ],
+      "ms_per_range": 0.013024
+    },
+    "causal_conv": {
+      "instances_per_range": 27.0,
+      "kernel_names": [
+        "_causal_conv1d_update_kernel"
+      ],
+      "ms_per_range": 0.10690293333333474
+    },
+    "gptq_dequant_gemv": {
+      "instances_per_range": 155.0,
+      "kernel_names": [
+        "void marlin::Marlin<(long)1125899906909960, (long)1125899923621888, (long)1125899906909960, (long)1125899906909960, (int)256, (int)1, (int)8, (int)8, (bool)1, (int)4, (int)8, (bool)0>(const int4 *, const int4 *, int4 *, int4 *, const int4 *, const float *, const int4 *, const unsigned short *, const int4 *, const int *, int, int, int, int, int, int *, bool, bool, bool, int)",
+        "triton_red_fused__to_copy_add_marlin_gemm_mean_mul_pow_rsqrt_0",
+        "void marlin::Marlin<(long)1125899906909960, (long)1125899923621888, (long)1125899906909960, (long)1125899906909960, (int)128, (int)1, (int)4, (int)8, (bool)1, (int)4, (int)8, (bool)0>(const int4 *, const int4 *, int4 *, int4 *, const int4 *, const float *, const int4 *, const unsigned short *, const int4 *, const int *, int, int, int, int, int, int *, bool, bool, bool, int)",
+        "triton_poi_fused_constant_pad_nd_marlin_gemm_pow_relu_1"
+      ],
+      "ms_per_range": 37.69648000000008
+    },
+    "mamba_scan": {
+      "instances_per_range": 27.0,
+      "kernel_names": [
+        "_selective_scan_update_kernel"
+      ],
+      "ms_per_range": 0.7298197333333335
+    },
+    "norm_elementwise": {
+      "instances_per_range": 257.0,
+      "kernel_names": [
+        "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctorOnSelf_add<int>, std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::unrolled_elementwise_kernel<at::native::FillFunctor<long>, std::array<char *, (unsigned long)1>, (int)4, TrivialOffsetCalculator<(int)0, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::<unnamed>::silu_kernel(at::TensorIteratorBase &)::[lambda() (instance 1)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, void at::native::<unnamed>::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase &, T2)::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::rsqrt_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 2)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>>(at::TensorIteratorBase &, const T1 &)::[lambda(int) (instance 1)]>(int, T3)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>>(int, T2, T3)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 4)]::operator ()() const::[lambda(long) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_kernel_impl<at::native::OpaqueType<(int)2>>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>)::[lambda(char *, const char *, long) (instance 1)]>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>, const T1 &, bool)::[lambda(int) (instance 1)]>(long, T3)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 3)]::operator ()() const::[lambda(int) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
+      "ms_per_range": 0.413703933333333
+    },
+    "sampling_argmax": {
+      "instances_per_range": 29.0,
+      "kernel_names": [
+        "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+        "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<c10::BFloat16, at::native::ArgMaxOps<float>, unsigned int, long, (int)4, (int)4>>(T3)",
+        "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, (int)4, (int)4>>(T3)"
+      ],
+      "ms_per_range": 0.07933066666666805
+    },
+    "unquantized_gemv_bf16": {
+      "instances_per_range": 9.0,
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)"
+      ],
+      "ms_per_range": 9.175696533333342
+    }
+  },
+  "implied_gbps_at_mean_union": 242.54377595568366,
+  "kind": "bandwidth_attribution_kernels",
+  "mean_intra_span_idle_ms": 1.0475275666666668,
+  "mean_kernel_union_ms": 48.36786656666666,
+  "mean_non_kernel_ms": 6.618471566666667,
+  "mean_wall_ms": 54.986338133333334,
+  "modeled_bytes_per_step": 11731324992,
+  "passed": true,
+  "per_range": [
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.0512,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.089184,
+      "kernel_union_ms": 48.037984,
+      "label": "step4d:block=001;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 7.16,
+      "wall_ms": 55.197984
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.041856,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.156416,
+      "kernel_union_ms": 48.11456,
+      "label": "step4d:block=001;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 6.186656,
+      "wall_ms": 54.301216
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 0.9888,
+      "kernel_count": 552,
+      "kernel_span_ms": 48.90112,
+      "kernel_union_ms": 47.91232,
+      "label": "step4d:block=001;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 6.635168,
+      "wall_ms": 54.547488
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.021568,
+      "kernel_count": 552,
+      "kernel_span_ms": 50.156256,
+      "kernel_union_ms": 49.134688,
+      "label": "step4d:block=002;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 6.751696,
+      "wall_ms": 55.886384
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.01888,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.537664,
+      "kernel_union_ms": 48.518784,
+      "label": "step4d:block=002;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 6.648336,
+      "wall_ms": 55.16712
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.038048,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.289664,
+      "kernel_union_ms": 48.251616,
+      "label": "step4d:block=002;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 5.613968,
+      "wall_ms": 53.865584
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.04416,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.253728,
+      "kernel_union_ms": 48.209568,
+      "label": "step4d:block=002;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 6.741664,
+      "wall_ms": 54.951232
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.045536,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.276416,
+      "kernel_union_ms": 48.23088,
+      "label": "step4d:block=002;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 7.1928,
+      "wall_ms": 55.42368
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.040608,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.2568,
+      "kernel_union_ms": 48.216192,
+      "label": "step4d:block=002;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 6.744112,
+      "wall_ms": 54.960304
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.043904,
+      "kernel_count": 552,
+      "kernel_span_ms": 50.534272,
+      "kernel_union_ms": 49.490368,
+      "label": "step4d:block=003;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 6.307072,
+      "wall_ms": 55.79744
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.092832,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.294272,
+      "kernel_union_ms": 48.20144,
+      "label": "step4d:block=000;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 7.61432,
+      "wall_ms": 55.81576
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.087872,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.463264,
+      "kernel_union_ms": 48.375392,
+      "label": "step4d:block=003;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 5.936544,
+      "wall_ms": 54.311936
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.06,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.72464,
+      "kernel_union_ms": 48.66464,
+      "label": "step4d:block=003;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 5.577968,
+      "wall_ms": 54.242608
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.078432,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.506528,
+      "kernel_union_ms": 48.428096,
+      "label": "step4d:block=003;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 7.107504,
+      "wall_ms": 55.5356
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.048736,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.383072,
+      "kernel_union_ms": 48.334336,
+      "label": "step4d:block=003;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 5.921264,
+      "wall_ms": 54.2556
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.068896,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.405824,
+      "kernel_union_ms": 48.336928,
+      "label": "step4d:block=003;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 6.128128,
+      "wall_ms": 54.465056
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.050112,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.627232,
+      "kernel_union_ms": 48.57712,
+      "label": "step4d:block=004;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 6.889392,
+      "wall_ms": 55.466512
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.044576,
+      "kernel_count": 552,
+      "kernel_span_ms": 50.156224,
+      "kernel_union_ms": 49.111648,
+      "label": "step4d:block=004;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 6.377152,
+      "wall_ms": 55.4888
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.062208,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.324864,
+      "kernel_union_ms": 48.262656,
+      "label": "step4d:block=004;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 6.644912,
+      "wall_ms": 54.907568
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.06208,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.287424,
+      "kernel_union_ms": 48.225344,
+      "label": "step4d:block=004;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 5.936432,
+      "wall_ms": 54.161776
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.048192,
+      "kernel_count": 552,
+      "kernel_span_ms": 50.198912,
+      "kernel_union_ms": 49.15072,
+      "label": "step4d:block=004;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 6.754752,
+      "wall_ms": 55.905472
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.11344,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.251712,
+      "kernel_union_ms": 48.138272,
+      "label": "step4d:block=000;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 6.284352,
+      "wall_ms": 54.422624
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.057632,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.042368,
+      "kernel_union_ms": 47.984736,
+      "label": "step4d:block=004;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 7.294112,
+      "wall_ms": 55.278848
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.035778,
+      "kernel_count": 552,
+      "kernel_span_ms": 50.069472,
+      "kernel_union_ms": 49.033694,
+      "label": "step4d:block=005;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 6.035154,
+      "wall_ms": 55.068848
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.030144,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.205216,
+      "kernel_union_ms": 48.175072,
+      "label": "step4d:block=005;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 6.277056,
+      "wall_ms": 54.452128
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.036,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.226848,
+      "kernel_union_ms": 48.190848,
+      "label": "step4d:block=005;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 6.510784,
+      "wall_ms": 54.701632
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.044032,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.335136,
+      "kernel_union_ms": 48.291104,
+      "label": "step4d:block=005;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 5.741376,
+      "wall_ms": 54.03248
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 0.97008,
+      "kernel_count": 552,
+      "kernel_span_ms": 50.151456,
+      "kernel_union_ms": 49.181376,
+      "label": "step4d:block=005;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 6.299872,
+      "wall_ms": 55.481248
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.0592,
+      "kernel_count": 552,
+      "kernel_span_ms": 48.833472,
+      "kernel_union_ms": 47.774272,
+      "label": "step4d:block=005;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 6.530208,
+      "wall_ms": 54.30448
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.048544,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.266592,
+      "kernel_union_ms": 48.218048,
+      "label": "step4d:block=006;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 7.494592,
+      "wall_ms": 55.71264
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.060896,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.23552,
+      "kernel_union_ms": 48.174624,
+      "label": "step4d:block=006;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 6.33264,
+      "wall_ms": 54.507264
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.064353,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.405408,
+      "kernel_union_ms": 48.341055,
+      "label": "step4d:block=006;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 7.920945,
+      "wall_ms": 56.262
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.048064,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.21792,
+      "kernel_union_ms": 48.169856,
+      "label": "step4d:block=000;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 7.058784,
+      "wall_ms": 55.22864
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.050784,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.210592,
+      "kernel_union_ms": 48.159808,
+      "label": "step4d:block=006;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 7.57456,
+      "wall_ms": 55.734368
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.025537,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.236704,
+      "kernel_union_ms": 48.211167,
+      "label": "step4d:block=006;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 7.115425,
+      "wall_ms": 55.326592
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.054912,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.281952,
+      "kernel_union_ms": 48.22704,
+      "label": "step4d:block=006;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 6.887664,
+      "wall_ms": 55.114704
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.036448,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.776416,
+      "kernel_union_ms": 48.739968,
+      "label": "step4d:block=007;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 6.954608,
+      "wall_ms": 55.694576
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.047168,
+      "kernel_count": 552,
+      "kernel_span_ms": 48.649248,
+      "kernel_union_ms": 47.60208,
+      "label": "step4d:block=007;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 7.240224,
+      "wall_ms": 54.842304
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.05792,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.8792,
+      "kernel_union_ms": 48.82128,
+      "label": "step4d:block=007;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 7.059968,
+      "wall_ms": 55.881248
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.040704,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.237024,
+      "kernel_union_ms": 48.19632,
+      "label": "step4d:block=007;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 7.019792,
+      "wall_ms": 55.216112
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.095072,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.47664,
+      "kernel_union_ms": 48.381568,
+      "label": "step4d:block=007;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 7.393104,
+      "wall_ms": 55.774672
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.035841,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.91744,
+      "kernel_union_ms": 48.881599,
+      "label": "step4d:block=007;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 5.854721,
+      "wall_ms": 54.73632
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.036288,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.34976,
+      "kernel_union_ms": 48.313472,
+      "label": "step4d:block=008;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 7.0584,
+      "wall_ms": 55.371872
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.062241,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.650336,
+      "kernel_union_ms": 48.588095,
+      "label": "step4d:block=000;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 5.642929,
+      "wall_ms": 54.231024
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.030688,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.470336,
+      "kernel_union_ms": 48.439648,
+      "label": "step4d:block=008;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 7.65976,
+      "wall_ms": 56.099408
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.023104,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.31952,
+      "kernel_union_ms": 48.296416,
+      "label": "step4d:block=008;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 7.157488,
+      "wall_ms": 55.453904
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.001504,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.228992,
+      "kernel_union_ms": 48.227488,
+      "label": "step4d:block=008;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 5.561808,
+      "wall_ms": 53.789296
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.007424,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.237088,
+      "kernel_union_ms": 48.229664,
+      "label": "step4d:block=008;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 6.584384,
+      "wall_ms": 54.814048
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.05296,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.22528,
+      "kernel_union_ms": 48.17232,
+      "label": "step4d:block=008;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 5.560304,
+      "wall_ms": 53.732624
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 0.998048,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.315648,
+      "kernel_union_ms": 48.3176,
+      "label": "step4d:block=009;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 5.540096,
+      "wall_ms": 53.857696
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.057664,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.341696,
+      "kernel_union_ms": 48.284032,
+      "label": "step4d:block=009;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 7.05472,
+      "wall_ms": 55.338752
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.029152,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.77616,
+      "kernel_union_ms": 48.747008,
+      "label": "step4d:block=009;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 6.273776,
+      "wall_ms": 55.020784
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.03904,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.077728,
+      "kernel_union_ms": 48.038688,
+      "label": "step4d:block=009;pair=2;class=pad;call=327;step=327",
+      "non_kernel_ms": 6.72624,
+      "wall_ms": 54.764928
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.016288,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.932416,
+      "kernel_union_ms": 48.916128,
+      "label": "step4d:block=009;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 6.927104,
+      "wall_ms": 55.843232
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.07376,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.207104,
+      "kernel_union_ms": 48.133344,
+      "label": "step4d:block=000;pair=3;class=content;call=685;step=685",
+      "non_kernel_ms": 6.325104,
+      "wall_ms": 54.458448
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.062208,
+      "kernel_count": 552,
+      "kernel_span_ms": 48.77072,
+      "kernel_union_ms": 47.708512,
+      "label": "step4d:block=009;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 6.695968,
+      "wall_ms": 54.40448
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.088512,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.996,
+      "kernel_union_ms": 48.907488,
+      "label": "step4d:block=000;pair=3;class=pad;call=686;step=686",
+      "non_kernel_ms": 7.021792,
+      "wall_ms": 55.92928
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.064512,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.318784,
+      "kernel_union_ms": 48.254272,
+      "label": "step4d:block=001;pair=1;class=content;call=45;step=45",
+      "non_kernel_ms": 6.417536,
+      "wall_ms": 54.671808
+    },
+    {
+      "class": "pad",
+      "intra_span_idle_ms": 1.08464,
+      "kernel_count": 552,
+      "kernel_span_ms": 48.704384,
+      "kernel_union_ms": 47.619744,
+      "label": "step4d:block=001;pair=1;class=pad;call=46;step=46",
+      "non_kernel_ms": 5.955456,
+      "wall_ms": 53.5752
+    },
+    {
+      "class": "content",
+      "intra_span_idle_ms": 1.072576,
+      "kernel_count": 552,
+      "kernel_span_ms": 49.271584,
+      "kernel_union_ms": 48.199008,
+      "label": "step4d:block=001;pair=2;class=content;call=326;step=326",
+      "non_kernel_ms": 7.195648,
+      "wall_ms": 55.394656
+    }
+  ],
+  "quantization_extension_estimates": {
+    "implied_gbps": 175.98740696510086,
+    "instance_durations_ms_desc": [
+      7.7247,
+      7.5577,
+      7.4987,
+      7.4923,
+      7.4921,
+      7.4854,
+      7.4719,
+      7.4701,
+      7.4503,
+      7.4384,
+      7.4176,
+      7.355,
+      7.3529,
+      7.3521,
+      7.3388,
+      7.3302,
+      7.3192,
+      7.3167,
+      7.315,
+      7.3084,
+      7.2764,
+      7.2752,
+      7.2702,
+      7.2689,
+      7.2613,
+      7.2543,
+      7.2507,
+      7.2469,
+      7.2468,
+      7.2312,
+      7.2116,
+      7.1773,
+      7.1753,
+      7.1698,
+      7.0769,
+      7.0749,
+      7.0652,
+      7.045,
+      7.0426,
+      7.0423
+    ],
+    "note": "descriptive estimate for a NEW quantization-extension candidate; requires instance-count confirmation and its own qualification; no ranking authority",
+    "recoverable_ms_if_w4": 6.881772400000006,
+    "recoverable_ms_if_w8": 4.587848266666671,
+    "runtime_bf16_bytes": 1614807040,
+    "unquantized_gemv_ms_per_step": 9.175696533333342
+  },
+  "ranges_analyzed": 60,
+  "study_ceiling_gbps": 239.5930329978727,
+  "top_kernels": [
+    {
+      "family": "gptq_dequant_gemv",
+      "instances_per_range": 80.0,
+      "ms_per_range": 29.33618080000007,
+      "name": "void marlin::Marlin<(long)1125899906909960, (long)1125899923621888, (long)1125899906909960, (long)1125899906909960, (int)256, (int)1, (int)8, (int)8, (bool)1, ("
+    },
+    {
+      "family": "unquantized_gemv_bf16",
+      "instances_per_range": 9.0,
+      "ms_per_range": 9.175696533333342,
+      "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7"
+    },
+    {
+      "family": "gptq_dequant_gemv",
+      "instances_per_range": 25.0,
+      "ms_per_range": 8.244344000000007,
+      "name": "void marlin::Marlin<(long)1125899906909960, (long)1125899923621888, (long)1125899906909960, (long)1125899906909960, (int)128, (int)1, (int)4, (int)8, (bool)1, ("
+    },
+    {
+      "family": "mamba_scan",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.7298197333333335,
+      "name": "_selective_scan_update_kernel"
+    },
+    {
+      "family": "causal_conv",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.10690293333333474,
+      "name": "_causal_conv1d_update_kernel"
+    },
+    {
+      "family": null,
+      "instances_per_range": 25.0,
+      "ms_per_range": 0.10503946666666564,
+      "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 28.0,
+      "ms_per_range": 0.0962410666666664,
+      "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambd"
+    },
+    {
+      "family": "gptq_dequant_gemv",
+      "instances_per_range": 25.0,
+      "ms_per_range": 0.083595733333334,
+      "name": "triton_red_fused__to_copy_add_marlin_gemm_mean_mul_pow_rsqrt_0"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.07481384999999997,
+      "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, "
+    },
+    {
+      "family": "sampling_argmax",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.06601760000000138,
+      "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.04305226666666647,
+      "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFu"
+    },
+    {
+      "family": null,
+      "instances_per_range": 4.0,
+      "ms_per_range": 0.04230293333333334,
+      "name": "kernel_unified_attention_3d"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.035202133333333524,
+      "name": "void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::binary_"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.0349173166666663,
+      "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::<unnamed>::silu_kernel(at::TensorIteratorBase &)::[lambda() (instance 1)]::operator ()() cons"
+    },
+    {
+      "family": "gptq_dequant_gemv",
+      "instances_per_range": 25.0,
+      "ms_per_range": 0.032359466666666975,
+      "name": "triton_poi_fused_constant_pad_nd_marlin_gemm_pow_relu_1"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.027048533333333537,
+      "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::rsqrt_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 2)]::operator ()() const::[l"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.02545759999999987,
+      "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda(float) (instance 1)], std::array"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.025383433333333476,
+      "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char *, (unsigned long)2>>(int, T2, T3)"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 27.0,
+      "ms_per_range": 0.025346133333333458,
+      "name": "void at::native::vectorized_elementwise_kernel<(int)4, void at::native::<unnamed>::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase &, T2)::[l"
+    },
+    {
+      "family": null,
+      "instances_per_range": 7.0,
+      "ms_per_range": 0.023168516666666614,
+      "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0"
+    },
+    {
+      "family": "attention_core",
+      "instances_per_range": 4.0,
+      "ms_per_range": 0.013024,
+      "name": "reshape_and_cache_kernel_flash"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 1.0,
+      "ms_per_range": 0.007110399999999999,
+      "name": "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_kernel_impl<at::native::OpaqueType<(int)2>>"
+    },
+    {
+      "family": "sampling_argmax",
+      "instances_per_range": 1.0,
+      "ms_per_range": 0.006875199999999998,
+      "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<c10::BFloat16, at::native::ArgMaxOps<float>, unsigned int, long, (int)4, (int)4>>(T3)"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 8.0,
+      "ms_per_range": 0.006769066666666703,
+      "name": "void at::native::unrolled_elementwise_kernel<at::native::FillFunctor<long>, std::array<char *, (unsigned long)1>, (int)4, TrivialOffsetCalculator<(int)0, unsign"
+    },
+    {
+      "family": "sampling_argmax",
+      "instances_per_range": 1.0,
+      "ms_per_range": 0.006437866666666665,
+      "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, (int)4, (int)4>>(T3)"
+    },
+    {
+      "family": null,
+      "instances_per_range": 4.0,
+      "ms_per_range": 0.006350383333333324,
+      "name": "reduce_segments"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 2.0,
+      "ms_per_range": 0.006216533333333335,
+      "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambd"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 1.0,
+      "ms_per_range": 0.004218666666666665,
+      "name": "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctorOnSelf_add<int>, std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)"
+    },
+    {
+      "family": null,
+      "instances_per_range": 4.0,
+      "ms_per_range": 0.002410133333333325,
+      "name": "triton_poi_fused_view_1"
+    },
+    {
+      "family": "norm_elementwise",
+      "instances_per_range": 1.0,
+      "ms_per_range": 0.0019269333333333315,
+      "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambd"
+    }
+  ],
+  "unattributed_ms_per_range": 0.17927143333333223
+}

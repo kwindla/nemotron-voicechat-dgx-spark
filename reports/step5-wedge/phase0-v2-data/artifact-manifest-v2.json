@@ -1,0 +1,34 @@
+{
+  "batches-v2.jsonl": {
+    "bytes": 26447133,
+    "sha256": "68b9f1cfb17b0124ef46aa232a95175ffe8ed60b8820ca78eb2804790f3f312f"
+  },
+  "class-provenance.json": {
+    "bytes": 1232,
+    "sha256": "cc05c4ff7243c3e8107a78d07de481a01e53780beac7add94e84419b7913c4be"
+  },
+  "compatibility-identity-preregistered.json": {
+    "bytes": 1574,
+    "sha256": "3812b835b5aff74faeb6a0b914a9ed592ae460765e3ed566e8f5c549c65a4fa3"
+  },
+  "diagnostic-patch-manifest-preregistered.json": {
+    "bytes": 1267,
+    "sha256": "8cc36e4fe22f958959f59bf10607e3204b62dd559826e0c68c1818fe1fa15bd3"
+  },
+  "equivalence-classes.json": {
+    "bytes": 1057810101,
+    "sha256": "3a21dadd776a8734a4235b2eb667bb74d82208febd6b703c15fcba78fb46d626"
+  },
+  "fault-matrices-v2.json": {
+    "bytes": 4037,
+    "sha256": "2efac37071045cfb9025e91d6e1cfb81fdd5229813af787cb7a94892a1789d53"
+  },
+  "noninterference-v2.json": {
+    "bytes": 2059,
+    "sha256": "afe82239308fd360f6ad7b31d8a8556f17ee3f5ddc5d90547b5e6802a3b232b1"
+  },
+  "source-identity.json": {
+    "bytes": 252,
+    "sha256": "6fd7b1346ea92218020fa6cc3de0e9acbb801bde1d70354ebd9683968dfa49d6"
+  }
+}

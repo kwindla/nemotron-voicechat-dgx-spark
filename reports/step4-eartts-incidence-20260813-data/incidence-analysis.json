@@ -1,0 +1,254 @@
+{
+  "assignment_unit": "independently connected run block",
+  "attempted_blocks": 9,
+  "blocks": [
+    {
+      "any_eartts_high": false,
+      "block": 1,
+      "delivered_nonbos": 153,
+      "delivered_nonbos_membership_sha256": "c4fab9457ff93f2b77e69d27002f450e72c9ca8a67234f55e911b8b2c9c8f4a7",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": null,
+      "microphone_max_peak": 0.0,
+      "microphone_packets": 1306,
+      "response_target_match": true,
+      "session_id": "0405013f-dbd5-4344-a8ff-9a58f71a46e7",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-01-direct/server-trace/events.jsonl",
+      "trace_sha256": "f8d2693dbd843299a5e7c5e91aa4f66420bbeea70663e1551d341265303acc2e",
+      "transport": "direct",
+      "valid": true,
+      "validity_failures": []
+    },
+    {
+      "any_eartts_high": false,
+      "block": 2,
+      "delivered_nonbos": 150,
+      "delivered_nonbos_membership_sha256": "e62247115b9322808f6d29597f29a84ac6d9bf558156501342692debd0ae05b6",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": "PLAYOUT_TRACE_NOT_PUBLISHED",
+      "microphone_max_peak": 0.0,
+      "microphone_packets": 1306,
+      "response_target_match": true,
+      "session_id": "3db461ca-d4d3-43f4-ac71-d16f22a6ec3d",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-02-pipecat/server-trace/events.jsonl",
+      "trace_sha256": "143775d947e27e41fd52c4bbb2661131a8ddcf46470eb99ce44ce99d90aa5f76",
+      "transport": "pipecat",
+      "valid": false,
+      "validity_failures": [
+        "PLAYOUT_TRACE_NOT_PUBLISHED"
+      ]
+    },
+    {
+      "any_eartts_high": false,
+      "block": 3,
+      "delivered_nonbos": 87,
+      "delivered_nonbos_membership_sha256": "7c87580d958117dc5f5ee1e649c144cce7c21262bf86a3f09ba114484dcabbcc",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": "RESPONSE_TARGET_MISMATCH",
+      "microphone_max_peak": 3.052e-05,
+      "microphone_packets": 6018,
+      "response_target_match": false,
+      "session_id": "9228250b-80bb-4a64-b5fb-eb070d52316f",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-03-browser/server-trace/events.jsonl",
+      "trace_sha256": "33bf68fac0348132eda535e7eccdb4c9031b06472207a456ba39579df053ab22",
+      "transport": "browser",
+      "valid": false,
+      "validity_failures": [
+        "ACOUSTIC_INPUT_NOT_EXACT_ZERO",
+        "FIXTURE_IDENTITY_MISMATCH",
+        "RESPONSE_TARGET_MISMATCH"
+      ]
+    },
+    {
+      "any_eartts_high": false,
+      "block": 4,
+      "delivered_nonbos": 152,
+      "delivered_nonbos_membership_sha256": "6aba11d790985324c0c5d1f74f2363fd1f005652124207e4ab55f1d40eb0c5c3",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": null,
+      "microphone_max_peak": 0.0,
+      "microphone_packets": 1319,
+      "response_target_match": true,
+      "session_id": "b624df5b-1814-4251-a734-cbc75ad57083",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-04-pipecat/server-trace/events.jsonl",
+      "trace_sha256": "f5bc248ba0ec3ad3c756564a8fff4fd68891b83b4da9aca87deb95e56cba81a3",
+      "transport": "pipecat",
+      "valid": true,
+      "validity_failures": []
+    },
+    {
+      "any_eartts_high": false,
+      "block": 5,
+      "delivered_nonbos": 150,
+      "delivered_nonbos_membership_sha256": "80083a928b3e04b008a4f69738a0ffdc101a3b4b94856f945fe370cba8291d8d",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": "ACOUSTIC_INPUT_NOT_EXACT_ZERO",
+      "microphone_max_peak": 3.052e-05,
+      "microphone_packets": 6088,
+      "response_target_match": true,
+      "session_id": "c354d3d0-b4b5-4d6f-a73a-d0208b6bf0ff",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-05-browser/server-trace/events.jsonl",
+      "trace_sha256": "a7469513ea1682b5050be66137cab2a08678a5a79157e29a054f2d4b4287377c",
+      "transport": "browser",
+      "valid": false,
+      "validity_failures": [
+        "ACOUSTIC_INPUT_NOT_EXACT_ZERO"
+      ]
+    },
+    {
+      "any_eartts_high": false,
+      "block": 6,
+      "delivered_nonbos": 155,
+      "delivered_nonbos_membership_sha256": "ef9b212a1ae04a1c3ccbc59db992ecb4b6ffe355e8c0ac33edf875af1b39e1dd",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": null,
+      "microphone_max_peak": 0.0,
+      "microphone_packets": 1312,
+      "response_target_match": true,
+      "session_id": "a0dd12aa-7765-481b-a69b-9d675fe46533",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-06-direct/server-trace/events.jsonl",
+      "trace_sha256": "968aea7ed6c8560aa6c8be0216f85518c68b4729e185c7923ca02eb2c35b4e7a",
+      "transport": "direct",
+      "valid": true,
+      "validity_failures": []
+    },
+    {
+      "any_eartts_high": false,
+      "block": 7,
+      "delivered_nonbos": 156,
+      "delivered_nonbos_membership_sha256": "211b1a39dad4f8142afd30caade651f0f8609639cb058c85ade1ec1884a24636",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": "ACOUSTIC_INPUT_NOT_EXACT_ZERO",
+      "microphone_max_peak": 3.052e-05,
+      "microphone_packets": 6070,
+      "response_target_match": true,
+      "session_id": "b0a6c5f8-f561-4d24-8325-a9d0bcdecfaf",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-07-browser/server-trace/events.jsonl",
+      "trace_sha256": "0a5963f714b892d4564002a19aed7cd731e9c284dce97e70219f93905c547c0e",
+      "transport": "browser",
+      "valid": false,
+      "validity_failures": [
+        "ACOUSTIC_INPUT_NOT_EXACT_ZERO"
+      ]
+    },
+    {
+      "any_eartts_high": false,
+      "block": 8,
+      "delivered_nonbos": 150,
+      "delivered_nonbos_membership_sha256": "e8c098ee927749cdb54d889ffe82f70ca44e8d62efbc7ad4c76e2d9e232386a5",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": null,
+      "microphone_max_peak": 0.0,
+      "microphone_packets": 1306,
+      "response_target_match": true,
+      "session_id": "61f051fd-ef42-468a-800d-3f3006efa078",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-08-direct/server-trace/events.jsonl",
+      "trace_sha256": "ccaf9704d28d949ada3f3ed83cfbac4b60e8df945e8a64cfec7b1622d94f7347",
+      "transport": "direct",
+      "valid": true,
+      "validity_failures": []
+    },
+    {
+      "any_eartts_high": false,
+      "block": 9,
+      "delivered_nonbos": 154,
+      "delivered_nonbos_membership_sha256": "870b2327c4b5127068734a6b92307e4781cd018f23590e84fac7a2ce8800a3d3",
+      "eartts_high": 0,
+      "eartts_high_membership_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "incidence": 0.0,
+      "invalid_reason": null,
+      "microphone_max_peak": 0.0,
+      "microphone_packets": 1311,
+      "response_target_match": true,
+      "session_id": "43bc13d9-d946-40e9-b545-496a559f1960",
+      "trace": "reports/step4-eartts-incidence-20260813-data/block-09-pipecat/server-trace/events.jsonl",
+      "trace_sha256": "604140519cd37fe6a8204d92e4d2ebe61f50d431720235f9e827c40d296df45c",
+      "transport": "pipecat",
+      "valid": true,
+      "validity_failures": []
+    }
+  ],
+  "decision": "INSUFFICIENT",
+  "descriptive_pooled_exposure": {
+    "delivered_nonbos": 764,
+    "eartts_high": 0,
+    "incidence": 0.0
+  },
+  "exposure_cap_blocks": 9,
+  "invalid_blocks": 4,
+  "matched_states": {
+    "reason": "no matchable PAD-tail EarTTS-high row",
+    "status": "not-triggered"
+  },
+  "overall_equal_block": null,
+  "schedule": [
+    "direct",
+    "pipecat",
+    "browser",
+    "pipecat",
+    "browser",
+    "direct",
+    "browser",
+    "direct",
+    "pipecat"
+  ],
+  "schema": "nemotron_voicechat.step4c_incidence.v1",
+  "transport_summaries": {
+    "browser": {
+      "blocks_with_event": 0,
+      "bootstrap": null,
+      "equal_block_mean_incidence": null,
+      "valid_blocks": 0
+    },
+    "direct": {
+      "blocks_with_event": 0,
+      "bootstrap": {
+        "estimand": "equal valid-run-block mean EarTTS-high incidence",
+        "interval_95": [
+          0.0,
+          0.0
+        ],
+        "iterations": 10000,
+        "mean": 0.0,
+        "resampling_unit": "run block, stratified by assigned transport",
+        "seed": 20260813
+      },
+      "equal_block_mean_incidence": 0.0,
+      "valid_blocks": 3
+    },
+    "pipecat": {
+      "blocks_with_event": 0,
+      "bootstrap": {
+        "estimand": "equal valid-run-block mean EarTTS-high incidence",
+        "interval_95": [
+          0.0,
+          0.0
+        ],
+        "iterations": 10000,
+        "mean": 0.0,
+        "resampling_unit": "run block, stratified by assigned transport",
+        "seed": 20260813
+      },
+      "equal_block_mean_incidence": 0.0,
+      "valid_blocks": 2
+    }
+  },
+  "uncertainty_unit": "run block",
+  "valid_blocks": 5
+}

@@ -416,12 +416,7 @@ def _remove_stale_conversion_activations(layout: Layout) -> None:
 def _tree_copy_gib(roots: tuple[Path, ...]) -> int:
     """Return the whole-GiB disk reservation for independent component copies."""
 
-    total = sum(
-        path.stat().st_size
-        for root in roots
-        for path in root.rglob("*")
-        if path.is_file()
-    )
+    total = sum(path.stat().st_size for root in roots for path in root.rglob("*") if path.is_file())
     gib = 1024**3
     return (total + gib - 1) // gib
 
@@ -763,9 +758,7 @@ def _convert_from_source(
 ) -> dict[str, Any]:
     remaining = config["deployment"]["minimum_conversion_remaining_gib"]
     output_estimate = config["deployment"]["conversion_output_estimate_gib"]
-    activation_copy = _tree_copy_gib(
-        (layout.release / "nano", layout.release / "eartts")
-    )
+    activation_copy = _tree_copy_gib((layout.release / "nano", layout.release / "eartts"))
     require_free_space(
         layout.cache,
         remaining + output_estimate + activation_copy,
@@ -895,6 +888,7 @@ def model_container_command(
     trace_post_fc_tokens: int = 0,
     trace_post_fc_agent_logits: int = 0,
     trace_fc_async_heartbeat: bool = False,
+    trace_fc_async_benchmark: bool = False,
     runtime_image_id: str | None = None,
 ) -> list[str]:
     environment = config["runtime"]["environment"] | {
@@ -924,6 +918,8 @@ def model_container_command(
         environment["S2S_POST_FC_AGENT_LOGIT_TRACE_TOPK"] = str(trace_post_fc_agent_logits)
     if trace_fc_async_heartbeat:
         environment["S2S_FC_ASYNC_HEARTBEAT"] = "1"
+    if trace_fc_async_benchmark:
+        environment["S2S_FC_ASYNC_BENCHMARK"] = "1"
     command = [
         "docker",
         "run",
@@ -1216,6 +1212,7 @@ def command_up(args: argparse.Namespace) -> int:
                 trace_post_fc_tokens=args.trace_post_fc_tokens,
                 trace_post_fc_agent_logits=args.trace_post_fc_agent_logits,
                 trace_fc_async_heartbeat=getattr(args, "trace_fc_async_heartbeat", False),
+                trace_fc_async_benchmark=getattr(args, "trace_fc_async_benchmark", False),
                 runtime_image_id=runtime_image_id,
             )
         )
@@ -1559,6 +1556,11 @@ def parser() -> argparse.ArgumentParser:
         "--trace-fc-async-heartbeat",
         action="store_true",
         help="publish FC async stage heartbeats and enable SIGUSR1 all-thread dumps",
+    )
+    up.add_argument(
+        "--trace-fc-async-benchmark",
+        action="store_true",
+        help="publish the opt-in FC async per-phase and per-position latency ledger",
     )
     up.set_defaults(handler=command_up)
     restart_bot = subparsers.add_parser(

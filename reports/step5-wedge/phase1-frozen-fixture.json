@@ -1,0 +1,80 @@
+{
+  "causal_prefix": [
+    {
+      "effective_function_token": 12,
+      "emitted_text_token": 12,
+      "frame": 19,
+      "nano_generated_tokens": 21,
+      "nano_session_positions": 20,
+      "transition": "ordinary-position"
+    },
+    {
+      "effective_function_token": 12,
+      "emitted_text_token": 12,
+      "frame": 20,
+      "nano_generated_tokens": 21,
+      "nano_session_positions": 20,
+      "transition": "buffered-row"
+    },
+    {
+      "effective_function_token": 12,
+      "emitted_text_token": 12,
+      "frame": 21,
+      "nano_generated_tokens": 23,
+      "nano_session_positions": 22,
+      "transition": "packed-pad-accept"
+    },
+    {
+      "effective_function_token": 12,
+      "emitted_text_token": 12,
+      "frame": 22,
+      "nano_generated_tokens": 23,
+      "nano_session_positions": 22,
+      "transition": "buffered-row-before-terminal-pair"
+    },
+    {
+      "expected_transition": "packed-pad-accept",
+      "frame": 23,
+      "observed_completion": false,
+      "terminal": true
+    }
+  ],
+  "fixture_id": "retained-2d08e743-reproduced-transition-fixture-v1",
+  "pad_token_id": 12,
+  "reproduction_recipe": {
+    "exact_tensor_replay": false,
+    "fused_row_materialization": "During the coordinated GPU increment, replay the retained input PCM and frozen typed carrier through the pinned perception/fusion code, capture the frame-22 buffered row and frame-23 row before Nano dispatch, and seal their dtype/shape/byte hashes before the first engine replicate.",
+    "inability_to_replay_disclosure": "The retained artifact contains event and PCM records only. It does not contain the fused 4480-wide rows, committed KV cache, Mamba conv/SSM state, rollback shadows, or construction identity. This increment therefore cannot claim exact replay of the historical device tensors.",
+    "required_prefix_state": "Restore every lane independently to the same completed frame-22 logical boundary: Nano generated-token count 23, session-position count 22, one PAD/PAD fused row pending, function state idle, and no turn-control barrier pending.",
+    "typed_carrier_replay": {
+      "byte_count": 58,
+      "historical_event_job_id": "b49d8055d16d4505b7acbedcde798716",
+      "historical_witness_sha256": "790ce45bc80ad1c7c9fe7ace82f62c01f26639a4bf22bb29f3605dd51fc0b488",
+      "pocket_language": "english_2026-04",
+      "pocket_quantized": true,
+      "pocket_seed": 0,
+      "pocket_seed_scheme": "sha256-text-plus-base-v1",
+      "pocket_voice": "alba",
+      "retained_pcm_exact_prefix_bytes": 61440,
+      "utf8_sha256": "c9118304a83285d240206af1ab0d651b9211ce29d59484dbf8b6d1a1bc5d5007"
+    }
+  },
+  "schema_version": 1,
+  "source_artifacts": [
+    {
+      "bytes": 136859,
+      "path": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/2d08e743-39bb-4119-866d-8ab5c215581c/events.jsonl",
+      "sha256": "75716a7d18859341c3bed237a5df5f95816f4e63e50453ce19fdba357d9c67d6"
+    },
+    {
+      "bytes": 64608,
+      "path": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/2d08e743-39bb-4119-866d-8ab5c215581c/input-16000-mono-s16le.pcm",
+      "sha256": "d0ff4a30523aadfef6324d6291641f369e5ae747b43e6e8aeacf3dd88eb4470e"
+    },
+    {
+      "bytes": 12228,
+      "path": "/home/khkramer/.local/state/nemotron-voicechat/traces/nano-sequential-browser-r1.log",
+      "sha256": "790ce45bc80ad1c7c9fe7ace82f62c01f26639a4bf22bb29f3605dd51fc0b488"
+    }
+  ]
+}

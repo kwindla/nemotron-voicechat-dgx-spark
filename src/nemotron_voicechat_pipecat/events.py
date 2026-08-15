@@ -29,17 +29,27 @@ def event_id() -> str:
     return f"client_evt_{uuid.uuid4().hex}"
 
 
-def session_update(*, instructions: str | None, tools: list[dict[str, Any]]) -> dict[str, Any]:
+def session_update(
+    *,
+    instructions: str | None,
+    tools: list[dict[str, Any]],
+    function_output_model_output: str | None = None,
+) -> dict[str, Any]:
     """Build the one required pre-audio session update."""
     validate_tools(tools)
+    session: dict[str, Any] = {
+        "protocol_version": PROTOCOL_VERSION,
+        "instructions": instructions,
+        "tools": tools,
+    }
+    if function_output_model_output is not None:
+        session["capabilities"] = {
+            "function_output_model_output": function_output_model_output
+        }
     return {
         "type": "session.update",
         "event_id": event_id(),
-        "session": {
-            "protocol_version": PROTOCOL_VERSION,
-            "instructions": instructions,
-            "tools": tools,
-        },
+        "session": session,
     }
 
 
@@ -111,16 +121,21 @@ def typed_input_request(*, text: str, job_id: str) -> dict[str, Any]:
     }
 
 
-def function_call_output(call_id: str, output: str) -> dict[str, Any]:
+def function_call_output(
+    call_id: str, output: str, *, model_output: str | None = None
+) -> dict[str, Any]:
     """Build a terminal function result event."""
+    item = {
+        "type": "function_call_output",
+        "call_id": call_id,
+        "output": output,
+    }
+    if model_output is not None:
+        item["model_output"] = model_output
     return {
         "type": "conversation.item.create",
         "event_id": event_id(),
-        "item": {
-            "type": "function_call_output",
-            "call_id": call_id,
-            "output": output,
-        },
+        "item": item,
     }
 
 

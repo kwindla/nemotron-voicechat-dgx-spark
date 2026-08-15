@@ -1,0 +1,52 @@
+{
+  "candidate_manifest": {
+    "chat_template.jinja": "b7a3a520a4bc1beae6a25d615f9215580df8eea926f488256c2bef74039433c0",
+    "config.json": "289b47e1aa92bf31c7767ea3cdb934f148820ba087b3001418f2df3f3470f3d8",
+    "configuration_nemotron_h.py": "18186204622431c336a7c2813a80f0d37937dde962b8aebddf24caf5bffa03f7",
+    "model-00001-of-00004.safetensors": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8",
+    "model-00002-of-00004.safetensors": "659f015df802e9ec6696def3a194b12610feaaa2d8fcbe6fb3ffa0490b49e32c",
+    "model-00003-of-00004.safetensors": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21",
+    "model-00004-of-00004.safetensors": "ac118ef7f5262be37c37e44ff71b6f95598e0a2e9a8af2912e94aff627948f4a",
+    "model.safetensors.index.json": "70fd0aa041ea5c4c121032b676c5fbe580f66ebce8b5fa948101ff58be2c2e0f",
+    "quantize_config.json": "32008b58f9497fc019c994ee8b49af6751461b989b696d497ee807fa7f161354",
+    "special_tokens_map.json": "2a4d2e7403546286e5d75f5b6b3c197490be67fb1e2118e5c60ad5c26e6668b1",
+    "tokenizer.json": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f",
+    "tokenizer_config.json": "d05c050a1cffa3b00df7b0d2596425a17a3e5a03159ea04e0457f6cdf8d29cd4"
+  },
+  "candidate_root": "/tmp/claude-1000/-home-khkramer-src-nemotron-voicechat-dgx-spark/9dab1982-03af-4f77-9d25-ddf7139af66f/scratchpad/fhw8-rebuild-proof",
+  "deltas": {
+    "config_quantized_output_heads": [
+      "lm_head",
+      "function_head"
+    ],
+    "embedded_quantization_config_dynamic_removed": [
+      "-:.*function_head$"
+    ],
+    "quantize_config_dynamic_removed": [
+      "-:.*function_head$"
+    ],
+    "quantized": "stt_model.function_head.weight"
+  },
+  "g0a_roundtrip": {
+    "max_abs_error": 0.0013885498046875,
+    "max_error_over_global_max": 0.00390625,
+    "mean_abs_error": 6.851260695839301e-05,
+    "rtn_exact": true
+  },
+  "kind": "fhw8_candidate_build",
+  "packing": {
+    "bits": 8,
+    "construction": "deterministic RTN (preregistered primary)",
+    "group_size": 128,
+    "sym": true,
+    "zero_point_convention": "gptqmodel-v2 qzeros=0, w = s*(q-128)"
+  },
+  "passed": true,
+  "release_root": "/home/khkramer/.cache/nemotron-voicechat/artifacts/release/nano",
+  "source_shards": {
+    "model-00001-of-00004.safetensors": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8",
+    "model-00002-of-00004.safetensors": "38ff5efa8d7de903d0dd45ed5cf22212db3cbc5ab87e99a3f2f010ac4ca63216",
+    "model-00003-of-00004.safetensors": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21",
+    "model-00004-of-00004.safetensors": "6d0f28a5cfa176c82e673e09f113b7e03e3f8ad4cb491f33b30501c7f767fdea"
+  }
+}

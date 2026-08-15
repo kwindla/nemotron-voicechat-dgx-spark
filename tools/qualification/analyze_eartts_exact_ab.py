@@ -11,7 +11,6 @@ from typing import Any
 
 import numpy as np
 
-
 TTS_RE = re.compile(r"Time taken for tts_model: ([0-9.]+)s")
 
 

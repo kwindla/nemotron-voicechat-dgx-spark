@@ -1,0 +1,93 @@
+{
+  "assumptions": [
+    "streamed families are read exactly once per decode step",
+    "embed_tokens/embed_asr_tokens are a row gather, excluded from streaming",
+    "activation traffic is unmodeled and disclosed",
+    "dynamic state bytes counted read+write at bf16"
+  ],
+  "config_sha256": "2a0576a8b71aa09a5a6683d5a0d2e3fc099839ea9fe559d69a3458e828530391",
+  "derived_dims": {
+    "attention_layers": 4,
+    "attn_head_dim": 128,
+    "hidden_size": 4480,
+    "kv_heads": 8,
+    "mamba_head_dim": 80,
+    "mamba_layers": 27,
+    "mamba_num_heads": 128,
+    "n_groups": 8,
+    "num_hidden_layers": 56,
+    "ssm_state_size": 128
+  },
+  "families": {
+    "attention_f32": {
+      "bytes": 880803840,
+      "dtypes": [
+        "F32"
+      ],
+      "streamed_per_step": true,
+      "tensors": 16
+    },
+    "embed_gather": {
+      "bytes": 2348810240,
+      "dtypes": [
+        "F32"
+      ],
+      "streamed_per_step": false,
+      "tensors": 1
+    },
+    "function_head_f32": {
+      "bytes": 2348810240,
+      "dtypes": [
+        "F32"
+      ],
+      "streamed_per_step": true,
+      "tensors": 1
+    },
+    "lm_head_gptq": {
+      "bytes": 600983040,
+      "dtypes": [
+        "BF16",
+        "I32"
+      ],
+      "streamed_per_step": true,
+      "tensors": 4
+    },
+    "mamba_proj_gptq": {
+      "bytes": 7677948480,
+      "dtypes": [
+        "BF16",
+        "I32"
+      ],
+      "streamed_per_step": true,
+      "tensors": 416
+    },
+    "mamba_small": {
+      "bytes": 7782912,
+      "dtypes": [
+        "F32"
+      ],
+      "streamed_per_step": true,
+      "tensors": 162
+    },
+    "norms_misc": {
+      "bytes": 1021440,
+      "dtypes": [
+        "F32"
+      ],
+      "streamed_per_step": true,
+      "tensors": 57
+    }
+  },
+  "kind": "bandwidth_attribution_bytes_model",
+  "model_root": "/home/khkramer/.cache/nemotron-voicechat/artifacts/release/nano",
+  "passed": true,
+  "per_step_dynamic_bytes": {
+    "assumed_sequence_length": 4096,
+    "attention_kv_read_at_seq_len": 67108864,
+    "mamba_conv_state_read_write": 5308416,
+    "mamba_ssm_state_read_write": 141557760
+  },
+  "per_step_streamed_weight_bytes": 11517349952,
+  "per_step_total_modeled_bytes": 11731324992,
+  "unclassified_tensors": []
+}

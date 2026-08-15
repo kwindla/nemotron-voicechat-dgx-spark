@@ -1,0 +1,11 @@
+{
+  "errors": [],
+  "fatals": [],
+  "kind": "tool_call_interrupt_cell",
+  "passed": true,
+  "phase": "during_injection",
+  "responses_done": 2,
+  "schema": 1,
+  "second_lifecycle_after_interrupt": true,
+  "tool_call_count": 1
+}

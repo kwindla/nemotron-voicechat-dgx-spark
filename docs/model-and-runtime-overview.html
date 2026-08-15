@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VoiceChat 11B on DGX Spark — Model &amp; Runtime Overview</title>
+<script type="module" src="https://md-block.verou.me/md-block.js"></script>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --bg: #ffffff;
+    --muted: #57606a;
+    --border: #d0d7de;
+    --code-bg: #f6f8fa;
+    --accent: #0969da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #e6edf3;
+      --bg: #0d1117;
+      --muted: #8b949e;
+      --border: #30363d;
+      --code-bg: #161b22;
+      --accent: #58a6ff;
+    }
+  }
+  html { background: var(--bg); }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 6rem;
+    max-width: 54rem;
+    color: var(--fg);
+    background: var(--bg);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  md-block { display: block; }
+  md-block h1 { font-size: 1.9rem; line-height: 1.25; border-bottom: 1px solid var(--border); padding-bottom: .4em; }
+  md-block h2 { font-size: 1.45rem; margin-top: 2.2em; border-bottom: 1px solid var(--border); padding-bottom: .3em; }
+  md-block h3 { font-size: 1.15rem; margin-top: 1.8em; }
+  md-block a { color: var(--accent); }
+  md-block blockquote { margin: 1em 0; padding: .2em 1em; color: var(--muted); border-left: 4px solid var(--border); }
+  md-block code { background: var(--code-bg); padding: .15em .35em; border-radius: 4px; font-size: .875em; }
+  md-block pre { background: var(--code-bg); padding: 1em; border-radius: 8px; overflow-x: auto; }
+  md-block pre code { background: none; padding: 0; }
+  md-block table { border-collapse: collapse; display: block; overflow-x: auto; max-width: 100%; }
+  md-block th, md-block td { border: 1px solid var(--border); padding: .4em .7em; }
+  md-block th { background: var(--code-bg); }
+  md-block pre.mermaid, md-block .mermaid-diagram {
+    background: none; display: flex; justify-content: center; overflow-x: auto;
+  }
+  #status { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+<p id="status">Loading document…</p>
+<md-block src="model-and-runtime-overview.md" hmin="1"></md-block>
+<script type="module">
+  const md = document.querySelector("md-block");
+
+  function fail(msg) {
+    const s = document.getElementById("status");
+    if (!s) return;
+    s.dataset.err = "1";
+    s.textContent = msg;
+    s.style.color = "#c00";
+  }
+
+  // Both md-block (loaded in <head>) and Mermaid come from CDNs: this page
+  // needs network access, and the .md is fetched, so the directory must be
+  // served over HTTP (file:// will not work).
+  let mermaid = null;
+  try {
+    mermaid = (await import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")).default;
+  } catch (err) {
+    fail(`Failed to load Mermaid from the CDN (network required); diagrams will show as code. ${err.message ?? err}`);
+  }
+
+  const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+  mermaid?.initialize({ startOnLoad: false, theme: darkQuery.matches ? "dark" : "neutral" });
+  // Rendered SVGs keep the theme they were generated with; re-render via
+  // reload if the color scheme changes while the page is open.
+  darkQuery.addEventListener("change", () => location.reload());
+
+  // md-block/marked drops the fence language class, so detect Mermaid blocks
+  // by their leading diagram keyword. md-block can fire md-render more than
+  // once (inline content first, then the fetched src), so renders are
+  // serialized on one promise chain and each fence is claimed (dataset flag)
+  // before any await, so overlapping callbacks cannot double-process a node.
+  const KEYWORDS = /^(flowchart|graph|sequenceDiagram|classDiagram|gantt|stateDiagram|erDiagram|pie|timeline|mindmap)\b/;
+  let counter = 0;
+  let chain = Promise.resolve();
+  function renderMermaid() {
+    if (md.childElementCount && !document.getElementById("status")?.dataset.err) {
+      document.getElementById("status")?.remove();
+    }
+    if (!mermaid) return;
+    const fences = [...md.querySelectorAll("pre > code")]
+      .filter((code) => KEYWORDS.test(code.textContent.trim()) && !code.dataset.mermaidClaimed);
+    for (const code of fences) code.dataset.mermaidClaimed = "1";
+    chain = chain.then(async () => {
+      for (const code of fences) {
+        const pre = code.closest("pre");
+        if (!pre || !pre.isConnected) continue;
+        const host = document.createElement("div");
+        host.className = "mermaid-diagram";
+        try {
+          const { svg } = await mermaid.render(`mmd-${counter++}`, code.textContent);
+          host.innerHTML = svg;
+        } catch (err) {
+          host.textContent = `Mermaid render error: ${err.message ?? err}`;
+        }
+        pre.replaceWith(host);
+      }
+    });
+  }
+
+  md.addEventListener("md-render", renderMermaid);
+  renderMermaid();
+
+  setTimeout(() => {
+    const s = document.getElementById("status");
+    if (s && !s.dataset.err) {
+      fail("Still loading after 10 s. This page must be served over HTTP (e.g. `cd docs && python3 -m http.server`, not opened as file://) and needs network access to the md-block and Mermaid CDNs.");
+    }
+  }, 10000);
+</script>
+<noscript><p>This page needs JavaScript (md-block + Mermaid) to render
+<code>model-and-runtime-overview.md</code>. Read the Markdown file directly
+instead.</p></noscript>
+</body>
+</html>

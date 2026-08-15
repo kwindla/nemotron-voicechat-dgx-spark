@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
@@ -17,6 +19,8 @@ from pipecat.turns.user_stop.turn_analyzer_user_turn_stop_strategy import (
     TurnAnalyzerUserTurnStopStrategy,
 )
 from pipecat.turns.user_turn_strategies import UserTurnStrategies
+
+from .tool_results import VoicechatLLMContext, VoicechatToolResult
 
 
 class VoicechatUserAggregator(LLMUserAggregator):
@@ -39,6 +43,15 @@ class VoicechatAssistantAggregator(LLMAssistantAggregator):
     """
 
     async def _handle_function_call_result(self, frame: FunctionCallResultFrame):
+        if isinstance(frame.result, VoicechatToolResult):
+            if not isinstance(self._context, VoicechatLLMContext):
+                raise TypeError(
+                    "VoicechatToolResult requires a VoicechatLLMContext sidecar"
+                )
+            self._context.set_voicechat_model_output(
+                frame.tool_call_id, frame.result.model_output
+            )
+            frame = replace(frame, result=frame.result.output)
         provider_turn_open = self._user_speaking
         if provider_turn_open:
             self._user_speaking = False

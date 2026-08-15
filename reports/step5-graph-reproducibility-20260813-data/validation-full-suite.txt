@@ -1,0 +1,12 @@
+Step 5 graph reproducibility closure — full offline non-browser suite
+2026-08-14 UTC
+
+Command:
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -q -p no:cacheprovider -m 'not browser_e2e'
+
+Result:
+1190 passed, 15 skipped, 3 deselected, 4 warnings, 29 subtests passed in 33.36s
+
+Warnings were the existing audioop deprecation, turn-strategy reset deprecation,
+Starlette/httpx compatibility deprecation, and an unawaited FrameProcessor
+coroutine warning in the Pipecat interruption test. No test failed.

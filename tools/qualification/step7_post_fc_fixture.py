@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import sustained_strict_v3
 
-
 sustained_strict_v3.DEFAULT_TYPED_PROMPTS = (
     "Call get_current_utc_time exactly twice using two separate function calls. "
     "After the second result, say only: done.",

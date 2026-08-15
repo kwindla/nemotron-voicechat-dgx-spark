@@ -1,0 +1,7 @@
+1f3a61aeb2b75d06ba2e1646f404977fa579ccb5d52ab63dd276fb0ddcb64333  /home/khkramer/.local/state/nemotron-voicechat/traces/model/310af616-906b-4b14-905a-81176f97e387/events.jsonl
+e613be6d646a3171a86d34551d856599e867fa16493c4deea80edacb8a5591d1  /home/khkramer/.local/state/nemotron-voicechat/traces/model/bb89df0d-33ef-45c5-9fbe-0238fa789e40/events.jsonl
+93eb66eac5c1f0b12f4eacf3ec2bbe897681863280ea54ccb91c05a62179b317  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-trace-overhead-ab-20260813-data/arm-a-trace-on.playout.jsonl
+4445e9c8c897fe47307bcaf4d1d85968eaf00c604e7c0193427af86862fa1641  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-trace-overhead-ab-20260813-data/arm-a-stratified-analysis.json
+bd9c336825a3bf11ba96de22af021b5d94ddfc94dc4988fc60bec4c8320438ff  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-trace-overhead-ab-20260813-data/arm-b-stratified-analysis.json
+9bafc25e0495207e75336039db17f1fac818d5e85f01aaa4cd029c57265bbfab  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-trace-overhead-ab-20260813-data/ab-comparison.json
+2c6b130eab387f72cf9870b97d71bbf1dd4c0b06143e2fa70d73552c3259e621  /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/step4-trace-overhead-ab-20260813-data/arm-a-playout-analysis.json

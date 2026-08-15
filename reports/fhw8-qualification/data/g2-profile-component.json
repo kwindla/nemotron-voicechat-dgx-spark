@@ -1,0 +1,1359 @@
+{
+  "blocks": [
+    {
+      "block": 0,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "warmup",
+      "request_id": "step4d-profile-warmup-000",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.04740846157074,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.32296013087034,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.86037500202656,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.19009732455015,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 47.495284117758274,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.58937952667475,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 33874.85797330737
+    },
+    {
+      "block": 1,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "warmup",
+      "request_id": "step4d-profile-warmup-001",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 47.95586597174406,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.30874442309141,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.08032885193825,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 47.56405018270016,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 47.896130941808224,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 47.40225337445736,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 33261.676562950015
+    },
+    {
+      "block": 0,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-000",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.130000337958336,
+          "nvtx_range": "step4d:block=000;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.70329424738884,
+          "nvtx_range": "step4d:block=000;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.63770229369402,
+          "nvtx_range": "step4d:block=000;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.258146435022354,
+          "nvtx_range": "step4d:block=000;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.341228023171425,
+          "nvtx_range": "step4d:block=000;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.2767496034503,
+          "nvtx_range": "step4d:block=000;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 39478.949706070125
+    },
+    {
+      "block": 1,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-001",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.102918572723866,
+          "nvtx_range": "step4d:block=001;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.831924960017204,
+          "nvtx_range": "step4d:block=001;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.67873636633158,
+          "nvtx_range": "step4d:block=001;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.626863561570644,
+          "nvtx_range": "step4d:block=001;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.60796160250902,
+          "nvtx_range": "step4d:block=001;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.74750243127346,
+          "nvtx_range": "step4d:block=001;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 39695.1388027519
+    },
+    {
+      "block": 2,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-002",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.43829062581062,
+          "nvtx_range": "step4d:block=002;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.58448761701584,
+          "nvtx_range": "step4d:block=002;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.55363925546408,
+          "nvtx_range": "step4d:block=002;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.25779718905687,
+          "nvtx_range": "step4d:block=002;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.0335188806057,
+          "nvtx_range": "step4d:block=002;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.69337971508503,
+          "nvtx_range": "step4d:block=002;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 39939.16834425181
+    },
+    {
+      "block": 3,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-003",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.698610953986645,
+          "nvtx_range": "step4d:block=003;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.03623478114605,
+          "nvtx_range": "step4d:block=003;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.194238148629665,
+          "nvtx_range": "step4d:block=003;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.68854784965515,
+          "nvtx_range": "step4d:block=003;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.67956633865833,
+          "nvtx_range": "step4d:block=003;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.30797701328993,
+          "nvtx_range": "step4d:block=003;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 40046.31606955081
+    },
+    {
+      "block": 4,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-004",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.638817086815834,
+          "nvtx_range": "step4d:block=004;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.37997756153345,
+          "nvtx_range": "step4d:block=004;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.15412920713425,
+          "nvtx_range": "step4d:block=004;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 52.231582812964916,
+          "nvtx_range": "step4d:block=004;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.34411249309778,
+          "nvtx_range": "step4d:block=004;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.67501945793629,
+          "nvtx_range": "step4d:block=004;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 40259.62212961167
+    },
+    {
+      "block": 5,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-005",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.69896765053272,
+          "nvtx_range": "step4d:block=005;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.31079130619764,
+          "nvtx_range": "step4d:block=005;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.28614138811827,
+          "nvtx_range": "step4d:block=005;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.03935843706131,
+          "nvtx_range": "step4d:block=005;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 52.414233796298504,
+          "nvtx_range": "step4d:block=005;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 53.35646867752075,
+          "nvtx_range": "step4d:block=005;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 40140.44154807925
+    },
+    {
+      "block": 6,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-006",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.47489965707064,
+          "nvtx_range": "step4d:block=006;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 51.858178339898586,
+          "nvtx_range": "step4d:block=006;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.37473065406084,
+          "nvtx_range": "step4d:block=006;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.05848966538906,
+          "nvtx_range": "step4d:block=006;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.382363609969616,
+          "nvtx_range": "step4d:block=006;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.72231963276863,
+          "nvtx_range": "step4d:block=006;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 39907.11314976215
+    },
+    {
+      "block": 7,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-007",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.83074031770229,
+          "nvtx_range": "step4d:block=007;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.739968195557594,
+          "nvtx_range": "step4d:block=007;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.196935422718525,
+          "nvtx_range": "step4d:block=007;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.05181394517422,
+          "nvtx_range": "step4d:block=007;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.93470308929682,
+          "nvtx_range": "step4d:block=007;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.75371155887842,
+          "nvtx_range": "step4d:block=007;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 40067.757619544864
+    },
+    {
+      "block": 8,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-008",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.54877791553736,
+          "nvtx_range": "step4d:block=008;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 51.25060956925154,
+          "nvtx_range": "step4d:block=008;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.15076806396246,
+          "nvtx_range": "step4d:block=008;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.899372436106205,
+          "nvtx_range": "step4d:block=008;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.59262754023075,
+          "nvtx_range": "step4d:block=008;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 51.70568265020847,
+          "nvtx_range": "step4d:block=008;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 40249.00982435793
+    },
+    {
+      "block": 9,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-009",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.05242691934109,
+          "nvtx_range": "step4d:block=009;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 51.5777301043272,
+          "nvtx_range": "step4d:block=009;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.65648180991411,
+          "nvtx_range": "step4d:block=009;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 52.095286548137665,
+          "nvtx_range": "step4d:block=009;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 51.21994577348232,
+          "nvtx_range": "step4d:block=009;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.8946618065238,
+          "nvtx_range": "step4d:block=009;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 40248.23886156082
+    }
+  ],
+  "capture": {
+    "capture_calls": 1172,
+    "capture_manifest_sha256": "55d9e815ec235a588b0aa6eacb4a97a2d5a77f19aa00954d0c2e205d4108d1aa",
+    "capture_metadata_sha256": "7f4eecced31a79b0504ef5ddb5720461fd86939d1bbd4d38c97baffe4d5f5471",
+    "capture_root": "/corpus/evaluation/0",
+    "kind": "step4d_nano_matched_state_selection",
+    "max_replayed_call": 686,
+    "pairs": [
+      {
+        "content": {
+          "call_index": 45,
+          "current_step": 45,
+          "expected_token": 1046,
+          "file": "nano-call-000045.pt",
+          "sha256": "4504dc68c6de534a2f1e9e70a33de48ae7e7d7652db948d3ad51fe4b02684fea"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 46,
+          "current_step": 46,
+          "expected_token": 12,
+          "file": "nano-call-000046.pt",
+          "sha256": "44db1da01a77558bf472efcc93ff62c16ceaa7c00c3c233ce20fec0d5c3df542"
+        },
+        "pair": 1,
+        "request_id": "1",
+        "sequence_epoch": 0
+      },
+      {
+        "content": {
+          "call_index": 326,
+          "current_step": 326,
+          "expected_token": 1046,
+          "file": "nano-call-000326.pt",
+          "sha256": "9c8246e75dea73cd0378e187d56588657530cb2be33d81e1f1bb6513d493f63c"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 327,
+          "current_step": 327,
+          "expected_token": 12,
+          "file": "nano-call-000327.pt",
+          "sha256": "5a136ada55a2d61202d2bf8ec4621076580a02cfbf62838aa2a871d40d168d64"
+        },
+        "pair": 2,
+        "request_id": "1",
+        "sequence_epoch": 0
+      },
+      {
+        "content": {
+          "call_index": 685,
+          "current_step": 685,
+          "expected_token": 1046,
+          "file": "nano-call-000685.pt",
+          "sha256": "5545684267d3c4457a42c94d58a14b9170ac34f06f5d307d6f76aac9f26b0258"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 686,
+          "current_step": 686,
+          "expected_token": 12,
+          "file": "nano-call-000686.pt",
+          "sha256": "27ea43d1e7fdc22db6a20f8a65ce152776fa2753ce7590eed78147d8af011fb3"
+        },
+        "pair": 3,
+        "request_id": "1",
+        "sequence_epoch": 0
+      }
+    ],
+    "rules": {
+      "boundary": "last lexical state immediately followed by PAD",
+      "causal_replay": "every call from zero through max_replayed_call",
+      "content": "predicted_token > 12",
+      "controls_excluded": [
+        1,
+        2
+      ],
+      "pad": "predicted_token == 12"
+    },
+    "schema": 1
+  },
+  "component": {
+    "config_sha256": "289b47e1aa92bf31c7767ea3cdb934f148820ba087b3001418f2df3f3470f3d8",
+    "enforce_eager": false,
+    "gpu_memory_utilization": 0.42,
+    "max_model_len": 12288,
+    "path": "/models/candidates/nano-fhw8",
+    "sampling": {
+      "repetition_penalty": 1.0,
+      "temperature": 0.0,
+      "top_p": 1.0
+    }
+  },
+  "kind": "step4d_nano_component_replay",
+  "measured_blocks": 10,
+  "mode": "profile",
+  "passed": false,
+  "reference_output_digests": {},
+  "reference_source": "first-measured-block",
+  "schema": 1,
+  "warmup_blocks": 2
+}

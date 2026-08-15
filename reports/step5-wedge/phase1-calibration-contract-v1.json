@@ -1,0 +1,87 @@
+{
+  "acceptance_rule": {
+    "campaign_acceptance": "Exactly five fresh worker/process constructions must each materialize the sealed live PCM fixture, complete S then A in one engine, cover every listed applicable case/boundary, pass all non-waived exact metadata/discrete/KV checks, emit every predeclared finite directional statistic, and retain conv layer 0 as an exact zero-drift leaf. Any error rejects calibration and authorizes no envelope.",
+    "derivation": "For each lane/case/boundary/full-leaf key, use the five-observation extrema with multiplier 1.0: signed minimum and maximum delta; minimum and maximum positive, negative, zero, and differing-element counts; and maximum L1, L2, and Linf norm. A leaf exact in all five observations receives a zero-required envelope. The observed A rules are separately keyed for A and copied as the pre-causal ordinary-packed baseline for B; this is not an artifact-matched causal-case oracle.",
+    "held_out_use": "The twelve Phase 1 replicates are held out. They may only be tested once against this sealed envelope. Phase 1 observations may never widen, replace, or recalibrate any rule.",
+    "replicate_failure": "A missing statistic, orientation mismatch, new or missing leaf, dtype/shape/element-count mismatch, non-finite value, sign-count or differing-support range violation, signed-bound violation, norm inclusive-ceiling exceedance, or zero-envelope violation fails the Phase 1 replicate. Equality at an inclusive ceiling passes.",
+    "terminal_causal_limit": "The terminal causal case is excluded because released A may not return state. No numeric envelope or semantic-equivalence conclusion is authorized there; only B1 liveness localization may use the future Phase 1 result."
+  },
+  "case_boundary_population": [
+    {
+      "boundary": "B9",
+      "case": "text-only-rejection"
+    },
+    {
+      "boundary": "B9",
+      "case": "text-only-rejection-pending-drain"
+    },
+    {
+      "boundary": "B9",
+      "case": "function-only-rejection"
+    },
+    {
+      "boundary": "B9",
+      "case": "function-only-rejection-pending-drain"
+    },
+    {
+      "boundary": "B9",
+      "case": "conjunctive-rejection"
+    },
+    {
+      "boundary": "B9",
+      "case": "conjunctive-rejection-pending-drain"
+    },
+    {
+      "boundary": "B9",
+      "case": "agent-bos"
+    },
+    {
+      "boundary": "B9",
+      "case": "agent-eos"
+    },
+    {
+      "boundary": "B9",
+      "case": "function-sotc"
+    },
+    {
+      "boundary": "B9",
+      "case": "function-eotr"
+    },
+    {
+      "boundary": "B9",
+      "case": "post-fc-bos"
+    },
+    {
+      "boundary": "NO_MODEL_BOUNDARY",
+      "case": "abort"
+    }
+  ],
+  "construction_count": 5,
+  "held_out_phase1_replicates": 12,
+  "lane_population": [
+    "S",
+    "A"
+  ],
+  "orientation": "candidate_packed_minus_sequential_s",
+  "schema_version": 1,
+  "statistics": [
+    "different_byte_count",
+    "different_element_count",
+    "dtype",
+    "element_count",
+    "first_different_byte_offset",
+    "first_different_candidate_value",
+    "first_different_element_offset",
+    "first_different_oracle_value",
+    "l1_norm",
+    "l2_norm",
+    "linf_norm",
+    "negative_count",
+    "orientation",
+    "positive_count",
+    "shape",
+    "signed_delta_lower",
+    "signed_delta_upper",
+    "zero_count"
+  ]
+}

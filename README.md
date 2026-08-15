@@ -3,12 +3,15 @@
 [NVIDIA NemotronLabs VoiceChat](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-VoiceChat-11B)
 is an end-to-end, speech-to-speech, full-duplex model for conversational AI.
 
-This is the first open source, full-duplex model to support tool
-calling. NVIDIA released the model as a research-oriented "Labs" checkpoint.
+NVIDIA describes it as the first open source, full-duplex model to support
+tool calling, and released it as a research-oriented "Labs" checkpoint.
 
 This repository runs VoiceChat 11B on one DGX Spark. To sustain real-time
-inference on Spark, we quantized the Nano and EarTTS weights, patched vLLM, and
-implemented conditional two-frame PAD drafting.
+inference on Spark, we quantized the Nano and EarTTS weights, patched vLLM,
+offloaded the audio codec to dedicated CPU cores, and rebuilt the serving loop
+around client-owned turn boundaries. (An earlier conditional two-frame PAD
+drafting path was qualified and later retired; see
+[the model and runtime overview](docs/model-and-runtime-overview.md).)
 
 ## Getting started
 
@@ -150,7 +153,13 @@ free.
 
 ## Docs and links
 
-See [deployment](docs/deployment.md), [architecture](docs/architecture.md),
+See the [model and runtime overview](docs/model-and-runtime-overview.md)
+(model architecture plus every realtime change, with diagrams — for rendered
+Markdown and Mermaid, serve the docs directory over HTTP, e.g.
+`cd docs && python3 -m http.server`, then open
+`http://127.0.0.1:8000/model-and-runtime-overview.html`; the wrapper loads
+md-block and Mermaid from CDNs, so it needs network access),
+[deployment](docs/deployment.md), [architecture](docs/architecture.md),
 [strict-v3 protocol](docs/protocol-v3.md),
 [weight reproduction](docs/weight-reproduction.md),
 [qualification](docs/qualification.md), and

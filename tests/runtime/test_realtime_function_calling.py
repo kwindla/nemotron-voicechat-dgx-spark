@@ -6,10 +6,24 @@ import pytest
 
 from nemotron_voicechat_runtime.server import (
     ExternalToolBridge,
+    ValidatedFunctionOutput,
     coerce_tool_arguments,
     normalize_tool_definitions,
     validate_function_output,
 )
+
+
+def validated_output(value: str) -> ValidatedFunctionOutput:
+    return ValidatedFunctionOutput(
+        output=value,
+        output_bytes=len(value.encode()),
+        output_tokens=3,
+        model_output=None,
+        model_output_bytes=None,
+        model_output_tokens=None,
+        injection_output=value,
+        injection_tokens=3,
+    )
 
 
 def test_normalizes_openai_and_nvidia_tool_schemas() -> None:
@@ -61,9 +75,31 @@ def test_external_tool_bridge_round_trip() -> None:
         call = calls[0]
         assert call.name == "lookup-weather"
         assert json.loads(call.arguments) == {"city": "Paris", "units": "metric"}
-        bridge.submit(call.call_id, '{"temperature":21}')
+        bridge.submit(call.call_id, validated_output('{"temperature":21}'))
         assert await result_task == '{"temperature":21}'
         bridge.close()
+
+    asyncio.run(scenario())
+
+
+def test_external_tool_bridge_close_preserves_an_already_submitted_result() -> None:
+    async def scenario() -> None:
+        calls = []
+        call_ready = asyncio.Event()
+
+        async def emit(call) -> None:
+            calls.append(call)
+            call_ready.set()
+
+        bridge = ExternalToolBridge(asyncio.get_running_loop(), emit, timeout_seconds=2.0)
+        handler = bridge.handlers([{"name": "lookup"}])["lookup"]
+        result_task = asyncio.create_task(asyncio.to_thread(handler, {}))
+        await asyncio.wait_for(call_ready.wait(), timeout=1.0)
+
+        bridge.submit(calls[0].call_id, validated_output("accepted result"))
+        bridge.close()
+
+        assert await result_task == "accepted result"
 
     asyncio.run(scenario())
 
@@ -113,7 +149,7 @@ def test_rejected_function_output_can_be_resubmitted_for_same_call() -> None:
             validate_function_output(engine, "too-many")
         assert not result_task.done()
 
-        output, _ = validate_function_output(engine, '{"value":18}')
+        output = validate_function_output(engine, '{"value":18}')
         bridge.submit(calls[0].call_id, output)
         assert await result_task == '{"value":18}'
         bridge.close()
@@ -160,7 +196,7 @@ def test_external_tool_bridge_restores_declared_numeric_argument_types() -> None
             "min": 10,
             "ratio": 0.5,
         }
-        bridge.submit(calls[0].call_id, '{"result":17}')
+        bridge.submit(calls[0].call_id, validated_output('{"result":17}'))
         assert await result_task == '{"result":17}'
         bridge.close()
 

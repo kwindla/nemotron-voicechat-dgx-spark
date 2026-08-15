@@ -1,0 +1,19 @@
+ARG BASE_IMAGE=nemotron-voicechat-tool-latency-benchmark:ledger-r2
+FROM ${BASE_IMAGE}
+
+ARG PROJECT_SOURCE_SHA256
+ARG SPEECH_SOURCE_SHA256
+ARG CANONICAL_PATCH_SHA256
+
+COPY src /opt/voicechat-working-tree/src
+COPY --from=speech nemo/collections/speechlm2/inference/model_wrappers/model_factory.py /opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py
+COPY --from=speech nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py /opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py
+COPY --from=speech nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py /opt/Speech/nemo/collections/speechlm2/inference/pipelines/streaming_s2s_pipeline.py
+COPY --from=speech nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py /opt/Speech/nemo/collections/speechlm2/inference/streaming/state/s2s_context_manager.py
+COPY --from=speech nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py /opt/Speech/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py
+
+ENV PYTHONPATH=/opt/voicechat-working-tree/src
+
+LABEL ai.pipecat.voicechat.working-project-source-sha256="${PROJECT_SOURCE_SHA256}" \
+      ai.pipecat.voicechat.working-speech-source-sha256="${SPEECH_SOURCE_SHA256}" \
+      ai.pipecat.voicechat.working-canonical-patch-sha256="${CANONICAL_PATCH_SHA256}"

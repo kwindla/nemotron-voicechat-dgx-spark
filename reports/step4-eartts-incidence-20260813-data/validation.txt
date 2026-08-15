@@ -1,0 +1,13 @@
+Step 4c closure validation, 2026-08-13 UTC
+
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -m 'not browser_e2e'
+1153 passed, 15 skipped, 3 deselected, 4 warnings, 29 subtests passed in 32.92s
+
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/qualification/stratified_latency_analyzer.py verify-anchors --output /tmp/step4c-closure-canonical-anchors.json
+verify-anchors: PASS (67 anchors)
+
+.venv/bin/ruff check src/nemotron_voicechat_pipecat/demo.py tools/qualification/step2_live_fixture_driver.py tools/qualification/step4_pipecat_soak.py tools/qualification/step4c_artifact_manifest.py tools/qualification/step4c_contract.py tools/qualification/step4c_incidence.py tools/qualification/sustained_strict_v3.py tests/e2e/test_browser_smallwebrtc_e2e.py tests/pipecat/test_bot.py tests/pipecat/test_step4_pipecat_soak.py tests/runtime/test_step2_live_fixture_driver.py tests/runtime/test_step4c_incidence.py tests/runtime/test_sustained_qualification.py
+All checks passed!
+
+git diff --check
+passed
