@@ -829,3 +829,27 @@ clock; a future pairing candidate must be gated on the arrival clock.
   implementation, then recalibration and requalification — a defined
   follow-on project.** The B1 wedge-liveness question remains open but
   moot until the semantic repair lands.
+
+- **2026-08-16 — NEW open item: user-EOU blank-fence settlement cost
+  (perceived-latency dominant in rapid conversation).** Characterized
+  from live session 10c4b983: each turn's settlement steps ~8+ synthetic
+  silence frames (target `nonblank_reset_after_silence` = 10, a model-
+  config constraint — forcing BOS earlier opens empty responses per the
+  retained qualification note at `user_eou_settlement_blank_frames`),
+  costing ~0.6 s wall per turn during which live mic audio queues; with
+  only ms-level per-frame headroom the backlog accumulates over
+  back-to-back turns (TTFB 0.75→2.35 s over six turns, draining ~1.2 s in
+  a 10 s pause). Reduction directions, none yet attempted: (1) consume
+  the queued REAL post-EOU audio (gated below the speech threshold) for
+  fence advancement instead of adding synthetic frames on top — removes
+  the double-count entirely; (2) arm the fence at client speech-stopped
+  rather than at commit — the client's own smart-turn silence window and
+  the fence currently serialize while observing the SAME silence; (3)
+  measure empty-response incidence at fence 6–8 vs 10; (4) investigate
+  extending fused-BOS to tool-advertising sessions (`fuse_final_bos =
+  not session_tools` forces the slower separate-BOS path exactly when
+  tools are registered). Also NEW open item: model tool-call propensity —
+  casual asks answered by text hallucination incl. confabulated "I did
+  make the tool call" (A/B-proven pre-existing); candidate mitigation:
+  strengthened tool-obligation instruction, testable with the behavior
+  suite's propensity metrics.
