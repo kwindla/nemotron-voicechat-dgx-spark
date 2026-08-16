@@ -1,0 +1,29 @@
+{
+  "browser": {
+    "fixture_summary_sha256": "aa8e78d44729b6bf799f4118d4a482e2a8dd57ea587cd0fa4ae6dfde85d23508",
+    "fixtures_completed": 8,
+    "fixtures_requested": 8,
+    "no_new_failure_class": true,
+    "passed": true,
+    "pytest_seconds": 210.31
+  },
+  "kind": "attnw8_g3_gate",
+  "passed": false,
+  "rapid_turn_settlement": {
+    "empty_response_count": 0,
+    "fatal_error_count": 0,
+    "passed": true,
+    "responses_completed": 80,
+    "sessions": 10
+  },
+  "tool_call_interrupt_matrix": {
+    "cells": 12,
+    "failure": "The correctly transcribed precedent carrier produced a normal text response instead of get_benchmark_word, so no phase-specific interrupt was reached.",
+    "fatal_cells": 0,
+    "matrix_summary_sha256": "1a2e931ded4abc3c54910949f16aa46a392d9946b08c185caba79bf2740d932b",
+    "passed": false,
+    "passed_cells": 0,
+    "tool_calls_observed": 0
+  },
+  "verdict": "FAIL: tool-call routing regression"
+}

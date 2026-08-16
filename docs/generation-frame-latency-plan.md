@@ -886,3 +886,25 @@ clock; a future pairing candidate must be gated on the arrival clock.
   real queued audio; V3 full battery green; V4 canonical browser plan
   8/8. Evidence repo-relative under `reports/fence-latency/` with
   manifest `4956d89c…`.
+
+- **2026-08-16 — Attention-W8 campaign CONCLUDED: FAIL at G3, candidate
+  RETIRED per preregistration — with a major finding.** G0 exact (16
+  tensors, double-build byte-identical); G1 zero flips across 10,548
+  matched decisions; G2 **−1.546 ms/frame** (49.00 vs 50.55, triple the
+  gate). But G3's interruption matrix: **0/12 tool calls** — the
+  candidate transcribes the directive carrier perfectly and answers in
+  text without ever calling, deterministic over all replicates, where
+  fhw8 elicits 12/12 on the identical carrier. FINDING: attention-
+  projection quantization (RTN W8 g128) collapses tool-call propensity
+  while leaving frozen-corpus decisions untouched — the tool-affordance
+  decision lives in the attention pathway and is precision-sensitive.
+  Consequences recorded: (1) the G1 frozen corpus contains no
+  tool-elicitation contexts and cannot gate this behavior — future
+  interior-quantization campaigns must include tool-decision replay in
+  G1 or run G3 first; (2) unsealed future options: calibrated GPTQ
+  (Hessian-weighted, likely far better than RTN for attention),
+  per-projection ablation, tighter groups; (3) strengthens the
+  tool-propensity ledger item: the behavior is fragile at bf16 already.
+  ~1.5 ms/frame remains on the table behind a better quantizer. All
+  evidence sealed under reports/attnw8-qualification/ (root manifest
+  ff3f5797…).

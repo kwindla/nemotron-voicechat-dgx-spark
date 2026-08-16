@@ -1,0 +1,12 @@
+{
+  "all_passed": true,
+  "empty_response_count": 0,
+  "fatal_error_count": 0,
+  "kind": "attnw8_rapid_turn_settlement_5_plus_5",
+  "no_tool_sessions": 5,
+  "passed_sessions": 10,
+  "responses_completed": 80,
+  "sessions": 10,
+  "turns_requested": 80,
+  "with_tool_sessions": 5
+}

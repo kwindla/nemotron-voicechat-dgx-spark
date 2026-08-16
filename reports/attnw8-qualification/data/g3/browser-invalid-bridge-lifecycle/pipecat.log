@@ -1,0 +1,19 @@
+2026-08-16 15:33:38.439 | INFO     | pipecat:<module>:54 - ᓚᘏᗢ Pipecat 1.7.1.dev21 (Python 3.12.13 (main, Mar 20 2026, 00:36:21) [Clang 22.1.1 ]) ᓚᘏᗢ
+2026-08-16 15:33:40.202 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+INFO:     Started server process [3016987]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:7860 (Press CTRL+C to quit)
+
+╭─────────────────────────────────────────────────────╮
+│ ᓚᘏᗢ PIPECAT DEVELOPMENT RUNNER                      │
+│                                                     │
+│ Learn about running bots locally and in production: │
+│ https://docs.pipecat.ai/pipecat/deployment/overview │
+╰─────────────────────────────────────────────────────╯
+
+🚀 Bot ready! (WebRTC)
+   → Open: http://0.0.0.0:7860
+
+Looking for dist directory at: /home/khkramer/src/nemotron-voicechat-dgx-spark/.venv/lib/python3.12/site-packages/pipecat_ai_prebuilt/client/dist
+INFO:     127.0.0.1:36848 - "GET / HTTP/1.1" 307 Temporary Redirect

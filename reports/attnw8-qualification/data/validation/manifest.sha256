@@ -1,0 +1,13 @@
+e625561e76aa62cd91abfb557a44e00be0a46a5e77ad794c25a07c3b1f517f1c  ./anchor-verification.json
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  ./compileall.exit
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./compileall.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  ./diff-check.exit
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./diff-check.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  ./pytest-full-non-browser-accounted.exit
+00366bff44bc9faafa63f68b606d0a6b95905b52193e5aab9e9aa37421a7af66  ./pytest-full-non-browser-accounted.log
+4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865  ./pytest-full-non-browser-raw.exit
+22b7e3e3d11a54ae63a2867773e94b20f56d2324a7732a6bc693e253a14210ad  ./pytest-full-non-browser-raw.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  ./ruff.exit
+82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18  ./ruff.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  ./verify-anchors.exit
+ef1ede3453fcfcccce94019709311b0ceb6e885ece8102e7e33eb21c5ea122dd  ./verify-anchors.log

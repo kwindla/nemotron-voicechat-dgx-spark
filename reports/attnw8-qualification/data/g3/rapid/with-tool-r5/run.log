@@ -1,0 +1,142 @@
+/home/khkramer/src/nemotron-voicechat-dgx-spark/tools/qualification/rapid_turn_settlement_suite.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+  import audioop
+{
+  "all_response_transcripts_nonempty": true,
+  "empty_response_count": 0,
+  "empty_response_ids": [],
+  "errors": [],
+  "fatal_errors": [],
+  "kind": "rapid_turn_settlement_v1",
+  "passed": true,
+  "responses": [
+    {
+      "audible_audio_chunks": 22,
+      "audio_chunks": 40,
+      "commit_to_first_audio_ms": 881.167,
+      "created_monotonic_s": 5086857.387766118,
+      "empty": false,
+      "first_audio_monotonic_s": 5086857.387797542,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_1",
+      "status": "completed",
+      "text": "Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_1"
+    },
+    {
+      "audible_audio_chunks": 22,
+      "audio_chunks": 42,
+      "commit_to_first_audio_ms": 837.135,
+      "created_monotonic_s": 5086863.111467193,
+      "empty": false,
+      "first_audio_monotonic_s": 5086863.11150545,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_2",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_2"
+    },
+    {
+      "audible_audio_chunks": 23,
+      "audio_chunks": 40,
+      "commit_to_first_audio_ms": 818.965,
+      "created_monotonic_s": 5086868.936311857,
+      "empty": false,
+      "first_audio_monotonic_s": 5086868.936340786,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_3",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_3"
+    },
+    {
+      "audible_audio_chunks": 22,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 1027.362,
+      "created_monotonic_s": 5086874.815407793,
+      "empty": false,
+      "first_audio_monotonic_s": 5086874.815434258,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_4",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_4"
+    },
+    {
+      "audible_audio_chunks": 22,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 928.186,
+      "created_monotonic_s": 5086880.81894159,
+      "empty": false,
+      "first_audio_monotonic_s": 5086880.81895711,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_5",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_5"
+    },
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 38,
+      "commit_to_first_audio_ms": 817.744,
+      "created_monotonic_s": 5086886.472057679,
+      "empty": false,
+      "first_audio_monotonic_s": 5086886.47207312,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_6",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_6"
+    },
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 837.221,
+      "created_monotonic_s": 5086892.08435693,
+      "empty": false,
+      "first_audio_monotonic_s": 5086892.084379107,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_7",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_7"
+    },
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 38,
+      "commit_to_first_audio_ms": 853.966,
+      "created_monotonic_s": 5086897.774259564,
+      "empty": false,
+      "first_audio_monotonic_s": 5086897.774274716,
+      "response_id": "response_7aefbb53-a560-427b-b68e-245a14d9585a_8",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7aefbb53-a560-427b-b68e-245a14d9585a_8"
+    }
+  ],
+  "responses_completed": 8,
+  "scenario": "attnw8-with-tool-r5",
+  "six_turn_ttfb_ms": [
+    881.167,
+    837.135,
+    818.965,
+    1027.362,
+    928.186,
+    817.744
+  ],
+  "tool_call_count": 0,
+  "ttfb_ms": [
+    881.167,
+    837.135,
+    818.965,
+    1027.362,
+    928.186,
+    817.744,
+    837.221,
+    853.966
+  ],
+  "turns_requested": 8,
+  "user_transcripts": [
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "going on",
+    "what's going on",
+    "pay what's going on",
+    "going on"
+  ],
+  "with_tool": true
+}
