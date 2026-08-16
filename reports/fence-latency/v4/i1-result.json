@@ -1,0 +1,382 @@
+{
+  "capture": "on",
+  "completion_status": "completed",
+  "completion_wall_time_s": 1786840520.0217052,
+  "error": null,
+  "first_audio_wall_time_s": 1786840506.295,
+  "fixture_id": "I1",
+  "interruption": {
+    "actual_offset_s": 4.034,
+    "after_first_audio_s": 4.0,
+    "rtvi_send_marker_event_index": 300,
+    "second_answer_gate_evidence": {
+      "joined_browser_transcript": " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four.",
+      "response_owned_traced_text": " Two plus two is four.",
+      "second_answer_adjudication": true
+    },
+    "second_answer_transcript_evidence": [
+      " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four."
+    ],
+    "send_attempt_wall_time_s": 1786840510.297053,
+    "send_wall_time_s": 1786840510.3543296,
+    "typed_text": "Stop. What is two plus two?",
+    "typed_text_sha256": "a7f0422c32dd6d4bb5898d78e7aeee4004bfc3abd7a67a43d7d748cf757034a4"
+  },
+  "last_audio_wall_time_s": 1786840517.737,
+  "marker_emission": {
+    "complete": {
+      "error": null,
+      "status": "succeeded"
+    },
+    "error": {
+      "error": null,
+      "status": "not_attempted"
+    },
+    "interruption-send": {
+      "error": null,
+      "status": "succeeded"
+    },
+    "start": {
+      "error": null,
+      "status": "succeeded"
+    },
+    "timeout": {
+      "error": null,
+      "status": "not_attempted"
+    }
+  },
+  "observed_rtvi_messages": [],
+  "plan_index": 6,
+  "quiescence_barrier": {
+    "bot_message_count": 0,
+    "bot_message_types": [],
+    "end_message_count": 327,
+    "identity": "ordered-channel-quiescence-v1",
+    "observed_message_count": 0,
+    "passed": true,
+    "quiet_window_ms": 2000.0,
+    "start_message_count": 327,
+    "window_end_performance_ms": 177895.69999980927,
+    "window_end_wall_time_s": 1786840519.995,
+    "window_start_performance_ms": 175637.69999980927,
+    "window_start_wall_time_s": 1786840517.737
+  },
+  "response_attribution": {
+    "clear_edge": {
+      "monotonic_s": 5033757.571356982,
+      "reason": "interruption-clear"
+    },
+    "interruption_edge": {
+      "monotonic_s": 5033757.571334662,
+      "type": "voicechat.playout.interruption"
+    },
+    "interruption_typed_send_edge": {
+      "monotonic_s": 5033758.96626292,
+      "source": "typed",
+      "type": "input_audio_buffer.speech_started"
+    },
+    "original_response": {
+      "audio_delta_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51
+      ],
+      "created_monotonic_s": 5033753.433975706,
+      "downstream_push_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51
+      ],
+      "interrupted_wall_time_s": 1786840510.367,
+      "output_text": " The quick brown fox jumped over the lazy dog, while seventeen green dragons",
+      "release_membership": [
+        {
+          "frames_cleared": 0,
+          "frames_released": 2,
+          "ordinals": [
+            1,
+            2
+          ],
+          "reason": "threshold"
+        },
+        {
+          "frames_cleared": 0,
+          "frames_released": 0,
+          "ordinals": [],
+          "reason": "interruption-clear"
+        }
+      ],
+      "release_reasons": [
+        "threshold",
+        "interruption-clear"
+      ],
+      "response_id": "response_20b30092-96e2-4d5b-987d-318cce8d936b_7",
+      "rtvi_event_bracket": {
+        "fixture_send_performance_ms": 149656.30000019073,
+        "fixture_send_wall_time_s": 1786840491.755,
+        "messages_received_before_send_in_bracket": 0,
+        "output_text_sha256": "cb8f83d02fb59c999611579e634aab9f89a3549a4606d3e6aaac07a8e6e8ef89",
+        "protocol_response_identity": null,
+        "response_id": "response_20b30092-96e2-4d5b-987d-318cce8d936b_7",
+        "start_event_index": 9,
+        "start_event_type": "bot-started-speaking",
+        "start_performance_ms": 164196.19999980927,
+        "start_wall_time_s": 1786840506.295,
+        "terminal_event_index": 27,
+        "terminal_event_type": "bot-stopped-speaking",
+        "terminal_performance_ms": 168268.60000038147,
+        "terminal_wall_time_s": 1786840510.367,
+        "transcript_binding": "ordered-channel-quiescence-v1",
+        "transcript_event_indices": [],
+        "transcript_performance_ms": []
+      },
+      "speaking_start_wall_time_s": 1786840506.295,
+      "terminal": {
+        "monotonic_s": 5033758.966041911,
+        "status": "cancelled"
+      }
+    },
+    "replacement_response": {
+      "audio_delta_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "created_monotonic_s": 5033761.60038946,
+      "downstream_push_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "output_text": " Two plus two is four.",
+      "release_membership": [
+        {
+          "frames_cleared": 0,
+          "frames_released": 2,
+          "ordinals": [
+            1,
+            2
+          ],
+          "reason": "threshold"
+        }
+      ],
+      "release_reasons": [
+        "threshold"
+      ],
+      "response_id": "response_20b30092-96e2-4d5b-987d-318cce8d936b_8",
+      "rtvi_event_bracket": {
+        "fixture_send_performance_ms": 168230.19999980927,
+        "fixture_send_wall_time_s": 1786840510.329,
+        "messages_received_before_send_in_bracket": 0,
+        "output_text_sha256": "d0fd08657050f97580908ca3cbc8fc5743456b636f84a6ead547b6353f8c5983",
+        "protocol_response_identity": null,
+        "response_id": "response_20b30092-96e2-4d5b-987d-318cce8d936b_8",
+        "start_event_index": 37,
+        "start_event_type": "bot-started-speaking",
+        "start_performance_ms": 172362.30000019073,
+        "start_wall_time_s": 1786840514.461,
+        "terminal_event_index": 50,
+        "terminal_event_type": "bot-stopped-speaking",
+        "terminal_performance_ms": 175637.69999980927,
+        "terminal_wall_time_s": 1786840517.737,
+        "transcript_binding": "ordered-channel-quiescence-v1",
+        "transcript_event_indices": [
+          44
+        ],
+        "transcript_performance_ms": [
+          172757.60000038147
+        ]
+      },
+      "speaking_start_wall_time_s": 1786840514.461,
+      "speaking_stop_wall_time_s": 1786840517.737,
+      "terminal": {
+        "monotonic_s": 5033764.917032627,
+        "status": "completed"
+      },
+      "transcript_evidence": [
+        " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four."
+      ]
+    },
+    "response_ids": [
+      "response_20b30092-96e2-4d5b-987d-318cce8d936b_7",
+      "response_20b30092-96e2-4d5b-987d-318cce8d936b_8"
+    ],
+    "typed_send_edge": {
+      "monotonic_s": 5033743.787385932,
+      "source": "typed",
+      "type": "input_audio_buffer.speech_started"
+    }
+  },
+  "response_ids": [
+    "response_20b30092-96e2-4d5b-987d-318cce8d936b_7",
+    "response_20b30092-96e2-4d5b-987d-318cce8d936b_8"
+  ],
+  "rtvi_observation_error": null,
+  "rtvi_window_start_index": 276,
+  "schema": "nemotron_voicechat.step2_fixture_result.v2",
+  "script_id": "I1",
+  "send_attempt_wall_time_s": 1786840491.5841174,
+  "send_wall_time_s": 1786840491.8045967,
+  "transcript_evidence": [
+    " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four."
+  ],
+  "transcript_gate_evidence": {
+    "joined_browser_transcript": " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four.",
+    "mismatch_reason": "joined browser transcript differs from response-owned traced text",
+    "response_owned_traced_text": " Two plus two is four.",
+    "transcript_equal": false
+  },
+  "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035"
+}

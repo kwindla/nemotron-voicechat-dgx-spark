@@ -20,6 +20,7 @@ from nemotron_voicechat_runtime.pocket_controller import PocketSynthesis, Pocket
 from nemotron_voicechat_runtime.server import (
     FRAME_SAMPLES,
     INPUT_SAMPLE_RATE,
+    REALTIME_RECEIVE_QUEUE_MESSAGES,
     StepResult,
     audio_stats,
     create_app,
@@ -532,8 +533,13 @@ class RecordingAsyncWebSocket:
         )
 
 
-def audio_event(event_id: str = "audio-1", *, amplitude: float = 0.1) -> dict:
-    pcm = np.full(FRAME_SAMPLES, amplitude, dtype="<f4")
+def audio_event(
+    event_id: str = "audio-1",
+    *,
+    amplitude: float = 0.1,
+    samples: int = FRAME_SAMPLES,
+) -> dict:
+    pcm = np.full(samples, amplitude, dtype="<f4")
     pcm16 = np.clip(pcm * 32768.0, -32768, 32767).astype("<i2").tobytes()
     return {
         "type": "input_audio_buffer.append",
@@ -1810,6 +1816,523 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
         self.assertTrue(committed[0]["fused_terminal_bos"])
         self.assertGreaterEqual(committed[0]["receive_to_bos_ms"], 0)
 
+    def test_precommit_quiet_frames_overlap_settlement_fence(self) -> None:
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+        )
+        self.addCleanup(temporary.cleanup)
+        with client.websocket_connect("/v1/realtime") as websocket:
+            websocket.receive_json()
+            self.configure(websocket)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "prearm-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            websocket.send_json(audio_event("prearm-speech"))
+            receive_until(websocket, "voicechat.metrics")
+            for index in range(3):
+                websocket.send_json(
+                    audio_event(f"prearm-quiet-{index}", amplitude=0.0)
+                )
+                receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "prearm-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "response.created")
+
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 3)
+        self.assertEqual(settled["post_commit_blank_deficit"], 0)
+        self.assertEqual(settled["model_steps"], 0)
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 0)
+        self.assertEqual(engine.user_eou_requests, 1)
+
+    def test_precommit_arm_is_revoked_at_and_above_the_speech_gate(self) -> None:
+        gate_payload = base64.b64decode(audio_event("gate", amplitude=0.01)["audio"])
+        gate_samples = np.frombuffer(gate_payload, dtype="<i2").astype(np.float32) / 32768.0
+        exact_gate_dbfs = float(audio_stats(gate_samples)["rms_dbfs"])
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+            speech_gate_dbfs=exact_gate_dbfs,
+        )
+        self.addCleanup(temporary.cleanup)
+        with client.websocket_connect("/v1/realtime") as websocket:
+            websocket.receive_json()
+            self.configure(websocket)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "revoke-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            for event in (
+                audio_event("revoke-speech", amplitude=0.1),
+                audio_event("revoke-quiet-exact", amplitude=0.0),
+                audio_event("revoke-exact", amplitude=0.01),
+                audio_event("revoke-quiet-above", amplitude=0.0),
+                audio_event("revoke-above", amplitude=0.1),
+            ):
+                websocket.send_json(event)
+                receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "revoke-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "response.created")
+
+        trace_events = self.trace_events(temporary)
+        revoked = [
+            event
+            for event in trace_events
+            if event["event"] == "user_eou_fence_prearm_revoked"
+        ]
+        self.assertEqual(len(revoked), 2)
+        self.assertEqual(revoked[0]["audio_rms_dbfs"], exact_gate_dbfs)
+        self.assertGreater(revoked[1]["audio_rms_dbfs"], exact_gate_dbfs)
+        settled = next(
+            event for event in trace_events if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["post_commit_blank_deficit"], 3)
+        self.assertEqual(settled["synthetic_model_steps"], 3)
+
+    def test_commit_tail_padding_cannot_arm_after_commit_receipt(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "partial-before-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("partial-before-speech"))
+            websocket.queue_json(
+                audio_event(
+                    "partial-before-quiet",
+                    amplitude=0.0,
+                    samples=FRAME_SAMPLES // 2,
+                )
+            )
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "partial-before-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        trace_events = self.trace_events(temporary)
+        commit_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_input_turn_commit_received"
+        )
+        padded_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "user_eou_post_commit_frame"
+        )
+        self.assertLess(commit_index, padded_index)
+        self.assertFalse(
+            any(
+                event["event"] == "user_eou_fence_prearmed"
+                for event in trace_events[commit_index + 1 :]
+            )
+        )
+        settled = next(
+            event for event in trace_events if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["starting_blank_frames"], 1)
+        self.assertEqual(settled["post_commit_blank_deficit"], 2)
+        self.assertEqual(settled["model_steps"], 2)
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 2)
+        self.assertEqual(
+            settled["post_commit_steps"],
+            [
+                {
+                    "model_input_provenance": "commit_tail_padding",
+                    "real_samples": FRAME_SAMPLES // 2,
+                    "padded_samples": FRAME_SAMPLES // 2,
+                    "blank_frames_before": 0,
+                    "blank_frames_after": 1,
+                    "blank_frames_advanced": 1,
+                    "model_frame": 1,
+                }
+            ],
+        )
+
+    def test_partial_audio_after_commit_remains_on_ordinary_path(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "partial-after-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("partial-after-speech"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "partial-after-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(
+                audio_event(
+                    "partial-after-audio",
+                    amplitude=0.2,
+                    samples=FRAME_SAMPLES // 2,
+                )
+            )
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["post_commit_blank_deficit"], 3)
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 3)
+        self.assertEqual(settled["post_commit_steps"], [])
+        self.assertTrue(engine.process_calls[-1]["is_last"])
+        self.assertEqual(
+            int(np.count_nonzero(engine.process_calls[-1]["samples"])),
+            FRAME_SAMPLES // 2,
+        )
+
+    def test_postcommit_quiet_queue_supplies_settlement_frames(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "queued-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("queued-speech"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "queued-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            for index in range(3):
+                websocket.queue_json(
+                    audio_event(f"queued-quiet-{index}", amplitude=0.0)
+                )
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["post_commit_blank_deficit"], 3)
+        self.assertEqual(settled["real_audio_model_steps"], 3)
+        self.assertEqual(settled["synthetic_model_steps"], 0)
+        self.assertEqual(
+            [step["settlement_input_source"] for step in settled["steps"]],
+            ["queued_microphone_audio"] * 3,
+        )
+
+    def test_settlement_does_not_cross_non_audio_event_in_receive_fifo(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "fifo-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("fifo-speech"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "fifo-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("fifo-quiet", amplitude=0.0))
+            websocket.queue_json(
+                {
+                    "type": "session.update",
+                    "event_id": "fifo-boundary",
+                    "session": {"protocol_version": 3},
+                }
+            )
+            websocket.queue_json(audio_event("fifo-later-audio", amplitude=0.2))
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        trace_events = self.trace_events(temporary)
+        settled_index, settled = next(
+            (index, event)
+            for index, event in enumerate(trace_events)
+            if event["event"] == "user_eou_settled"
+        )
+        boundary_index = [
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_event" and event.get("type") == "session.update"
+        ][-1]
+        later_audio_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "input_packet"
+            and event["audio"]["rms_dbfs"] > -20.0
+        )
+        self.assertEqual(settled["real_audio_model_steps"], 1)
+        self.assertEqual(settled["synthetic_model_steps"], 2)
+        self.assertLess(settled_index, boundary_index)
+        self.assertLess(boundary_index, later_audio_index)
+        later_calls = [
+            call
+            for call in engine.process_calls
+            if np.isclose(float(call["samples"].mean()), 0.2, atol=1 / 32768)
+        ]
+        self.assertEqual(len(later_calls), 1)
+
+    def test_postcommit_speech_is_not_fence_eligible(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+            speech_gate_dbfs=-40.0,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "speech-gate-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("speech-gate-first"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "speech-gate-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("speech-gate-barge", amplitude=0.2))
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 3)
+        self.assertTrue(settled["real_audio_stopped_by_speech_gate"])
+        blocked = [
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settlement_real_audio_blocked"
+        ]
+        self.assertEqual(len(blocked), 1)
+        barge_calls = [
+            call
+            for call in engine.process_calls
+            if np.isclose(float(call["samples"].mean()), 0.2, atol=1 / 32768)
+        ]
+        self.assertEqual(len(barge_calls), 1)
+        trace_events = self.trace_events(temporary)
+        settled_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "user_eou_settled"
+        )
+        barge_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "input_packet"
+            and event["audio"]["rms_dbfs"] > -20.0
+        )
+        stop_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_event" and event.get("type") == "session.stop"
+        )
+        self.assertLess(settled_index, barge_index)
+        self.assertLess(barge_index, stop_index)
+
+    def test_bounded_receive_pump_releases_and_shutdown_makes_progress(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.block_process = True
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> RecordingAsyncWebSocket:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "pump-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("pump-blocked-audio"))
+            endpoint_task = asyncio.create_task(self.realtime_endpoint(app)(websocket))
+            try:
+                self.assertTrue(
+                    await self.wait_until(engine.process_started.is_set),
+                    "model step did not block",
+                )
+                for index in range(REALTIME_RECEIVE_QUEUE_MESSAGES + 1):
+                    websocket.queue_json(
+                        {
+                            "type": "session.update",
+                            "event_id": f"pump-queued-{index}",
+                            "session": {"protocol_version": 3},
+                        }
+                    )
+                websocket.queue_json({"type": "session.stop"})
+                self.assertTrue(
+                    await self.wait_until(
+                        lambda: websocket.inbound.qsize() <= 2,
+                        timeout=2.0,
+                    ),
+                    "receive pump did not fill its bounded queue",
+                )
+                self.assertFalse(endpoint_task.done())
+                engine.process_release.set()
+                await asyncio.wait_for(endpoint_task, timeout=5.0)
+            finally:
+                engine.process_release.set()
+                if not endpoint_task.done():
+                    endpoint_task.cancel()
+                    await asyncio.gather(endpoint_task, return_exceptions=True)
+            return websocket
+
+        websocket = asyncio.run(exercise())
+        self.assertTrue(websocket.closed)
+        self.assertIn("abort", engine.lifecycle)
+        trace_events = self.trace_events(temporary)
+        self.assertTrue(
+            any(
+                event["event"] == "client_event" and event.get("type") == "session.stop"
+                for event in trace_events
+            )
+        )
+
     def test_tool_session_keeps_separate_settlement_and_legacy_eou_position(self) -> None:
         engine = FakeEngine()
         engine.simulate_eou_settlement = True
@@ -1877,6 +2400,24 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
         ]
         self.assertEqual(len(committed), 1)
         self.assertNotIn("fused_terminal_bos", committed[0])
+        trace_events = self.trace_events(temporary)
+        commit_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_input_turn_commit_received"
+        )
+        self.assertFalse(
+            any(
+                event["event"] == "user_eou_fence_prearmed"
+                for event in trace_events[commit_index + 1 :]
+            )
+        )
+        input_provenance = [
+            event["model_input_provenance"]
+            for event in trace_events[commit_index + 1 :]
+            if event["event"] == "input_packet"
+        ]
+        self.assertEqual(input_provenance[-1], "synthetic_terminal_bos")
 
     def test_client_commit_settlement_has_fatal_twice_fence_bound(self) -> None:
         engine = FakeEngine()

@@ -1,0 +1,140 @@
+{
+  "all_response_transcripts_nonempty": true,
+  "empty_response_count": 0,
+  "empty_response_ids": [],
+  "errors": [],
+  "fatal_errors": [],
+  "kind": "rapid_turn_settlement_v1",
+  "passed": true,
+  "responses": [
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 40,
+      "commit_to_first_audio_ms": 952.923,
+      "created_monotonic_s": 5031820.259093754,
+      "empty": false,
+      "first_audio_monotonic_s": 5031820.259109243,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_1",
+      "status": "completed",
+      "text": "Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_1"
+    },
+    {
+      "audible_audio_chunks": 20,
+      "audio_chunks": 38,
+      "commit_to_first_audio_ms": 1722.445,
+      "created_monotonic_s": 5031826.38059681,
+      "empty": false,
+      "first_audio_monotonic_s": 5031826.38061241,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_2",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_2"
+    },
+    {
+      "audible_audio_chunks": 24,
+      "audio_chunks": 41,
+      "commit_to_first_audio_ms": 2442.052,
+      "created_monotonic_s": 5031833.236373205,
+      "empty": false,
+      "first_audio_monotonic_s": 5031833.236402261,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_3",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_3"
+    },
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 2848.844,
+      "created_monotonic_s": 5031840.505391038,
+      "empty": false,
+      "first_audio_monotonic_s": 5031840.50540611,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_4",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_4"
+    },
+    {
+      "audible_audio_chunks": 27,
+      "audio_chunks": 41,
+      "commit_to_first_audio_ms": 3167.331,
+      "created_monotonic_s": 5031847.995903358,
+      "empty": false,
+      "first_audio_monotonic_s": 5031847.995933647,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_5",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_5"
+    },
+    {
+      "audible_audio_chunks": 19,
+      "audio_chunks": 38,
+      "commit_to_first_audio_ms": 3253.669,
+      "created_monotonic_s": 5031855.409470903,
+      "empty": false,
+      "first_audio_monotonic_s": 5031855.409486471,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_6",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_6"
+    },
+    {
+      "audible_audio_chunks": 20,
+      "audio_chunks": 41,
+      "commit_to_first_audio_ms": 3325.534,
+      "created_monotonic_s": 5031862.947046877,
+      "empty": false,
+      "first_audio_monotonic_s": 5031862.947062493,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_7",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_7"
+    },
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 40,
+      "commit_to_first_audio_ms": 3380.018,
+      "created_monotonic_s": 5031870.476280567,
+      "empty": false,
+      "first_audio_monotonic_s": 5031870.476295608,
+      "response_id": "response_7bfba229-7dfb-4acb-b925-0f22326e7b8c_8",
+      "status": "completed",
+      "text": " Hey there! How can I help you today?",
+      "turn_id": "turn_7bfba229-7dfb-4acb-b925-0f22326e7b8c_8"
+    }
+  ],
+  "responses_completed": 8,
+  "scenario": "baseline-with-tool-r4",
+  "six_turn_ttfb_ms": [
+    952.923,
+    1722.445,
+    2442.052,
+    2848.844,
+    3167.331,
+    3253.669
+  ],
+  "tool_call_count": 0,
+  "ttfb_ms": [
+    952.923,
+    1722.445,
+    2442.052,
+    2848.844,
+    3167.331,
+    3253.669,
+    3325.534,
+    3380.018
+  ],
+  "turns_requested": 8,
+  "user_transcripts": [
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on"
+  ],
+  "with_tool": true
+}

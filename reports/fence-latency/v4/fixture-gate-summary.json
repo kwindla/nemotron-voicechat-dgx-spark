@@ -1,0 +1,779 @@
+{
+  "schema": "nemotron_voicechat.step2_fixture_summary.v2",
+  "status": "completed",
+  "error": null,
+  "terminalization_errors": [],
+  "sessions": [
+    {
+      "capture": "on",
+      "status": "completed",
+      "error": null,
+      "teardown_errors": [],
+      "browser_artifact_validation": {
+        "acknowledged_final_ordinals": {
+          "worklet-1": 66536
+        },
+        "fixture_marker_records": 15,
+        "marker_brackets": [
+          {
+            "boundary": "start",
+            "browser_performance_ms": 2914.4000005722046,
+            "browser_wall_time_s": 1786840345.013,
+            "fixture_id": "S1-1",
+            "fixture_index": 0,
+            "playwright_batch_received_monotonic_s": 5033592.24170103,
+            "playwright_batch_received_wall_time_s": 1786840345.014838,
+            "record_index": 768,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 17853.5,
+            "browser_wall_time_s": 1786840359.952,
+            "fixture_id": "S1-1",
+            "fixture_index": 0,
+            "playwright_batch_received_monotonic_s": 5033607.180822193,
+            "playwright_batch_received_wall_time_s": 1786840359.9539592,
+            "record_index": 7937,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "start",
+            "browser_performance_ms": 17897.699999809265,
+            "browser_wall_time_s": 1786840359.997,
+            "fixture_id": "S1-2",
+            "fixture_index": 1,
+            "playwright_batch_received_monotonic_s": 5033607.224836577,
+            "playwright_batch_received_wall_time_s": 1786840359.9979742,
+            "record_index": 8066,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 31370.60000038147,
+            "browser_wall_time_s": 1786840373.469,
+            "fixture_id": "S1-2",
+            "fixture_index": 1,
+            "playwright_batch_received_monotonic_s": 5033620.698144869,
+            "playwright_batch_received_wall_time_s": 1786840373.4712832,
+            "record_index": 14595,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "start",
+            "browser_performance_ms": 31458.699999809265,
+            "browser_wall_time_s": 1786840373.558,
+            "fixture_id": "L1-1",
+            "fixture_index": 2,
+            "playwright_batch_received_monotonic_s": 5033620.786778655,
+            "playwright_batch_received_wall_time_s": 1786840373.5599182,
+            "record_index": 14596,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 61594.800000190735,
+            "browser_wall_time_s": 1786840403.694,
+            "fixture_id": "L1-1",
+            "fixture_index": 2,
+            "playwright_batch_received_monotonic_s": 5033650.922553049,
+            "playwright_batch_received_wall_time_s": 1786840403.6956913,
+            "record_index": 29189,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "start",
+            "browser_performance_ms": 61714.199999809265,
+            "browser_wall_time_s": 1786840403.813,
+            "fixture_id": "L1-2",
+            "fixture_index": 3,
+            "playwright_batch_received_monotonic_s": 5033651.041795185,
+            "playwright_batch_received_wall_time_s": 1786840403.8149326,
+            "record_index": 29318,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 84893.69999980927,
+            "browser_wall_time_s": 1786840426.993,
+            "fixture_id": "L1-2",
+            "fixture_index": 3,
+            "playwright_batch_received_monotonic_s": 5033674.220798251,
+            "playwright_batch_received_wall_time_s": 1786840426.9939349,
+            "record_index": 40455,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "start",
+            "browser_performance_ms": 84994.9000005722,
+            "browser_wall_time_s": 1786840427.094,
+            "fixture_id": "L2-1",
+            "fixture_index": 4,
+            "playwright_batch_received_monotonic_s": 5033674.322284232,
+            "playwright_batch_received_wall_time_s": 1786840427.0954232,
+            "record_index": 40456,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 116996.80000019073,
+            "browser_wall_time_s": 1786840459.096,
+            "fixture_id": "L2-1",
+            "fixture_index": 4,
+            "playwright_batch_received_monotonic_s": 5033706.323714868,
+            "playwright_batch_received_wall_time_s": 1786840459.096852,
+            "record_index": 56073,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "start",
+            "browser_performance_ms": 117156.10000038147,
+            "browser_wall_time_s": 1786840459.255,
+            "fixture_id": "L2-2",
+            "fixture_index": 5,
+            "playwright_batch_received_monotonic_s": 5033706.48378699,
+            "playwright_batch_received_wall_time_s": 1786840459.256927,
+            "record_index": 56202,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 149430.80000019073,
+            "browser_wall_time_s": 1786840491.53,
+            "fixture_id": "L2-2",
+            "fixture_index": 5,
+            "playwright_batch_received_monotonic_s": 5033738.757628726,
+            "playwright_batch_received_wall_time_s": 1786840491.5307655,
+            "record_index": 71819,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "start",
+            "browser_performance_ms": 149656.30000019073,
+            "browser_wall_time_s": 1786840491.755,
+            "fixture_id": "I1",
+            "fixture_index": 6,
+            "playwright_batch_received_monotonic_s": 5033738.983695652,
+            "playwright_batch_received_wall_time_s": 1786840491.7568338,
+            "record_index": 71948,
+            "script_id": "I1"
+          },
+          {
+            "boundary": "interruption-send",
+            "browser_performance_ms": 168230.19999980927,
+            "browser_wall_time_s": 1786840510.329,
+            "fixture_id": "I1",
+            "fixture_index": 6,
+            "playwright_batch_received_monotonic_s": 5033757.557090974,
+            "playwright_batch_received_wall_time_s": 1786840510.3302276,
+            "record_index": 80781,
+            "script_id": "I1"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 177913.4000005722,
+            "browser_wall_time_s": 1786840520.012,
+            "fixture_id": "I1",
+            "fixture_index": 6,
+            "playwright_batch_received_monotonic_s": 5033767.240763884,
+            "playwright_batch_received_wall_time_s": 1786840520.0139015,
+            "record_index": 85518,
+            "script_id": "I1"
+          }
+        ],
+        "marker_sequence": [
+          {
+            "boundary": "start",
+            "capture_enabled": true,
+            "fixture_id": "S1-1",
+            "fixture_index": 0,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": true,
+            "fixture_id": "S1-1",
+            "fixture_index": 0,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "start",
+            "capture_enabled": true,
+            "fixture_id": "S1-2",
+            "fixture_index": 1,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": true,
+            "fixture_id": "S1-2",
+            "fixture_index": 1,
+            "script_id": "S1"
+          },
+          {
+            "boundary": "start",
+            "capture_enabled": true,
+            "fixture_id": "L1-1",
+            "fixture_index": 2,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": true,
+            "fixture_id": "L1-1",
+            "fixture_index": 2,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "start",
+            "capture_enabled": true,
+            "fixture_id": "L1-2",
+            "fixture_index": 3,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": true,
+            "fixture_id": "L1-2",
+            "fixture_index": 3,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "start",
+            "capture_enabled": true,
+            "fixture_id": "L2-1",
+            "fixture_index": 4,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": true,
+            "fixture_id": "L2-1",
+            "fixture_index": 4,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "start",
+            "capture_enabled": true,
+            "fixture_id": "L2-2",
+            "fixture_index": 5,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": true,
+            "fixture_id": "L2-2",
+            "fixture_index": 5,
+            "script_id": "L2"
+          },
+          {
+            "boundary": "start",
+            "capture_enabled": true,
+            "fixture_id": "I1",
+            "fixture_index": 6,
+            "script_id": "I1"
+          },
+          {
+            "boundary": "interruption-send",
+            "capture_enabled": true,
+            "fixture_id": "I1",
+            "fixture_index": 6,
+            "script_id": "I1"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": true,
+            "fixture_id": "I1",
+            "fixture_index": 6,
+            "script_id": "I1"
+          }
+        ],
+        "persisted_last_ordinals": {
+          "worklet-1": 66536
+        },
+        "record_count": 85601,
+        "valid": true
+      }
+    },
+    {
+      "capture": "off",
+      "status": "completed",
+      "error": null,
+      "teardown_errors": [],
+      "browser_artifact_validation": {
+        "acknowledged_final_ordinals": {},
+        "fixture_marker_records": 2,
+        "marker_brackets": [
+          {
+            "boundary": "start",
+            "browser_performance_ms": 7226.200000762939,
+            "browser_wall_time_s": 1786840528.067,
+            "fixture_id": "capture-off-L1",
+            "fixture_index": 7,
+            "playwright_batch_received_monotonic_s": 5033775.296193411,
+            "playwright_batch_received_wall_time_s": 1786840528.0693316,
+            "record_index": 0,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "complete",
+            "browser_performance_ms": 35153.70000076294,
+            "browser_wall_time_s": 1786840555.994,
+            "fixture_id": "capture-off-L1",
+            "fixture_index": 7,
+            "playwright_batch_received_monotonic_s": 5033803.223175551,
+            "playwright_batch_received_wall_time_s": 1786840555.996313,
+            "record_index": 1,
+            "script_id": "L1"
+          }
+        ],
+        "marker_sequence": [
+          {
+            "boundary": "start",
+            "capture_enabled": false,
+            "fixture_id": "capture-off-L1",
+            "fixture_index": 7,
+            "script_id": "L1"
+          },
+          {
+            "boundary": "complete",
+            "capture_enabled": false,
+            "fixture_id": "capture-off-L1",
+            "fixture_index": 7,
+            "script_id": "L1"
+          }
+        ],
+        "persisted_last_ordinals": {},
+        "record_count": 2,
+        "valid": true
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "fixture_id": "S1-1",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_1"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": "The red balloon floated over the quiet village square, a simple yet vivid image.",
+        "mismatch_reason": null,
+        "response_owned_traced_text": "The red balloon floated over the quiet village square, a simple yet vivid image.",
+        "transcript_equal": true
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 35,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 35,
+        "window_end_performance_ms": 17841.0,
+        "window_end_wall_time_s": 1786840359.94,
+        "window_start_performance_ms": 15757.10000038147,
+        "window_start_wall_time_s": 1786840357.856
+      },
+      "interruption": null
+    },
+    {
+      "fixture_id": "S1-2",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_2"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": " The red balloon floated over the quiet village square, a simple yet vivid image.",
+        "mismatch_reason": null,
+        "response_owned_traced_text": " The red balloon floated over the quiet village square, a simple yet vivid image.",
+        "transcript_equal": true
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 68,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 68,
+        "window_end_performance_ms": 31350.300000190735,
+        "window_end_wall_time_s": 1786840373.449,
+        "window_start_performance_ms": 29316.800000190735,
+        "window_start_wall_time_s": 1786840371.416
+      },
+      "interruption": null
+    },
+    {
+      "fixture_id": "L1-1",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_3"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": " The quick brown fox jumped over the lazy dog, while seventeen green dragons circled the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+        "mismatch_reason": null,
+        "response_owned_traced_text": " The quick brown fox jumped over the lazy dog, while seventeen green dragons circled the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+        "transcript_equal": true
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 122,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 122,
+        "window_end_performance_ms": 61575.900000572205,
+        "window_end_wall_time_s": 1786840403.675,
+        "window_start_performance_ms": 59506.5,
+        "window_start_wall_time_s": 1786840401.605
+      },
+      "interruption": null
+    },
+    {
+      "fixture_id": "L1-2",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_4"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": "",
+        "mismatch_reason": "joined browser transcript is empty while response-owned traced text is nonempty",
+        "response_owned_traced_text": " The quick brown fox jumped over the lazy dog, while seventeen green dragons",
+        "transcript_equal": false
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 152,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 152,
+        "window_end_performance_ms": 84876.69999980927,
+        "window_end_wall_time_s": 1786840426.976,
+        "window_start_performance_ms": 82795.69999980927,
+        "window_start_wall_time_s": 1786840424.895
+      },
+      "interruption": null
+    },
+    {
+      "fixture_id": "L2-1",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_5"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": " The quick brown fox jumped over the lazy dog, while seventeen green dragons On Tuesday morning, the harbor filled with small boats carrying baskets of silver fish, and the old lighthouse keeper wrote down the number of gulls, the color of the clouds, and the exact minute the tide turned.",
+        "mismatch_reason": "joined browser transcript differs from response-owned traced text",
+        "response_owned_traced_text": " On Tuesday morning, the harbor filled with small boats carrying baskets of silver fish, and the old lighthouse keeper wrote down the number of gulls, the color of the clouds, and the exact minute the tide turned.",
+        "transcript_equal": false
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 214,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 214,
+        "window_end_performance_ms": 116978.5,
+        "window_end_wall_time_s": 1786840459.077,
+        "window_start_performance_ms": 114764.9000005722,
+        "window_start_wall_time_s": 1786840456.864
+      },
+      "interruption": null
+    },
+    {
+      "fixture_id": "L2-2",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_6"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": " On Tuesday morning, the harbor filled with small boats carrying baskets of silver fish, and the old lighthouse keeper wrote down the number of gulls, the color of the clouds, and the exact minute the tide turned.",
+        "mismatch_reason": null,
+        "response_owned_traced_text": " On Tuesday morning, the harbor filled with small boats carrying baskets of silver fish, and the old lighthouse keeper wrote down the number of gulls, the color of the clouds, and the exact minute the tide turned.",
+        "transcript_equal": true
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 276,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 276,
+        "window_end_performance_ms": 149412.80000019073,
+        "window_end_wall_time_s": 1786840491.512,
+        "window_start_performance_ms": 147159.80000019073,
+        "window_start_wall_time_s": 1786840489.259
+      },
+      "interruption": null
+    },
+    {
+      "fixture_id": "I1",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_7",
+        "response_20b30092-96e2-4d5b-987d-318cce8d936b_8"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four.",
+        "mismatch_reason": "joined browser transcript differs from response-owned traced text",
+        "response_owned_traced_text": " Two plus two is four.",
+        "transcript_equal": false
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 327,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 327,
+        "window_end_performance_ms": 177895.69999980927,
+        "window_end_wall_time_s": 1786840519.995,
+        "window_start_performance_ms": 175637.69999980927,
+        "window_start_wall_time_s": 1786840517.737
+      },
+      "interruption": {
+        "actual_offset_s": 4.034,
+        "after_first_audio_s": 4.0,
+        "rtvi_send_marker_event_index": 300,
+        "second_answer_gate_evidence": {
+          "joined_browser_transcript": " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four.",
+          "response_owned_traced_text": " Two plus two is four.",
+          "second_answer_adjudication": true
+        },
+        "second_answer_transcript_evidence": [
+          " The quick brown fox jumped over the lazy dog, while seventeen green dragons Two plus two is four."
+        ],
+        "send_attempt_wall_time_s": 1786840510.297053,
+        "send_wall_time_s": 1786840510.3543296,
+        "typed_text": "Stop. What is two plus two?",
+        "typed_text_sha256": "a7f0422c32dd6d4bb5898d78e7aeee4004bfc3abd7a67a43d7d748cf757034a4"
+      }
+    },
+    {
+      "fixture_id": "capture-off-L1",
+      "completion_status": "completed",
+      "error": null,
+      "response_ids": [
+        "response_79c38e99-29e8-4dd2-a4ae-58be19f28a77_1"
+      ],
+      "transcript_gate_evidence": {
+        "joined_browser_transcript": "I cannot visualize or process that scene, but I can tell you the current UTC time if that helps. what is the current UTC time?",
+        "mismatch_reason": null,
+        "response_owned_traced_text": "I cannot visualize or process that scene, but I can tell you the current UTC time if that helps. what is the current UTC time?",
+        "transcript_equal": true
+      },
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "succeeded"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "quiescence_barrier": {
+        "bot_message_count": 0,
+        "bot_message_types": [],
+        "end_message_count": 50,
+        "identity": "ordered-channel-quiescence-v1",
+        "observed_message_count": 0,
+        "passed": true,
+        "quiet_window_ms": 2000.0,
+        "start_message_count": 50,
+        "window_end_performance_ms": 35132.800000190735,
+        "window_end_wall_time_s": 1786840555.973,
+        "window_start_performance_ms": 33091.70000076294,
+        "window_start_wall_time_s": 1786840553.932
+      },
+      "interruption": null
+    }
+  ]
+}

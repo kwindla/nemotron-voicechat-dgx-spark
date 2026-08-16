@@ -77,6 +77,7 @@ OUTPUT_SAMPLE_RATE = 22_050
 FRAME_SECONDS = 0.08
 FRAME_SAMPLES = int(INPUT_SAMPLE_RATE * FRAME_SECONDS)
 MAX_INPUT_MESSAGE_BYTES = FRAME_SAMPLES * 2 * 16
+REALTIME_RECEIVE_QUEUE_MESSAGES = 256
 MAX_TYPED_INPUT_CHARS = 1_000
 FUNCTION_CALL_TIMEOUT_SECONDS = 30.0
 FUNCTION_OUTPUT_APPLY_MAX_FRAMES = FUNCTION_OUTPUT_RECOVERY_MAX_FRAMES
@@ -294,6 +295,64 @@ class UserEouSettlementFailure(RuntimeError):
         self.evidence = evidence
 
 
+@dataclass
+class UserEouEarlyFenceArm:
+    """Revocable blank-fence evidence captured before a client EOU commit."""
+
+    client_turn_id: int
+    target_blank_frames: int
+    armed_transport_frame: int
+    armed_model_frame: int
+    blank_frames: int
+    eligible_audio_frames: int = 1
+
+    def observe(self, *, blank_frames: int, transport_frame: int, model_frame: int) -> None:
+        """Advance an arm only with another speech-gate-eligible real frame."""
+
+        if blank_frames < 0:
+            raise ValueError("pre-armed RNNT blank count must be non-negative")
+        self.blank_frames = blank_frames
+        self.eligible_audio_frames += 1
+
+    def evidence(self) -> dict[str, int]:
+        return {
+            "client_turn_id": self.client_turn_id,
+            "target_blank_frames": self.target_blank_frames,
+            "armed_transport_frame": self.armed_transport_frame,
+            "armed_model_frame": self.armed_model_frame,
+            "prearmed_blank_frames": self.blank_frames,
+            "eligible_audio_frames": self.eligible_audio_frames,
+        }
+
+
+def split_fence_eligible_pcm(
+    pcm16: bytes,
+    *,
+    threshold_dbfs: float,
+) -> tuple[bytes, bytes, bool]:
+    """Split complete, quiet model frames from queued microphone PCM.
+
+    Eligibility is deliberately fail-closed: only complete 80 ms frames whose
+    measured RMS is strictly below the configured speech gate are returned in
+    the consumable prefix. The first speech-bearing frame and all bytes after it
+    remain ordered for the ordinary input path.
+    """
+
+    if len(pcm16) % 2:
+        raise ValueError("PCM16 settlement audio must contain whole samples")
+    frame_bytes = FRAME_SAMPLES * 2
+    eligible_bytes = 0
+    first_ineligible = False
+    for offset in range(0, len(pcm16) - frame_bytes + 1, frame_bytes):
+        frame = pcm16_bytes_to_float32(pcm16[offset : offset + frame_bytes])
+        rms_dbfs = float(audio_stats(frame)["rms_dbfs"])
+        if not math.isfinite(rms_dbfs) or rms_dbfs >= threshold_dbfs:
+            first_ineligible = True
+            break
+        eligible_bytes += frame_bytes
+    return pcm16[:eligible_bytes], pcm16[eligible_bytes:], first_ineligible
+
+
 def _eartts_reset_count(engine: Any) -> int:
     pipeline = getattr(engine, "pipeline", None)
     wrapper = getattr(pipeline, "s2s_model", None)
@@ -410,10 +469,17 @@ class UserEouSettlement:
     assistant_text_baseline: str
     function_text_baseline: str
     eartts_reset_count_starting: int
+    prearmed_blank_frames: int = 0
+    post_commit_blank_deficit: int = 0
+    prearm_evidence: dict[str, Any] | None = None
+    post_commit_steps: list[dict[str, Any]] | None = None
     expected_client_turn_id: int | None = None
     eartts_transition_count_starting: int | None = None
     eartts_reuse_count_starting: int | None = None
     model_steps: int = 0
+    real_audio_model_steps: int = 0
+    synthetic_model_steps: int = 0
+    real_audio_stopped_by_speech_gate: bool = False
     steps: list[dict[str, Any]] | None = None
     fused_terminal_bos: bool = False
     separate_terminal_bos: bool = False
@@ -425,6 +491,8 @@ class UserEouSettlement:
             raise ValueError("user EOU settlement target must be positive")
         if self.steps is None:
             self.steps = []
+        if self.post_commit_steps is None:
+            self.post_commit_steps = []
 
     @classmethod
     def begin(
@@ -433,9 +501,15 @@ class UserEouSettlement:
         result: Any,
         *,
         expected_client_turn_id: int | None = None,
+        prearmed_blank_frames: int = 0,
+        prearm_evidence: dict[str, Any] | None = None,
+        post_commit_steps: list[dict[str, Any]] | None = None,
     ) -> UserEouSettlement:
         target = int(engine.user_eou_settlement_blank_frames())
         starting = int(engine.rnnt_blank_count(result))
+        prearmed = int(prearmed_blank_frames)
+        if prearmed < 0 or prearmed > starting:
+            raise ValueError("pre-armed RNNT blank count must be within the commit count")
         epoch = _eartts_epoch_status(engine)
         settlement = cls(
             target_blank_frames=target,
@@ -444,6 +518,14 @@ class UserEouSettlement:
             assistant_text_baseline=str(getattr(result, "assistant_text", "") or ""),
             function_text_baseline=str(getattr(result, "function_text", "") or ""),
             eartts_reset_count_starting=_eartts_reset_count(engine),
+            prearmed_blank_frames=prearmed,
+            post_commit_blank_deficit=max(0, target - starting),
+            prearm_evidence=(None if prearm_evidence is None else dict(prearm_evidence)),
+            post_commit_steps=(
+                []
+                if post_commit_steps is None
+                else [dict(step) for step in post_commit_steps]
+            ),
             expected_client_turn_id=expected_client_turn_id,
             eartts_transition_count_starting=(
                 None if epoch is None else int(epoch["bos_transition_count"])
@@ -474,10 +556,20 @@ class UserEouSettlement:
             )
         return True
 
-    def observe(self, engine: Any, result: Any) -> None:
+    def observe(
+        self,
+        engine: Any,
+        result: Any,
+        *,
+        input_source: str = "synthetic_silence",
+    ) -> None:
         """Record and validate one model step before the caller publishes it."""
 
         self.model_steps += 1
+        if input_source == "queued_microphone_audio":
+            self.real_audio_model_steps += 1
+        else:
+            self.synthetic_model_steps += 1
         self.ending_blank_frames = int(engine.rnnt_blank_count(result))
         turn_state = result.turn_state or {}
         boundary = turn_state.get("response_boundary") or {}
@@ -510,6 +602,7 @@ class UserEouSettlement:
             perception_frame = int(perception_frame_fn())
         step = {
             "model_step": self.model_steps,
+            "settlement_input_source": input_source,
             "frame_index": int(getattr(result, "frame_index", -1)),
             "audio_frame_index_after": int(getattr(engine, "audio_frame_index", -1)),
             "perception_frame_idx_after": perception_frame,
@@ -563,10 +656,20 @@ class UserEouSettlement:
                 self.evidence(),
             )
 
-    def observe_fused_terminal(self, engine: Any, result: Any) -> None:
+    def observe_fused_terminal(
+        self,
+        engine: Any,
+        result: Any,
+        *,
+        input_source: str = "synthetic_silence",
+    ) -> None:
         """Validate the one no-tools position that proves the fence and opens BOS."""
 
         self.model_steps += 1
+        if input_source == "queued_microphone_audio":
+            self.real_audio_model_steps += 1
+        else:
+            self.synthetic_model_steps += 1
         turn_state = result.turn_state or {}
         marker = turn_state.get("client_eou_blank_fence") or {}
         boundary = turn_state.get("response_boundary") or {}
@@ -614,6 +717,7 @@ class UserEouSettlement:
             perception_frame = int(perception_frame_fn())
         step = {
             "model_step": self.model_steps,
+            "settlement_input_source": input_source,
             "frame_index": int(getattr(result, "frame_index", -1)),
             "audio_frame_index_after": int(getattr(engine, "audio_frame_index", -1)),
             "perception_frame_idx_after": perception_frame,
@@ -947,9 +1051,18 @@ class UserEouSettlement:
         evidence = {
             "target_blank_frames": self.target_blank_frames,
             "starting_blank_frames": self.starting_blank_frames,
+            "prearmed_blank_frames": self.prearmed_blank_frames,
+            "post_commit_blank_deficit": self.post_commit_blank_deficit,
+            "prearm": self.prearm_evidence,
+            "post_commit_steps": list(self.post_commit_steps or []),
             "ending_blank_frames": self.ending_blank_frames,
             "max_model_steps": self.max_model_steps,
             "model_steps": self.model_steps,
+            "real_audio_model_steps": self.real_audio_model_steps,
+            "synthetic_model_steps": self.synthetic_model_steps,
+            "real_audio_stopped_by_speech_gate": (
+                self.real_audio_stopped_by_speech_gate
+            ),
             "eartts_reset_count_starting": self.eartts_reset_count_starting,
             "fence_reached": self.ending_blank_frames >= self.target_blank_frames,
             "within_bound": self.model_steps <= self.max_model_steps,
@@ -2026,6 +2139,48 @@ def pcm16_bytes_to_float32(payload: bytes) -> np.ndarray:
     if len(payload) % 2:
         raise ValueError("PCM16 payload has an odd byte count")
     return np.frombuffer(payload, dtype="<i2").astype(np.float32) / 32768.0
+
+
+def decode_audio_append_payload(body: dict[str, Any]) -> bytes:
+    """Validate one realtime PCM append and return its exact payload."""
+
+    if body.get("encoding") != "pcm16":
+        raise RealtimeProtocolError(
+            "unsupported_audio_encoding",
+            "Only pcm16 input is supported",
+        )
+    try:
+        sample_rate = int(body.get("sample_rate", 0))
+        channels = int(body.get("channels", 0))
+    except (ValueError, TypeError) as exc:
+        raise RealtimeProtocolError("invalid_audio", str(exc)) from exc
+    if sample_rate != INPUT_SAMPLE_RATE:
+        raise RealtimeProtocolError(
+            "unsupported_sample_rate",
+            f"Input must be {INPUT_SAMPLE_RATE} Hz",
+        )
+    if channels != 1:
+        raise RealtimeProtocolError(
+            "unsupported_channel_count",
+            "Input must be mono",
+        )
+    try:
+        payload = base64.b64decode(body.get("audio", ""), validate=True)
+    except (ValueError, TypeError, base64.binascii.Error) as exc:
+        raise RealtimeProtocolError("invalid_audio", str(exc)) from exc
+    if not payload:
+        raise RealtimeProtocolError("empty_audio", "Audio payload must not be empty")
+    if len(payload) % 2:
+        raise RealtimeProtocolError(
+            "invalid_audio",
+            "PCM16 audio must contain whole samples",
+        )
+    if len(payload) > MAX_INPUT_MESSAGE_BYTES:
+        raise RealtimeProtocolError(
+            "audio_packet_too_large",
+            "Audio packet is too large",
+        )
+    return payload
 
 
 def float32_to_pcm16_bytes(samples: np.ndarray) -> bytes:
@@ -6021,6 +6176,7 @@ def create_app(
         open_client_turn_id: int | None = None
         started_client_turns: dict[int, str | None] = {}
         completed_client_turns: dict[int, str | None] = {}
+        early_fence_arm: UserEouEarlyFenceArm | None = None
         function_cycle_call_id: str | None = None
         pending_bos_settlement: UserEouSettlement | None = None
         pending_function_turn_id: str | None = None
@@ -6344,13 +6500,17 @@ def create_app(
             before_send: Callable[[StepResult], None] | None = None,
             synthetic_control: bool = False,
             suppress_response_output: bool = False,
+            fence_settlement: bool = False,
+            model_input_provenance: str | None = None,
         ) -> StepResult | None:
             """Feed PCM through the single RNNT-owned model input path."""
 
             nonlocal transport_frame, session_started, last_user_text, close_reason
             nonlocal last_model_result, pending_bos_settlement, pending_function_turn_id
             nonlocal cancelling_unpublished_function_turn_id
+            nonlocal early_fence_arm
             decoded_packet = pcm16_bytes_to_float32(payload)
+            provenance = model_input_provenance or f"{source}_audio"
             last_result: StepResult | None = None
             trace.input_pcm(payload)
             trace.event(
@@ -6358,6 +6518,7 @@ def create_app(
                 bytes=len(payload),
                 source=source,
                 job_id=job_id,
+                model_input_provenance=provenance,
                 audio=audio_stats(decoded_packet),
             )
             async with model_input_lock:
@@ -6444,6 +6605,47 @@ def create_app(
                     )
                     last_result = result
                     last_model_result = result
+                    frame_dbfs = float(frame_stats["rms_dbfs"])
+                    if (
+                        source == "microphone"
+                        and provenance == "microphone_audio"
+                        and open_client_turn_id is not None
+                        and not synthetic_control
+                        and not fence_settlement
+                    ):
+                        if math.isfinite(frame_dbfs) and frame_dbfs < speech_gate_dbfs:
+                            blank_frames = int(engine.rnnt_blank_count(result))
+                            if (
+                                early_fence_arm is None
+                                or early_fence_arm.client_turn_id != open_client_turn_id
+                            ):
+                                early_fence_arm = UserEouEarlyFenceArm(
+                                    client_turn_id=open_client_turn_id,
+                                    target_blank_frames=int(
+                                        engine.user_eou_settlement_blank_frames()
+                                    ),
+                                    armed_transport_frame=transport_frame,
+                                    armed_model_frame=int(result.frame_index),
+                                    blank_frames=blank_frames,
+                                )
+                                trace.event(
+                                    "user_eou_fence_prearmed",
+                                    **early_fence_arm.evidence(),
+                                )
+                            else:
+                                early_fence_arm.observe(
+                                    blank_frames=blank_frames,
+                                    transport_frame=transport_frame,
+                                    model_frame=int(result.frame_index),
+                                )
+                        elif early_fence_arm is not None:
+                            trace.event(
+                                "user_eou_fence_prearm_revoked",
+                                reason="speech_gate_active",
+                                audio_rms_dbfs=frame_dbfs,
+                                **early_fence_arm.evidence(),
+                            )
+                            early_fence_arm = None
                     if (
                         cancelling_unpublished_function_turn_id is not None
                         and function_cycle_call_id is None
@@ -6499,12 +6701,77 @@ def create_app(
                         transport_gate.observe_response_end()
             return last_result
 
+        def requeue_microphone_pcm(
+            payload: bytes,
+            *,
+            template: dict[str, Any],
+        ) -> None:
+            """Put inspected PCM back at the head of ordinary client input."""
+
+            chunks = [
+                payload[offset : offset + MAX_INPUT_MESSAGE_BYTES]
+                for offset in range(0, len(payload), MAX_INPUT_MESSAGE_BYTES)
+            ]
+            for chunk in reversed(chunks):
+                body = dict(template)
+                body["audio"] = base64.b64encode(chunk).decode("ascii")
+                text = json.dumps(body, separators=(",", ":"))
+                received_ahead.appendleft(
+                    {"type": "websocket.receive", "text": text}
+                )
+
+        def take_queued_settlement_frame() -> tuple[bytes | None, bool]:
+            """Take one complete quiet frame without crossing a client event."""
+
+            combined = bytearray()
+            template: dict[str, Any] | None = None
+            while len(combined) < FRAME_SAMPLES * 2:
+                message = receive_buffered_nowait()
+                if message is None:
+                    break
+                text = message.get("text")
+                try:
+                    body = json.loads(text) if isinstance(text, str) else None
+                except json.JSONDecodeError:
+                    body = None
+                if not isinstance(body, dict) or body.get("type") != "input_audio_buffer.append":
+                    received_ahead.appendleft(message)
+                    break
+                try:
+                    payload = decode_audio_append_payload(body)
+                except (RealtimeProtocolError, ValueError, TypeError):
+                    received_ahead.appendleft(message)
+                    break
+                if template is None:
+                    template = body
+                combined.extend(payload)
+            frame_bytes = FRAME_SAMPLES * 2
+            if template is None:
+                return None, False
+            if len(combined) < frame_bytes:
+                requeue_microphone_pcm(bytes(combined), template=template)
+                return None, False
+            frame = bytes(combined[:frame_bytes])
+            remainder = bytes(combined[frame_bytes:])
+            eligible, _, first_ineligible = split_fence_eligible_pcm(
+                frame,
+                threshold_dbfs=speech_gate_dbfs,
+            )
+            if not eligible:
+                requeue_microphone_pcm(bytes(combined), template=template)
+                return None, first_ineligible
+            if remainder:
+                requeue_microphone_pcm(remainder, template=template)
+            return frame, False
+
         async def settle_user_eou(
             *,
             source: str,
             job_id: str | None,
             fuse_final_bos: bool,
             expected_client_turn_id: int | None = None,
+            prearm: UserEouEarlyFenceArm | None = None,
+            post_commit_steps: list[dict[str, Any]] | None = None,
             on_fused_terminal: Callable[[], Awaitable[None]] | None = None,
         ) -> UserEouSettlement:
             """Advance the minimum bounded blank fence before forcing BOS."""
@@ -6514,17 +6781,30 @@ def create_app(
                 engine,
                 last_model_result,
                 expected_client_turn_id=expected_client_turn_id,
+                prearmed_blank_frames=(0 if prearm is None else prearm.blank_frames),
+                prearm_evidence=(None if prearm is None else prearm.evidence()),
+                post_commit_steps=post_commit_steps,
             )
             latch_armed = False
+            settlement_input_source = "synthetic_silence"
+            real_audio_consumption_stopped = False
 
             async def observe_settlement(result: StepResult) -> None:
                 marker = (result.turn_state or {}).get("client_eou_blank_fence")
                 if marker is not None:
-                    settlement.observe_fused_terminal(engine, result)
+                    settlement.observe_fused_terminal(
+                        engine,
+                        result,
+                        input_source=settlement_input_source,
+                    )
                     if on_fused_terminal is not None:
                         await on_fused_terminal()
                 else:
-                    settlement.observe(engine, result)
+                    settlement.observe(
+                        engine,
+                        result,
+                        input_source=settlement_input_source,
+                    )
 
             try:
                 while settlement.needs_step(engine, last_model_result):
@@ -6535,11 +6815,35 @@ def create_app(
                     ):
                         engine.request_user_eou_at_blank_fence(settlement.target_blank_frames)
                         latch_armed = True
+                    queued_frame = None
+                    real_audio_blocked = False
+                    if source == "microphone" and not real_audio_consumption_stopped:
+                        queued_frame, real_audio_blocked = take_queued_settlement_frame()
+                    settlement_input_source = (
+                        "queued_microphone_audio"
+                        if queued_frame is not None
+                        else "synthetic_silence"
+                    )
+                    if real_audio_blocked:
+                        real_audio_consumption_stopped = True
+                        settlement.real_audio_stopped_by_speech_gate = True
+                        trace.event(
+                            "user_eou_settlement_real_audio_blocked",
+                            reason="speech_gate_active",
+                            threshold_dbfs=speech_gate_dbfs,
+                            settlement=settlement.evidence(),
+                        )
                     await process_pcm(
-                        b"\x00\x00" * FRAME_SAMPLES,
+                        queued_frame or (b"\x00\x00" * FRAME_SAMPLES),
                         source=source,
                         job_id=job_id,
                         before_send=observe_settlement,
+                        fence_settlement=True,
+                        model_input_provenance=(
+                            "queued_microphone_audio"
+                            if queued_frame is not None
+                            else "synthetic_settlement"
+                        ),
                     )
             except UserEouSettlementFailure as exc:
                 failure_code = exc.code
@@ -6696,6 +7000,7 @@ def create_app(
                     job_id=None,
                     synthetic_control=True,
                     suppress_response_output=True,
+                    model_input_provenance="synthetic_response_cancel",
                 )
                 if not protocol.response_open:
                     return
@@ -6767,6 +7072,7 @@ def create_app(
                     source="microphone",
                     job_id=None,
                     synthetic_control=True,
+                    model_input_provenance="synthetic_response_drain",
                 )
                 drained_frames += 1
             evidence["drained_frames"] = drained_frames
@@ -6785,7 +7091,12 @@ def create_app(
             )
             frame = b"\x00\x00" * (INPUT_SAMPLE_RATE // 50)
             for _ in range(math.ceil(seconds / 0.02)):
-                await process_pcm(frame, source="typed", job_id=job.job_id)
+                await process_pcm(
+                    frame,
+                    source="typed",
+                    job_id=job.job_id,
+                    model_input_provenance="typed_trailing_silence",
+                )
 
         async def run_typed_job(job: ActiveTypedInput) -> None:
             nonlocal active_typed, close_reason
@@ -6848,6 +7159,7 @@ def create_app(
                             source="typed",
                             job_id=job.job_id,
                             before_first_model_frame=begin_mutation,
+                            model_input_provenance="typed_tail_padding",
                         )
             except PocketSynthesisCancelled:
                 disposition = "replaced" if job.replacement_requested else "cancelled"
@@ -6902,6 +7214,7 @@ def create_app(
                                     float32_to_pcm16_bytes(tail),
                                     source="typed",
                                     job_id=job.job_id,
+                                    model_input_provenance="typed_tail_padding",
                                 )
                             # No recovery here: the typed path owns deliberate
                             # cancel-then-replace interruption semantics; recovery
@@ -6924,6 +7237,7 @@ def create_app(
                                     source="typed",
                                     job_id=job.job_id,
                                     before_send=validate_typed_terminal,
+                                    model_input_provenance="synthetic_terminal_bos",
                                 )
                             engine.reset_user_transcript()
                         else:
@@ -7064,8 +7378,43 @@ def create_app(
         )
         engine.configure_external_tools({})
 
+        inbound_messages: asyncio.Queue[dict[str, Any]] = asyncio.Queue(
+            maxsize=REALTIME_RECEIVE_QUEUE_MESSAGES
+        )
+        received_ahead: deque[dict[str, Any]] = deque()
+        receiver_task: asyncio.Task[None] | None = None
+
+        async def receive_pump() -> None:
+            """Keep transport input flowing while model work owns the handler."""
+
+            try:
+                while True:
+                    message = await websocket.receive()
+                    await inbound_messages.put(message)
+                    if message.get("type") == "websocket.disconnect":
+                        return
+            except asyncio.CancelledError:
+                raise
+            except WebSocketDisconnect:
+                await inbound_messages.put({"type": "websocket.disconnect"})
+            except Exception as exc:
+                await inbound_messages.put(
+                    {"type": "voicechat.receive_error", "exception": exc}
+                )
+
+        def receive_buffered_nowait() -> dict[str, Any] | None:
+            if received_ahead:
+                return received_ahead.popleft()
+            try:
+                return inbound_messages.get_nowait()
+            except asyncio.QueueEmpty:
+                return None
+
         async def receive_or_terminal() -> dict[str, Any]:
-            receive_task = asyncio.create_task(websocket.receive())
+            buffered = receive_buffered_nowait()
+            if buffered is not None:
+                return buffered
+            receive_task = asyncio.create_task(inbound_messages.get())
             terminal_task = asyncio.create_task(terminal_session.wait())
             done, _ = await asyncio.wait(
                 {receive_task, terminal_task},
@@ -7092,6 +7441,10 @@ def create_app(
                     }
                 )
             )
+            receiver_task = asyncio.create_task(
+                receive_pump(),
+                name=f"voicechat-receive-{session_id}",
+            )
             while True:
                 if deferred_client_input and function_cycle_call_id is None:
                     body = deferred_client_input.popleft()
@@ -7113,6 +7466,8 @@ def create_app(
                         message = receive_task.result()
                     else:
                         message = await receive_or_terminal()
+                    if message.get("type") == "voicechat.receive_error":
+                        raise message["exception"]
                     if message.get("type") == "websocket.disconnect":
                         break
                     if message.get("bytes") is not None:
@@ -7500,6 +7855,8 @@ def create_app(
                             source="microphone",
                             job_id=None,
                             before_send=validate_pending_terminal,
+                            synthetic_control=True,
+                            model_input_provenance="synthetic_function_recovery",
                         )
 
                     applied = await advance_function_output_recovery(
@@ -7672,6 +8029,7 @@ def create_app(
                         evidence=prepare_evidence,
                     )
                     open_client_turn_id = client_turn_id
+                    early_fence_arm = None
                     await websocket.send_json(
                         protocol.begin_input_turn("microphone", client_turn_id)
                     )
@@ -7752,6 +8110,11 @@ def create_app(
                             close_code=1002,
                         )
                         return
+                    # The commit-receipt edge freezes precommit evidence. Nothing
+                    # processed below this point may create or advance the arm.
+                    commit_prearm = early_fence_arm
+                    early_fence_arm = None
+                    post_commit_steps: list[dict[str, Any]] = []
                     raw_diagnostics = body.get("diagnostics")
                     client_diagnostics = {
                         key: value
@@ -7790,11 +8153,38 @@ def create_app(
                         ),
                     )
                     if pcm_buffer.pending_samples:
+                        real_samples = pcm_buffer.pending_samples
+                        blank_frames_before = int(
+                            engine.rnnt_blank_count(last_model_result)
+                        )
                         tail = pcm_buffer.flush()
-                        await process_pcm(
+                        tail_result = await process_pcm(
                             float32_to_pcm16_bytes(tail),
                             source="microphone",
                             job_id=None,
+                            model_input_provenance="commit_tail_padding",
+                        )
+                        blank_frames_after = int(engine.rnnt_blank_count(tail_result))
+                        padding_evidence = {
+                            "model_input_provenance": "commit_tail_padding",
+                            "real_samples": real_samples,
+                            "padded_samples": FRAME_SAMPLES - real_samples,
+                            "blank_frames_before": blank_frames_before,
+                            "blank_frames_after": blank_frames_after,
+                            "blank_frames_advanced": max(
+                                0, blank_frames_after - blank_frames_before
+                            ),
+                            "model_frame": (
+                                None
+                                if tail_result is None
+                                else int(tail_result.frame_index)
+                            ),
+                        }
+                        post_commit_steps.append(padding_evidence)
+                        trace.event(
+                            "user_eou_post_commit_frame",
+                            client_turn_id=client_turn_id,
+                            **padding_evidence,
                         )
                     arm_fn = getattr(engine, "arm_eartts_epoch", None)
                     if callable(arm_fn):
@@ -7828,11 +8218,27 @@ def create_app(
                         commit_ack_sent = True
 
                     await recover_pre_eou_activity("microphone_commit")
+                    current_blank_frames = int(engine.rnnt_blank_count(last_model_result))
+                    if (
+                        commit_prearm is not None
+                        and (
+                            commit_prearm.client_turn_id != client_turn_id
+                            or commit_prearm.blank_frames > current_blank_frames
+                        )
+                    ):
+                        trace.event(
+                            "user_eou_fence_prearm_rejected",
+                            current_blank_frames=current_blank_frames,
+                            **commit_prearm.evidence(),
+                        )
+                        commit_prearm = None
                     microphone_settlement = await settle_user_eou(
                         source="microphone",
                         job_id=None,
                         fuse_final_bos=not session_tools,
                         expected_client_turn_id=client_turn_id,
+                        prearm=commit_prearm,
+                        post_commit_steps=post_commit_steps,
                         on_fused_terminal=acknowledge_fused_terminal,
                     )
                     fused_terminal = microphone_settlement.fused_terminal_bos
@@ -7859,6 +8265,8 @@ def create_app(
                             source="microphone",
                             job_id=None,
                             before_send=validate_microphone_terminal,
+                            synthetic_control=True,
+                            model_input_provenance="synthetic_terminal_bos",
                         )
                     engine.reset_user_transcript()
                     open_client_turn_id = None
@@ -7959,43 +8367,7 @@ def create_app(
                         )
                         continue
                     try:
-                        if body.get("encoding") != "pcm16":
-                            raise RealtimeProtocolError(
-                                "unsupported_audio_encoding",
-                                "Only pcm16 input is supported",
-                            )
-                        if int(body.get("sample_rate", 0)) != INPUT_SAMPLE_RATE:
-                            raise RealtimeProtocolError(
-                                "unsupported_sample_rate",
-                                f"Input must be {INPUT_SAMPLE_RATE} Hz",
-                            )
-                        if int(body.get("channels", 0)) != 1:
-                            raise RealtimeProtocolError(
-                                "unsupported_channel_count", "Input must be mono"
-                            )
-                        payload = base64.b64decode(body.get("audio", ""), validate=True)
-                        if not payload:
-                            raise RealtimeProtocolError(
-                                "empty_audio", "Audio payload must not be empty"
-                            )
-                        if len(payload) % 2:
-                            raise RealtimeProtocolError(
-                                "invalid_audio",
-                                "PCM16 audio must contain whole samples",
-                            )
-                        if len(payload) > MAX_INPUT_MESSAGE_BYTES:
-                            raise RealtimeProtocolError(
-                                "audio_packet_too_large", "Audio packet is too large"
-                            )
-                    except (ValueError, TypeError, base64.binascii.Error) as exc:
-                        await websocket.send_json(
-                            protocol.error(
-                                "invalid_audio",
-                                str(exc),
-                                client_event_id=client_event_id,
-                            )
-                        )
-                        continue
+                        payload = decode_audio_append_payload(body)
                     except RealtimeProtocolError as exc:
                         await websocket.send_json(
                             protocol.error(
@@ -8085,6 +8457,9 @@ def create_app(
                 ],
             )
         finally:
+            if receiver_task is not None and not receiver_task.done():
+                receiver_task.cancel()
+                await asyncio.gather(receiver_task, return_exceptions=True)
             if terminal_cleanup_task is None:
                 if active_typed is not None:
                     active_typed.cancel_event.set()

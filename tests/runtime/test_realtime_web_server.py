@@ -20,6 +20,7 @@ RUNTIME_ROOT = REPO_ROOT / "src" / "nemotron_voicechat_runtime"
 from nemotron_voicechat_runtime.protocol import RealtimeProtocolSession, protocol_capabilities
 from nemotron_voicechat_runtime.provenance import RUNTIME_SOURCE_PATHS
 from nemotron_voicechat_runtime.server import (
+    FRAME_SAMPLES,
     PINNED_COMMIT,
     PUBLIC_VLLM_MANIFEST_KINDS,
     AcousticResponseBoundary,
@@ -55,6 +56,7 @@ from nemotron_voicechat_runtime.server import (
     render_tool_system_prompt,
     response_audio_is_deliverable,
     session_position_limit_event,
+    split_fence_eligible_pcm,
     step9_capture_fallback_status,
     validate_function_output,
     validate_manifested_model,
@@ -250,6 +252,101 @@ class RealtimeWebServerTest(unittest.TestCase):
             [step["audio_frame_index_after"] for step in evidence["steps"]],
             [1, 2, 3],
         )
+
+    def test_user_eou_settlement_retains_prearm_deficit_and_input_sources(self) -> None:
+        starting = self._settlement_result(2)
+        engine = SimpleNamespace(
+            audio_frame_index=2,
+            user_eou_settlement_blank_frames=lambda: 3,
+            rnnt_blank_count=lambda result: (
+                int(result.turn_state["rnnt"]["blank_count"]) if result else 0
+            ),
+        )
+        settlement = UserEouSettlement.begin(
+            engine,
+            starting,
+            expected_client_turn_id=7,
+            prearmed_blank_frames=2,
+            prearm_evidence={"client_turn_id": 7, "eligible_audio_frames": 2},
+            post_commit_steps=[
+                {
+                    "model_input_provenance": "commit_tail_padding",
+                    "blank_frames_advanced": 1,
+                }
+            ],
+        )
+        final = self._settlement_result(3)
+        settlement.observe(
+            engine,
+            final,
+            input_source="queued_microphone_audio",
+        )
+
+        evidence = settlement.evidence()
+        self.assertEqual(evidence["prearmed_blank_frames"], 2)
+        self.assertEqual(evidence["post_commit_blank_deficit"], 1)
+        self.assertEqual(evidence["prearm"]["client_turn_id"], 7)
+        self.assertEqual(
+            evidence["post_commit_steps"][0]["model_input_provenance"],
+            "commit_tail_padding",
+        )
+        self.assertEqual(evidence["real_audio_model_steps"], 1)
+        self.assertEqual(evidence["synthetic_model_steps"], 0)
+        self.assertEqual(
+            evidence["steps"][0]["settlement_input_source"],
+            "queued_microphone_audio",
+        )
+
+    def test_fence_audio_eligibility_stops_at_first_speech_frame(self) -> None:
+        quiet = np.zeros(FRAME_SAMPLES, dtype=np.float32)
+        speech = np.full(FRAME_SAMPLES, 0.1, dtype=np.float32)
+        partial = np.zeros(FRAME_SAMPLES // 2, dtype=np.float32)
+        payload = float32_to_pcm16_bytes(np.concatenate((quiet, speech, partial)))
+
+        eligible, remainder, blocked = split_fence_eligible_pcm(
+            payload,
+            threshold_dbfs=-40.0,
+        )
+
+        self.assertEqual(eligible, float32_to_pcm16_bytes(quiet))
+        self.assertEqual(remainder, float32_to_pcm16_bytes(np.concatenate((speech, partial))))
+        self.assertTrue(blocked)
+
+    def test_fence_audio_eligibility_is_strict_at_speech_gate(self) -> None:
+        amplitude = 10 ** (-40.0 / 20.0)
+        threshold_frame = np.full(FRAME_SAMPLES, amplitude, dtype=np.float32)
+        payload = float32_to_pcm16_bytes(threshold_frame)
+        exact_gate_dbfs = float(audio_stats(pcm16_bytes_to_float32(payload))["rms_dbfs"])
+        eligible, remainder, blocked = split_fence_eligible_pcm(
+            payload,
+            threshold_dbfs=exact_gate_dbfs,
+        )
+
+        self.assertEqual(eligible, b"")
+        self.assertTrue(remainder)
+        self.assertTrue(blocked)
+
+    def test_fence_audio_eligibility_preserves_every_partial_frame_size(self) -> None:
+        frame_bytes = FRAME_SAMPLES * 2
+        quiet_frame = b"\x00\x00" * FRAME_SAMPLES
+        for partial_samples in range(1, FRAME_SAMPLES):
+            partial = b"\x00\x00" * partial_samples
+
+            eligible, remainder, blocked = split_fence_eligible_pcm(
+                partial,
+                threshold_dbfs=-40.0,
+            )
+            self.assertEqual(eligible, b"", partial_samples)
+            self.assertEqual(remainder, partial, partial_samples)
+            self.assertFalse(blocked, partial_samples)
+
+            eligible, remainder, blocked = split_fence_eligible_pcm(
+                quiet_frame + partial,
+                threshold_dbfs=-40.0,
+            )
+            self.assertEqual(len(eligible), frame_bytes, partial_samples)
+            self.assertEqual(remainder, partial, partial_samples)
+            self.assertFalse(blocked, partial_samples)
 
     def test_user_eou_settlement_core_has_exact_twice_fence_bound(self) -> None:
         engine = SimpleNamespace(

@@ -1,0 +1,492 @@
+{
+  "aggregates": [
+    {
+      "bytes": 6379,
+      "path": "reports/fence-latency/v1-v2-r2-summary.json",
+      "sha256": "7e24e2f79fd01130f7557cf5977812226c84c99c7a80dfc365b0b02565cb2638"
+    },
+    {
+      "bytes": 1372,
+      "path": "reports/fence-latency/settlement-source-r2-summary.json",
+      "sha256": "65b4c38e91b22063dd765ee74a24212e344dbba7b911769d13d421875eae05f6"
+    }
+  ],
+  "candidate_image": "pipecat-ai/nemotron-voicechat-dgx-spark:defect-fixes-fence-latency-r2",
+  "candidate_image_id": "sha256:f85d441b15e7b9d11e3cc40821c819692eeef1342c1a1887585d795035ffde50",
+  "fixture": {
+    "bytes": 28160,
+    "path": "reports/fence-latency/fixture/short-turn.pcm",
+    "sha256": "b90eda65872bc906fc85e26c4f886f0c30c85b397f49d394db0f17f4d78d027d"
+  },
+  "focused_projection": {
+    "lossless": true,
+    "operation": "select complete source JSONL lines by exact event name without reserialization",
+    "selected_events": [
+      "client_input_turn_commit_received",
+      "user_eou_fence_prearmed",
+      "user_eou_fence_prearm_revoked",
+      "user_eou_fence_prearm_rejected",
+      "user_eou_post_commit_frame",
+      "user_eou_settlement_real_audio_blocked",
+      "user_eou_settled"
+    ]
+  },
+  "generated_at_utc": "2026-08-16T03:01:45Z",
+  "protocol_receipts": [
+    {
+      "bytes": 5104286,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r1/events.jsonl",
+      "scenario": "baseline-no-tool-r1",
+      "session_id": "1dfe9ae2-00f2-489d-84a9-3437b81dfb5b",
+      "sha256": "c99c3a2fef35d7217e45067f2d7461dd6f3c26f08573dfe68bb4ce5fffb5b9d5"
+    },
+    {
+      "bytes": 5250764,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r2/events.jsonl",
+      "scenario": "baseline-no-tool-r2",
+      "session_id": "932aa225-20cf-4888-aca0-e5f14b77e160",
+      "sha256": "3fe45800d4c348115c7bc470b38433fc102f9020a9f0ae257440842113176bd3"
+    },
+    {
+      "bytes": 5646728,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r3/events.jsonl",
+      "scenario": "baseline-no-tool-r3",
+      "session_id": "3b702ffc-24aa-436f-842f-b046d5e04a5c",
+      "sha256": "a8ddf1239570bdd4b32ca1c80d85642fd319e1b85c5bbd88fae8b936a251a4ec"
+    },
+    {
+      "bytes": 5302833,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r4/events.jsonl",
+      "scenario": "baseline-no-tool-r4",
+      "session_id": "cd4d538e-80ff-413b-a2e4-a165935f5c69",
+      "sha256": "b6f3e24ddaab67947cc36b1792f4b4f26942e7e3f29e4eebc4e73eba91e864c8"
+    },
+    {
+      "bytes": 5647334,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r5/events.jsonl",
+      "scenario": "baseline-no-tool-r5",
+      "session_id": "45be50c7-478f-41f6-985c-1f6938591555",
+      "sha256": "ae02b53fc4cebee29da04ce895702cb0a0a2747f18eab644aee4aa4ee37fc677"
+    },
+    {
+      "bytes": 5891670,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r1/events.jsonl",
+      "scenario": "baseline-with-tool-r1",
+      "session_id": "be015253-d324-406f-b464-e37a4c4841ec",
+      "sha256": "5c6d7e12d542604dba28ba1f76b5fdff7902f211e516653f8265d0baa67cde74"
+    },
+    {
+      "bytes": 6092534,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r2/events.jsonl",
+      "scenario": "baseline-with-tool-r2",
+      "session_id": "2c9516c7-ab2a-4c24-9153-2b1158700b22",
+      "sha256": "a638810d4632dd9a766e9d2df667912b423bdcad81edd33bb0457ee4c52056f7"
+    },
+    {
+      "bytes": 5535429,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r3/events.jsonl",
+      "scenario": "baseline-with-tool-r3",
+      "session_id": "d8af18a8-41e7-4c48-bddd-40273da24942",
+      "sha256": "38ba36f3d41da993948a1d9ffe89ec8b8e5789a7df581d2890694a489811bc83"
+    },
+    {
+      "bytes": 5899605,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r4/events.jsonl",
+      "scenario": "baseline-with-tool-r4",
+      "session_id": "7bfba229-7dfb-4acb-b925-0f22326e7b8c",
+      "sha256": "321c6c0b0bd124bd9c1de9aa724e8a29ff84c43c82a73448d5606962440aff1a"
+    },
+    {
+      "bytes": 5554451,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r5/events.jsonl",
+      "scenario": "baseline-with-tool-r5",
+      "session_id": "74dad4b7-78a9-484d-8dd9-3cc2201cf7c8",
+      "sha256": "a18a40495b29cf28a9b99e6debeda371dd055a352c595148ef32f4a870ba7bb4"
+    },
+    {
+      "bytes": 4348638,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r1/events.jsonl",
+      "scenario": "candidate-r2-no-tool-r1",
+      "session_id": "fcf92bc1-27f8-4a6b-88d8-866d646f2dd9",
+      "sha256": "4e6df1e34c14c7f5bb1b5b7c899ecb96a1a33fcf885eeb4b2c0618a3c43864eb"
+    },
+    {
+      "bytes": 4239690,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r2/events.jsonl",
+      "scenario": "candidate-r2-no-tool-r2",
+      "session_id": "a3d8da41-77b8-478e-92e4-bd7385c57ada",
+      "sha256": "daf1115635f6f52d9a9c058bbcd8d1eddc3e28874ccaa6bbcdbaccc08a245d74"
+    },
+    {
+      "bytes": 4194051,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r3/events.jsonl",
+      "scenario": "candidate-r2-no-tool-r3",
+      "session_id": "29dfe845-344a-400b-8420-010d4eb270e0",
+      "sha256": "030f2dbf64770df695d657f672970cccdff9876991912f352a99cc80a6381981"
+    },
+    {
+      "bytes": 4354511,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r4/events.jsonl",
+      "scenario": "candidate-r2-no-tool-r4",
+      "session_id": "9991c39b-5b27-4f99-b5c7-b993b5376372",
+      "sha256": "ad1818a2bffd32fcddebfaa39f5b01da7172dd4fa1e15848413217a8737a48a5"
+    },
+    {
+      "bytes": 4299505,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r5/events.jsonl",
+      "scenario": "candidate-r2-no-tool-r5",
+      "session_id": "67952dff-883a-4271-9c62-c3182a11dd9e",
+      "sha256": "30bf6495fbd8d6d4d66185c684e81b0405ea42ac5fd2b04782c3c991f452b56b"
+    },
+    {
+      "bytes": 4440477,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r1/events.jsonl",
+      "scenario": "candidate-r2-with-tool-r1",
+      "session_id": "0c39e952-4694-41b0-8174-db8675d65e41",
+      "sha256": "ed01ffcd6d7bfd2ddc3ddbfe1d4eb9de5cea2cd2d9aa21496e80051a703a4d86"
+    },
+    {
+      "bytes": 4456263,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r2/events.jsonl",
+      "scenario": "candidate-r2-with-tool-r2",
+      "session_id": "f126187e-8f25-4c27-98df-4932dc47ce6a",
+      "sha256": "716290f27abdf3d2fc4a6c9b673e465a7806a2ee15d1f913d400f6d86d90bf71"
+    },
+    {
+      "bytes": 4451516,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r3/events.jsonl",
+      "scenario": "candidate-r2-with-tool-r3",
+      "session_id": "51bfd29f-cea5-49be-8b9f-331c77b0bea9",
+      "sha256": "88820262a8bb6d78397e27e7b1dc6b30dd0447e7bf4207081c797e6aa61e9642"
+    },
+    {
+      "bytes": 4399123,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r4/events.jsonl",
+      "scenario": "candidate-r2-with-tool-r4",
+      "session_id": "1778ff4b-d513-4a9b-9caf-1812d1035dbc",
+      "sha256": "355ed5eb86061c5378f457686ea59a118b08bf4c87917735bba8072c44b18c0d"
+    },
+    {
+      "bytes": 4446787,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r5/events.jsonl",
+      "scenario": "candidate-r2-with-tool-r5",
+      "session_id": "6c63ad15-fb1b-4cff-af8c-f2b54a6d7afe",
+      "sha256": "8241d6ba9c14bab6fb1970af058c584a0a7b497b59289747fff4c079cc9b13ff"
+    }
+  ],
+  "schema": "fence-latency-evidence-manifest.v1",
+  "session_summary_receipts": [
+    {
+      "bytes": 4404,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r1/summary.json",
+      "scenario": "baseline-no-tool-r1",
+      "sha256": "ca2efe27a07847f5ea38d1ee1942dc500e0bb99c376488c124e542d77d33791e"
+    },
+    {
+      "bytes": 4409,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r2/summary.json",
+      "scenario": "baseline-no-tool-r2",
+      "sha256": "a0d9e6a59ef43d0966e20e7db05658cbae365bec2aaebe68a6d41bca3bba75fc"
+    },
+    {
+      "bytes": 4412,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r3/summary.json",
+      "scenario": "baseline-no-tool-r3",
+      "sha256": "fd0c92a01543dc249a04119c101b4ec164bd69624b269350a6ded3658f0f096a"
+    },
+    {
+      "bytes": 4410,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r4/summary.json",
+      "scenario": "baseline-no-tool-r4",
+      "sha256": "5ae241682a871ecf65c0b8c1b278f859660a739163e4c19d3e754eb090800b8f"
+    },
+    {
+      "bytes": 4409,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/no-tool-r5/summary.json",
+      "scenario": "baseline-no-tool-r5",
+      "sha256": "c518b8f3b8d2cf9785244ac38859616db2fe54007a0c0ba8a8add0125681da24"
+    },
+    {
+      "bytes": 4468,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r1/summary.json",
+      "scenario": "baseline-with-tool-r1",
+      "sha256": "8e38c7ef4f357dc979a24a0876617fa9f3ed40a0915725e412eeae099e5d0aad"
+    },
+    {
+      "bytes": 4459,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r2/summary.json",
+      "scenario": "baseline-with-tool-r2",
+      "sha256": "41aaf0826662ed1a7898be2a1990d5eaa0c26692902d811699b9e3e3ed0bd99e"
+    },
+    {
+      "bytes": 4469,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r3/summary.json",
+      "scenario": "baseline-with-tool-r3",
+      "sha256": "d1df4b3a9014dc98b3dc5eabb15ada2e4bb9e9a4d817c21a230e6efcfa139c2e"
+    },
+    {
+      "bytes": 4468,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r4/summary.json",
+      "scenario": "baseline-with-tool-r4",
+      "sha256": "09e6bcf7c366d857f88e69c8acf8ce897d8bad6bc6deddc02a02e822290a683c"
+    },
+    {
+      "bytes": 4464,
+      "leg": "baseline",
+      "path": "reports/fence-latency/baseline/with-tool-r5/summary.json",
+      "scenario": "baseline-with-tool-r5",
+      "sha256": "665e61019df2bcff1a78e142c517548a05ecf055cf8868edc675cdd3739ceae3"
+    },
+    {
+      "bytes": 4356,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r1/summary.json",
+      "scenario": "candidate-r2-no-tool-r1",
+      "sha256": "8ff153ea14d6d6aa666d9ac8dde36485468dd65d519057609c5ba8b9a18ec62e"
+    },
+    {
+      "bytes": 4352,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r2/summary.json",
+      "scenario": "candidate-r2-no-tool-r2",
+      "sha256": "8170e072fa0c43906e2908f66ac34ab8d5a087acea3cfa504d0dcad06e359609"
+    },
+    {
+      "bytes": 4347,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r3/summary.json",
+      "scenario": "candidate-r2-no-tool-r3",
+      "sha256": "29b4a6e90c9329cfe3e168a1e4b08d53051ad97a733ab0b598038cf2df87c409"
+    },
+    {
+      "bytes": 4359,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r4/summary.json",
+      "scenario": "candidate-r2-no-tool-r4",
+      "sha256": "77f9ea7517204ec6ce47f994f2eda97499b0c0e4448ce7d9cbeb8ee536b905ef"
+    },
+    {
+      "bytes": 4360,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/no-tool-r5/summary.json",
+      "scenario": "candidate-r2-no-tool-r5",
+      "sha256": "770471407bc3f3da44196db9f058286d5a71a2b76764e899835297f474920fa2"
+    },
+    {
+      "bytes": 4421,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r1/summary.json",
+      "scenario": "candidate-r2-with-tool-r1",
+      "sha256": "8403ea63ed3ecf7b53e8f396e6fe2a03081774201587ad26a48987904abef347"
+    },
+    {
+      "bytes": 4423,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r2/summary.json",
+      "scenario": "candidate-r2-with-tool-r2",
+      "sha256": "1c4c7edc34acfe56372156e1d700a5c5aa9dac2f669e0397ee3db18336286953"
+    },
+    {
+      "bytes": 4426,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r3/summary.json",
+      "scenario": "candidate-r2-with-tool-r3",
+      "sha256": "f08b3528821d4a7004fc140f2571c675ce5a3f363bf10dbcff3fa505d2c3ec05"
+    },
+    {
+      "bytes": 4419,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r4/summary.json",
+      "scenario": "candidate-r2-with-tool-r4",
+      "sha256": "2b75232625e6c64fff2b7b9e3d80ef3c5be4b993f35e3dada56fc12c696556a2"
+    },
+    {
+      "bytes": 4413,
+      "leg": "candidate-r2",
+      "path": "reports/fence-latency/candidate-r2/with-tool-r5/summary.json",
+      "scenario": "candidate-r2-with-tool-r5",
+      "sha256": "bb06679623e8ab615303cf3854d414841f5a4ee354edf2517b69e0e12ec865d2"
+    }
+  ],
+  "settlement_source_receipts": [
+    {
+      "bytes": 118120,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r1.jsonl",
+      "scenario": "candidate-r2-no-tool-r1",
+      "session_id": "fcf92bc1-27f8-4a6b-88d8-866d646f2dd9",
+      "sha256": "b361589157c21f4018b8ec7a515ff5def778b80c626f70c280bde0a9856080a4",
+      "source_stream_bytes": 2762365,
+      "source_stream_sha256": "62e1e9d53725927539a55ca6d65f560d0a9a1e816a94e4617bb9e7ee812078d2"
+    },
+    {
+      "bytes": 104306,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r2.jsonl",
+      "scenario": "candidate-r2-no-tool-r2",
+      "session_id": "a3d8da41-77b8-478e-92e4-bd7385c57ada",
+      "sha256": "e8f1dda27cb4d84079f4f06c21b1eb905e49adf4a301e9572cb4611af2e87792",
+      "source_stream_bytes": 2647831,
+      "source_stream_sha256": "fa60ca230f801ed64cd54553401075713ff08ac04d2c7550ed7fc21b1f306dcc"
+    },
+    {
+      "bytes": 104301,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r3.jsonl",
+      "scenario": "candidate-r2-no-tool-r3",
+      "session_id": "29dfe845-344a-400b-8420-010d4eb270e0",
+      "sha256": "5c2cdb8e6f2776b230ae78e08adddc69ae62aa8835bc0a7c76738f7e3a30608c",
+      "source_stream_bytes": 2658009,
+      "source_stream_sha256": "e368870fbae67231d0c78aca4f16f7acbcb9716fa6901bb986a52fd6c69fcfc9"
+    },
+    {
+      "bytes": 117101,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r4.jsonl",
+      "scenario": "candidate-r2-no-tool-r4",
+      "session_id": "9991c39b-5b27-4f99-b5c7-b993b5376372",
+      "sha256": "3a6536df83749b16e5b890b070c141d5b6cf01032db780058661b3b8bd9a4966",
+      "source_stream_bytes": 2791840,
+      "source_stream_sha256": "03a5c744270935152c42a703c7855addf195ec9d314312aec4d033e2424656f0"
+    },
+    {
+      "bytes": 118272,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r5.jsonl",
+      "scenario": "candidate-r2-no-tool-r5",
+      "session_id": "67952dff-883a-4271-9c62-c3182a11dd9e",
+      "sha256": "6bfa676208e6ff8be8c97d641ca8ca7b91db021bea119d3f76e2d711bcc66320",
+      "source_stream_bytes": 2739682,
+      "source_stream_sha256": "b7400964764ea450998215bb04fd35f69741020cdc62d45f1926ad76633eb717"
+    },
+    {
+      "bytes": 110988,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r1.jsonl",
+      "scenario": "candidate-r2-with-tool-r1",
+      "session_id": "0c39e952-4694-41b0-8174-db8675d65e41",
+      "sha256": "35d24c671ee4c9fb2be682e5bec1fc1739bf4ee024efd22f0956ca158a2c7985",
+      "source_stream_bytes": 2825389,
+      "source_stream_sha256": "b160ba3f863c5879792bdbae59e35fd7366e89167e1ed94c4fd7a858e842b228"
+    },
+    {
+      "bytes": 110993,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r2.jsonl",
+      "scenario": "candidate-r2-with-tool-r2",
+      "session_id": "f126187e-8f25-4c27-98df-4932dc47ce6a",
+      "sha256": "2f63a50941d264c55c112cd67214612f85e50edcd2f76226c3345c8713fee223",
+      "source_stream_bytes": 2830868,
+      "source_stream_sha256": "f5b3baae8a4071fb7f0172cecd705f20d83e4fc79a7033898694700591064fbe"
+    },
+    {
+      "bytes": 110986,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r3.jsonl",
+      "scenario": "candidate-r2-with-tool-r3",
+      "session_id": "51bfd29f-cea5-49be-8b9f-331c77b0bea9",
+      "sha256": "55558bd98864d846035ee531c2857851127393dbbe29ad4b5c55eee9b446f48b",
+      "source_stream_bytes": 2836102,
+      "source_stream_sha256": "c9ba536999b14cd9bdf5ea99c39830ac4c8c69a48beafa257b34275557ea7616"
+    },
+    {
+      "bytes": 111138,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r4.jsonl",
+      "scenario": "candidate-r2-with-tool-r4",
+      "session_id": "1778ff4b-d513-4a9b-9caf-1812d1035dbc",
+      "sha256": "1eb6844287561f8592adfcf1d888894ca5e17a3b578788d34d1a34d169f07784",
+      "source_stream_bytes": 2790666,
+      "source_stream_sha256": "1b99ef18abdea66650ef6cf6a43eae72daf371c108a028345949b59dbe024250"
+    },
+    {
+      "bytes": 111144,
+      "event_counts": {
+        "client_input_turn_commit_received": 8,
+        "user_eou_fence_prearmed": 8,
+        "user_eou_settled": 8
+      },
+      "lines": 24,
+      "path": "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r5.jsonl",
+      "scenario": "candidate-r2-with-tool-r5",
+      "session_id": "6c63ad15-fb1b-4cff-af8c-f2b54a6d7afe",
+      "sha256": "5c8d8e6eb6322987b52a5e348e2c3a330d52442b65a8e578a46ad6cd49168fa0",
+      "source_stream_bytes": 2812239,
+      "source_stream_sha256": "d5ff8bfb64178e56718faadc0a6bc5a487a6b62d6f2bf31ccea474b63c583fdf"
+    }
+  ]
+}

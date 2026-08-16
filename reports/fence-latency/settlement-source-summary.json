@@ -1,0 +1,32 @@
+{
+  "evidence_manifest": "reports/fence-latency/r2-evidence-manifest.json",
+  "fence_reached_all": true,
+  "files": [
+    "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r1.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r2.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r3.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r4.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-no-tool-r5.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r1.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r2.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r3.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r4.jsonl",
+    "reports/fence-latency/settlement-source-r2/candidate-r2-with-tool-r5.jsonl"
+  ],
+  "post_commit_padded_steps": 0,
+  "prearmed_at_target_or_above": 2,
+  "real_audio_model_steps": 677,
+  "schema": "fence-latency-settlement-source.v2",
+  "sessions": 10,
+  "settlements": 80,
+  "settlements_using_real_audio": 78,
+  "source_accounting_all": true,
+  "speech_gate_stops": 0,
+  "synthetic_model_steps": 135,
+  "target_values": [
+    10
+  ],
+  "within_bound_all": true,
+  "zero_model_steps": 2,
+  "zero_post_commit_deficit": 2
+}

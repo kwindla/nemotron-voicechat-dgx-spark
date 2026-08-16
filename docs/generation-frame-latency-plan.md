@@ -869,3 +869,20 @@ clock; a future pairing candidate must be gated on the arrival clock.
   transform), the inventory builder, and the runbook. Recorded follow-up:
   fresh-machine end-to-end test of the candidate-3 `./voicechat up`
   bootstrap-state swap.
+
+- **2026-08-16 — User-EOU settlement latency increment CONCLUDED (2
+  review rounds, r2 PASS): the conversational-lag accumulation is
+  eliminated.** Two settlement-path changes on the unchanged fence
+  target/terminal contracts: fence-on-real-audio (queued sub-gate
+  microphone frames advance the fence; barge-in stops and requeues
+  fail-closed) and revocable early arming at the speech-stopped edge.
+  Round-1 review caught a commit-edge padded-partial-frame arming defect,
+  fixed by explicit model-input provenance (only pre-commit complete
+  `microphone_audio` frames can arm) with the reviewer's reproduction as
+  a committed regression test. Regenerated r2 gates: V1 zero empty
+  responses (80/80, tool and no-tool); V2 six-turn median
+  commit-to-first-audio baseline `861→2,919 ms` vs candidate flat
+  `894→753 ms` (slope −2,058 ms → −141 ms); 78/80 settlements consumed
+  real queued audio; V3 full battery green; V4 canonical browser plan
+  8/8. Evidence repo-relative under `reports/fence-latency/` with
+  manifest `4956d89c…`.
