@@ -191,6 +191,12 @@ def test_advertised_tools_are_get_current_time_and_set_timezone():
     assert names == ["get_current_time", "set_timezone"]
 
 
+def test_demo_instruction_requires_the_most_recent_tool_result():
+    instruction = bot_module.SYSTEM_INSTRUCTION
+    assert "MOST RECENT" in instruction
+    assert "Never restate an older tool result" in instruction
+
+
 def test_step4c_browser_fixture_is_explicit_tool_free_and_fail_closed(monkeypatch):
     monkeypatch.setenv(bot_module.STEP4C_FIXTURE_ENV, bot_module.STEP4C_FIXTURE)
     instruction, tools = bot_module.qualification_settings()

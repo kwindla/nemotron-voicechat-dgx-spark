@@ -25,6 +25,8 @@ WATCHDOG_REASONS = {
     "no_text_since_bos_watchdog",
     "no_audio_since_bos_watchdog",
 }
+COMPLETED_SESSION_REASONS = {"client_stop"}
+UNCLAIMED_ABNORMAL_SESSION_REASONS = {"disconnect"}
 AUDIBLE_WINDOW_FRAMES = 5
 TRACE_ENVELOPE_FIELDS = frozenset({"trace", "event", "session_id", "monotonic_s"})
 
@@ -301,19 +303,27 @@ def _output_dbfs(step: dict[str, Any]) -> float | None:
 
 def _parse_trace_records(
     records: Iterable[dict[str, Any]],
-) -> tuple[list[dict[str, Any]], list[str], set[str]]:
+) -> tuple[list[dict[str, Any]], list[str], set[str], dict[str, Any] | None]:
     """Totally parse every record, returning validated model steps for classification."""
 
     steps: list[dict[str, Any]] = []
     errors: list[str] = []
     session_ids: set[str] = set()
     active_start_frame: int | None = None
+    active_start_record_index: int | None = None
     previous_frame: int | None = None
+    terminal_claim: dict[str, Any] | None = None
+    trace_stop: dict[str, Any] | None = None
 
     for record_index, record in enumerate(records):
         if not isinstance(record, dict):
             errors.append(f"record[{record_index}]: non_object_record")
             continue
+
+        if trace_stop is not None:
+            errors.append(
+                f"record[{record_index}]: record_after_session_trace_stopped"
+            )
 
         event = record.get("event")
         if not isinstance(event, str) or not event:
@@ -351,6 +361,37 @@ def _parse_trace_records(
         monotonic_s = _finite_number(record.get("monotonic_s"))
         if monotonic_s is None or monotonic_s < 0:
             errors.append(f"record[{record_index}]: missing_or_invalid_monotonic_s")
+
+        if event == "terminal_session_claimed":
+            claim_reason = record.get("reason")
+            if terminal_claim is not None:
+                errors.append(f"record[{record_index}]: duplicate_terminal_session_claimed")
+            if not isinstance(claim_reason, str) or not claim_reason.strip():
+                errors.append(
+                    f"record[{record_index}]: missing_or_invalid_terminal_claim_reason"
+                )
+            terminal_claim = {
+                "record_index": record_index,
+                "reason": claim_reason,
+            }
+
+        if event == "session_trace_stopped":
+            if trace_stop is not None:
+                errors.append(f"record[{record_index}]: duplicate_session_trace_stopped")
+            stop_reason = record.get("reason")
+            if not isinstance(stop_reason, str) or not stop_reason.strip():
+                errors.append(
+                    f"record[{record_index}]: missing_or_invalid_session_stop_reason"
+                )
+            trace_stop = {
+                "record_index": record_index,
+                "reason": stop_reason,
+                "monotonic_s": monotonic_s,
+            }
+            if terminal_claim is not None and terminal_claim["reason"] != stop_reason:
+                errors.append(
+                    f"record[{record_index}]: terminal_claim_stop_reason_mismatch"
+                )
 
         if event != "model_step":
             continue
@@ -394,11 +435,13 @@ def _parse_trace_records(
                 )
             else:
                 active_start_frame = frame if frame_valid else -1
+                active_start_record_index = record_index
         elif event == "end":
             if active_start_frame is None:
                 errors.append(f"{label}: response_end_without_start")
             else:
                 active_start_frame = None
+                active_start_record_index = None
             reason = boundary.get("eos_reason")
             if not isinstance(reason, str) or not reason:
                 errors.append(f"{label}: missing_or_invalid_eos_reason")
@@ -407,9 +450,34 @@ def _parse_trace_records(
         errors.append("trace: no_model_steps")
     if len(session_ids) > 1:
         errors.append("trace: multiple_session_ids")
+    terminated_open_response = None
     if active_start_frame is not None:
-        errors.append(f"trace: response_open_at_eof (bos_frame={active_start_frame})")
-    return steps, errors, session_ids
+        claimed_abnormal_termination = bool(
+            terminal_claim is not None
+            and terminal_claim["record_index"] > active_start_record_index
+            and terminal_claim["record_index"] < trace_stop["record_index"]
+            and terminal_claim["reason"] == trace_stop["reason"]
+        ) if trace_stop is not None and active_start_record_index is not None else False
+        unclaimed_transport_disconnect = bool(
+            trace_stop is not None
+            and trace_stop["reason"] in UNCLAIMED_ABNORMAL_SESSION_REASONS
+        )
+        if (
+            trace_stop is not None
+            and active_start_record_index is not None
+            and trace_stop["record_index"] > active_start_record_index
+            and trace_stop["reason"] not in COMPLETED_SESSION_REASONS
+            and (claimed_abnormal_termination or unclaimed_transport_disconnect)
+        ):
+            terminated_open_response = {
+                "bos_frame": active_start_frame,
+                "trace_stop_reason": trace_stop["reason"],
+                "trace_stop_record_index": trace_stop["record_index"],
+                "disposition": "session_terminated_open_response",
+            }
+        else:
+            errors.append(f"trace: response_open_at_eof (bos_frame={active_start_frame})")
+    return steps, errors, session_ids, terminated_open_response
 
 
 def _schema_failure_result(
@@ -434,6 +502,8 @@ def _schema_failure_result(
         "text_quiet_but_audible_frames": 0,
         "max_consecutive_text_quiet_but_audible_frames": 0,
         "audible_watchdog_defects": [],
+        "session_terminated_open_response_count": 0,
+        "session_terminated_open_responses": [],
         "incomplete_responses": errors,
         "responses": [],
         "passed": False,
@@ -459,7 +529,12 @@ def response_completion_gate(
     *,
     source: str | None = None,
 ) -> dict[str, Any]:
-    model_steps, schema_errors, validated_session_ids = _parse_trace_records(records)
+    (
+        model_steps,
+        schema_errors,
+        validated_session_ids,
+        terminated_open_response,
+    ) = _parse_trace_records(records)
     if schema_errors:
         return _schema_failure_result(
             source=source,
@@ -558,7 +633,15 @@ def response_completion_gate(
             current_consecutive = 0
 
     incomplete: list[Any] = []
-    assert active is None
+    terminated_responses: list[dict[str, Any]] = []
+    if active is not None:
+        assert terminated_open_response is not None
+        active["completion_reason"] = "session_terminated"
+        active["termination"] = terminated_open_response
+        terminated_responses.append(active)
+        responses.append(active)
+        histogram["session_terminated"] += 1
+        active = None
     passed = bool(responses) and not audible_watchdog_defects and not incomplete
     return {
         "schema": "nemotron_voicechat.response_completion_gate.v1",
@@ -576,6 +659,8 @@ def response_completion_gate(
         "text_quiet_but_audible_frames": text_quiet_audible_total,
         "max_consecutive_text_quiet_but_audible_frames": max_consecutive,
         "audible_watchdog_defects": audible_watchdog_defects,
+        "session_terminated_open_response_count": len(terminated_responses),
+        "session_terminated_open_responses": terminated_responses,
         "incomplete_responses": incomplete,
         "responses": responses,
         "passed": passed,

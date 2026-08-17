@@ -1272,6 +1272,106 @@ class RealtimeWebServerTest(unittest.TestCase):
         self.assertEqual(state.output_asr_text_str, "")
         self.assertIsNone(state._last_sent_asr_text)
 
+    def test_committed_transcript_survives_reset_until_deferred_post_tool_bos(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = "set Pacific time and tell me the current time"
+        engine.user_text_prefix = "set Pacific time"
+        engine.user_text_segment = "and tell me the current time"
+        engine.last_rnnt_decoded_count = 9
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = None
+        engine.frame_index = 42
+        state = SimpleNamespace(
+            output_asr_text_str=engine.user_text,
+            _last_sent_asr_text=engine.user_text,
+        )
+        engine.pipeline = SimpleNamespace(get_or_create_state=lambda _stream_id: state)
+        engine.stream_id = 7
+
+        evidence = engine.bind_user_transcript_to_next_response(
+            source="microphone",
+            source_id=3,
+        )
+        engine.reset_user_transcript()
+        turn_state = {
+            "agent_control": "agent_bos",
+            "function_calling": {"post_fc_client_bos_forced_frame": 42},
+        }
+        bound = engine._bind_pending_transcript_at_bos(turn_state, "")
+
+        self.assertTrue(evidence["bound"])
+        self.assertEqual(bound, "set Pacific time and tell me the current time")
+        self.assertEqual(engine.user_text, "")
+        self.assertEqual(
+            turn_state["response_attribution"],
+            {
+                "kind": "user_turn",
+                "source": "microphone",
+                "source_id": 3,
+                "user_text_bound": bound,
+                "post_tool_continuation": True,
+            },
+        )
+        self.assertEqual(engine.pending_response_user_text, "")
+        self.assertIsNone(engine.pending_response_attribution)
+
+    def test_pending_transcript_binding_waits_for_bos_and_is_consumed_once(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = "what time is it"
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = None
+        engine.frame_index = 8
+        engine.bind_user_transcript_to_next_response(source="typed", source_id="job-1")
+
+        pad_state = {"agent_control": "pad", "function_calling": {}}
+        self.assertEqual(
+            engine._bind_pending_transcript_at_bos(pad_state, ""),
+            "",
+        )
+        self.assertEqual(engine.pending_response_user_text, "what time is it")
+
+        bos_state = {"agent_control": "agent_bos", "function_calling": {}}
+        self.assertEqual(
+            engine._bind_pending_transcript_at_bos(bos_state, "what time is it"),
+            "what time is it",
+        )
+        self.assertFalse(bos_state["response_attribution"]["post_tool_continuation"])
+        second_bos = {"agent_control": "agent_bos", "function_calling": {}}
+        self.assertEqual(engine._bind_pending_transcript_at_bos(second_bos, ""), "")
+        self.assertNotIn("response_attribution", second_bos)
+
+    def test_post_tool_continuation_is_explicit_when_no_user_turn_is_pending(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = ""
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = None
+        engine.frame_index = 23
+
+        engine.bind_post_tool_continuation_to_next_response(call_id="call-7")
+        turn_state = {"agent_control": "agent_bos", "function_calling": {}}
+
+        assert engine._bind_pending_transcript_at_bos(turn_state, "") == ""
+        assert turn_state["response_attribution"] == {
+            "kind": "post_tool_continuation",
+            "call_id": "call-7",
+        }
+        assert engine.pending_post_tool_continuation is None
+
+    def test_new_user_turn_supersedes_unopened_post_tool_continuation(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = "what time is it now"
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = {"kind": "post_tool_continuation"}
+
+        engine.bind_user_transcript_to_next_response(source="microphone", source_id=9)
+
+        assert engine.pending_response_user_text == "what time is it now"
+        assert engine.pending_post_tool_continuation is None
+
     def test_defensive_function_input_queue_is_fifo_and_byte_bounded(self) -> None:
         queue = DeferredClientInputQueue(max_bytes=10)
         first = {"type": "input_audio_buffer.turn_start"}
@@ -1902,7 +2002,8 @@ class RealtimeWebServerTest(unittest.TestCase):
                 [{"name": "get_random_number"}],
             )
         self.assertIn("NVIDIA tool template", rendered)
-        self.assertIn("explicitly include the exact returned result", rendered)
+        self.assertIn("exact MOST RECENT returned result", rendered)
+        self.assertIn("Never restate an older result", rendered)
         self.assertIn("If no advertised tool matches the request", rendered)
         self.assertNotIn("emergency services", rendered)
 

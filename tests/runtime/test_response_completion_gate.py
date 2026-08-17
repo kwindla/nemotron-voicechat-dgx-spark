@@ -36,6 +36,7 @@ REPAIRED_TRACE_IDS = (
     "c203bca9-0f7c-4544-925a-f1d7cb9ab962",
 )
 ALL_RETAINED_TRACE_IDS = (KNOWN_BAD_TRACE_ID, *REPAIRED_TRACE_IDS)
+SESSION_REPAIR_TRACE_ID = "c42c6701-f14d-4960-83fc-3c24bd269194"
 SERVER_SOURCE_PATH = (
     Path(__file__).resolve().parents[2] / "src/nemotron_voicechat_runtime/server.py"
 )
@@ -606,6 +607,127 @@ def test_completion_gate_rejects_other_impossible_boundary_topologies() -> None:
     open_result = response_completion_gate(open_at_eof)
     assert open_result["passed"] is False
     assert any("response_open_at_eof" in error for error in open_result["input_schema_errors"])
+
+
+def test_completion_gate_records_open_response_terminated_by_session_lifecycle() -> None:
+    terminated = [
+        step(1, boundary_event="start", text="still speaking"),
+        step(2, text=" when disconnected"),
+        trace_record("terminal_session_claimed", reason="internal_error"),
+        trace_record("session_trace_stopped", reason="internal_error"),
+    ]
+
+    result = response_completion_gate(terminated)
+
+    assert result["input_schema_valid"] is True
+    assert result["passed"] is True
+    assert result["total_responses"] == 1
+    assert result["completion_reasons"] == {"session_terminated": 1}
+    assert result["session_terminated_open_response_count"] == 1
+    termination = result["session_terminated_open_responses"][0]["termination"]
+    assert termination == {
+        "bos_frame": 1,
+        "trace_stop_reason": "internal_error",
+        "trace_stop_record_index": 3,
+        "disposition": "session_terminated_open_response",
+    }
+
+
+def test_completion_gate_rejects_open_response_in_cleanly_completed_session() -> None:
+    completed = [
+        step(1, boundary_event="start", text="never closed"),
+        trace_record("client_event", type="session.stop"),
+        trace_record("session_trace_stopped", reason="client_stop"),
+    ]
+
+    result = response_completion_gate(completed)
+
+    assert result["input_schema_valid"] is False
+    assert result["passed"] is False
+    assert any("response_open_at_eof" in error for error in result["input_schema_errors"])
+    assert result["session_terminated_open_response_count"] == 0
+
+
+def test_completion_gate_rejects_unknown_or_typo_stop_reason_without_claim() -> None:
+    for reason in ("client_stpo", "test"):
+        result = response_completion_gate(
+            [
+                step(1, boundary_event="start", text="never closed"),
+                trace_record("session_trace_stopped", reason=reason),
+            ]
+        )
+
+        assert result["input_schema_valid"] is False
+        assert result["passed"] is False
+        assert any("response_open_at_eof" in error for error in result["input_schema_errors"])
+        assert result["session_terminated_open_response_count"] == 0
+
+
+def test_completion_gate_accepts_narrow_unclaimed_transport_disconnect() -> None:
+    result = response_completion_gate(
+        [
+            step(1, boundary_event="start", text="transport dropped"),
+            trace_record("session_trace_stopped", reason="disconnect"),
+        ]
+    )
+
+    assert result["input_schema_valid"] is True
+    assert result["passed"] is True
+    assert result["completion_reasons"] == {"session_terminated": 1}
+
+
+def test_completion_gate_rejects_duplicate_session_trace_stop() -> None:
+    result = response_completion_gate(
+        [
+            step(1, boundary_event="start"),
+            trace_record("session_trace_stopped", reason="disconnect"),
+            trace_record("session_trace_stopped", reason="disconnect"),
+        ]
+    )
+
+    assert result["input_schema_valid"] is False
+    assert result["passed"] is False
+    assert any(
+        "duplicate_session_trace_stopped" in error
+        for error in result["input_schema_errors"]
+    )
+
+
+def test_completion_gate_requires_well_formed_terminal_lifecycle() -> None:
+    missing_reason = [
+        step(1, boundary_event="start"),
+        trace_record("session_trace_stopped", reason=None),
+    ]
+    result = response_completion_gate(missing_reason)
+    assert result["passed"] is False
+    assert any(
+        "missing_or_invalid_session_stop_reason" in error
+        for error in result["input_schema_errors"]
+    )
+
+    record_after_stop = [
+        step(1, boundary_event="start"),
+        trace_record("session_trace_stopped", reason="internal_error"),
+        trace_record("client_event", type="late"),
+    ]
+    result = response_completion_gate(record_after_stop)
+    assert result["passed"] is False
+    assert any(
+        "record_after_session_trace_stopped" in error
+        for error in result["input_schema_errors"]
+    )
+
+
+def test_session_repair_trace_records_legitimate_terminated_open_response() -> None:
+    path, records = retained_trace(SESSION_REPAIR_TRACE_ID)
+
+    result = response_completion_gate(records, source=str(path))
+
+    assert result["input_schema_valid"] is True
+    assert result["passed"] is True
+    assert result["total_responses"] == 9
+    assert result["session_terminated_open_response_count"] == 1
+    assert result["session_terminated_open_responses"][0]["bos_frame"] == 975
 
 
 def test_completion_gate_rejects_invalid_frame_session_and_output_dbfs() -> None:

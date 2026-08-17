@@ -90,8 +90,9 @@ TOOL_GROUNDING_INSTRUCTIONS = (
     "words and call no tool. "
     "Never invent or imply a tool result without calling the tool. If you say you "
     "will use a tool, emit that tool call before ending the turn. After a tool "
-    "response arrives, answer the user and explicitly include the exact returned "
-    "result."
+    "response arrives, answer the user and explicitly include the exact MOST RECENT "
+    "returned result for that capability. Never restate an older result after a newer "
+    "result supersedes it."
 )
 PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
     {
@@ -3204,6 +3205,9 @@ class VoiceChatEngine:
         self.user_text = ""
         self.user_text_prefix = ""
         self.user_text_segment = ""
+        self.pending_response_user_text = ""
+        self.pending_response_attribution: dict[str, Any] | None = None
+        self.pending_post_tool_continuation: dict[str, Any] | None = None
         self.last_rnnt_decoded_count = 0
         self.vllm_request_position_baseline: dict[str, int] = {}
         qualification_identity: _QualificationModeIdentity | None = None
@@ -4018,6 +4022,9 @@ class VoiceChatEngine:
             self.user_text = ""
             self.user_text_prefix = ""
             self.user_text_segment = ""
+            self.pending_response_user_text = ""
+            self.pending_response_attribution = None
+            self.pending_post_tool_continuation = None
             self.last_rnnt_decoded_count = 0
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
@@ -4083,6 +4090,9 @@ class VoiceChatEngine:
             self.user_text = ""
             self.user_text_prefix = ""
             self.user_text_segment = ""
+            self.pending_response_user_text = ""
+            self.pending_response_attribution = None
+            self.pending_post_tool_continuation = None
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
@@ -4335,6 +4345,7 @@ class VoiceChatEngine:
                     )
                 },
             }
+        user_text = self._bind_pending_transcript_at_bos(turn_state, user_text)
         turn_state["vllm_request_positions"] = self._vllm_request_positions()
         trace_diagnostics = self._pad_pair_trace_diagnostics(context, total_frames - 1, turn_state)
         rnnt_state = turn_state.get("rnnt")
@@ -4460,6 +4471,9 @@ class VoiceChatEngine:
             self.user_text = ""
             self.user_text_prefix = ""
             self.user_text_segment = ""
+            self.pending_response_user_text = ""
+            self.pending_response_attribution = None
+            self.pending_post_tool_continuation = None
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
@@ -4532,6 +4546,93 @@ class VoiceChatEngine:
         state.output_asr_text_str = ""
         if hasattr(state, "_last_sent_asr_text"):
             state._last_sent_asr_text = None
+
+    def bind_user_transcript_to_next_response(
+        self, *, source: str, source_id: str | int
+    ) -> dict[str, Any]:
+        """Freeze the committed transcript until its possibly deferred BOS.
+
+        Tool-bearing turns use a separate terminal position.  Their BOS is
+        emitted only after the function result has crossed EOTR, after the
+        live RNNT transcript must already have been reset for the next user
+        turn.  This one-response binding keeps attribution independent of that
+        RNNT lifecycle and is consumed exactly once by the next agent BOS.
+        """
+
+        transcript = self.user_text.strip()
+        self.pending_response_user_text = transcript
+        # A newly committed user turn supersedes any tool continuation that
+        # did not open before the user spoke again.
+        self.pending_post_tool_continuation = None
+        self.pending_response_attribution = (
+            {
+                "kind": "user_turn",
+                "source": source,
+                "source_id": source_id,
+            }
+            if transcript
+            else None
+        )
+        return {
+            "bound": bool(transcript),
+            "source": source,
+            "source_id": source_id,
+            "user_text": transcript,
+        }
+
+    def bind_post_tool_continuation_to_next_response(self, *, call_id: str) -> None:
+        """Label a future BOS caused solely by a completed tool cycle."""
+
+        self.pending_post_tool_continuation = {
+            "kind": "post_tool_continuation",
+            "call_id": call_id,
+        }
+
+    def clear_pending_response_binding(self) -> dict[str, Any]:
+        """Cancel the committed-turn binding superseded before FC publication."""
+
+        evidence = {
+            "cleared": bool(
+                self.pending_response_user_text or self.pending_response_attribution
+            ),
+            "source": (
+                self.pending_response_attribution or {}
+            ).get("source"),
+            "source_id": (
+                self.pending_response_attribution or {}
+            ).get("source_id"),
+        }
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        return evidence
+
+    def _bind_pending_transcript_at_bos(
+        self, turn_state: dict[str, Any], user_text: str
+    ) -> str:
+        if turn_state.get("agent_control") != "agent_bos":
+            return user_text
+        pending = self.pending_response_user_text
+        attribution = self.pending_response_attribution
+        post_tool = self.pending_post_tool_continuation
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        self.pending_post_tool_continuation = None
+        if not pending or attribution is None:
+            if post_tool is not None:
+                turn_state["response_attribution"] = post_tool
+            return user_text
+        # The pending value belongs to the committed turn. Do not restore it
+        # into the live RNNT accumulator: on a deferred post-tool BOS that
+        # accumulator has already been reset and now belongs to the next turn.
+        bound_text = pending
+        function_state = turn_state.get("function_calling") or {}
+        forced_frame = function_state.get("post_fc_client_bos_forced_frame")
+        turn_state["response_attribution"] = {
+            **attribution,
+            "user_text_bound": bound_text,
+            "post_tool_continuation": forced_frame == self.frame_index,
+        }
+        return bound_text
 
     @staticmethod
     def _join_user_transcript(prefix: str, segment: str) -> str:
@@ -7393,6 +7494,14 @@ def create_app(
                             # No recovery here: the typed path owns deliberate
                             # cancel-then-replace interruption semantics; recovery
                             # would drain a response the client intends to cancel.
+                            bind_transcript = getattr(
+                                engine, "bind_user_transcript_to_next_response", None
+                            )
+                            if callable(bind_transcript):
+                                bind_transcript(
+                                    source="typed",
+                                    source_id=job.job_id,
+                                )
                             typed_settlement = await settle_user_eou(
                                 source="typed",
                                 job_id=job.job_id,
@@ -7963,6 +8072,13 @@ def create_app(
                             ),
                         )
                         tool_bridge.submit(call_id, function_output)
+                        bind_continuation = getattr(
+                            engine,
+                            "bind_post_tool_continuation_to_next_response",
+                            None,
+                        )
+                        if callable(bind_continuation):
+                            bind_continuation(call_id=call_id)
                     except ValueError as exc:
                         await websocket.send_json(
                             protocol.error(
@@ -8163,6 +8279,14 @@ def create_app(
                                 interrupt_evidence = await model_call(
                                     engine.interrupt_unpublished_function_cycle
                                 )
+                                clear_binding = getattr(
+                                    engine, "clear_pending_response_binding", None
+                                )
+                                if callable(clear_binding):
+                                    interrupt_evidence = {
+                                        **interrupt_evidence,
+                                        "superseded_response_binding": clear_binding(),
+                                    }
                     if publication_race:
                         if not deferred_client_input.append(body, message_bytes):
                             raise RuntimeError(
@@ -8406,6 +8530,14 @@ def create_app(
                             **commit_prearm.evidence(),
                         )
                         commit_prearm = None
+                    bind_transcript = getattr(
+                        engine, "bind_user_transcript_to_next_response", None
+                    )
+                    if callable(bind_transcript):
+                        bind_transcript(
+                            source="microphone",
+                            source_id=client_turn_id,
+                        )
                     microphone_settlement = await settle_user_eou(
                         source="microphone",
                         job_id=None,

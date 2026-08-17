@@ -45,7 +45,8 @@ SYSTEM_INSTRUCTION = """You are a helpful voice assistant in a live conversation
 Keep answers concise, natural, and easy to understand when spoken aloud.
 Use a tool only when the user's request matches that tool's purpose. Never use an
 available tool as a substitute for an unrelated or unavailable capability. After a
-tool returns, state its result accurately and continue the conversation normally."""
+tool returns, state the MOST RECENT result accurately and continue the conversation
+normally. Never restate an older tool result after a newer result supersedes it."""
 STEP4C_FIXTURE_ENV = "NEMOTRON_VOICECHAT_QUALIFICATION_FIXTURE"
 STEP4C_FIXTURE = "step4c-l1"
 STEP4C_SYSTEM_INSTRUCTION = (

@@ -1,0 +1,69 @@
+{
+  "artifacts": {
+    "corrected_browser_manifest": {
+      "path": "post-fix-browser-corrected/manifest.json",
+      "sha256": "571cd4731d1edaf19b023bd4f7a03adadef1c745af316425fbfac8afa8c2c10a"
+    },
+    "corrected_browser_rendered_audio": {
+      "path": "post-fix-browser-corrected/rendered-bot-remote-track.wav",
+      "sha256": "f3a1aafbcbc7b487891d72bc420b76aa51ea1d5f865404eec4bc09a5f75d7686"
+    },
+    "corrected_browser_report": {
+      "path": "post-fix-browser-corrected/report.json",
+      "sha256": "b2ae8de80d39b21dd34333cfca459f69b29846ff574f39a7cc74d47d9f4c3ddd"
+    },
+    "directive_comparison": {
+      "path": "directive-freshness-comparison.json",
+      "sha256": "fea628de2aa99184f0b910168ecb83c395b8e9abcfa70c7786edc72f124b746b"
+    },
+    "directive_post_summary": {
+      "path": "directive-freshness-post-final-v2/summary.json",
+      "sha256": "5288e5492b2021e943b45328757863da4c812a0d40a28e9e01033bec33b1a6d5"
+    },
+    "directive_pre_summary": {
+      "path": "directive-freshness-pre-final-v2/summary.json",
+      "sha256": "415996e6a8d82dc97835635ecf5f3d1835aed6d7a8dea086c95c8c312c650c35"
+    },
+    "final_stack_status": {
+      "path": "final-stack/status.json",
+      "sha256": "293431d6a078ec360e071b886aa5a0bf4313bbe1052681a8a917c7d08ee3ef0a"
+    },
+    "post_fix_attempt5_manifest": {
+      "path": "post-fix-browser-attempt5/manifest.json",
+      "sha256": "57fe936f5b005bd9a0821744981699126a70b6b2c1458b0ac5ed15c8ee588428"
+    },
+    "post_fix_attempt5_report_under_original_gate": {
+      "path": "post-fix-browser-attempt5/report.json",
+      "sha256": "84d9a8e4723634d4d0e9339ba4213f9c207344238b3c7e83ee45b18051237e94"
+    },
+    "repaired_retained_trace_gate": {
+      "path": "retained-trace-completion-gate.json",
+      "sha256": "1bfc5c479e909a6f0961cecae7fda5d6ece8ae1fbe6f5c03fd931778a3b498b6"
+    },
+    "results": {
+      "path": "results.md",
+      "sha256": "d71c0a6b49413f28db9423518523098b7032e4a3591f23bf6dd16e9e0b788532"
+    }
+  },
+  "directive_fixture": {
+    "fixture_sha256": "16f131d5aefe90ed6a96e1b7125c50ab5c85efc1347e49c58f177c83c2f278c5",
+    "post_runtime_image_id": "sha256:c79934692503646531c9be56c67813e473944fc53e21728bdb72db1d5926c53d",
+    "pre_control_image": "pipecat-ai/nemotron-voicechat-dgx-spark:session-repair-directive-pre-control",
+    "pre_control_image_id": "sha256:262f10ed7edfb55afb31ec1d5134533b6ac173987bf23556c100ed03927635df",
+    "script_sha256": "be26e67eb3caa6be0a6da9a8ea2e9c1a445ff924d92a31a1f172f029b58352e6"
+  },
+  "input_pcm": {
+    "path": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/c42c6701-f14d-4960-83fc-3c24bd269194/input-16000-mono-s16le.pcm",
+    "sha256": "22536283817f2e148612fb6c182281e6f8f0d29c751ec26a6a0533bc3599af04"
+  },
+  "replay_suite": {
+    "script_sha256": "f1bde2d7e9ea3ac487a3106e9bbd6cbf2e12d88c0c903c52f1ae2dbb9a79c2dd"
+  },
+  "runtime_image": {
+    "demo_sha256": "d66e493f783f83585ca264c75c8ac8eb9208b82c060335cc03cf88d3502f62d0",
+    "id": "sha256:c79934692503646531c9be56c67813e473944fc53e21728bdb72db1d5926c53d",
+    "name": "pipecat-ai/nemotron-voicechat-dgx-spark:session-repair-20260817-r3",
+    "server_sha256": "6db56d76532e77a821a73ce78d36ee3ef1b5d17fadb6beff72f27cfc9b041764"
+  },
+  "schema": "nemotron_voicechat.session_repair_campaign_manifest.v2"
+}
