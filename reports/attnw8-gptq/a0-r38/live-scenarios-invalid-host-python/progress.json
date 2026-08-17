@@ -1,0 +1,40 @@
+[
+  {
+    "command": [
+      "/usr/bin/python3",
+      "tools/qualification/tool_call_behavior_suite.py",
+      "--url",
+      "ws://127.0.0.1:8786/v1/realtime",
+      "--scenario",
+      "a2-pos-01",
+      "--speech-pcm",
+      "reports/attnw8-gptq/preseal-r34/fixtures/a2-pos-01.pcm",
+      "--tool",
+      "benchmark_word",
+      "--max-injections",
+      "1",
+      "--run-text-chars",
+      "20",
+      "--trailing-silence-s",
+      "8.0",
+      "--turn-quiesce-s",
+      "1.0",
+      "--max-silence-frames",
+      "15",
+      "--turn-quiesce-cap-s",
+      "25.0",
+      "--observe-s",
+      "15.0",
+      "--output",
+      "reports/attnw8-gptq/a0-r38/live-scenarios/a2-pos-01"
+    ],
+    "elapsed_seconds": 0.08544087409973145,
+    "expected": "positive",
+    "ordinal": 0,
+    "returncode": 1,
+    "scenario_id": "a2-pos-01",
+    "started_unix": 1786943646.2426813,
+    "stderr": "Traceback (most recent call last):\n  File \"/home/khkramer/src/nemotron-voicechat-dgx-spark/tools/qualification/tool_call_behavior_suite.py\", line 30, in <module>\n    import websockets\nModuleNotFoundError: No module named 'websockets'\n",
+    "stdout": ""
+  }
+]

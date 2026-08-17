@@ -908,3 +908,27 @@ clock; a future pairing candidate must be gated on the arrival clock.
   ~1.5 ms/frame remains on the table behind a better quantizer. All
   evidence sealed under reports/attnw8-qualification/ (root manifest
   ff3f5797…).
+
+- **2026-08-17 — attnW8-GPTQ campaign STOPPED fail-closed at A0, with two
+  findings; ~1.5 ms/frame remains blocked.** Plan sealed after three
+  adversarial review rounds (`17647bd7…`). (1) **Tool propensity is NOT
+  as fragile as the sequential-curation churn implied.** After the
+  pooled-selection deviation, ONE baseline over a sealed 48-scenario pool
+  validated **48/48** (24/24 positive-intent, 24/24 no-call-intent), min
+  transcript similarity 0.889. The 39 prior Seal-0 revisions were almost
+  entirely ASR transcript-exactness artifacts, not model behavior — and
+  sequential replacement was additionally an adaptive-selection bias the
+  pool removes. (2) **NEW FINDING — eager/graph categorical disagreement
+  on tool decisions:** sealed no-call scenario `a2-nocall-r25-01`
+  (audio `5de8732c…`) is an exact zero-call/zero-injection under the
+  packed production runtime but emits function tokens under eager
+  reconstruction, raising the fail-closed A0 stop. This is the same
+  eager-vs-graph divergence family as the Step 5 basin defect, and it
+  **invalidates eager-mode activation capture as a faithful basis for
+  calibrating tool-relevant behavior** — the premise of this campaign
+  (and a caveat on fhw8's eager-derived G0(b) evidence, whose G1/G3
+  decision gates were nevertheless run on the production path). No
+  Hessian, candidate, or gate result was produced; Seal-1 never created.
+  Prerequisites for any resumption: adjudicate the three recorded
+  criterion deviations, and resolve the eager/graph tool disagreement
+  (either explain it or capture activations on the production path).

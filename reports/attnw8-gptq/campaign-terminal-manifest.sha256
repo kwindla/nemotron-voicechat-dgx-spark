@@ -1,0 +1,15 @@
+17647bd75dad6cd9df81aaea38a2332f76a83e73ac745c1d7e36908d86258df4  reports/attnw8-gptq/plan.md
+4774d05205e8dc5feb339c13749ee7b04317e9d53d2d69f141656f90d12b6e7a  reports/attnw8-gptq/plan-seal.txt
+82499b59cf4cf4bba3573f8d5e6d12a74d4b6fd6af4c51c3e4350bdf12a708b4  reports/attnw8-gptq/seal-criterion-deviation.md
+780bdac05690dc02e8657f9770d2862a466120b1ddb15678d71b288f42dc0c37  reports/attnw8-gptq/seal0-r40/seal0.json
+2610408be50ef266f058d0bf187b4067afeda5a74a494408f2a732165757104a  reports/attnw8-gptq/seal0-r40/manifest.json
+f916a0386eaabf0b9aedc2072ed8400862fd5964abae8da4d91ec549b3bc976f  reports/attnw8-gptq/seal0-revision-r40-reason.md
+9988748e210bc1f4b26684109413fdc053377eb49b1f7e9031cd7ce55b4deddb  reports/attnw8-gptq/a0-r40/a0-failure.json
+03650e303c4df393a65863b218cdd1e3be719fb63e73c7224ffd8267f4acfe83  reports/attnw8-gptq/a0-r40/live-scenarios/receipt.json
+a7b4f46609ec90a9b6c8b199cdb6e3285e61aa127408faec1403fd1ae9679563  reports/attnw8-gptq/a0-r40/live-scenarios/progress.json
+729d1e60c2907d27be802f44906e6d07ae66e4de33d5dad9075969761c542da1  reports/attnw8-gptq/a0-r40/tool-capture/raw/manifest.jsonl
+e15af42d00c0f834a5a3a3729f0e292da2b8a5476ac1ccdbfbafb6af9fa1a0a5  reports/attnw8-gptq/a0-r40/tool-capture/raw/metadata.json
+2883eeb97c77bfd4223a2327fe77306d50cf6d5ec8fc75bc0394cccdf812370e  reports/attnw8-gptq/a0-r40/stack/capture-stack.log
+8a17000e4d3fc9f86ff8375cacadb19e0dccb64cdbae6fe99b615835bfe74d70  reports/attnw8-gptq/a0-r40/stack/terminal-restore-health.json
+8f93ef133d3519d7464d713dd9df3fd15042f743ed80ac17f29f4dd12bcad9ec  reports/attnw8-gptq/campaign-result.md
+5bb7e6e980c4c52df7d77f67029243d554f042428d04cc3cf89d752953571a26  /tmp/claude-1000/-home-khkramer-src-nemotron-voicechat-dgx-spark/9dab1982-03af-4f77-9d25-ddf7139af66f/scratchpad/attnw8-gptq-campaign-done.md

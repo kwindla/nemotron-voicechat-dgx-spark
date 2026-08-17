@@ -1,0 +1,33 @@
+{
+  "assistant_text": "",
+  "assistant_text_chars": 0,
+  "call_runs": [
+    1
+  ],
+  "errors": [],
+  "injections_sent": 1,
+  "instructions": "production",
+  "kind": "tool_call_behavior_scenario",
+  "loop_flag": false,
+  "max_call_run": 1,
+  "max_injections": 1,
+  "repetition_ratio_4gram": 0.0,
+  "replayed_turns": 1,
+  "scenario": "c2-pos-06",
+  "schema": 1,
+  "session_fatal": null,
+  "speech_pcm": "reports/attnw8-gptq/preseal-r34/fixtures/c2-pos-06.pcm",
+  "speech_seconds": 2.96,
+  "tool": "benchmark_word",
+  "tool_call_count": 1,
+  "tool_calls_head": [
+    {
+      "arguments": "{}",
+      "call_id": "call_08d2e79be6944e7c8a9a84d1cab13c72",
+      "monotonic_s": 5139814.825520578,
+      "name": "get_benchmark_word"
+    }
+  ],
+  "url": "ws://127.0.0.1:8786/v1/realtime",
+  "user_speech_onsets": 1
+}
