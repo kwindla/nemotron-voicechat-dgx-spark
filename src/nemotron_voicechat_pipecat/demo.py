@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 from datetime import UTC, datetime
+from zoneinfo import ZoneInfo, available_timezones
 
 # NLTK 3.10 installs a guard against dependencies resolved from the current
 # working directory. A project-local uv environment is below that directory,
@@ -80,17 +81,129 @@ class VoicechatReadyRTVIProcessor(RTVIProcessor):
         await super().set_bot_ready(about=about)
 
 
-async def get_current_utc_time(params: FunctionCallParams):
-    """Get the current time in UTC."""
-    now = datetime.now(UTC)
+DEFAULT_TIMEZONE = "UTC"
+
+# Spoken requests name regions, not IANA keys. Map the common spoken forms;
+# anything else falls through to a case-insensitive IANA lookup.
+TIMEZONE_ALIASES = {
+    "pacific": "America/Los_Angeles",
+    "pacific time": "America/Los_Angeles",
+    "us pacific": "America/Los_Angeles",
+    "pt": "America/Los_Angeles",
+    "pst": "America/Los_Angeles",
+    "pdt": "America/Los_Angeles",
+    "mountain": "America/Denver",
+    "mountain time": "America/Denver",
+    "mt": "America/Denver",
+    "central": "America/Chicago",
+    "central time": "America/Chicago",
+    "ct": "America/Chicago",
+    "eastern": "America/New_York",
+    "eastern time": "America/New_York",
+    "et": "America/New_York",
+    "est": "America/New_York",
+    "edt": "America/New_York",
+    "utc": "UTC",
+    "gmt": "UTC",
+    "zulu": "UTC",
+    "uk": "Europe/London",
+    "london": "Europe/London",
+    "britain": "Europe/London",
+    "india": "Asia/Kolkata",
+    "japan": "Asia/Tokyo",
+    "tokyo": "Asia/Tokyo",
+}
+
+# Process state: the time zone the bot reports times in. Set by the
+# set_timezone tool and retained for the life of the process, so a later
+# get_current_time call observes an earlier set_timezone call.
+_reporting_timezone = DEFAULT_TIMEZONE
+
+
+def reporting_timezone() -> str:
+    """Return the process-wide reporting time zone."""
+    return _reporting_timezone
+
+
+def reset_reporting_timezone() -> None:
+    """Restore the default reporting time zone (test/support hook)."""
+    global _reporting_timezone
+    _reporting_timezone = DEFAULT_TIMEZONE
+
+
+def resolve_timezone(requested: str) -> str | None:
+    """Resolve a spoken or IANA time-zone name, or None when unknown."""
+    if not isinstance(requested, str):
+        return None
+    cleaned = requested.strip()
+    if not cleaned:
+        return None
+    alias = TIMEZONE_ALIASES.get(cleaned.casefold())
+    if alias is not None:
+        return alias
+    available = available_timezones()
+    if cleaned in available:
+        return cleaned
+    folded = {name.casefold(): name for name in available}
+    return folded.get(cleaned.casefold())
+
+
+def spoken_time(now: datetime) -> str:
+    """Render a clock time the way a voice assistant should say it."""
+    return f"{now.strftime('%I:%M %p').lstrip('0')} {now.tzname()}"
+
+
+async def get_current_time(params: FunctionCallParams):
+    """Get the current time in the process-wide reporting time zone."""
+    zone = _reporting_timezone
+    now = datetime.now(ZoneInfo(zone))
+    spoken = spoken_time(now)
     await params.result_callback(
         VoicechatToolResult(
             output={
-                "timezone": "UTC",
-                "iso_utc": now.isoformat(),
-                "spoken": now.strftime("%H:%M UTC"),
+                "timezone": zone,
+                "iso_local": now.isoformat(),
+                "iso_utc": now.astimezone(UTC).isoformat(),
+                "spoken": spoken,
             },
-            model_output=f"It is currently {now.strftime('%H:%M UTC')}.",
+            model_output=f"It is currently {spoken}.",
+        )
+    )
+
+
+async def set_timezone(params: FunctionCallParams):
+    """Set the time zone used by later get_current_time calls."""
+    global _reporting_timezone
+    requested = (getattr(params, "arguments", None) or {}).get("timezone")
+    resolved = resolve_timezone(requested)
+    if resolved is None:
+        # Report the failure as an ordinary result so the model can ask the
+        # user to clarify instead of the turn failing.
+        await params.result_callback(
+            VoicechatToolResult(
+                output={
+                    "ok": False,
+                    "requested": requested,
+                    "timezone": _reporting_timezone,
+                },
+                model_output=(
+                    f"I could not set the time zone to {requested!r}; it is not a time "
+                    f"zone I recognize. The time zone is still {_reporting_timezone}."
+                ),
+            )
+        )
+        return
+    _reporting_timezone = resolved
+    now = datetime.now(ZoneInfo(resolved))
+    await params.result_callback(
+        VoicechatToolResult(
+            output={
+                "ok": True,
+                "requested": requested,
+                "timezone": resolved,
+                "spoken": spoken_time(now),
+            },
+            model_output=f"The time zone is now {resolved}.",
         )
     )
 
@@ -100,12 +213,34 @@ def create_tools() -> ToolsSchema:
     return ToolsSchema(
         standard_tools=[
             FunctionSchema(
-                name="get_current_utc_time",
-                description="Get the current clock time in UTC.",
+                name="get_current_time",
+                description=(
+                    "Get the current clock time in the time zone this conversation "
+                    "is using."
+                ),
                 properties={},
                 required=[],
-                handler=get_current_utc_time,
-            )
+                handler=get_current_time,
+            ),
+            FunctionSchema(
+                name="set_timezone",
+                description=(
+                    "Set the time zone used when reporting the current time. Accepts "
+                    "an IANA name such as America/Los_Angeles or a common spoken name "
+                    "such as Pacific."
+                ),
+                properties={
+                    "timezone": {
+                        "type": "string",
+                        "description": (
+                            "IANA time zone name (America/Los_Angeles) or common "
+                            "spoken name (Pacific, Eastern, UTC, Tokyo)."
+                        ),
+                    }
+                },
+                required=["timezone"],
+                handler=set_timezone,
+            ),
         ]
     )
 

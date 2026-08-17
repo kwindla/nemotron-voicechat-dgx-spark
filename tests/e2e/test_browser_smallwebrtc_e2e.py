@@ -3656,7 +3656,10 @@ async def test_real_chromium_smallwebrtc_round_trip(tmp_path):
             update = observed["session_update"]
             assert update["session"]["protocol_version"] == 3
             assert update["session"]["instructions"].startswith("You are a helpful voice assistant")
-            assert update["session"]["tools"][0]["name"] == "get_current_utc_time"
+            assert [tool["name"] for tool in update["session"]["tools"]] == [
+                "get_current_time",
+                "set_timezone",
+            ]
             assert int(observed["audio_appends"]) >= 10
             assert stats["tracks"] >= 1
             assert stats["outbound"] > 0
