@@ -146,6 +146,31 @@ def test_checked_playout_consumer_reconciles_actual_release_and_push_chain() -> 
     assert validation["downstream_push_count"] == 1
 
 
+def test_checked_playout_consumer_accepts_and_mutation_checks_runtime_provenance() -> None:
+    module = load_module()
+    trace = checked_playout_trace()
+    provenance = {
+        "trace_schema": "nemotron_voicechat.playout.v1",
+        "type": "session.created.provenance",
+        "client_received_monotonic_s": 0.95,
+        "session_id": "session-1",
+        "session_created_sha256": "a" * 64,
+        "runtime_provenance": {
+            "runtime_image": "voicechat:hotfix-v1",
+            "runtime_image_id": "sha256:" + "b" * 64,
+            "runtime_contract": "production-hotfix-notext-watchdog-v1",
+            "semantic_environment": {"VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES": "30"},
+            "source_sha256": {"server.py": "c" * 64},
+        },
+    }
+    trace.insert(1, provenance)
+    assert module.validate_observed_playout_trace(trace)["valid"] is True
+
+    provenance["runtime_provenance"]["runtime_image_id"] = "mutable"
+    with pytest.raises(ValueError, match="provenance"):
+        module.validate_observed_playout_trace(trace)
+
+
 @pytest.mark.parametrize("probe", ["review", "duplicate", "orphan", "contradiction"])
 def test_checked_playout_consumer_rejects_impossible_records(probe: str) -> None:
     module = load_module()

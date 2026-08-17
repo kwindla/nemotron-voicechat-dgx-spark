@@ -12,7 +12,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .provenance import PRODUCTION_ENVIRONMENT
+from .provenance import (
+    NOTEXT_WATCHDOG_HOTFIX_V1,
+    NOTEXT_WATCHDOG_HOTFIX_V1_ENVIRONMENT,
+    PRODUCTION_ENVIRONMENT,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = REPO_ROOT / "config/production-candidate-1.toml"
@@ -67,10 +71,15 @@ def load_config(path: Path = DEFAULT_CONFIG) -> dict[str, Any]:
     if config.get("schema") != 1 or candidate not in {
         "production-candidate-1",
         "promotion-candidate-2a",
+        NOTEXT_WATCHDOG_HOTFIX_V1,
     }:
         raise ValueError(f"unsupported Voicechat configuration: {path}")
     configured = config.get("runtime", {}).get("environment", {})
-    expected = PRODUCTION_ENVIRONMENT | TYPED_INPUT_ENVIRONMENT
+    expected = (
+        NOTEXT_WATCHDOG_HOTFIX_V1_ENVIRONMENT
+        if candidate == NOTEXT_WATCHDOG_HOTFIX_V1
+        else PRODUCTION_ENVIRONMENT
+    ) | TYPED_INPUT_ENVIRONMENT
     if candidate == "promotion-candidate-2a":
         expected |= PC2A_ENVIRONMENT
         expected = {

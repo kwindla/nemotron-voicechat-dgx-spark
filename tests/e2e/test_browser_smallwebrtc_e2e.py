@@ -29,6 +29,7 @@ from websockets.asyncio.server import serve
 QUALIFICATION_TOOLS = Path(__file__).resolve().parents[2] / "tools" / "qualification"
 sys.path.insert(0, str(QUALIFICATION_TOOLS))
 
+from response_completion_gate import gate_trace
 from step2_live_fixture_driver import (
     RTVI_QUIESCENCE_MIN_WINDOW_MS,
     RTVI_QUIESCENCE_WINDOW_MS,
@@ -65,7 +66,113 @@ from step2_live_fixture_driver import (
     wait_for_playout_trace_publication,
 )
 
+from nemotron_voicechat_runtime.provenance import valid_runtime_provenance
+
 CHROMIUM = os.environ.get("PLAYWRIGHT_CHROMIUM_EXECUTABLE")
+TRANSCRIPT_BASELINE_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "reports/notext-watchdog/browser-transcript-baseline-v1.json"
+)
+
+
+def _load_transcript_baseline() -> dict[str, Any]:
+    baseline = json.loads(TRANSCRIPT_BASELINE_PATH.read_text(encoding="utf-8"))
+    source = Path(__file__).resolve().parents[2] / baseline["source"]
+    if hashlib.sha256(source.read_bytes()).hexdigest() != baseline["source_sha256"]:
+        raise ValueError("browser transcript baseline source checksum drifted")
+    if baseline.get("predates_notext_watchdog_hotfix") is not True:
+        raise ValueError("browser transcript baseline does not predate the hotfix")
+    return baseline
+
+
+def _adjudicate_browser_result(summary: dict[str, Any]) -> dict[str, Any]:
+    """Classify every transcript mismatch and split truncation ownership."""
+
+    baseline = _load_transcript_baseline()
+    results = summary["fixtures"]
+    l1_2_text = ""
+    model_silence = 0
+    watchdog_truncations = 0
+    unclassified: list[str] = []
+    for result in results:
+        gate = result.get("transcript_gate_evidence") or {}
+        fixture_id = result["fixture_id"]
+        equal = gate.get("transcript_equal") is True
+        classification = "exact_transcript" if equal else None
+        baseline_match = False
+        if not equal and result.get("interruption") is not None:
+            classification = "expected_interruption_transcript_prefix"
+            baseline_match = fixture_id in baseline["classifications"]
+        elif not equal and fixture_id == "L1-2" and not gate.get(
+            "joined_browser_transcript"
+        ):
+            classification = "known_browser_transcript_flush_gap"
+            baseline_match = baseline["classifications"].get(fixture_id, {}).get(
+                "class"
+            ) == classification
+            l1_2_text = str(gate.get("response_owned_traced_text") or "")
+        elif not equal and fixture_id == "L2-1":
+            joined = str(gate.get("joined_browser_transcript") or "")
+            traced = str(gate.get("response_owned_traced_text") or "")
+            if l1_2_text and joined == l1_2_text + traced:
+                classification = "known_prior_response_transcript_carryover"
+                baseline_match = baseline["classifications"].get(fixture_id, {}).get(
+                    "class"
+                ) == classification
+        passed = equal or baseline_match
+        if not passed:
+            unclassified.append(fixture_id)
+        completion = result.get("trace_response_completion") or {}
+        reason = completion.get("completion_reason")
+        if reason in {"no_text_since_bos_watchdog", "no_audio_since_bos_watchdog"}:
+            truncation_class = "watchdog_truncation"
+            watchdog_truncations += 1
+            passed = False
+            if fixture_id not in unclassified:
+                unclassified.append(fixture_id)
+        elif (
+            not equal
+            and reason == "decoded_silence_watchdog"
+            and classification == "known_browser_transcript_flush_gap"
+        ):
+            truncation_class = "model_silence_truncation"
+            model_silence += 1
+        else:
+            truncation_class = "none"
+        result["transcript_adjudication"] = {
+            "classification": classification or "unclassified_mismatch",
+            "baseline_source": baseline["source"],
+            "baseline_source_sha256": baseline["source_sha256"],
+            "baseline_match": baseline_match,
+            "passed": passed,
+        }
+        result["truncation_adjudication"] = {
+            "class": truncation_class,
+            "completion_reason": reason,
+            "passed": truncation_class != "watchdog_truncation",
+        }
+    sessions_passed = all(
+        (session.get("response_completion_gate") or {}).get("passed") is True
+        and session.get("runtime_provenance_passed") is True
+        and (session.get("production_value_coverage") or {}).get("passed") is True
+        for session in summary["sessions"]
+    )
+    passed = (
+        sessions_passed
+        and not unclassified
+        and all(result.get("completion_status") == "completed" for result in results)
+    )
+    return {
+        "passed": passed,
+        "all_fixtures_completed": all(
+            result.get("completion_status") == "completed" for result in results
+        ),
+        "all_transcript_mismatches_classified": not unclassified,
+        "unclassified_transcript_mismatches": unclassified,
+        "model_silence_truncations": model_silence,
+        "watchdog_truncations": watchdog_truncations,
+        "session_completion_gates_passed": sessions_passed,
+    }
 
 
 def _rtc_probe_script(peer_connection_slot: str) -> str:
@@ -4231,6 +4338,12 @@ async def test_step2_live_fixture_plan(tmp_path):
         capture_on_artifact.stem + "-capture-off" + capture_on_artifact.suffix
     )
     artifacts = {"on": capture_on_artifact, "off": capture_off_artifact}
+    model_trace_root = Path(
+        os.environ.get(
+            "VOICECHAT_LIVE_MODEL_TRACE_ROOT",
+            str(Path.home() / ".local/state/nemotron-voicechat/traces/model"),
+        )
+    ).expanduser()
     configured_summary = os.environ.get("VOICECHAT_LIVE_FIXTURE_SUMMARY")
     summary_path = (
         Path(configured_summary).expanduser()
@@ -4258,6 +4371,8 @@ async def test_step2_live_fixture_plan(tmp_path):
     summary: dict[str, Any] = {
         "schema": SUMMARY_SCHEMA,
         "status": "running",
+        "passed": None,
+        "aggregate": None,
         "started_wall_time_s": time.time(),
         "completed_wall_time_s": None,
         "plan": plan_document(plan),
@@ -4275,6 +4390,11 @@ async def test_step2_live_fixture_plan(tmp_path):
                 "pipecat_artifact": resolved_paths[f"pipecat_playout_capture_{mode}"],
                 "pipecat_publication_wait_s": None,
                 "observed_playout_trace": None,
+                "session_id": None,
+                "session_created_provenance": None,
+                "runtime_provenance_passed": False,
+                "production_value_coverage": None,
+                "response_completion_gate": None,
             }
             for mode, _fixtures in plan.sessions()
         ],
@@ -4434,6 +4554,83 @@ async def test_step2_live_fixture_plan(tmp_path):
                     session["observed_playout_trace"] = await wait_for_playout_trace_publication(
                         session_pipecat_trace, reservation=resolved_paths
                     )
+                    published_records = read_playout_trace(
+                        session_pipecat_trace, reservation=resolved_paths
+                    )
+                    session_ids = {
+                        record.get("session_id")
+                        for record in published_records
+                        if isinstance(record.get("session_id"), str)
+                    }
+                    if len(session_ids) != 1:
+                        raise ValueError(
+                            f"Pipecat artifact has ambiguous session IDs: {sorted(session_ids)}"
+                        )
+                    session_id = next(iter(session_ids))
+                    session["session_id"] = session_id
+                    provenance_records = [
+                        record
+                        for record in published_records
+                        if record.get("type") == "session.created.provenance"
+                    ]
+                    if len(provenance_records) != 1:
+                        raise ValueError(
+                            "Pipecat artifact must retain exactly one session.created provenance"
+                        )
+                    provenance_record = provenance_records[0]
+                    runtime_provenance = provenance_record.get("runtime_provenance")
+                    semantic = (
+                        runtime_provenance.get("semantic_environment", {})
+                        if isinstance(runtime_provenance, dict)
+                        else {}
+                    )
+                    expected_values = {
+                        "VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES": "30",
+                        "VOICECHAT_WEB_AGENT_NO_AUDIO_FRAMES": "30",
+                        "VOICECHAT_WEB_AGENT_SILENCE_EOS_FRAMES": "20",
+                        "VOICECHAT_WEB_AGENT_SILENCE_EOS_DBFS": "-90",
+                        "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC": "30",
+                    }
+                    actual_values = {name: semantic.get(name) for name in expected_values}
+                    session["session_created_provenance"] = provenance_record
+                    session["runtime_provenance_passed"] = bool(
+                        provenance_record.get("session_id") == session_id
+                        and valid_runtime_provenance(runtime_provenance)
+                        and runtime_provenance.get("runtime_image")
+                        and runtime_provenance.get("runtime_contract")
+                        == "production-hotfix-notext-watchdog-v1"
+                    )
+                    session["production_value_coverage"] = {
+                        "qualification_override_used": False,
+                        "expected": expected_values,
+                        "actual": actual_values,
+                        "passed": actual_values == expected_values,
+                    }
+                    completion_gate = gate_trace(model_trace_root / session_id / "events.jsonl")
+                    session["response_completion_gate"] = completion_gate
+                    session_indices = list(
+                        range(7) if capture_mode == "on" else range(7, 8)
+                    )
+                    response_cursor = 0
+                    for fixture_index in session_indices:
+                        fixture_result = summary["fixtures"][fixture_index]
+                        response_count = 2 if fixture_result.get("interruption") else 1
+                        response_slice = completion_gate["responses"][
+                            response_cursor : response_cursor + response_count
+                        ]
+                        if len(response_slice) != response_count:
+                            raise ValueError(
+                                "model trace response count does not match browser plan"
+                            )
+                        fixture_result["trace_response_ordinals"] = list(
+                            range(response_cursor, response_cursor + response_count)
+                        )
+                        fixture_result["trace_response_completion"] = response_slice[-1]
+                        response_cursor += response_count
+                    if response_cursor != completion_gate["total_responses"]:
+                        raise ValueError(
+                            "browser plan does not consume every model-trace response"
+                        )
                 except Exception as exc:  # noqa: BLE001 - terminal evidence is mandatory
                     session["teardown_errors"].append(
                         f"Pipecat artifact publication/validation failed: {exc!r}"
@@ -4460,12 +4657,16 @@ async def test_step2_live_fixture_plan(tmp_path):
             if error is not None:
                 failure = failure or error
         try:
+            summary["aggregate"] = _adjudicate_browser_result(summary)
+            summary["passed"] = summary["aggregate"]["passed"] and failure is None
+            if failure is None and not summary["passed"]:
+                failure = "browser aggregate gate failed"
             _terminalize_step2_summary(summary, failure, persist)
         finally:
             resolved_paths.close()
     if failure is not None:
         pytest.fail(f"Step 2 fixture driver failed closed: {failure}; summary={summary_path}")
-    assert all(result["completion_status"] == "completed" for result in summary["fixtures"])
+    assert summary["passed"] is True
 
 
 def test_i1_anchors_tolerate_original_stop_before_interruption_marker() -> None:
@@ -4496,3 +4697,109 @@ def test_i1_anchors_tolerate_original_stop_before_interruption_marker() -> None:
     assert anchors["original_stop"] < anchors["interruption_marker"]
     assert anchors["replacement_start"] > anchors["interruption_marker"]
     assert anchors["replacement_stop"] > anchors["replacement_start"]
+
+
+def test_browser_aggregate_classifies_retained_noninterruption_mismatches() -> None:
+    summary = json.loads(
+        (
+            Path(__file__).resolve().parents[2]
+            / (
+                "reports/fhw8-qualification/g3-session-20260814T0530Z/leg-a/driver/"
+                "fixture-summary.json"
+            )
+        ).read_text(encoding="utf-8")
+    )
+    for session in summary["sessions"]:
+        session["response_completion_gate"] = {"passed": True}
+        session["runtime_provenance_passed"] = True
+        session["production_value_coverage"] = {"passed": True}
+    for result in summary["fixtures"]:
+        result["trace_response_completion"] = {
+            "completion_reason": "decoded_silence_watchdog"
+        }
+    aggregate = _adjudicate_browser_result(summary)
+    assert aggregate["passed"] is True
+    assert aggregate["all_transcript_mismatches_classified"] is True
+    assert aggregate["model_silence_truncations"] == 1
+    assert aggregate["watchdog_truncations"] == 0
+    assert {
+        result["fixture_id"]: result["transcript_adjudication"]["classification"]
+        for result in summary["fixtures"]
+        if result["transcript_gate_evidence"]["transcript_equal"] is False
+    } == {
+        "L1-2": "known_browser_transcript_flush_gap",
+        "L2-1": "known_prior_response_transcript_carryover",
+        "I1": "expected_interruption_transcript_prefix",
+    }
+    assert next(
+        result["truncation_adjudication"]["class"]
+        for result in summary["fixtures"]
+        if result["fixture_id"] == "I1"
+    ) == "none"
+
+
+def test_browser_aggregate_mutation_rejects_unclassified_transcript_mismatch() -> None:
+    summary = json.loads(
+        (
+            Path(__file__).resolve().parents[2]
+            / (
+                "reports/fhw8-qualification/g3-session-20260814T0530Z/leg-a/driver/"
+                "fixture-summary.json"
+            )
+        ).read_text(encoding="utf-8")
+    )
+    for session in summary["sessions"]:
+        session["response_completion_gate"] = {"passed": True}
+        session["runtime_provenance_passed"] = True
+        session["production_value_coverage"] = {"passed": True}
+    for result in summary["fixtures"]:
+        result["trace_response_completion"] = {
+            "completion_reason": "decoded_silence_watchdog"
+        }
+    l2 = next(result for result in summary["fixtures"] if result["fixture_id"] == "L2-1")
+    l2["transcript_gate_evidence"]["joined_browser_transcript"] = "mutated mismatch"
+    aggregate = _adjudicate_browser_result(summary)
+    assert aggregate["passed"] is False
+    assert aggregate["unclassified_transcript_mismatches"] == ["L2-1"]
+
+
+def test_browser_aggregate_mutation_rejects_watchdog_reason_for_adjudicated_mismatch() -> None:
+    summary = json.loads(
+        (
+            Path(__file__).resolve().parents[2]
+            / (
+                "reports/fhw8-qualification/g3-session-20260814T0530Z/leg-a/driver/"
+                "fixture-summary.json"
+            )
+        ).read_text(encoding="utf-8")
+    )
+    for session in summary["sessions"]:
+        session["response_completion_gate"] = {"passed": True}
+        session["runtime_provenance_passed"] = True
+        session["production_value_coverage"] = {"passed": True}
+    for result in summary["fixtures"]:
+        result["trace_response_completion"] = {
+            "completion_reason": "decoded_silence_watchdog"
+        }
+    l1_2 = next(
+        result for result in summary["fixtures"] if result["fixture_id"] == "L1-2"
+    )
+    l1_2["trace_response_completion"]["completion_reason"] = (
+        "no_text_since_bos_watchdog"
+    )
+
+    aggregate = _adjudicate_browser_result(summary)
+    assert aggregate["passed"] is False
+    assert aggregate["watchdog_truncations"] == 1
+    assert aggregate["unclassified_transcript_mismatches"] == ["L1-2"]
+    assert l1_2["transcript_adjudication"]["classification"] == (
+        "known_browser_transcript_flush_gap"
+    )
+    assert l1_2["truncation_adjudication"]["class"] == "watchdog_truncation"
+
+
+def test_browser_aggregate_reports_false_for_early_session_failure() -> None:
+    summary = {"sessions": [{"response_completion_gate": None}], "fixtures": []}
+    aggregate = _adjudicate_browser_result(summary)
+    assert aggregate["passed"] is False
+    assert aggregate["session_completion_gates_passed"] is False

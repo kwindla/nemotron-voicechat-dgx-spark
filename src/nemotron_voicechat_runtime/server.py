@@ -33,7 +33,7 @@ import traceback
 import uuid
 import wave
 from collections import deque
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -59,6 +59,8 @@ from .protocol import (
 )
 from .provenance import (
     NANO_PAD_PAIR_PRODUCTION_POLICY,
+    NOTEXT_WATCHDOG_HOTFIX_V1,
+    NOTEXT_WATCHDOG_HOTFIX_V1_ENVIRONMENT,
     PRODUCTION_ENVIRONMENT,
     QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV,
     QUALIFICATION_MODE_ENV,
@@ -1250,6 +1252,30 @@ def env_bool(name: str, default: bool) -> bool:
     raise SystemExit(f"{name} must be a boolean, got {value!r}")
 
 
+def configured_response_wall_seconds(environment: Mapping[str, str] | None = None) -> float:
+    """Parse the whole-response wall deadline and enforce named contracts."""
+
+    values = os.environ if environment is None else environment
+    raw = values.get("VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC", "0")
+    try:
+        seconds = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise SystemExit(
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC must be a finite non-negative number"
+        ) from exc
+    if not math.isfinite(seconds) or seconds < 0:
+        raise SystemExit(
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC must be a finite non-negative number"
+        )
+    contract = values.get("VOICECHAT_RUNTIME_CONTRACT", "").strip()
+    if contract == NOTEXT_WATCHDOG_HOTFIX_V1 and seconds != 30.0:
+        raise SystemExit(
+            f"{NOTEXT_WATCHDOG_HOTFIX_V1} requires "
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC=30"
+        )
+    return seconds
+
+
 def fc_async_heartbeat_enabled() -> bool:
     """Return whether the diagnostic heartbeat and thread dump are enabled."""
     return env_bool(FC_ASYNC_HEARTBEAT_ENV, False)
@@ -2424,6 +2450,9 @@ def response_audio_is_deliverable(turn_state: dict[str, Any]) -> bool:
     boundary = turn_state.get("response_boundary")
     if not isinstance(boundary, dict):
         return False
+    deadline = turn_state.get("response_wall_deadline")
+    if isinstance(deadline, dict) and deadline.get("expired") is True:
+        return False
     return (
         boundary.get("phase") in {"responding", "tail_draining"} or boundary.get("event") == "start"
     )
@@ -2632,11 +2661,17 @@ class AgentSilenceEosWatchdog:
             self.function_call_emissions += function_delta.count("<TOOLCALL>")
         if output_dbfs > self.threshold_dbfs:
             self.audible_seen = True
-        if function_delta or text_delta:
+        audio_audible = output_dbfs > self.threshold_dbfs
+        # Text generation and EarTTS rendering are decoupled.  Once Nano has
+        # handed text to EarTTS, the text channel can be quiet for many frames
+        # while decoded speech is still live.  The no-text watchdog is the
+        # joint "neither semantic nor acoustic progress" guard; the independent
+        # no-audio and decoded-silence guards below retain their own contracts.
+        if function_delta or text_delta or audio_audible:
             self.no_text_frames = 0
         else:
             self.no_text_frames += 1
-        if function_delta or output_dbfs > self.threshold_dbfs:
+        if function_delta or audio_audible:
             self.no_audio_frames = 0
         else:
             self.no_audio_frames += 1
@@ -2732,6 +2767,99 @@ class QualificationAgentSilenceEosWatchdog(AgentSilenceEosWatchdog):
             "qualification_mode": self.qualification_mode.label,
             "qualification_candidate": self.qualification_mode.candidate,
         }
+
+
+class ResponseWallClockDeadline:
+    """One monotonic deadline from agent BOS through the acoustic terminal."""
+
+    def __init__(
+        self,
+        seconds: float,
+        request_eos: Callable[[], None],
+        *,
+        clock: Callable[[], float] = time.monotonic,
+        timer_factory: Callable[[float, Callable[[], None]], Any] = threading.Timer,
+    ) -> None:
+        if not math.isfinite(seconds) or seconds < 0:
+            raise ValueError("response wall deadline must be finite and non-negative")
+        self.seconds = float(seconds)
+        self._request_eos = request_eos
+        self._clock = clock
+        self._timer_factory = timer_factory
+        self._lock = threading.Lock()
+        self._timer: Any | None = None
+        self._generation = 0
+        self.started_at: float | None = None
+        self.expired_at: float | None = None
+        self.eos_requested = False
+
+    @property
+    def active(self) -> bool:
+        return self.started_at is not None
+
+    @property
+    def expired(self) -> bool:
+        return self.expired_at is not None
+
+    def arm(self) -> bool:
+        if self.seconds == 0:
+            return False
+        with self._lock:
+            if self.started_at is not None:
+                return False
+            self._generation += 1
+            generation = self._generation
+            self.started_at = self._clock()
+            self.expired_at = None
+            self.eos_requested = False
+            timer = self._timer_factory(
+                self.seconds, lambda: self._expire(generation)
+            )
+            if hasattr(timer, "daemon"):
+                timer.daemon = True
+            self._timer = timer
+            timer.start()
+        return True
+
+    def _expire(self, generation: int) -> None:
+        with self._lock:
+            if generation != self._generation or self.started_at is None or self.expired:
+                return
+            self.expired_at = self._clock()
+            self.eos_requested = True
+        # The wrapper hook only latches EOS; it does not synthesize redirect
+        # text. Calling outside the lock also keeps teardown non-blocking.
+        self._request_eos()
+
+    def reset(self) -> dict[str, Any]:
+        with self._lock:
+            snapshot = self.snapshot_unlocked()
+            self._generation += 1
+            timer, self._timer = self._timer, None
+            self.started_at = None
+            self.expired_at = None
+            self.eos_requested = False
+        if timer is not None:
+            timer.cancel()
+        return snapshot
+
+    def snapshot_unlocked(self) -> dict[str, Any]:
+        elapsed = None
+        if self.started_at is not None:
+            elapsed = max(0.0, (self.expired_at or self._clock()) - self.started_at)
+        return {
+            "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+            "budget_seconds": self.seconds,
+            "active": self.started_at is not None,
+            "expired": self.expired_at is not None,
+            "eos_requested": self.eos_requested,
+            "elapsed_seconds": elapsed,
+            "redirect_policy": "none",
+        }
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            return self.snapshot_unlocked()
 
 
 @dataclass
@@ -2912,6 +3040,7 @@ class AcousticResponseBoundary:
         text_delta: str = "",
         watchdog_eos_pending: bool = False,
         watchdog_eos_reason: str | None = None,
+        response_wall_deadline_expired: bool = False,
         max_response_frames: int = 0,
     ) -> dict[str, Any]:
         event: str | None = None
@@ -2955,6 +3084,8 @@ class AcousticResponseBoundary:
                 self.post_eos_frames = 0
                 if watchdog_eos_pending:
                     self.eos_reason = watchdog_eos_reason or "decoded_silence_watchdog"
+                elif response_wall_deadline_expired:
+                    self.eos_reason = "max_response_wall_time"
                 elif (
                     self.bos_frame is not None
                     and max_response_frames > 0
@@ -3060,6 +3191,7 @@ class VoiceChatEngine:
         response_tail_silence_frames: int = 3,
         response_tail_max_frames: int = 25,
         delivery_silence_frames: int = 12,
+        max_agent_response_seconds: float = 0.0,
     ):
         self.pipeline = pipeline
         self.stream_id = 0
@@ -3103,6 +3235,10 @@ class VoiceChatEngine:
             required_silent_frames=response_tail_silence_frames,
             max_tail_frames=response_tail_max_frames,
             delivery_silence_frames=delivery_silence_frames,
+        )
+        self.response_wall_deadline = ResponseWallClockDeadline(
+            max_agent_response_seconds,
+            self.request_agent_eos,
         )
         self.pad_pair_idle_no_buffer_frames = 0
         self.pad_pair_watchdog_emitted = False
@@ -3886,6 +4022,7 @@ class VoiceChatEngine:
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
+            self.response_wall_deadline.reset()
             self.pad_pair_idle_no_buffer_frames = 0
             self.pad_pair_watchdog_emitted = False
             self.pad_pair_trace_errors = 0
@@ -3949,6 +4086,7 @@ class VoiceChatEngine:
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
+            self.response_wall_deadline.reset()
             self.last_rnnt_decoded_count = 0
             raise VoiceChatEngineStartFailure(phase, timings_ms) from exc
 
@@ -4247,17 +4385,29 @@ class VoiceChatEngine:
             function_delta=result.function_delta,
         )
         result.turn_state["agent_silence_watchdog"] = self.agent_silence_watchdog.snapshot()
-        result.turn_state["response_boundary"] = self.response_boundary.observe(
+        if control == "agent_bos":
+            self.response_wall_deadline.arm()
+        boundary = self.response_boundary.observe(
             control,
             float(result.output_audio["rms_dbfs"]),
             self.frame_index,
             text_delta=result.assistant_delta,
             watchdog_eos_pending=watchdog_eos_pending,
             watchdog_eos_reason=watchdog_eos_reason,
+            response_wall_deadline_expired=self.response_wall_deadline.expired,
             max_response_frames=int(
                 getattr(self.pipeline.s2s_model, "_max_agent_response_frames", 0)
             ),
         )
+        result.turn_state["response_boundary"] = boundary
+        if boundary.get("event") == "end":
+            deadline = self.response_wall_deadline.reset()
+            deadline["active"] = False
+            deadline["completed"] = True
+        else:
+            deadline = self.response_wall_deadline.snapshot()
+            deadline["completed"] = False
+        result.turn_state["response_wall_deadline"] = deadline
         if request_eos:
             request_fn = getattr(self.pipeline.s2s_model, "request_agent_eos", None)
             if not callable(request_fn):
@@ -4313,6 +4463,7 @@ class VoiceChatEngine:
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
+            self.response_wall_deadline.reset()
             self.last_rnnt_decoded_count = 0
             if cleanup_error is not None:
                 self.cleanup_failure = f"{type(cleanup_error).__name__}: {cleanup_error}"
@@ -4755,9 +4906,10 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
             os.environ.get("VOICECHAT_TRANSPORT_VAD_MIN_RNNT_TOKENS", "1")
         ),
         "s2s.system_prompt": "",
-        "s2s.max_agent_response_sec": float(
-            os.environ.get("VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC", "0")
-        ),
+        # The production contract is enforced by ResponseWallClockDeadline.
+        # Keep the upstream frame-count guard disabled: it is not wall time and
+        # its redirect tokenization occurs before late configuration updates.
+        "s2s.max_agent_response_sec": 0.0,
         "s2s.tts_text_token_ratio_cap": float(os.environ.get("S2S_TTS_TEXT_TOKEN_RATIO_CAP", "16")),
         "s2s.tts_text_token_min": int(os.environ.get("S2S_TTS_TEXT_TOKEN_MIN", "5")),
         "s2s.fc_fast_tool_grace_ms": fc_fast_tool_grace_ms(),
@@ -5190,15 +5342,37 @@ def _runtime_source_provenance(engine: VoiceChatEngine) -> dict[str, Any]:
     if pocket_worker_install.is_file():
         source_paths["pocket_environment/pocket_worker.py"] = pocket_worker_install
     wrapper = getattr(engine.pipeline, "s2s_model", None)
+    runtime_contract = os.environ.get("VOICECHAT_RUNTIME_CONTRACT", "").strip()
+    semantic_contract = (
+        NOTEXT_WATCHDOG_HOTFIX_V1_ENVIRONMENT
+        if runtime_contract == NOTEXT_WATCHDOG_HOTFIX_V1
+        else PRODUCTION_ENVIRONMENT
+    )
+    response_deadline = getattr(engine, "response_wall_deadline", None)
+    response_deadline_snapshot = (
+        response_deadline.snapshot()
+        if response_deadline is not None
+        else {
+            "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+            "budget_seconds": configured_response_wall_seconds(),
+            "active": False,
+            "expired": False,
+            "eos_requested": False,
+            "elapsed_seconds": None,
+            "redirect_policy": "none",
+        }
+    )
     provenance = {
         "runtime_image": os.environ.get("VOICECHAT_RUNTIME_IMAGE"),
         "runtime_image_id": os.environ.get("VOICECHAT_RUNTIME_IMAGE_ID"),
+        "runtime_contract": runtime_contract or "frozen-production-candidate",
         "speech_commit": PINNED_COMMIT,
         "compute_dtype": str(getattr(wrapper, "dtype", None)),
         "source_sha256": {name: sha256_file(path) for name, path in sorted(source_paths.items())},
         "semantic_environment": {
-            name: os.environ.get(name) for name in sorted(PRODUCTION_ENVIRONMENT)
+            name: os.environ.get(name) for name in sorted(semantic_contract)
         },
+        "response_wall_deadline": response_deadline_snapshot,
         "nano_pad_pair_policy": {
             name: os.environ.get(name, "0") for name in sorted(NANO_PAD_PAIR_PRODUCTION_POLICY)
         },
@@ -8546,6 +8720,9 @@ def main() -> None:
     STARTUP_READY_SENTINEL.unlink(missing_ok=True)
     startup_event("main_entered")
     args = parse_args()
+    # Validate the named production response contract before loading models or
+    # mutating CUDA state.
+    response_wall_seconds = configured_response_wall_seconds()
     if os.environ.get("VOICECHAT_STEP9_VALIDATE_BAKED_CACHE", "0") == "1":
         from .step9_cache_guard import validate_baked_vllm_cache
 
@@ -8633,6 +8810,7 @@ def main() -> None:
             os.environ.get("VOICECHAT_WEB_RESPONSE_TAIL_MAX_FRAMES", "25")
         ),
         delivery_silence_frames=int(os.environ.get("VOICECHAT_WEB_DELIVERY_SILENCE_FRAMES", "12")),
+        max_agent_response_seconds=response_wall_seconds,
     )
     startup_event("realtime_engine_create_finished")
     if (

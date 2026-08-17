@@ -932,3 +932,29 @@ clock; a future pairing candidate must be gated on the arrival clock.
   Prerequisites for any resumption: adjudicate the three recorded
   criterion deviations, and resolve the eager/graph tool disagreement
   (either explain it or capture activations on the production path).
+
+- **2026-08-17 — Production no-text watchdog truncation FIXED (6 review
+  rounds), plus the test-matrix blindness that hid it.** User manual
+  testing found most responses truncating mid-audio. Root cause
+  (pre-existing; watchdog byte-identical on main): `no_text_frames`
+  accumulated while EarTTS was still rendering **audible** audio — text
+  and audio are decoupled — so any response whose audio tail ran past
+  the 30-frame (2.4 s) text-silence deadline was cut off. In the user
+  trace, 4 of 5 firings were acoustically live (−37 to −53 dBFS). Every
+  qualification campaign ran `..._OVERRIDE_FRAMES=160`, so no gate ever
+  exercised the production window. Repair: two-dimensional liveness
+  (audible audio resets the text counter) + a real enforced
+  `ResponseWallClockDeadline` (30 s, derived as 2.29× the longest
+  observed valid response) as the global bound; shipped as a NEW
+  versioned identity `production-hotfix-notext-watchdog-v1` after review
+  caught an attempt to retrofit the frozen candidate-1/2/3 TOMLs
+  (candidate-3 is the published fhw8 pin). Test matrix: new
+  `response_completion_gate.py` — strict total-parse, fail-closed,
+  source-derived event vocabulary with a drift regression — proven to
+  FAIL the retained pre-fix trace (4 audible closures) and PASS all
+  eight repaired traces; browser adjudication now reports a real
+  aggregate and classifies every mismatch, so watchdog truncation can
+  never again be absorbed as the known model-silence limitation;
+  suites run at production values with a fail-closed promotion-manifest
+  verifier. Reviews r1–r6: each found a real in-scope defect, the last
+  four in the verification machinery itself.

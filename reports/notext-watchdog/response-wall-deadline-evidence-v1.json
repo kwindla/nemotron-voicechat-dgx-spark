@@ -1,0 +1,86 @@
+{
+  "budget_basis": {
+    "headroom_seconds": 16.88,
+    "multiplier": 2.287,
+    "nominal_seconds_per_model_frame": 0.08,
+    "observed_agent_talking_frames": 164,
+    "retained_max_valid_response_seconds": 13.12,
+    "source": "docs/reviews/notext-watchdog-review-r1.md finding 1 (capture-on retained trace)"
+  },
+  "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+  "cpu_small_limit_runs": [
+    {
+      "configured_seconds": 0.03,
+      "elapsed_seconds": 0.030545,
+      "eos_requested": true,
+      "snapshot": {
+        "active": true,
+        "budget_seconds": 0.03,
+        "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+        "elapsed_seconds": 0.03029429353773594,
+        "eos_requested": true,
+        "expired": true,
+        "redirect_policy": "none"
+      }
+    },
+    {
+      "configured_seconds": 0.03,
+      "elapsed_seconds": 0.03133,
+      "eos_requested": true,
+      "snapshot": {
+        "active": true,
+        "budget_seconds": 0.03,
+        "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+        "elapsed_seconds": 0.030906236730515957,
+        "eos_requested": true,
+        "expired": true,
+        "redirect_policy": "none"
+      }
+    },
+    {
+      "configured_seconds": 0.03,
+      "elapsed_seconds": 0.030479,
+      "eos_requested": true,
+      "snapshot": {
+        "active": true,
+        "budget_seconds": 0.03,
+        "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+        "elapsed_seconds": 0.03036621492356062,
+        "eos_requested": true,
+        "expired": true,
+        "redirect_policy": "none"
+      }
+    },
+    {
+      "configured_seconds": 0.03,
+      "elapsed_seconds": 0.031123,
+      "eos_requested": true,
+      "snapshot": {
+        "active": true,
+        "budget_seconds": 0.03,
+        "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+        "elapsed_seconds": 0.031052623875439167,
+        "eos_requested": true,
+        "expired": true,
+        "redirect_policy": "none"
+      }
+    },
+    {
+      "configured_seconds": 0.03,
+      "elapsed_seconds": 0.030545,
+      "eos_requested": true,
+      "snapshot": {
+        "active": true,
+        "budget_seconds": 0.03,
+        "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+        "elapsed_seconds": 0.030427351593971252,
+        "eos_requested": true,
+        "expired": true,
+        "redirect_policy": "none"
+      }
+    }
+  ],
+  "passed": true,
+  "production_budget_seconds": 30,
+  "schema": "nemotron_voicechat.response_wall_deadline_evidence.v1"
+}

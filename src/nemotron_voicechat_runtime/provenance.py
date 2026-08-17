@@ -227,6 +227,14 @@ PRODUCTION_ENVIRONMENT = {
     "VOICECHAT_WEB_WS_PING_TIMEOUT": "none",
 }
 
+# Candidate 1/2/3 remain frozen above.  The watchdog repair is a distinct
+# runtime identity over the published candidate-3 fhw8 artifact bytes.
+NOTEXT_WATCHDOG_HOTFIX_V1 = "production-hotfix-notext-watchdog-v1"
+NOTEXT_WATCHDOG_HOTFIX_V1_ENVIRONMENT = {
+    **PRODUCTION_ENVIRONMENT,
+    "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC": "30",
+}
+
 def checked_in_candidate_environments() -> dict[str, dict[str, str]]:
     """Load the serving identities from the checked-in candidate TOMLs."""
 

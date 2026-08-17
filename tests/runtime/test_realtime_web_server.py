@@ -7,6 +7,8 @@ import os
 import signal
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
@@ -29,6 +31,7 @@ from nemotron_voicechat_runtime.server import (
     FunctionCallBudget,
     GatePrerollBuffer,
     PcmFrameBuffer,
+    ResponseWallClockDeadline,
     SessionTrace,
     TransportModelGate,
     UserEouSettlement,
@@ -42,6 +45,7 @@ from nemotron_voicechat_runtime.server import (
     clean_display_text,
     clear_stale_agent_eos_latch,
     configure_fc_async_thread_dump,
+    configured_response_wall_seconds,
     create_app,
     env_bool,
     fc_async_heartbeat_snapshot,
@@ -68,6 +72,93 @@ from nemotron_voicechat_runtime.server import (
 
 
 class RealtimeWebServerTest(unittest.TestCase):
+    def test_response_wall_deadline_forces_eos_once_and_never_redirects(self) -> None:
+        now = [10.0]
+        timers = []
+        eos_requests = []
+        redirects: list[int] = []
+
+        class FakeTimer:
+            daemon = False
+
+            def __init__(self, seconds, callback):
+                self.seconds = seconds
+                self.callback = callback
+                self.cancelled = False
+                timers.append(self)
+
+            def start(self):
+                return None
+
+            def cancel(self):
+                self.cancelled = True
+
+            def fire(self):
+                self.callback()
+
+        deadline = ResponseWallClockDeadline(
+            0.25,
+            lambda: eos_requests.append(now[0]),
+            clock=lambda: now[0],
+            timer_factory=FakeTimer,
+        )
+        self.assertTrue(deadline.arm())
+        self.assertFalse(deadline.arm())
+        self.assertEqual(timers[0].seconds, 0.25)
+        self.assertEqual(eos_requests, [])
+        now[0] = 10.25
+        timers[0].fire()
+        timers[0].fire()
+        self.assertEqual(eos_requests, [10.25])
+        self.assertTrue(deadline.expired)
+        self.assertEqual(redirects, [])
+
+        boundary = AcousticResponseBoundary(required_silent_frames=1)
+        boundary.observe("agent_bos", -20.0, 1)
+        eos = boundary.observe(
+            "agent_eos",
+            -120.0,
+            2,
+            response_wall_deadline_expired=True,
+        )
+        self.assertEqual(eos["eos_reason"], "max_response_wall_time")
+        self.assertEqual(eos["event"], "end")
+        terminal = deadline.reset()
+        self.assertTrue(terminal["expired"])
+        self.assertFalse(deadline.active)
+
+        # A cancelled prior response timer cannot terminate the next response.
+        self.assertTrue(deadline.arm())
+        deadline.reset()
+        now[0] = 11.0
+        timers[1].fire()
+        self.assertEqual(eos_requests, [10.25])
+
+    def test_response_wall_deadline_config_is_strict_and_propagates_to_engine(self) -> None:
+        environment = {
+            "VOICECHAT_RUNTIME_CONTRACT": "production-hotfix-notext-watchdog-v1",
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC": "30",
+        }
+        self.assertEqual(configured_response_wall_seconds(environment), 30.0)
+        engine = VoiceChatEngine(SimpleNamespace(), max_agent_response_seconds=0.125)
+        self.assertEqual(engine.response_wall_deadline.seconds, 0.125)
+        for invalid in ("nan", "inf", "-1", "120"):
+            environment["VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC"] = invalid
+            with self.assertRaises(SystemExit):
+                configured_response_wall_seconds(environment)
+
+    def test_response_wall_deadline_expires_on_real_wall_time_without_model_frames(self) -> None:
+        fired = threading.Event()
+        started = time.monotonic()
+        deadline = ResponseWallClockDeadline(0.03, fired.set)
+        self.assertTrue(deadline.arm())
+        self.assertTrue(fired.wait(0.3))
+        elapsed = time.monotonic() - started
+        self.assertGreaterEqual(elapsed, 0.025)
+        self.assertLess(elapsed, 0.3)
+        self.assertTrue(deadline.snapshot()["expired"])
+        deadline.reset()
+
     def test_step9_fallback_counter_is_persistent_and_reports_last_shape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "fallbacks.jsonl"
@@ -3060,20 +3151,55 @@ class RealtimeWebServerTest(unittest.TestCase):
         self.assertFalse(watchdog.observe("pad", "", -120.0))
         self.assertTrue(watchdog.observe("pad", "", -120.0))
 
-    def test_agent_silence_watchdog_terminates_zero_text_turn_from_bos(self) -> None:
+    def test_agent_no_text_watchdog_does_not_cut_live_decoded_audio(self) -> None:
         watchdog = AgentSilenceEosWatchdog(
             threshold_dbfs=-90.0,
-            required_frames=3,
+            required_frames=100,
+            no_text_required_frames=3,
+            no_audio_required_frames=100,
+        )
+
+        self.assertFalse(watchdog.observe("agent_bos", "answer", -40.0))
+        for _ in range(6):
+            self.assertFalse(watchdog.observe("pad", "", -40.0))
+        self.assertTrue(watchdog.text_seen)
+        self.assertTrue(watchdog.audible_seen)
+        self.assertEqual(watchdog.no_text_frames, 0)
+        self.assertFalse(watchdog.request_pending)
+
+    def test_agent_no_text_watchdog_terminates_bos_with_neither_text_nor_audio(
+        self,
+    ) -> None:
+        watchdog = AgentSilenceEosWatchdog(
+            threshold_dbfs=-90.0,
+            required_frames=100,
             no_text_required_frames=3,
             no_audio_required_frames=100,
         )
 
         self.assertFalse(watchdog.observe("agent_bos", "", -120.0))
-        self.assertFalse(watchdog.observe("pad", "", -40.0))
-        self.assertTrue(watchdog.observe("pad", "", -40.0))
+        self.assertFalse(watchdog.observe("pad", "", -120.0))
+        self.assertTrue(watchdog.observe("pad", "", -120.0))
         self.assertEqual(watchdog.request_reason, "no_text_since_bos_watchdog")
         self.assertEqual(watchdog.no_text_frames, 3)
         self.assertFalse(watchdog.observe("pad", "", -120.0))
+
+    def test_agent_audio_completion_is_closed_by_decoded_silence(self) -> None:
+        watchdog = AgentSilenceEosWatchdog(
+            threshold_dbfs=-90.0,
+            required_frames=3,
+            no_text_required_frames=30,
+            no_audio_required_frames=100,
+        )
+
+        self.assertFalse(watchdog.observe("agent_bos", "answer", -40.0))
+        for _ in range(35):
+            self.assertFalse(watchdog.observe("pad", "", -40.0))
+        self.assertEqual(watchdog.no_text_frames, 0)
+        self.assertFalse(watchdog.observe("pad", "", -120.0))
+        self.assertFalse(watchdog.observe("pad", "", -120.0))
+        self.assertTrue(watchdog.observe("pad", "", -120.0))
+        self.assertEqual(watchdog.request_reason, "decoded_silence_watchdog")
 
     def test_agent_silence_watchdog_covers_short_text_without_audio(self) -> None:
         watchdog = AgentSilenceEosWatchdog(

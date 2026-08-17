@@ -2572,6 +2572,16 @@ def validate_fixture_summary(
         _finite_number(completed_time, "summary completion", minimum=0, maximum=1e100)
         if float(completed_time) < float(summary["started_wall_time_s"]):
             raise ValueError("summary completion precedes its start")
+    if "passed" in summary:
+        passed = summary.get("passed")
+        aggregate = summary.get("aggregate")
+        if status == "running":
+            if passed is not None or aggregate is not None:
+                raise ValueError("running summary cannot claim an aggregate result")
+        elif type(passed) is not bool or not isinstance(aggregate, Mapping):
+            raise ValueError("terminal summary requires a boolean aggregate result")
+        elif aggregate.get("passed") is not passed:
+            raise ValueError("summary aggregate and top-level pass disagree")
     _plan, plan_fixtures = _validate_embedded_plan(summary["plan"])
     paths = _object(summary["resolved_paths"], "summary resolved_paths")
     expected_path_keys = {
@@ -2988,6 +2998,8 @@ def validate_fixture_summary(
             raise ValueError("completed summary requires every fixture to complete")
     elif status == "failed":
         failure_observed = (
+            summary.get("passed") is False
+            or
             bool(terminal_errors)
             or any(
                 _object(session, "failed summary session").get("status") == "failed"

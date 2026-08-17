@@ -1,0 +1,23 @@
+{
+  "schema": "nemotron_voicechat.browser_transcript_baseline.v1",
+  "source": "reports/fhw8-qualification/g3-session-20260814T0530Z/leg-a/driver/fixture-summary.json",
+  "source_sha256": "ed6ff31160ffd7da46aa3ae1390fb8c18d025a672ca5f410f45bf4633d596e34",
+  "predates_notext_watchdog_hotfix": true,
+  "classifications": {
+    "L1-2": {
+      "class": "known_browser_transcript_flush_gap",
+      "interruption": false,
+      "mismatch_reason": "joined browser transcript is empty while response-owned traced text is nonempty"
+    },
+    "L2-1": {
+      "class": "known_prior_response_transcript_carryover",
+      "interruption": false,
+      "mismatch_reason": "joined browser transcript differs from response-owned traced text"
+    },
+    "I1": {
+      "class": "expected_interruption_transcript_prefix",
+      "interruption": true,
+      "mismatch_reason": "joined browser transcript differs from response-owned traced text"
+    }
+  }
+}

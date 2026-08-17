@@ -20,11 +20,14 @@ from pathlib import Path
 from typing import Any
 
 import websockets
+from response_completion_gate import gate_trace
 from tool_call_behavior_suite import (
     BENCHMARK_TOOL,
     INJECTED_OUTPUT,
     PRODUCTION_INSTRUCTION,
 )
+
+from nemotron_voicechat_runtime.provenance import valid_runtime_provenance
 
 INPUT_RATE = 16_000
 FRAME_SECONDS = 0.08
@@ -58,6 +61,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     stop_reader = asyncio.Event()
     session_closed = asyncio.Event()
     tool_calls = 0
+    created_session_id: str | None = None
+    runtime_provenance: dict[str, Any] | None = None
+    production_value_coverage: dict[str, Any] | None = None
 
     with events_path.open("w", encoding="utf-8") as event_file:
         async with websockets.connect(
@@ -76,6 +82,38 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             created = await receive_logged()
             if created.get("protocol") != {"name": "voicechat.realtime", "version": 3}:
                 raise RuntimeError(f"protocol negotiation failed: {created}")
+            created_session_id = created.get("session", {}).get("id")
+            runtime_provenance = created.get("session", {}).get("checkpoint", {}).get(
+                "runtime_provenance"
+            )
+            semantic = (
+                runtime_provenance.get("semantic_environment", {})
+                if isinstance(runtime_provenance, dict)
+                else {}
+            )
+            actual_values = {
+                name: semantic.get(name)
+                for name in (
+                    "VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES",
+                    "VOICECHAT_WEB_AGENT_NO_AUDIO_FRAMES",
+                    "VOICECHAT_WEB_AGENT_SILENCE_EOS_FRAMES",
+                    "VOICECHAT_WEB_AGENT_SILENCE_EOS_DBFS",
+                    "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC",
+                )
+            }
+            expected_values = {
+                "VOICECHAT_WEB_AGENT_NO_TEXT_FRAMES": "30",
+                "VOICECHAT_WEB_AGENT_NO_AUDIO_FRAMES": "30",
+                "VOICECHAT_WEB_AGENT_SILENCE_EOS_FRAMES": "20",
+                "VOICECHAT_WEB_AGENT_SILENCE_EOS_DBFS": "-90",
+                "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC": "30",
+            }
+            production_value_coverage = {
+                "qualification_override_used": False,
+                "expected": expected_values,
+                "actual": actual_values,
+                "passed": actual_values == expected_values,
+            }
             await websocket.send(
                 json.dumps(
                     {
@@ -278,6 +316,29 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     empty_responses = [response["response_id"] for response in responses if response["empty"]]
     nonempty_text = [bool(response["text"].strip()) for response in responses]
     ttfb_ms = [response["commit_to_first_audio_ms"] for response in responses]
+    completion_gate: dict[str, Any]
+    trace_path = (
+        args.model_trace_root / str(created_session_id) / "events.jsonl"
+        if created_session_id
+        else args.model_trace_root / "missing-session-id"
+    )
+    try:
+        completion_gate = gate_trace(trace_path)
+    except Exception as exc:
+        completion_gate = {
+            "schema": "nemotron_voicechat.response_completion_gate.v1",
+            "source": str(trace_path),
+            "passed": False,
+            "error": repr(exc),
+        }
+    provenance_passed = bool(
+        isinstance(runtime_provenance, dict)
+        and valid_runtime_provenance(runtime_provenance)
+        and isinstance(runtime_provenance.get("runtime_image"), str)
+        and runtime_provenance.get("runtime_image")
+        and runtime_provenance.get("runtime_contract")
+        == "production-hotfix-notext-watchdog-v1"
+    )
     result = {
         "kind": "rapid_turn_settlement_v1",
         "scenario": args.scenario,
@@ -293,6 +354,11 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "fatal_errors": fatal_errors,
         "errors": errors,
         "tool_call_count": tool_calls,
+        "session_id": created_session_id,
+        "runtime_provenance": runtime_provenance,
+        "runtime_provenance_passed": provenance_passed,
+        "production_value_coverage": production_value_coverage,
+        "response_completion_gate": completion_gate,
         "ttfb_ms": ttfb_ms,
         "six_turn_ttfb_ms": ttfb_ms[:6],
         "passed": (
@@ -301,6 +367,10 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             and not empty_responses
             and not fatal_errors
             and all(nonempty_text)
+            and provenance_passed
+            and production_value_coverage is not None
+            and production_value_coverage["passed"]
+            and completion_gate.get("passed") is True
         ),
     }
     (args.output / "summary.json").write_text(
@@ -323,6 +393,11 @@ def main() -> None:
     parser.add_argument("--inter-turn-s", type=float, default=0.08)
     parser.add_argument("--response-timeout-s", type=float, default=20.0)
     parser.add_argument("--session-close-timeout-s", type=float, default=30.0)
+    parser.add_argument(
+        "--model-trace-root",
+        type=Path,
+        default=Path.home() / ".local/state/nemotron-voicechat/traces/model",
+    )
     args = parser.parse_args()
     if args.turns < 8:
         parser.error("--turns must be at least 8")
