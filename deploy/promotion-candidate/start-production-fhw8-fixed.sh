@@ -73,5 +73,5 @@ exec docker run -d --name nemotron-voicechat-model --init --gpus all --ipc host 
   -e HF_HOME=/models/huggingface \
   -e HUGGINGFACE_HUB_CACHE=/models/huggingface/hub \
   -e HF_MODULES_CACHE=/tmp/voicechat-hf-modules \
-  pipecat-ai/nemotron-voicechat-dgx-spark:defect-fixes-1 \
+  ${VOICECHAT_PROMOTION_IMAGE:-pipecat-ai/nemotron-voicechat-dgx-spark:promotion-candidate} \
   python3 -m nemotron_voicechat_runtime.server --speech-root /opt/Speech --checkpoint-root /models/voicechat --hf-skeleton /models/NVIDIA-Nemotron-Nano-9B-v2 --vllm-manifest /models/candidates/fhw8-candidate-manifest.json --nano-vllm-path /models/candidates/nano-fhw8 --eartts-vllm-path /models/derived/eartts --speaker-name Aria --host 0.0.0.0 --port 8786 --trace-dir /trace

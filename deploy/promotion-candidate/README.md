@@ -23,13 +23,27 @@ closed unless the result matches the committed pins
 ~10 minutes CPU. This proves the uploaded weights are exactly the committed
 transform of the release.
 
-## Runtime image
+## Runtime image (REQUIRED — the qualified behavior is in the source)
 
-The runtime image must be built from this branch (the tool-call watchdog and
-pre-EOU settlement recovery live in `src/nemotron_voicechat_runtime/`):
-`container/build-public-runtime.sh` per `docs/provenance.md`, then either use
-the tag directly in `start-production-fhw8-fixed.sh` (edit the image name) or
-overlay an existing runtime image with `Dockerfile.defect-fixes`.
+The qualified runtime code lives in `src/nemotron_voicechat_runtime/`: the
+tool-call repetition watchdog, the pre-EOU settlement recovery, and the
+fence-on-real-audio + early-arming settlement changes that eliminate
+conversational latency accumulation. Weights alone do NOT provide them.
+
+Build the image from the current checkout:
+
+```
+deploy/promotion-candidate/build-promotion-image.sh
+```
+
+It builds via `container/build-public-runtime.sh` (native vLLM base per
+`docs/provenance.md`), tags `pipecat-ai/nemotron-voicechat-dgx-spark:promotion-candidate`,
+and fails closed unless the built image's `server.py` hash equals the working
+tree's. Override the tag with `VOICECHAT_PROMOTION_IMAGE` (the start script
+honors the same variable).
+
+`Dockerfile.defect-fixes` remains as a fast overlay for iterating on an
+already-built runtime image; it is not the reproducible path.
 
 ## Launch
 
