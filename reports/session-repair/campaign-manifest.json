@@ -2,7 +2,7 @@
   "artifacts": {
     "corrected_browser_manifest": {
       "path": "post-fix-browser-corrected/manifest.json",
-      "sha256": "571cd4731d1edaf19b023bd4f7a03adadef1c745af316425fbfac8afa8c2c10a"
+      "sha256": "aa8f18dd04b74acbf8facc4a412a30b372458992a98198b96732b73d8114bb2d"
     },
     "corrected_browser_rendered_audio": {
       "path": "post-fix-browser-corrected/rendered-bot-remote-track.wav",
@@ -26,11 +26,11 @@
     },
     "final_stack_status": {
       "path": "final-stack/status.json",
-      "sha256": "293431d6a078ec360e071b886aa5a0bf4313bbe1052681a8a917c7d08ee3ef0a"
+      "sha256": "f1e5d273b3d819026e0391a3720b34ebc153d55033dbeb91c89e62f6e8ae8412"
     },
     "post_fix_attempt5_manifest": {
       "path": "post-fix-browser-attempt5/manifest.json",
-      "sha256": "57fe936f5b005bd9a0821744981699126a70b6b2c1458b0ac5ed15c8ee588428"
+      "sha256": "5046e2555060ee56ebd7a4ca6694c654f10cf16332dca76f25f5507d3bd63e79"
     },
     "post_fix_attempt5_report_under_original_gate": {
       "path": "post-fix-browser-attempt5/report.json",
@@ -42,7 +42,7 @@
     },
     "results": {
       "path": "results.md",
-      "sha256": "d71c0a6b49413f28db9423518523098b7032e4a3591f23bf6dd16e9e0b788532"
+      "sha256": "83ddf8d3c5d7cb07df9d09cf7afa97ebbf823122d9a06ed24be16457a0174789"
     }
   },
   "directive_fixture": {
@@ -57,13 +57,13 @@
     "sha256": "22536283817f2e148612fb6c182281e6f8f0d29c751ec26a6a0533bc3599af04"
   },
   "replay_suite": {
-    "script_sha256": "f1bde2d7e9ea3ac487a3106e9bbd6cbf2e12d88c0c903c52f1ae2dbb9a79c2dd"
+    "script_sha256": "ca1bc4c89283bd311f1f2953851d2bde119ff1be5dcf6168cced6afb2535030a"
   },
   "runtime_image": {
     "demo_sha256": "d66e493f783f83585ca264c75c8ac8eb9208b82c060335cc03cf88d3502f62d0",
-    "id": "sha256:c79934692503646531c9be56c67813e473944fc53e21728bdb72db1d5926c53d",
-    "name": "pipecat-ai/nemotron-voicechat-dgx-spark:session-repair-20260817-r3",
-    "server_sha256": "6db56d76532e77a821a73ce78d36ee3ef1b5d17fadb6beff72f27cfc9b041764"
+    "id": "sha256:4607d8eb4b99a690644e35af1e75102f75fbfe148b4aee04dd9c278b4f1b0dd9",
+    "name": "pipecat-ai/nemotron-voicechat-dgx-spark:session-repair-20260818-r4",
+    "server_sha256": "4106fcb0a9b2e444f037f4ceef0c0c2087d16255510b73799b35c02cfbe22034"
   },
   "schema": "nemotron_voicechat.session_repair_campaign_manifest.v2"
 }

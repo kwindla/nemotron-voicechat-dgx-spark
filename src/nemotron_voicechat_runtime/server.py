@@ -8279,14 +8279,12 @@ def create_app(
                                 interrupt_evidence = await model_call(
                                     engine.interrupt_unpublished_function_cycle
                                 )
-                                clear_binding = getattr(
-                                    engine, "clear_pending_response_binding", None
-                                )
-                                if callable(clear_binding):
-                                    interrupt_evidence = {
-                                        **interrupt_evidence,
-                                        "superseded_response_binding": clear_binding(),
-                                    }
+                                interrupt_evidence = {
+                                    **interrupt_evidence,
+                                    "superseded_response_binding": (
+                                        engine.clear_pending_response_binding()
+                                    ),
+                                }
                     if publication_race:
                         if not deferred_client_input.append(body, message_bytes):
                             raise RuntimeError(
@@ -8635,10 +8633,50 @@ def create_app(
                         await active_typed.done.wait()
                         if typed_task is not None:
                             await asyncio.gather(typed_task, return_exceptions=True)
-                    seen_typed_job_ids.add(job_id)
+                    publication_race = False
+                    interrupt_evidence = None
                     async with model_input_lock:
-                        discarded = pcm_buffer.discard()
-                        gate_preroll.clear()
+                        # Publication wins if the function call became visible
+                        # while this request waited for typed-input ownership.
+                        # Otherwise the new typed turn supersedes the same
+                        # unpublished deferred-BOS owner as a microphone turn.
+                        if function_cycle_call_id is not None:
+                            publication_race = True
+                            discarded = 0
+                        else:
+                            discarded = pcm_buffer.discard()
+                            gate_preroll.clear()
+                            if pending_bos_settlement is not None:
+                                if pending_function_turn_id is None:
+                                    raise RuntimeError(
+                                        "deferred FC settlement has no initiating turn"
+                                    )
+                                cancelling_unpublished_function_turn_id = (
+                                    pending_function_turn_id
+                                )
+                                interrupt_evidence = await model_call(
+                                    engine.interrupt_unpublished_function_cycle
+                                )
+                                interrupt_evidence = {
+                                    **interrupt_evidence,
+                                    "superseded_response_binding": (
+                                        engine.clear_pending_response_binding()
+                                    ),
+                                }
+                    if publication_race:
+                        await websocket.send_json(
+                            protocol.typed_input_rejected(job_id, "function_cycle_active")
+                        )
+                        continue
+                    if interrupt_evidence is not None:
+                        trace.event(
+                            "unpublished_function_cycle_interrupt",
+                            source="typed",
+                            job_id=job_id,
+                            initiating_turn_id=cancelling_unpublished_function_turn_id,
+                            evidence=interrupt_evidence,
+                        )
+                    seen_typed_job_ids.add(job_id)
                     if discarded:
                         trace.event(
                             "microphone_partial_discarded_for_typed_input",

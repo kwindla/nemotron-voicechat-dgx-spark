@@ -1,0 +1,824 @@
+{
+  "expected_phase": "post",
+  "freshness": {
+    "eligible_responses": 0,
+    "latest_result": "",
+    "old_result": "It is currently 8:52 PM UTC.",
+    "passed": false,
+    "stale_rate": null,
+    "stale_responses": []
+  },
+  "freshness_gate_enabled": true,
+  "phase_expectation_passed": false,
+  "pre_fix_reproduced": false,
+  "response_attribution": {
+    "failures": [],
+    "passed": true
+  },
+  "response_completion_gate": {
+    "audible_watchdog_defects": [],
+    "audible_window_frames": 5,
+    "completion_reasons": {
+      "decoded_silence_watchdog": 5,
+      "model_or_turn_taking": 2,
+      "session_terminated": 1
+    },
+    "decoded_silence_watchdog_closures": 5,
+    "incomplete_responses": [],
+    "input_schema_errors": [],
+    "input_schema_valid": true,
+    "max_consecutive_text_quiet_but_audible_frames": 35,
+    "passed": true,
+    "responses": [
+      {
+        "bos_frame": 28,
+        "completion_reason": "decoded_silence_watchdog",
+        "eos_frame": 91,
+        "max_consecutive_text_quiet_audible_frames": 19,
+        "text_quiet_audible_frames": 22,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      },
+      {
+        "bos_frame": 187,
+        "completion_reason": "decoded_silence_watchdog",
+        "eos_frame": 243,
+        "max_consecutive_text_quiet_audible_frames": 26,
+        "text_quiet_audible_frames": 26,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      },
+      {
+        "bos_frame": 380,
+        "completion_reason": "decoded_silence_watchdog",
+        "eos_frame": 416,
+        "max_consecutive_text_quiet_audible_frames": 11,
+        "text_quiet_audible_frames": 11,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      },
+      {
+        "bos_frame": 503,
+        "completion_reason": "decoded_silence_watchdog",
+        "eos_frame": 559,
+        "max_consecutive_text_quiet_audible_frames": 26,
+        "text_quiet_audible_frames": 26,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      },
+      {
+        "bos_frame": 695,
+        "completion_reason": "decoded_silence_watchdog",
+        "eos_frame": 731,
+        "max_consecutive_text_quiet_audible_frames": 1,
+        "text_quiet_audible_frames": 1,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      },
+      {
+        "bos_frame": 808,
+        "completion_reason": "model_or_turn_taking",
+        "eos_frame": 870,
+        "max_consecutive_text_quiet_audible_frames": 35,
+        "text_quiet_audible_frames": 35,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      },
+      {
+        "bos_frame": 896,
+        "completion_reason": "model_or_turn_taking",
+        "eos_frame": 954,
+        "max_consecutive_text_quiet_audible_frames": 21,
+        "text_quiet_audible_frames": 26,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      },
+      {
+        "bos_frame": 967,
+        "completion_reason": "session_terminated",
+        "eos_frame": null,
+        "max_consecutive_text_quiet_audible_frames": 3,
+        "termination": {
+          "bos_frame": 967,
+          "disposition": "session_terminated_open_response",
+          "trace_stop_reason": "internal_error",
+          "trace_stop_record_index": 5251
+        },
+        "text_quiet_audible_frames": 3,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      }
+    ],
+    "schema": "nemotron_voicechat.response_completion_gate.v1",
+    "session_id": "0990f225-a1cd-45b1-b95b-2b90e2c0ca0f",
+    "session_terminated_open_response_count": 1,
+    "session_terminated_open_responses": [
+      {
+        "bos_frame": 967,
+        "completion_reason": "session_terminated",
+        "eos_frame": null,
+        "max_consecutive_text_quiet_audible_frames": 3,
+        "termination": {
+          "bos_frame": 967,
+          "disposition": "session_terminated_open_response",
+          "trace_stop_reason": "internal_error",
+          "trace_stop_record_index": 5251
+        },
+        "text_quiet_audible_frames": 3,
+        "watchdog_audible_window": [],
+        "watchdog_request_frame": null
+      }
+    ],
+    "source": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/post-fix-browser-attempt4/model-trace/events.jsonl",
+    "text_quiet_but_audible_frames": 150,
+    "threshold_dbfs": -90.0,
+    "total_responses": 8,
+    "watchdog_closures_while_audible": 0,
+    "watchdog_closures_without_audible_audio": 0
+  },
+  "responses": [
+    {
+      "assistant_text": "I can check that for you. what is the time zone you are in?",
+      "bos_frame": 28,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 91,
+      "i3_classification": null,
+      "ordinal": 1,
+      "record_index": 795,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 1,
+        "user_text_bound": "what time is it right now"
+      },
+      "sentence_boundary": true,
+      "tail": [
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 82,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 83,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 84,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 85,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 86,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 87,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 88,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 89,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 90,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 91,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "user_text": "what time is it right now"
+    },
+    {
+      "assistant_text": "It is currently eight fifty two PM UTC.",
+      "bos_frame": 187,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 243,
+      "i3_classification": null,
+      "ordinal": 2,
+      "record_index": 1490,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 2,
+        "user_text_bound": "I'm in Pacific time"
+      },
+      "sentence_boundary": true,
+      "tail": [
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 234,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 235,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 236,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 237,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 238,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 239,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 240,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 241,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 242,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 243,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "user_text": "I'm in Pacific time"
+    },
+    {
+      "assistant_text": "Your time zone is",
+      "bos_frame": 380,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 416,
+      "i3_classification": "model_silence",
+      "ordinal": 3,
+      "record_index": 2355,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 3,
+        "user_text_bound": "yeah I'm in Pacific time set the time zone to Pacific time"
+      },
+      "sentence_boundary": false,
+      "tail": [
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 407,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 408,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 409,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 410,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 411,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 412,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 413,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 414,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 415,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 416,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "user_text": "yeah I'm in Pacific time set the time zone to Pacific time"
+    },
+    {
+      "assistant_text": "It is currently eight fifty two PM UTC.",
+      "bos_frame": 503,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 559,
+      "i3_classification": null,
+      "ordinal": 4,
+      "record_index": 2950,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 4,
+        "user_text_bound": "okay cool. What time is it now"
+      },
+      "sentence_boundary": true,
+      "tail": [
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 550,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 551,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 552,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 553,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 554,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 555,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 556,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 557,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 558,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 559,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "user_text": "okay cool. What time is it now"
+    },
+    {
+      "assistant_text": "I am sorry, I am not sure what you mean by that.",
+      "bos_frame": 695,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 731,
+      "i3_classification": null,
+      "ordinal": 5,
+      "record_index": 3888,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 5,
+        "user_text_bound": "sorry what time is it?"
+      },
+      "sentence_boundary": true,
+      "tail": [
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 722,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 723,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 724,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 725,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 726,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 727,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 728,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 729,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 730,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 731,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "user_text": "sorry what time is it?"
+    },
+    {
+      "assistant_text": "The last function call returned eight fifty two PM UTC.",
+      "bos_frame": 808,
+      "completion_reason": "model_or_turn_taking",
+      "eos_frame": 870,
+      "i3_classification": null,
+      "ordinal": 6,
+      "record_index": 4437,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 6,
+        "user_text_bound": "you did check it look in your history what was a function call result"
+      },
+      "sentence_boundary": true,
+      "tail": [
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 861,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 862,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 863,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 864,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 865,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 866,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 867,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 868,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 869,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 870,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "user_text": "you did check it look in your history what was a function call result"
+    },
+    {
+      "assistant_text": "I am sorry, I am not sure what you mean by that.",
+      "bos_frame": 896,
+      "completion_reason": "model_or_turn_taking",
+      "eos_frame": 954,
+      "i3_classification": null,
+      "ordinal": 7,
+      "record_index": 4857,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 7,
+        "user_text_bound": "okay but I'm in Pacific time"
+      },
+      "sentence_boundary": true,
+      "tail": [
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 945,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 946,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 947,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 948,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 949,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 950,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 951,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 952,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 953,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 954,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "user_text": "okay but I'm in Pacific time"
+    },
+    {
+      "assistant_text": "It is currently eight fifty two PM UTC",
+      "bos_frame": 967,
+      "completion_reason": null,
+      "eos_frame": null,
+      "i3_classification": "session_terminated_open_response",
+      "ordinal": 8,
+      "record_index": 5198,
+      "response_attribution": {
+        "kind": "user_turn",
+        "post_tool_continuation": false,
+        "source": "microphone",
+        "source_id": 8,
+        "user_text_bound": "okay"
+      },
+      "sentence_boundary": false,
+      "tail": [
+        {
+          "agent_control": null,
+          "assistant_delta": " is",
+          "frame": 969,
+          "rms_dbfs": -120.0
+        },
+        {
+          "agent_control": null,
+          "assistant_delta": " currently",
+          "frame": 970,
+          "rms_dbfs": -25.838
+        },
+        {
+          "agent_control": null,
+          "assistant_delta": " eight",
+          "frame": 971,
+          "rms_dbfs": -27.136
+        },
+        {
+          "agent_control": null,
+          "assistant_delta": " fifty",
+          "frame": 972,
+          "rms_dbfs": -36.123
+        },
+        {
+          "agent_control": null,
+          "assistant_delta": " two",
+          "frame": 973,
+          "rms_dbfs": -41.259
+        },
+        {
+          "agent_control": null,
+          "assistant_delta": " PM",
+          "frame": 974,
+          "rms_dbfs": -30.077
+        },
+        {
+          "agent_control": null,
+          "assistant_delta": " UTC",
+          "frame": 975,
+          "rms_dbfs": -30.167
+        },
+        {
+          "agent_control": "agent_eos",
+          "assistant_delta": "",
+          "frame": 976,
+          "rms_dbfs": -35.806
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 977,
+          "rms_dbfs": -22.694
+        },
+        {
+          "agent_control": "pad",
+          "assistant_delta": "",
+          "frame": 978,
+          "rms_dbfs": -44.147
+        }
+      ],
+      "user_text": "okay"
+    }
+  ],
+  "runtime_gates_passed": false,
+  "schema": "nemotron_voicechat.session_replay_analysis.v1",
+  "sentence_completion": {
+    "model_behavior_incomplete_ordinals": [
+      3
+    ],
+    "passed_runtime_half": true,
+    "runtime_caused_incomplete_ordinals": []
+  },
+  "session_lifecycle": [
+    {
+      "event": "terminal_session_claimed",
+      "monotonic_s": 5193272.747042,
+      "reason": "internal_error"
+    },
+    {
+      "event": "session_trace_stopped",
+      "monotonic_s": 5193272.86991,
+      "reason": "internal_error"
+    }
+  ],
+  "tool_sequence": {
+    "calls": [
+      {
+        "arguments": "{}",
+        "name": "get_current_time",
+        "record_index": 1433
+      },
+      {
+        "arguments": "{\"timezone\":\"Pacific\"}",
+        "name": "set_timezone",
+        "record_index": 2294
+      }
+    ],
+    "pacific_conversion_passed": false,
+    "passed": false,
+    "results": [
+      "It is currently 8:52 PM UTC.",
+      "The time zone is now America/Los_Angeles."
+    ],
+    "sequence_passed": false
+  },
+  "trace": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/post-fix-browser-attempt4/model-trace/events.jsonl"
+}

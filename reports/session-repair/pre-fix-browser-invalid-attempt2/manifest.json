@@ -1,0 +1,72 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2958700,
+      "path": "retained-input-16000.wav",
+      "sha256": "be8f01e9307fd7d0a8e4a2355795e20048f63439197e4d6b0dfa3964a4b15587"
+    },
+    {
+      "bytes": 8374272,
+      "path": "rendered-bot-raw-remote-track.pcm",
+      "sha256": "efdeec9310c06dabcfcc29dbae78d57bb232cc3f8cbf6f91133f8752bf22540e"
+    },
+    {
+      "bytes": 4232770,
+      "path": "rendered-bot-chunks.jsonl",
+      "sha256": "192aed893b6f6db0f3ccbea40c1bdf28dd1902d1779fa772d5d5537ada88a8e0"
+    },
+    {
+      "bytes": 8374316,
+      "path": "rendered-bot-remote-track.wav",
+      "sha256": "94a3d75c167ebcb92a3ce72d935e965ab1be37cbb18bfdfbed8d930e87a19f87"
+    },
+    {
+      "bytes": 92483,
+      "path": "rtvi-messages.json",
+      "sha256": "22071c24e871600fbf8a95e0ed927ec4ee306d24fe1b8716c2ffe21d8b38f733"
+    },
+    {
+      "bytes": 50801,
+      "path": "browser.log",
+      "sha256": "9309fd7ee18f7ec83fa15cef4836981bcfca75c40e3bc1b93197639422f88adb"
+    },
+    {
+      "bytes": 110679,
+      "path": "playground.png",
+      "sha256": "b424aaa79d656398756567ef6b7c019de4abec6181484a9b87bd4205a40b4013"
+    },
+    {
+      "bytes": 7423447,
+      "path": "model-trace/events.jsonl",
+      "sha256": "8503cfa93c1642f3b01871e6eedbdcbb9f09bb29a61949efaa51e8a5535550e7"
+    },
+    {
+      "bytes": 8127834,
+      "path": "pipecat-playout-0002.jsonl",
+      "sha256": "76de1baf1b9cc1773189ab930a514439ebf91d35ee07c6d5f7c973d09a9e7d31"
+    },
+    {
+      "bytes": 20541,
+      "path": "analysis.json",
+      "sha256": "f24fc2a8af46f233e0cf5d1c6c2ef86e1d8a0f1cad5ea38032f85a570cd6252f"
+    },
+    {
+      "bytes": 44663,
+      "path": "report.json",
+      "sha256": "b136ca4b2fb09742a7d4efd8ecdf8a9107cc02e2ad33c5cbf75fc7cc02faaf9d"
+    }
+  ],
+  "asr_artifacts": [
+    {
+      "bytes": 18862,
+      "path": "asr.json",
+      "sha256": "924b60c21747e9f96352c81c41aa5f06b3167bb9131a0cd5b6f29f0042c1fe2d"
+    },
+    {
+      "bytes": 19295,
+      "path": "asr.log",
+      "sha256": "ce3217174b514dd64cbe1617bef8d94aae22e3f17f41c7e7fbcbe3c52647981b"
+    }
+  ],
+  "schema": 1
+}

@@ -5,6 +5,7 @@ import importlib.util
 import json
 import wave
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -128,3 +129,52 @@ def test_capture_artifacts_are_json_and_jsonl_serializable() -> None:
     }
     encoded = json.dumps(payload, sort_keys=True)
     assert json.loads(encoded) == payload
+
+
+def test_run_asr_refreshes_manifests_after_final_report_rewrite(
+    tmp_path, monkeypatch
+) -> None:
+    suite = load_suite()
+    report = tmp_path / "report.json"
+    suite.atomic_json(
+        report,
+        {
+            "status": "captured_pending_asr",
+            "asr": None,
+            "passed": False,
+            "analysis": {
+                "hard_gates": {"runtime": True},
+                "phase_expectation_passed": True,
+            },
+        },
+    )
+    stale = suite.file_record(report, tmp_path)
+    suite.atomic_json(
+        tmp_path / "capture-manifest.json",
+        {"schema": 1, "artifacts": [stale]},
+    )
+
+    identity = "sha256:" + "a" * 64
+    evaluated = {
+        "passed": True,
+        "provenance": {"evaluator_image_id": identity},
+    }
+
+    def fake_run(command, **_kwargs):
+        if command[:2] == ["docker", "run"]:
+            suite.atomic_json(tmp_path / "asr.json", evaluated)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(suite, "image_id", lambda _image: identity)
+    monkeypatch.setattr(suite.subprocess, "run", fake_run)
+
+    suite.run_asr(SimpleNamespace(run_dir=tmp_path, asr_image="test-asr"))
+
+    final_record = suite.file_record(report, tmp_path)
+    assert final_record != stale
+    for manifest_name in ("capture-manifest.json", "manifest.json"):
+        manifest = json.loads((tmp_path / manifest_name).read_text(encoding="utf-8"))
+        report_records = [
+            record for record in manifest["artifacts"] if record["path"] == "report.json"
+        ]
+        assert report_records == [final_record]

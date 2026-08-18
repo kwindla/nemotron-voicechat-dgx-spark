@@ -1886,6 +1886,87 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
         self.assertNotIn("response_attribution", precommit_bos["turn_state"])
         self.assertNotEqual(precommit_bos["user_text"], "old deferred tool request")
 
+    def test_typed_turn_interrupt_clears_superseded_binding_before_typed_bos(self) -> None:
+        engine = SupersededBindingFakeEngine()
+        engine.publication_delay = 0.2
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            typed_input=True,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "old-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            websocket.send_json(audio_event("old-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "old-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.committed")
+            self.assertEqual(engine.pending_response_user_text, "old deferred tool request")
+            self.assertEqual(engine.pending_response_attribution["source"], "microphone")
+
+            websocket.send_json(
+                {
+                    "type": "input_text.request",
+                    "job_id": "new-typed",
+                    "text": "new typed request",
+                }
+            )
+            typed_bos = None
+            for _ in range(80):
+                event = websocket.receive_json()
+                if (
+                    event.get("type") == "voicechat.metrics"
+                    and (event.get("turn_state") or {}).get("agent_control")
+                    == "agent_bos"
+                ):
+                    typed_bos = event
+                    break
+            self.assertIsNotNone(typed_bos)
+            self.assertEqual(engine.unpublished_interrupts, 1)
+            self.assertEqual(engine.cleared_response_bindings, 1)
+            self.assertNotIn("response_attribution", typed_bos["turn_state"])
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed", limit=40)
+
+        typed_bos_trace = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "model_step"
+            and event["turn_state"].get("agent_control") == "agent_bos"
+            and event["user_text"] == "new microphone partial"
+        )
+        self.assertNotIn("response_attribution", typed_bos_trace["turn_state"])
+        self.assertNotEqual(typed_bos_trace["user_text"], "old deferred tool request")
+
     def test_typed_and_microphone_tool_output_reach_forced_bos_with_bound_text(self) -> None:
         tools = [
             {

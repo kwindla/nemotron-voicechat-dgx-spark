@@ -1,0 +1,19 @@
+{
+  "arm": "post",
+  "classification": "hard_i4_freshness_fixture",
+  "eligible_responses": 0,
+  "fixture_sha256": "878dab13720b88f32f65303640445bb1a2ee088cf4ee010634fa9570aa65e788",
+  "freshness_gate_passed": false,
+  "passed": false,
+  "passed_replicates": 0,
+  "replicate_reports": [
+    "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/directive-freshness-post-20260817/replicate-01/report.json",
+    "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/directive-freshness-post-20260817/replicate-02/report.json",
+    "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/directive-freshness-post-20260817/replicate-03/report.json"
+  ],
+  "replicates": 3,
+  "schema": "nemotron_voicechat.session_directive_freshness_arm.v1",
+  "sequence_elicitation_rate": 0.0,
+  "stale_rate": null,
+  "stale_responses": 0
+}

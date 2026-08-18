@@ -69,6 +69,24 @@ def file_record(path: Path, root: Path) -> dict[str, Any]:
     }
 
 
+def refresh_manifest_artifact(
+    manifest: dict[str, Any], path: Path, root: Path
+) -> None:
+    """Replace one retained artifact record after its final rewrite."""
+
+    relative = str(path.relative_to(root))
+    matches = [
+        index
+        for index, record in enumerate(manifest.get("artifacts", []))
+        if record.get("path") == relative
+    ]
+    if len(matches) != 1:
+        raise RuntimeError(
+            f"capture manifest must contain exactly one {relative!r} artifact"
+        )
+    manifest["artifacts"][matches[0]] = file_record(path, root)
+
+
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     records = []
     with path.open(encoding="utf-8") as stream:
@@ -889,7 +907,10 @@ def run_asr(args: argparse.Namespace) -> dict[str, Any]:
         and evaluated.get("passed")
     )
     atomic_json(report_path, report)
-    manifest = json.loads((run_dir / "capture-manifest.json").read_text(encoding="utf-8"))
+    capture_manifest_path = run_dir / "capture-manifest.json"
+    manifest = json.loads(capture_manifest_path.read_text(encoding="utf-8"))
+    refresh_manifest_artifact(manifest, report_path, run_dir)
+    atomic_json(capture_manifest_path, manifest)
     manifest["asr_artifacts"] = [
         file_record(run_dir / "asr.json", run_dir),
         file_record(log_path, run_dir),

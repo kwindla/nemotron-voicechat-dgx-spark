@@ -172,15 +172,17 @@ with ASR also contain `manifest.json`.
 
 ## Validation and handoff state
 
-- Focused Ruff over the corrected replay fixture, directive fixture, and their
-  tests: pass.
-- Corrected replay/directive tests plus completion, Pipecat, and websocket suites:
-  172 passed, 27 subtests passed.
+- Focused Ruff over the repaired runtime, endpoint mutation, replay fixture, and
+  replay fixture tests: pass.
+- The affected completion/directive/server/endpoint/replay group passed 226 tests
+  and 31 subtests; the realtime-function/Pipecat/replay group passed 167 tests.
 - The earlier full pytest result remains 1,285 passed, 15 skipped, 29 subtests
   passed, with one unrelated sealed step-5 protocol-race fixture revision mismatch.
 - The final runtime image is
-  `pipecat-ai/nemotron-voicechat-dgx-spark:session-repair-20260817-r3`, image ID
-  `sha256:c79934692503646531c9be56c67813e473944fc53e21728bdb72db1d5926c53d`.
-- At handoff, r3 is restored on `127.0.0.1:8786`; typed input is ready; the demo
+  `pipecat-ai/nemotron-voicechat-dgx-spark:session-repair-20260818-r4`, image ID
+  `sha256:4607d8eb4b99a690644e35af1e75102f75fbfe148b4aee04dd9c278b4f1b0dd9`.
+  Its in-image runtime server SHA-256 is
+  `4106fcb0a9b2e444f037f4ceef0c0c2087d16255510b73799b35c02cfbe22034`.
+- At handoff, r4 is promoted on `127.0.0.1:8786`; typed input is ready; the demo
   service is restored on `127.0.0.1:7860/client/`.
 - All replay and directive attempts were retained. No commit was created.
