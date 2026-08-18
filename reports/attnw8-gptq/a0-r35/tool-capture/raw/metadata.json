@@ -1,0 +1,7 @@
+{
+  "contains_full_teacher_logits": false,
+  "kind": "public_nano_deterministic_replay",
+  "max_calls": 12000,
+  "schema": 1,
+  "warning": "Capture synchronizes GPU tensors; timings are invalid."
+}
