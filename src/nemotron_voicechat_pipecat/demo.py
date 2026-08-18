@@ -38,6 +38,11 @@ from pipecat.workers.runner import WorkerRunner
 
 from .aggregators import create_voicechat_context_aggregators
 from .llm import NemotronVoicechatLLMService
+from .playout_transport import (
+    attach_underflow_counter,
+    install_underflow_telemetry,
+    install_warm_resampler,
+)
 from .text_input import VoicechatTypedInputRouter
 from .tool_results import VoicechatLLMContext, VoicechatToolResult
 
@@ -259,6 +264,11 @@ def qualification_settings() -> tuple[str, ToolsSchema | list[object]]:
 
 def create_transport(runner_args: SmallWebRTCRunnerArguments) -> SmallWebRTCTransport:
     """Create the required SmallWebRTC media transport."""
+    # Reclaim playout lead the transport would otherwise discard, and count
+    # auto-silence emissions when telemetry is enabled. Both must be installed
+    # before the transport builds its resampler and output track.
+    install_warm_resampler()
+    install_underflow_telemetry()
     return SmallWebRTCTransport(
         webrtc_connection=runner_args.webrtc_connection,
         params=TransportParams(
@@ -270,6 +280,11 @@ def create_transport(runner_args: SmallWebRTCRunnerArguments) -> SmallWebRTCTran
             audio_out_sample_rate=24_000,
             audio_in_channels=1,
             audio_out_channels=1,
+            # Forward audio as soon as a 10 ms chunk is complete. The default
+            # of 4 strands up to 40 ms of already-generated audio in the output
+            # byte buffer, which is playout lead we have paid for but cannot
+            # use. Emitting sooner costs no latency; see playout_transport.
+            audio_out_10ms_chunks=1,
         ),
     )
 
@@ -318,6 +333,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         idle_timeout_secs=runner_args.pipeline_idle_timeout_secs,
         rtvi_processor=VoicechatReadyRTVIProcessor(service),
     )
+    underflow_counter = None
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(_transport, _client):
@@ -325,6 +341,10 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
             "SmallWebRTC client connected; Voicechat backend={} typed_input=server-owned",
             service.base_url,
         )
+        # Hold the counter now: the transport clears its output-track
+        # reference before firing on_client_disconnected.
+        nonlocal underflow_counter
+        underflow_counter = attach_underflow_counter(transport)
         # Push the initial universal context before releasing the service's
         # bounded audio pre-roll. Voicechat itself decides when to respond.
         await worker.queue_frames([LLMRunFrame()])
@@ -332,6 +352,8 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(_transport, _client):
         logger.info("SmallWebRTC client disconnected")
+        if underflow_counter is not None:
+            logger.info("voicechat.playout.track_underflow {}", underflow_counter.summary())
         await worker.cancel()
 
     runner = WorkerRunner(
