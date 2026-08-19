@@ -1,0 +1,30 @@
+{
+ "response_1.wav": {
+  "transcript": "Hi, it is great to meet you. How can I help you today?",
+  "seconds": 4.08
+ },
+ "response_2.wav": {
+  "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA.",
+  "seconds": 8.72
+ },
+ "response_3.wav": {
+  "transcript": "Once upon a time in a magical forest there was a unicorn named Luna. She had a beautiful silver horn that glowed in the sunlight and she loved to run through the meadows at sunrise. One day she found a lost kitten and took it to her mother who was a wise old dragon. The kitten grew up to be a brave dragonfly and never stopped visiting Luna.",
+  "seconds": 20.8
+ },
+ "response_4.wav": {
+  "transcript": "What time zone are you in? I can get the",
+  "seconds": 2.64
+ },
+ "response_5.wav": {
+  "transcript": "I can get the current time for you just a second",
+  "seconds": 3.84
+ },
+ "response_6.wav": {
+  "transcript": "I can set the time zone for you just a second.",
+  "seconds": 3.92
+ },
+ "response_7.wav": {
+  "transcript": "I can set the time zone for you just a second.",
+  "seconds": 3.68
+ }
+}

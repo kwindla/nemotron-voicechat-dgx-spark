@@ -1,0 +1,9 @@
+decoded_silence_watchdog firings (server model trace):
+  monotonic=44297.383 frame=303 reason=decoded_silence_watchdog silent=20/20 no_audio=20/30 no_text=20/30 audible_seen=True text_seen=True function_seen=False
+  monotonic=44326.267 frame=667 reason=decoded_silence_watchdog silent=20/20 no_audio=20/30 no_text=20/30 audible_seen=True text_seen=True function_seen=False
+  monotonic=44343.526 frame=891 reason=decoded_silence_watchdog silent=20/20 no_audio=20/30 no_text=20/30 audible_seen=True text_seen=True function_seen=False
+
+pre-EOU function token suppression:
+  monotonic=44339.140 frame=832 suppressed_tokens=1 raw_token_id=20 suppressed_frame=832
+
+session-wide function calling: completed_calls=0, function_delta non-empty steps=0

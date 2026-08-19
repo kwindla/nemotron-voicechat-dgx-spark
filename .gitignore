@@ -38,3 +38,9 @@ reports/attnw8-gptq/**/*.log
 reports/attnw8-gptq/**/*.jsonl
 reports/attnw8-gptq/**/*.lock
 reports/attnw8-gptq/**/seal0.json
+
+# Root-cause evidence exception: the exact PCM two truncated responses emitted.
+# The ASR verdict in reports/response-truncation rests on these seven clips, and
+# the model trace they were cut from lives outside the repo under root-owned
+# state that rotates. 2.1 MB total, one session, deliberately retained.
+!reports/response-truncation/**/*.wav
