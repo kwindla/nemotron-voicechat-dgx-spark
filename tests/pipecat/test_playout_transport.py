@@ -1,24 +1,34 @@
 """Tests for transport playout instrumentation and margin recovery.
 
-The underflow counter exists to adjudicate a disagreement between two
-timestamp-based models, so a counter that silently miscounts would be worse
-than none at all. These pin the discrimination that makes its number mean
-something: silence emitted between responses is expected, silence emitted
-while audio is still streaming is the defect.
+The underflow counter exists to adjudicate a disagreement between models of why
+audio crackles, so a counter that silently miscounts is worse than none at all.
+An earlier version proved that: it called any zero within a fixed grace period
+of the last chunk "in speech", which meant the terminal drain after every
+response was counted, manufacturing roughly 30 ticks and one run per response.
+
+These pin the corrected contract: a zero counts only once more real audio
+arrives to close the gap.
 """
 
 from __future__ import annotations
-
-import time
 
 import pytest
 
 from nemotron_voicechat_pipecat import playout_transport
 from nemotron_voicechat_pipecat.playout_transport import (
-    IN_SPEECH_GAP_SECONDS,
+    MAX_MID_STREAM_GAP_SECONDS,
     PlayoutUnderflowCounter,
     install_warm_resampler,
+    output_chunks_10ms,
 )
+
+
+@pytest.fixture
+def clock(monkeypatch):
+    """Deterministic monotonic clock, in seconds."""
+    state = {"now": 1000.0}
+    monkeypatch.setattr(playout_transport.time, "monotonic", lambda: state["now"])
+    return state
 
 
 def test_idle_session_reports_no_in_speech_ticks():
@@ -32,60 +42,107 @@ def test_idle_session_reports_no_in_speech_ticks():
     assert summary["silence_ticks_total"] == 50
 
 
-def test_drain_while_streaming_is_counted_and_grouped_into_runs():
+def test_response_tail_drain_is_not_counted(clock):
+    """The exact false positive R2 identified: ~30 ticks after the last chunk.
+
+    A response ends, the queue stays empty through the terminal drain, and
+    seconds later the next response begins. None of those zeros interrupted
+    speech, so none may be reported as in-speech.
+    """
     counter = PlayoutUnderflowCounter()
-    for _ in range(10):
-        counter.observe(3)
-    for _ in range(4):
-        counter.observe(0)
-    for _ in range(10):
+    for _ in range(20):
         counter.observe(2)
-    for _ in range(2):
+        clock["now"] += 0.01
+    for _ in range(30):  # 300 ms terminal drain
         counter.observe(0)
+        clock["now"] += 0.01
+    clock["now"] += 4.0  # gap between responses
+    for _ in range(20):  # next response
+        counter.observe(2)
+        clock["now"] += 0.01
+
+    summary = counter.summary()
+    assert summary["in_speech_ticks"] == 0
+    assert summary["in_speech_runs"] == 0
+    assert summary["tail_ticks_discarded"] == 30
+
+
+def test_gap_is_counted_only_when_audio_resumes(clock):
+    counter = PlayoutUnderflowCounter()
+    counter.observe(2)
+    for _ in range(3):
+        clock["now"] += 0.01
+        counter.observe(0)
+    clock["now"] += 0.01
+    counter.observe(2)
+
+    summary = counter.summary()
+    assert summary["in_speech_ticks"] == 3
+    assert summary["in_speech_runs"] == 1
+    assert summary["tail_ticks_discarded"] == 0
+
+
+def test_two_gaps_are_two_runs(clock):
+    counter = PlayoutUnderflowCounter()
+    counter.observe(2)
+    for _ in range(4):
+        clock["now"] += 0.01
+        counter.observe(0)
+    clock["now"] += 0.01
+    counter.observe(2)
+    for _ in range(2):
+        clock["now"] += 0.01
+        counter.observe(0)
+    clock["now"] += 0.01
+    counter.observe(3)
 
     summary = counter.summary()
     assert summary["in_speech_ticks"] == 6
-    assert summary["in_speech_ms"] == 60
-    # Two separate audible splices, not one six-tick event.
     assert summary["in_speech_runs"] == 2
-    assert summary["min_depth_chunks_while_playing"] == 2
 
 
-def test_silence_after_speech_stops_is_not_counted(monkeypatch):
-    """Once the bot stops talking, an empty queue is correct behaviour."""
-    clock = {"now": 1000.0}
-    monkeypatch.setattr(playout_transport.time, "monotonic", lambda: clock["now"])
-
+def test_unresolved_trailing_zeros_are_reported_as_tail(clock):
+    """Zeros at session end never resume, so they are a tail, not a gap."""
     counter = PlayoutUnderflowCounter()
     counter.observe(3)
-    clock["now"] += IN_SPEECH_GAP_SECONDS + 0.05
-    for _ in range(5):
+    for _ in range(12):
+        clock["now"] += 0.01
         counter.observe(0)
 
-    assert counter.summary()["in_speech_ticks"] == 0
-    assert counter.summary()["silence_ticks_total"] == 5
+    summary = counter.summary()
+    assert summary["in_speech_ticks"] == 0
+    assert summary["tail_ticks_discarded"] == 12
 
 
-def test_gap_boundary_is_inclusive_of_recent_audio(monkeypatch):
-    """A drain just inside the window still counts; just outside does not."""
-    clock = {"now": 500.0}
-    monkeypatch.setattr(playout_transport.time, "monotonic", lambda: clock["now"])
+def test_stall_longer_than_the_window_is_dropped_not_promoted(clock):
+    """Undercount rather than let a new response absorb an older tail."""
+    counter = PlayoutUnderflowCounter()
+    counter.observe(1)
+    clock["now"] += 0.01
+    counter.observe(0)
+    clock["now"] += MAX_MID_STREAM_GAP_SECONDS + 0.05
+    counter.observe(1)
 
-    inside = PlayoutUnderflowCounter()
-    inside.observe(1)
-    clock["now"] += IN_SPEECH_GAP_SECONDS - 0.01
-    inside.observe(0)
-    assert inside.summary()["in_speech_ticks"] == 1
-
-    clock["now"] = 500.0
-    outside = PlayoutUnderflowCounter()
-    outside.observe(1)
-    clock["now"] += IN_SPEECH_GAP_SECONDS + 0.01
-    outside.observe(0)
-    assert outside.summary()["in_speech_ticks"] == 0
+    summary = counter.summary()
+    assert summary["in_speech_ticks"] == 0
+    assert summary["tail_ticks_discarded"] == 1
 
 
-def test_depth_histogram_only_records_playing_observations():
+def test_zeros_before_any_audio_are_ignored(clock):
+    """Silence before the first chunk cannot have interrupted anything."""
+    counter = PlayoutUnderflowCounter()
+    for _ in range(10):
+        counter.observe(0)
+        clock["now"] += 0.01
+    counter.observe(2)
+
+    summary = counter.summary()
+    assert summary["in_speech_ticks"] == 0
+    assert summary["tail_ticks_discarded"] == 0
+    assert summary["silence_ticks_total"] == 10
+
+
+def test_depth_histogram_only_records_playing_observations(clock):
     counter = PlayoutUnderflowCounter()
     counter.observe(0)
     counter.observe(2)
@@ -94,6 +151,26 @@ def test_depth_histogram_only_records_playing_observations():
     hist = counter.summary()["depth_histogram_chunks"]
     assert 0 not in hist
     assert hist == {2: 1, 5: 1}
+
+
+@pytest.mark.parametrize("depth", [1, 4, 9, 20])
+def test_positive_depth_never_counts_as_underflow(depth):
+    counter = PlayoutUnderflowCounter()
+    for _ in range(5):
+        counter.observe(depth)
+    assert counter.summary()["in_speech_ticks"] == 0
+    assert counter.summary()["silence_ticks_total"] == 0
+
+
+def test_real_monotonic_clock_path_counts_a_closed_gap():
+    """Guard the unpatched clock path so a fixture cannot mask a regression."""
+    counter = PlayoutUnderflowCounter()
+    counter.observe(2)
+    counter.observe(0)
+    counter.observe(0)
+    counter.observe(2)
+    assert counter.summary()["in_speech_ticks"] == 2
+    assert counter.summary()["in_speech_runs"] == 1
 
 
 def test_warm_resampler_keeps_filter_history_across_responses():
@@ -110,21 +187,13 @@ def test_warm_resampler_install_is_idempotent():
     assert install_warm_resampler() is True
 
 
-@pytest.mark.parametrize("depth", [1, 4, 9, 20])
-def test_positive_depth_never_counts_as_underflow(depth):
-    counter = PlayoutUnderflowCounter()
-    for _ in range(5):
-        counter.observe(depth)
-    assert counter.summary()["in_speech_ticks"] == 0
-    assert counter.summary()["silence_ticks_total"] == 0
+def test_output_chunks_defaults_to_pipecat_default(monkeypatch):
+    monkeypatch.delenv(playout_transport.OUTPUT_CHUNKS_ENV, raising=False)
+    assert output_chunks_10ms() == playout_transport.DEFAULT_OUTPUT_CHUNKS_10MS == 4
 
 
-def test_real_monotonic_clock_path_discriminates():
-    """Guard the unpatched path too, so the fixture cannot mask a regression."""
-    counter = PlayoutUnderflowCounter()
-    counter.observe(2)
-    counter.observe(0)
-    assert counter.summary()["in_speech_ticks"] == 1
-    time.sleep(IN_SPEECH_GAP_SECONDS + 0.02)
-    counter.observe(0)
-    assert counter.summary()["in_speech_ticks"] == 1
+@pytest.mark.parametrize("bad", ["0", "-1", "nonsense"])
+def test_output_chunks_rejects_invalid_values(monkeypatch, bad):
+    monkeypatch.setenv(playout_transport.OUTPUT_CHUNKS_ENV, bad)
+    with pytest.raises(ValueError):
+        output_chunks_10ms()

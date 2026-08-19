@@ -66,11 +66,12 @@ _underflow_installed = False
 _warm_resampler_installed = False
 
 
-#: A queue that empties within this long of the last real chunk drained mid
-#: playout. Chunks arrive roughly every 80 ms while the bot speaks, so a longer
-#: quiet stretch means the bot simply is not talking and the silence is
-#: expected rather than a defect.
-IN_SPEECH_GAP_SECONDS = 0.3
+#: Zeros are only attributed to a gap once more real audio arrives to close it,
+#: but a *new* response's first chunk must not retroactively promote the
+#: previous response's tail. Zeros older than this when audio resumes are
+#: discarded. Well above any plausible mid-response stall and well below the
+#: multi-second gaps observed between responses.
+MAX_MID_STREAM_GAP_SECONDS = 1.0
 
 
 class PlayoutUnderflowCounter:
@@ -81,6 +82,20 @@ class PlayoutUnderflowCounter:
     that would report ~100% underflow on any session where the bot is quiet.
     Only a queue that empties while audio is still streaming splices silence
     into speech, so that case is tallied separately as ``in_speech_ticks``.
+
+    A zero is attributed to a gap only once *more real audio arrives to close
+    it*.  An earlier version instead called a zero "in speech" whenever it fell
+    within a fixed grace period of the last chunk, which is not a speech state
+    machine: after the final chunk of every response the queue stays empty, so
+    the whole grace period was counted, manufacturing ~30 ticks and one run per
+    response.  The independent R2 assessment measured that as roughly half of
+    the reported total.  Requiring audio to resume removes those tails by
+    construction, without needing response lifecycle wiring.
+
+    The tradeoff is deliberate: a genuine stall longer than
+    ``MAX_MID_STREAM_GAP_SECONDS``, or one ending a response, is not counted.
+    This undercounts rather than overcounts, which is the safe direction for a
+    number used to decide whether to change production.
     """
 
     def __init__(self) -> None:
@@ -88,19 +103,21 @@ class PlayoutUnderflowCounter:
         self.silence_ticks = 0
         self.in_speech_ticks = 0
         self.in_speech_runs = 0
+        self.tail_ticks_discarded = 0
         self.first_in_speech_monotonic_s: float | None = None
         self.last_in_speech_monotonic_s: float | None = None
         self.min_depth_chunks: int | None = None
         self.depth_histogram: dict[int, int] = {}
         self._last_nonempty_monotonic_s: float | None = None
-        self._previous_was_in_speech = False
+        self._pending_zero_ticks = 0
+        self._pending_first_monotonic_s: float | None = None
 
     def observe(self, depth_chunks: int) -> None:
         self.recv_calls += 1
         now = time.monotonic()
         if depth_chunks > 0:
+            self._close_pending_gap(now)
             self._last_nonempty_monotonic_s = now
-            self._previous_was_in_speech = False
             if self.min_depth_chunks is None or depth_chunks < self.min_depth_chunks:
                 self.min_depth_chunks = depth_chunks
             bucket = depth_chunks if depth_chunks <= 8 else 9
@@ -108,16 +125,34 @@ class PlayoutUnderflowCounter:
             return
 
         self.silence_ticks += 1
-        last = self._last_nonempty_monotonic_s
-        if last is None or (now - last) > IN_SPEECH_GAP_SECONDS:
-            self._previous_was_in_speech = False
+        if self._last_nonempty_monotonic_s is None:
             return
-        self.in_speech_ticks += 1
-        if not self._previous_was_in_speech:
-            self.in_speech_runs += 1
-        self._previous_was_in_speech = True
+        if self._pending_zero_ticks == 0:
+            self._pending_first_monotonic_s = now
+        self._pending_zero_ticks += 1
+
+    def _close_pending_gap(self, now: float) -> None:
+        """Resolve zeros that preceded this chunk into a gap, or drop them.
+
+        Audio resuming is what proves the preceding zeros interrupted a stream
+        rather than trailed its end. Zeros never followed by more audio are the
+        normal terminal drain and are dropped when the counter is summarised.
+        """
+        pending = self._pending_zero_ticks
+        self._pending_zero_ticks = 0
+        started = self._pending_first_monotonic_s
+        self._pending_first_monotonic_s = None
+        if pending == 0:
+            return
+        if started is None or (now - started) > MAX_MID_STREAM_GAP_SECONDS:
+            # Too old to belong to the stream this chunk resumes: a new
+            # response, not a gap inside the previous one.
+            self.tail_ticks_discarded += pending
+            return
+        self.in_speech_ticks += pending
+        self.in_speech_runs += 1
         if self.first_in_speech_monotonic_s is None:
-            self.first_in_speech_monotonic_s = now
+            self.first_in_speech_monotonic_s = started
         self.last_in_speech_monotonic_s = now
 
     def summary(self) -> dict[str, Any]:
@@ -132,6 +167,9 @@ class PlayoutUnderflowCounter:
             "in_speech_ticks": self.in_speech_ticks,
             "in_speech_ms": self.in_speech_ticks * 10,
             "in_speech_runs": self.in_speech_runs,
+            # Zeros still awaiting resolution belong to a drain that never
+            # resumed, i.e. a response tail; report them as discarded.
+            "tail_ticks_discarded": self.tail_ticks_discarded + self._pending_zero_ticks,
             "silence_ticks_total": self.silence_ticks,
             "min_depth_chunks_while_playing": self.min_depth_chunks,
             "min_depth_ms_while_playing": (
