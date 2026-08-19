@@ -1,0 +1,14 @@
+{
+ "response_001.wav": {
+  "transcript": "Hi, it is great to meet you. How can I help you today",
+  "seconds": 4.4
+ },
+ "response_002.wav": {
+  "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am Nemotron created by NVIDIA. I can help with anything from answering questions to creative writing. What would you like to talk about?",
+  "seconds": 15.76
+ },
+ "response_003.wav": {
+  "transcript": "Once upon a time a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach.",
+  "seconds": 9.44
+ }
+}

@@ -1,0 +1,78 @@
+{
+  "attempts": [
+    {
+      "responses": [
+        {
+          "audio_bytes": 194040,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-diagnostic-r1/control-replay-live/attempt-01/response_001.wav",
+          "audio_sha256": "f5e949e793e9bca72c77b64e9a8102c309c2ec4205e57edce81467737eed19b0",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_a936906c-428d-4daa-b9f0-4f940d1b7066_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_a936906c-428d-4daa-b9f0-4f940d1b7066_1"
+        },
+        {
+          "audio_bytes": 695016,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-diagnostic-r1/control-replay-live/attempt-01/response_002.wav",
+          "audio_sha256": "a05efa2ec01809c8104f9a709e1ee7b3022671b2bc7d2b14eba8b8177de93b9b",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_a936906c-428d-4daa-b9f0-4f940d1b7066_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a text-to-speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to creative writing. What would you like to talk about?",
+          "turn_id": "turn_a936906c-428d-4daa-b9f0-4f940d1b7066_2"
+        },
+        {
+          "audio_bytes": 416304,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-diagnostic-r1/control-replay-live/attempt-01/response_003.wav",
+          "audio_sha256": "4e83a9bd3d43381b9487c13307aba74435c6a037003794947d78e5abd6e82d2e",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see can you tell me a story about a unicorn",
+          "response_id": "response_a936906c-428d-4daa-b9f0-4f940d1b7066_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he spent a day with it before it disappeared into the mist. And that is how the legend of the unicorn came to be.",
+          "turn_id": "turn_a936906c-428d-4daa-b9f0-4f940d1b7066_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_a936906c-428d-4daa-b9f0-4f940d1b7066_1185",
+        "reason": "client_stop",
+        "session_id": "a936906c-428d-4daa-b9f0-4f940d1b7066",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "a936906c-428d-4daa-b9f0-4f940d1b7066",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    }
+  ],
+  "schema": "eartts-truncation-replay-campaign-v1",
+  "source_pcm_sha256": "e0cfde068241c098d1bc615202c11ecf037134cd1ba7fe889fb3d5eebd57395a",
+  "source_session_id": "431ac6df-573c-45af-8746-7cd9f66bd8c3",
+  "source_trace_dir": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/431ac6df-573c-45af-8746-7cd9f66bd8c3"
+}

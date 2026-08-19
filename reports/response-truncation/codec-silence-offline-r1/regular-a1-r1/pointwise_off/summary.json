@@ -1,0 +1,45 @@
+{
+  "capture": {
+    "attempt": 1,
+    "captured_final_silence_start_frame": 83,
+    "end_frame": 114,
+    "request_id": "2",
+    "response": 1,
+    "root": "/repo/reports/response-truncation/eartts-diagnostic-r1/acoustic-capture-live",
+    "run": "7-1787166327711905067",
+    "session_id": "11f31fed-b45f-4cbd-97be-095c047e0662",
+    "start_frame": 55
+  },
+  "codec": {
+    "checkpoint": "/models/voicechat/model.safetensors",
+    "checkpoint_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+    "depthwise_replacements": 18,
+    "device": "cpu",
+    "dtype": "float32",
+    "pointwise_replacements": 0,
+    "tensor_count": 214
+  },
+  "cpus": [
+    18,
+    19
+  ],
+  "faithfulness": null,
+  "raw_decode": {
+    "audible_positions_at_or_after_captured_silence_start": 0,
+    "captured_silence_start_dbfs": -95.71080303327182,
+    "decode_elapsed_seconds": 4.599944987974595,
+    "first_audible_position_at_or_after_captured_silence_start": null,
+    "first_silent_position": 55,
+    "response_positions": 60,
+    "silent_positions_at_or_below_minus_90_dbfs": 37
+  },
+  "schema": "eartts-codec-silence-offline-v1",
+  "threads": 2,
+  "variant": "pointwise_off",
+  "variant_semantics": {
+    "cache_reset_at_response_start": false,
+    "persistent_off_note": null,
+    "pointwise_linear": false,
+    "sliced_depthwise": true
+  }
+}

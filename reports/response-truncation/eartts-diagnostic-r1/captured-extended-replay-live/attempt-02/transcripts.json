@@ -1,0 +1,14 @@
+{
+ "response_001.wav": {
+  "transcript": "Hi, it is great to meet you. How can I help you today?",
+  "seconds": 5.12
+ },
+ "response_002.wav": {
+  "transcript": "I am sorry. I am not sure what you mean by voice models. Could you clarify?",
+  "seconds": 5.76
+ },
+ "response_003.wav": {
+  "transcript": "Sure, once upon a time a magical unicorn named Luna lived in a land of colors. She had a beautiful silver horn that could heal plants and animals. Every morning Luna would fly over the meadow and sprinkle her horn dust to make the flowers grow. One day a sick tree called out for help. Loonie used her horn to heal the tree and it bloomed with vibrant colors from then on Luna was known as the healing unicorn and her story spread far and wide.",
+  "seconds": 28.4
+ }
+}

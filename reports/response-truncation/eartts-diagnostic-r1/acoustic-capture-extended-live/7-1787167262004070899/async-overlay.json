@@ -1,0 +1,8 @@
+{
+  "codec_alignment": "one_frame_pipeline_previous_submission",
+  "created_time_ns": 1787167543199371691,
+  "queue_capacity": 4096,
+  "record_schema": "nemotron-live-eartts-acoustic-frame-v2",
+  "schema": "nemotron-live-eartts-acoustic-async-overlay-v1",
+  "writer_cpu": 10
+}

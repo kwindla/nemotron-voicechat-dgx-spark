@@ -1,0 +1,4 @@
+VOICECHAT_STARTUP {"event": "server_module_imported", "monotonic_ns": 4865694350712, "wall_time_ns": 1787162030785447912}
+VOICECHAT_STARTUP {"event": "main_entered", "monotonic_ns": 4865698069174, "wall_time_ns": 1787162030789166214}
+VOICECHAT_STARTUP {"event": "pipeline_build_started", "monotonic_ns": 4865700465200, "wall_time_ns": 1787162030791562144}
+Speech runtime working-tree diff does not match the retained, reviewed patch: /usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/patches/nemotron-voicechat-rnnt-turn-taking.patch

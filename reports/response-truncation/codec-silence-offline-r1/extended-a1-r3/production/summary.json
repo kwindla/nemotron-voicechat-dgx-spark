@@ -1,0 +1,51 @@
+{
+  "capture": {
+    "attempt": 1,
+    "captured_final_silence_start_frame": 722,
+    "end_frame": 823,
+    "request_id": "2",
+    "response": 3,
+    "root": "/repo/reports/response-truncation/eartts-diagnostic-r1/acoustic-capture-extended-live",
+    "run": "7-1787167262004070899",
+    "session_id": "454e8d56-d8ba-4a44-8258-770828f52486",
+    "start_frame": 485
+  },
+  "codec": {
+    "checkpoint": "/models/voicechat/model.safetensors",
+    "checkpoint_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+    "depthwise_replacements": 18,
+    "device": "cpu",
+    "dtype": "float32",
+    "pointwise_replacements": 38,
+    "tensor_count": 214
+  },
+  "cpus": [
+    16,
+    17
+  ],
+  "faithfulness": {
+    "decode_elapsed_seconds": 30.333805616970494,
+    "decoder_history_replayed": true,
+    "max_abs_error": 0.0,
+    "max_dbfs_difference": 0.0,
+    "mean_of_position_mean_abs_error": 0.0
+  },
+  "raw_decode": {
+    "audible_positions_at_or_after_captured_silence_start": 0,
+    "captured_silence_start_dbfs": -146.74273044057665,
+    "decode_elapsed_seconds": 29.98766662808339,
+    "first_audible_position_at_or_after_captured_silence_start": null,
+    "first_silent_position": 485,
+    "response_positions": 339,
+    "silent_positions_at_or_below_minus_90_dbfs": 126
+  },
+  "schema": "eartts-codec-silence-offline-v1",
+  "threads": 2,
+  "variant": "production",
+  "variant_semantics": {
+    "cache_reset_at_response_start": false,
+    "persistent_off_note": null,
+    "pointwise_linear": true,
+    "sliced_depthwise": true
+  }
+}

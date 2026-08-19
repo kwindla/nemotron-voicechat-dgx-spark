@@ -1,0 +1,273 @@
+VOICECHAT_STARTUP {"event": "server_module_imported", "monotonic_ns": 4958493432361, "wall_time_ns": 1787162123584529641}
+VOICECHAT_STARTUP {"event": "main_entered", "monotonic_ns": 4958497064812, "wall_time_ns": 1787162123588161932}
+VOICECHAT_STARTUP {"event": "pipeline_build_started", "monotonic_ns": 4958497588943, "wall_time_ns": 1787162123588685743}
+Diagnostic-only Speech wrapper accepted by exact SHA-256: e9a4d34124be64fdf1cf927d9f71c4b1f50e092ad4eeabfd448586eb38066643
+[NeMo W 2026-08-19 17:55:45 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:323: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+", " ", text)
+    
+[NeMo W 2026-08-19 17:55:45 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:324: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+\.\s+", ".", text)
+    
+[NeMo W 2026-08-19 17:55:46 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:300: SyntaxWarning: invalid escape sequence '\('
+      m = re.match('([su]([0-9]{1,2})p?) \(([0-9]{1,2}) bit\)$', token)
+    
+[NeMo W 2026-08-19 17:55:46 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:301: SyntaxWarning: invalid escape sequence '\('
+      m2 = re.match('([su]([0-9]{1,2})p?)( \(default\))?$', token)
+    
+[NeMo W 2026-08-19 17:55:46 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:310: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(flt)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-19 17:55:46 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:314: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(dbl)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-19 17:55:46 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:170: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+      warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+    
+[NeMo I 2026-08-19 17:55:49 nemo_logging:393] Triton available & CUDA detected. Using Triton kernel for batch_matmul.
+[NeMo W 2026-08-19 17:55:50 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/whisper_normalizer/basic.py:97: SyntaxWarning: invalid escape sequence '\X'
+      """
+    
+INFO 08-19 17:55:53 [__init__.py:224] Automatically detected platform cuda.
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] pythonpath: ['/opt/Speech', '/opt/project', '/usr/lib/python312.zip', '/usr/lib/python3.12', '/usr/lib/python3.12/lib-dynload', '/usr/local/lib/python3.12/dist-packages', '/usr/local/lib/python3.12/dist-packages/nvidia_cutlass_dsl/python_packages', '/usr/lib/python3/dist-packages', '/usr/local/lib/python3.12/dist-packages/nvidia_cutlass_dsl/python_packages/cutlass/base_dsl', '/usr/local/lib/python3.12/dist-packages/setuptools/_vendor', '/root/.lhotse/tools/sph2pipe-2.5']
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] before setting - torch.backends.cudnn.allow_tf32: True
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] before setting - torch.backends.cuda.matmul.allow_tf32: True
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] before setting - torch.get_float32_matmul_precision(): medium
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] torch.backends.cudnn.allow_tf32: True
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] torch.backends.cuda.matmul.allow_tf32: True
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] torch.get_float32_matmul_precision(): medium
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Speaker mode: pre-baked latent 'Aria' (no WAV file needed)
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] TTS system prompt: None
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] ======================================================================
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] INITIALIZING REALTIME STREAMING INFERENCE
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] ======================================================================
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Frame size: 0.08s (1280 samples @ 16000Hz)
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Device: cuda:0
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Compute dtype: torch.bfloat16
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Decode audio: True
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Engine type: vllm_llm_vllm_eartts
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Sampling - top_p: 1.0, repetition_penalty: 1.0, temperature: 0.0
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] ======================================================================
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] use_codec_cache is enabled — codec_token_history_size (30) will be ignored (context is maintained incrementally by the codec cache).
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Initializing model with hybrid loading strategy...
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Loading and merging configurations...
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]   Loading nano config: /models/voicechat/config.json
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]   Loading eartts config: /models/voicechat/config.json
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]   Merging: Using nano's config for LLM/perception, eartts's for TTS
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]     TTS config from eartts
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]   Final config:
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]     - pretrained_llm: nvidia/NVIDIA-Nemotron-Nano-9B-v2
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]     - perception.d_model: 1024
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393]     - speech_generation: present
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Combined checkpoint contains RNNT decoder/joint config.
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] RNNT will be loaded from combined checkpoint (embedded weights + saved config).
+[NeMo I 2026-08-19 17:56:11 nemo_logging:393] Initializing model structure...
+`torch_dtype` is deprecated! Use `dtype` instead!
+[NeMo I 2026-08-19 17:56:39 nemo_logging:393] Using AddFusion with weights: agent=1.0, audio=1.0, text=1.0, function=2.0
+[NeMo I 2026-08-19 17:56:40 nemo_logging:393] [Function Calling] Initialized separate function_head (shared embeddings with text channel)
+[NeMo I 2026-08-19 17:56:40 nemo_logging:393] setup_speech_encoder: pretrained_asr not set — using embedded perception config
+[NeMo I 2026-08-19 17:56:40 nemo_logging:393] PADDING: 0
+[NeMo I 2026-08-19 17:56:45 nemo_logging:393] Silence template will be created lazily on first use (after model is moved to device)
+[NeMo I 2026-08-19 17:56:57 nemo_logging:393] Building character vocabulary from tokenizer.
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393] Time taken to initialize NemotronVoiceChat: 57.94251561164856 seconds
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393]   Model structure initialized
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393] Initialised RNNT decoder (nemo.collections.asr.modules.rnnt.RNNTDecoder) and joint (nemo.collections.asr.modules.rnnt.RNNTJoint) module structure from combined checkpoint config. blank_id=1024
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393] Loaded RNNT SentencePiece tokenizer from: /models/voicechat/rnnt_tokenizer/tokenizer.model
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393] Loading LLM + perception:
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393]   Path: /models/voicechat
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393]   Using vLLM - excluding LLM weights from nano checkpoint
+[NeMo I 2026-08-19 17:57:09 nemo_logging:393]   Loading 658 parameters (excluded: ['tts_model.', 'speech_generation.', 'stt_model.llm.'])...
+[NeMo I 2026-08-19 17:57:22 nemo_logging:393]  | > 658 / 1631 layers are restored.
+[NeMo I 2026-08-19 17:57:41 nemo_logging:393] Deleting unused native LLM before EarTTS diagnostic startup...
+[NeMo I 2026-08-19 17:57:42 nemo_logging:393]   Unused native LLM deleted before diagnostic vLLM startup
+[NeMo I 2026-08-19 17:57:42 nemo_logging:393] Loading TTS checkpoint:
+[NeMo I 2026-08-19 17:57:42 nemo_logging:393]   Path: /models/voicechat
+[NeMo I 2026-08-19 17:57:42 nemo_logging:393]   Loading 635 TTS parameters...
+[NeMo I 2026-08-19 17:57:45 nemo_logging:393] Time taken to load TTS state dict: 2.95585298538208 seconds
+[NeMo I 2026-08-19 17:57:45 nemo_logging:393]   Pre-baked audio_prompt_latents after load: ['Aria']
+[NeMo I 2026-08-19 17:57:46 nemo_logging:393]   Released TTS checkpoint state dictionaries
+[NeMo I 2026-08-19 17:57:47 nemo_logging:393] LLMStreamingEngine initialized for model: /models/derived/eartts
+[NeMo I 2026-08-19 17:57:47 nemo_logging:393] Read guidance_scale=0.2 from /models/derived/eartts/config.json
+[NeMo I 2026-08-19 17:57:47 nemo_logging:393] EARTTSStreamingEngine initialized (guidance_scale=0.2, unique_backend_request_ids=True).
+[NeMo I 2026-08-19 17:57:47 nemo_logging:393] Initializing vLLM engine (this may take a moment)...
+[NeMo I 2026-08-19 17:57:47 nemo_logging:393] Initializing vLLM engine...
+[NeMo I 2026-08-19 17:57:47 nemo_logging:393] [LLMStreamingEngine] Pinning vLLM to GPU 0 (CUDA_VISIBLE_DEVICES=0)
+ERROR 08-19 17:57:47 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+ERROR 08-19 17:57:47 [__init__.py:57] Traceback (most recent call last):
+ERROR 08-19 17:57:47 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+ERROR 08-19 17:57:47 [__init__.py:57]     func = plugin.load()
+ERROR 08-19 17:57:47 [__init__.py:57]            ^^^^^^^^^^^^^
+ERROR 08-19 17:57:47 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+ERROR 08-19 17:57:47 [__init__.py:57]     module = import_module(match.group('module'))
+ERROR 08-19 17:57:47 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-19 17:57:47 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+ERROR 08-19 17:57:47 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+ERROR 08-19 17:57:47 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-19 17:57:47 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+ERROR 08-19 17:57:47 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+ERROR 08-19 17:57:47 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ERROR 08-19 17:57:47 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+INFO 08-19 17:57:47 [arg_utils.py:535] HF_HUB_OFFLINE is True, replace model_id [/models/derived/eartts] to model_path [/models/derived/eartts]
+INFO 08-19 17:57:56 [model.py:653] Resolved architecture: EarTTSForCausalLM
+ERROR 08-19 17:57:56 [config.py:298] Error retrieving safetensors: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/derived/eartts'. Use `repo_type` argument if needed., retrying 1 of 2
+`torch_dtype` is deprecated! Use `dtype` instead!
+ERROR 08-19 17:57:58 [config.py:296] Error retrieving safetensors: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/derived/eartts'. Use `repo_type` argument if needed.
+INFO 08-19 17:57:58 [model.py:1729] Using max model len 12288
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 08-19 17:57:59 [scheduler.py:225] Chunked prefill is enabled with max_num_batched_tokens=768.
+WARNING 08-19 17:57:59 [__init__.py:3134] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+VOICECHAT_STARTUP {"event": "server_module_imported", "monotonic_ns": 5114355977382, "wall_time_ns": 1787162279447074598}
+INFO 08-19 17:58:00 [__init__.py:224] Automatically detected platform cuda.
+/usr/local/lib/python3.12/dist-packages/torch/library.py:356: UserWarning: Warning only once for all operators,  other operators may also be overridden.
+  Overriding a previously registered kernel for the same operator and the same dispatch key
+  operator: flash_attn::_flash_attn_backward(Tensor dout, Tensor q, Tensor k, Tensor v, Tensor out, Tensor softmax_lse, Tensor(a6!)? dq, Tensor(a7!)? dk, Tensor(a8!)? dv, float dropout_p, float softmax_scale, bool causal, SymInt window_size_left, SymInt window_size_right, float softcap, Tensor? alibi_slopes, bool deterministic, Tensor? rng_state=None) -> Tensor
+    registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922
+  dispatch key: ADInplaceOrView
+  previous kernel: no debug info
+       new kernel: registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922 (Triggered internally at /opt/pytorch/pytorch/aten/src/ATen/core/dispatch/OperatorEntry.cpp:208.)
+  self.m.impl(
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:03 [core.py:721] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57] Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]     func = plugin.load()
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]            ^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]     module = import_module(match.group('module'))
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:58:03 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:03 [core.py:96] Initializing a V1 LLM engine (v0.17.1.dev0+gb31e9326a.fi065) with config: model='/models/derived/eartts', speculative_config=None, tokenizer='/models/derived/eartts', skip_tokenizer_init=True, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float32, max_seq_len=12288, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=ea_w8a32, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=/models/derived/eartts, enable_prefix_caching=False, chunked_prefill_enabled=True, pooler_config=None, compilation_config={'level': 3, 'debug_dump_path': None, 'cache_dir': '', 'backend': '', 'custom_ops': [], 'splitting_ops': ['vllm.unified_attention', 'vllm.unified_attention_with_output', 'vllm.mamba_mixer2', 'vllm.mamba_mixer', 'vllm.short_conv', 'vllm.linear_attention', 'vllm.plamo2_mamba_mixer', 'vllm.gdn_attention', 'vllm.sparse_attn_indexer'], 'use_inductor': True, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'use_cudagraph': True, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [256, 248, 240, 232, 224, 216, 208, 200, 192, 184, 176, 168, 160, 152, 144, 136, 128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1], 'cudagraph_copy_inputs': False, 'full_cuda_graph': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_capture_size': 256, 'local_cache_dir': None}
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:05 [parallel_state.py:1231] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:05 [topk_topp_sampler.py:59] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:05 [gpu_model_runner.py:3224] Starting to load model /models/derived/eartts...
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:05 [gpu_model_runner.py:3254] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:07 [cuda.py:347] Using Triton backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=270)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=270)[0;0m Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:08<00:00,  8.90s/it]
+[1;36m(EngineCore_DP0 pid=270)[0;0m Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:08<00:00,  8.90s/it]
+[1;36m(EngineCore_DP0 pid=270)[0;0m 
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:16 [default_loader.py:309] Loading weights took 9.01 seconds
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:16 [gpu_model_runner.py:3286] Model loading took 1.3906 GiB and 10.308431 seconds
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:21 [backends.py:594] Using cache directory: /root/.cache/vllm/torch_compile_cache/20627f2bf0/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:21 [backends.py:608] Dynamo bytecode transform time: 5.13 s
+[1;36m(EngineCore_DP0 pid=270)[0;0m [rank0]:W0819 17:58:23.609000 270 torch/_inductor/utils.py:1725] [0/0] Not enough SMs to use max_autotune_gemm mode
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:30 [backends.py:214] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:58:54 [backends.py:241] Compiling a graph for dynamic shape takes 32.43 s
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:59:18 [monitor.py:33] torch.compile takes 37.55 s in total
+[1;36m(EngineCore_DP0 pid=270)[0;0m INFO 08-19 17:59:23 [gpu_worker.py:314] Available KV cache memory: -1.63 GiB
+[1;36m(EngineCore_DP0 pid=270)[0;0m Process EngineCore_DP0:
+[1;36m(EngineCore_DP0 pid=270)[0;0m Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784] EngineCore failed to start.
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784] Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 775, in run_engine_core
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]     engine_core = EngineCoreProc(*args, **kwargs)
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 551, in __init__
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]     super().__init__(
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 112, in __init__
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]     num_gpu_blocks, num_cpu_blocks, kv_cache_config = self._initialize_kv_caches(
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 226, in _initialize_kv_caches
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]     kv_cache_configs = get_kv_cache_configs(
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]                        ^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/core/kv_cache_utils.py", line 1303, in get_kv_cache_configs
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]     check_enough_kv_cache_memory(
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/core/kv_cache_utils.py", line 729, in check_enough_kv_cache_memory
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784]     raise ValueError(
+[1;36m(EngineCore_DP0 pid=270)[0;0m ERROR 08-19 17:59:23 [core.py:784] ValueError: No available memory for the cache blocks. Try increasing `gpu_memory_utilization` when initializing the engine.
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+[1;36m(EngineCore_DP0 pid=270)[0;0m     self.run()
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+[1;36m(EngineCore_DP0 pid=270)[0;0m     self._target(*self._args, **self._kwargs)
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 788, in run_engine_core
+[1;36m(EngineCore_DP0 pid=270)[0;0m     raise e
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 775, in run_engine_core
+[1;36m(EngineCore_DP0 pid=270)[0;0m     engine_core = EngineCoreProc(*args, **kwargs)
+[1;36m(EngineCore_DP0 pid=270)[0;0m                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 551, in __init__
+[1;36m(EngineCore_DP0 pid=270)[0;0m     super().__init__(
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 112, in __init__
+[1;36m(EngineCore_DP0 pid=270)[0;0m     num_gpu_blocks, num_cpu_blocks, kv_cache_config = self._initialize_kv_caches(
+[1;36m(EngineCore_DP0 pid=270)[0;0m                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 226, in _initialize_kv_caches
+[1;36m(EngineCore_DP0 pid=270)[0;0m     kv_cache_configs = get_kv_cache_configs(
+[1;36m(EngineCore_DP0 pid=270)[0;0m                        ^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/core/kv_cache_utils.py", line 1303, in get_kv_cache_configs
+[1;36m(EngineCore_DP0 pid=270)[0;0m     check_enough_kv_cache_memory(
+[1;36m(EngineCore_DP0 pid=270)[0;0m   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/core/kv_cache_utils.py", line 729, in check_enough_kv_cache_memory
+[1;36m(EngineCore_DP0 pid=270)[0;0m     raise ValueError(
+[1;36m(EngineCore_DP0 pid=270)[0;0m ValueError: No available memory for the cache blocks. Try increasing `gpu_memory_utilization` when initializing the engine.
+[rank0]:[W819 17:59:24.666255043 ProcessGroupNCCL.cpp:1564] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/server.py", line 9287, in <module>
+    main()
+  File "/usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/server.py", line 8925, in main
+    pipeline = build_pipeline(args)
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/server.py", line 5150, in build_pipeline
+    return build_public_pipeline(args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nemotron_voicechat_runtime/server.py", line 5088, in build_public_pipeline
+    pipeline = S2SPipelineBuilder.build_pipeline(cfg)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/Speech/nemo/collections/speechlm2/inference/factory/s2s_pipeline_builder.py", line 37, in build_pipeline
+    s2s_model = NemotronVoicechatInferenceWrapper(model_cfg=cfg.s2s)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py", line 353, in __init__
+    self._initialize_model()
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/nemotron_voicechat_inference_wrapper.py", line 872, in _initialize_model
+    create_model(
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py", line 1471, in create_model
+    return VllmEARTTSModel(
+           ^^^^^^^^^^^^^^^^
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py", line 1019, in __init__
+    super().__init__(**kwargs)
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py", line 373, in __init__
+    self._run_async(self.engine.initialize())
+  File "/opt/Speech/nemo/collections/speechlm2/inference/model_wrappers/model_factory.py", line 937, in _run_async
+    return self._loop.run_until_complete(coro)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/Speech/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py", line 644, in initialize
+    await super().initialize()
+  File "/opt/Speech/nemo/collections/speechlm2/inference/vllm/streaming_llm_engine.py", line 205, in initialize
+    self.engine = AsyncLLM.from_vllm_config(vllm_config)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/utils/__init__.py", line 1590, in inner
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/async_llm.py", line 197, in from_vllm_config
+    return cls(
+           ^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/async_llm.py", line 121, in __init__
+    self.engine_core = EngineCoreClient.make_async_mp_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core_client.py", line 123, in make_async_mp_client
+    return AsyncMPClient(*client_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core_client.py", line 814, in __init__
+    super().__init__(
+  File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core_client.py", line 475, in __init__
+    with launch_core_engines(vllm_config, executor_class, log_stats) as (
+  File "/usr/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/utils.py", line 773, in launch_core_engines
+    wait_for_engine_startup(
+  File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/utils.py", line 830, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}

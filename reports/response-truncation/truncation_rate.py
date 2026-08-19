@@ -14,6 +14,7 @@ Requires a bot already serving on 127.0.0.1:7860 with playout tracing enabled.
 from __future__ import annotations
 
 import argparse
+import base64
 import collections
 import difflib
 import json
@@ -29,7 +30,6 @@ STATE = pathlib.Path.home() / ".local/state/nemotron-voicechat"
 TRACES = STATE / "traces/model"
 PLAYOUT = STATE / "playout-traces"
 ASR_IMAGE = "pipecat-ai/nemotron-voicechat-asr-evaluator:english-0.6b"
-FRAME_BYTES = 1764 * 2
 COMPLETE_THRESHOLD = 95.0
 
 
@@ -62,8 +62,18 @@ def build_microphone_wav(destination: pathlib.Path) -> pathlib.Path:
 
 
 def responses_from_playout(trace: pathlib.Path) -> list[dict]:
+    """Attribute audio to responses from the trace itself.
+
+    An earlier version cut clips out of the concatenated trace PCM by summing
+    per-response frame counts. That silently assumes the PCM contains exactly
+    those frames and nothing else; one session carried 14 extra frames, which
+    misaligned every clip after the first and produced empty and one-frame
+    "responses". The trace already carries each audio delta tagged with its
+    response id, so decoding those is exact and needs no offset arithmetic.
+    """
     text = collections.defaultdict(list)
-    created, status, frames = {}, {}, collections.Counter()
+    audio = collections.defaultdict(list)
+    created, status = {}, {}
     for line in trace.open():
         try:
             record = json.loads(line)
@@ -77,34 +87,34 @@ def responses_from_playout(trace: pathlib.Path) -> list[dict]:
         elif kind == "response.done":
             status[rid] = record["status"]
         elif kind == "response.output_audio.delta":
-            frames[rid] += 1
+            audio[rid].append(base64.b64decode(record["delta"]))
     return [
         {
             "response_id": rid,
             "text": "".join(text[rid]).strip(),
-            "frames": frames[rid],
+            "audio": b"".join(audio[rid]),
+            "frames": len(audio[rid]),
             "status": status.get(rid),
         }
         for rid in sorted(created, key=created.get)
     ]
 
 
-def cut_clips(pcm: pathlib.Path, responses: list[dict], out: pathlib.Path) -> None:
-    """Cut frame-exact clips; the PCM holds emitted frames in emission order."""
-    data = pcm.read_bytes()
-    offset = 0
+def write_clips(responses: list[dict], out: pathlib.Path) -> list[int]:
+    """Write one WAV per response from its own attributed audio."""
+    skipped = []
     for index, response in enumerate(responses, 1):
-        count = response["frames"]
-        segment = data[offset * FRAME_BYTES : (offset + count) * FRAME_BYTES]
-        offset += count
+        if not response["audio"]:
+            # A response that emitted no audio at all cannot be scored for a
+            # lost tail; record it rather than writing an unreadable clip.
+            skipped.append(index)
+            continue
         with wave.open(str(out / f"response_{index}.wav"), "wb") as handle:
             handle.setnchannels(1)
             handle.setsampwidth(2)
             handle.setframerate(22050)
-            handle.writeframes(segment)
-    expected = offset * FRAME_BYTES
-    if abs(len(data) - expected) > FRAME_BYTES:
-        print(f"  WARNING: pcm {len(data)}B vs {expected}B from frame counts", file=sys.stderr)
+            handle.writeframes(response["audio"])
+    return skipped
 
 
 def transcribe(clip_dir: pathlib.Path) -> dict:
@@ -132,7 +142,10 @@ def classify(responses: list[dict], transcripts: dict) -> list[dict]:
     results = []
     for index, response in enumerate(responses, 1):
         generated = words(response["text"])
-        spoken = words(transcripts[f"response_{index}.wav"]["transcript"])
+        clip = transcripts.get(f"response_{index}.wav")
+        if clip is None:
+            continue
+        spoken = words(clip["transcript"])
         blocks = difflib.SequenceMatcher(None, generated, spoken).get_matching_blocks()
         matched = sum(block.size for block in blocks)
         tail = max((b.a + b.size for b in blocks if b.size), default=0)
@@ -194,7 +207,9 @@ def main() -> None:
             continue
         clips = args.out / f"session-{session:02d}-{trace_dir.name[:8]}"
         clips.mkdir(exist_ok=True)
-        cut_clips(trace_dir / "output-22050-mono-s16le.pcm", responses, clips)
+        skipped = write_clips(responses, clips)
+        if skipped:
+            print(f"  responses with no emitted audio: {skipped}", flush=True)
         results = classify(responses, transcribe(clips))
         (clips / "classification.json").write_text(json.dumps(results, indent=1))
         every.extend(results)

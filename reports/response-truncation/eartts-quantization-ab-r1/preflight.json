@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "status": "maintenance_window_required",
+  "alignment_choice": "checkpointed_part_1",
+  "superseded_work": "prepared_reuse_state_hygiene_ab",
+  "sampling": {
+    "deterministic": false,
+    "mixture_selection": "gumbel_max",
+    "latent_noise": "gaussian",
+    "noise_scale": 0.001,
+    "maskgit_iterations_per_position": 8,
+    "request_sampling_seed": null,
+    "rng_scope": "worker_global_torch_generator",
+    "worker_default_seed": 0,
+    "ordinary_vllm_sampler_bypassed": true
+  },
+  "offline_identical_state_ab": {
+    "possible": false,
+    "frames_audited": 4801,
+    "captures": {
+      "acoustic-capture-live": 2229,
+      "acoustic-capture-extended-live": 2572
+    },
+    "retained": [
+      "current_subword_id",
+      "current_subword_mask",
+      "raw_generated_code",
+      "post_policy_recurrent_code",
+      "decoder_code",
+      "codec_pcm",
+      "policy_counters"
+    ],
+    "missing": [
+      "backbone_hidden_states",
+      "mog_post_mlp_state",
+      "mog_logits",
+      "mog_mu",
+      "mog_log_std",
+      "gumbel_noise",
+      "gaussian_noise",
+      "torch_rng_state"
+    ],
+    "approximation_used": false
+  },
+  "artifacts": {
+    "quantized": {
+      "path": "/home/khkramer/.cache/nemotron-voicechat/artifacts/release/eartts",
+      "quant_method": "ea_w8a32",
+      "model_bytes": 1412084716,
+      "sampler_mlp_quantized": true
+    },
+    "fp32": {
+      "path": "/home/khkramer/.cache/nemotron-voicechat/conversion/fp32/eartts-vllm-fp32",
+      "model_bytes": 3337214236,
+      "model_sha256": "1cb6f131fc92df2b36fd5888ebe9df3c49e9a7e422f356dc924cce801d6e53ee",
+      "config_sha256": "b0ee63484ea90381f000370216a4ede59940a0342d6119c28648e704d7b7160b",
+      "tensor_count": 453,
+      "quantization_config": null,
+      "public_checkpoint_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b"
+    }
+  },
+  "sampler_exclusion_static_cost": {
+    "matrices": 9,
+    "fp32_bytes": 191102976,
+    "int8_plus_scale_bytes": 47900160,
+    "additional_bytes": 143202816,
+    "additional_gib": 0.1333680153,
+    "linear_calls_per_acoustic_position": 72,
+    "latency_measured": false
+  },
+  "live_design": {
+    "fresh_start_campaign_pairs": 2,
+    "attempts_per_arm_per_pair": 10,
+    "responses_per_attempt": 3,
+    "responses_per_arm_total": 60,
+    "reporting": "counts_per_arm_per_campaign_not_single_campaign_rates",
+    "pinned_asr_image": "pipecat-ai/nemotron-voicechat-asr-evaluator:english-0.6b",
+    "estimated_window_minutes": [
+      90,
+      120
+    ],
+    "started": false
+  }
+}
