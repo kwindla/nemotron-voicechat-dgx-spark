@@ -12,20 +12,23 @@ disagreed by nearly two orders of magnitude (1 large gap versus ~62 small
 ticks).  This module counts them directly so the question is settled by
 observation.
 
-**Margin recovery (always on).**  Two mechanisms silently consume playout lead
-before audio is playable, and neither costs latency to reclaim:
+**Margin recovery.**  One mechanism silently consumes playout lead before audio
+is playable, and reclaiming it costs no latency:
 
-1. ``BaseOutputTransport`` only forwards *complete* ``audio_out_10ms_chunks``
-   chunks, so with the default of 4 (40 ms) up to 40 ms of already-generated
-   audio sits unplayable in its byte buffer.  ``demo.py`` sets 1.
-2. ``SOXRStreamAudioResampler`` clears its filter history after
+1. ``SOXRStreamAudioResampler`` clears its filter history after
    ``clear_after_secs`` of inactivity (default 0.2 s).  Gaps between responses
    are far longer than that, so every response resamples on a *fresh* stream
    and pays the initial filter latency again: the first two 80 ms deltas expose
    135.5 ms rather than 160 ms.  Keeping the stream warm reclaims that.
 
-Neither changes when audio starts playing, so neither adds voice-to-voice
+This does not change when audio starts playing, so it adds no voice-to-voice
 latency.
+
+``audio_out_10ms_chunks`` is exposed here as well, but it is a genuine tradeoff
+rather than free margin: a smaller value strands less generated audio in the
+output byte buffer, yet ``BaseOutputTransport`` feeds the track from its own
+realtime clock, so that same value is the only slack absorbing jitter between
+that clock and the track's.  Measure before changing it.
 """
 
 from __future__ import annotations
@@ -37,6 +40,27 @@ from typing import Any
 from loguru import logger
 
 UNDERFLOW_TELEMETRY_ENV = "NEMOTRON_VOICECHAT_TRACK_UNDERFLOW_TELEMETRY"
+OUTPUT_CHUNKS_ENV = "NEMOTRON_VOICECHAT_OUTPUT_10MS_CHUNKS"
+
+#: Pipecat's default. ``BaseOutputTransport`` forwards only complete chunks of
+#: this size, so it sets both how much generated audio waits in the output byte
+#: buffer and how much slack the track queue has against clock jitter.
+DEFAULT_OUTPUT_CHUNKS_10MS = 4
+
+
+def output_chunks_10ms() -> int:
+    """Return the configured ``audio_out_10ms_chunks`` value."""
+    raw = os.environ.get(OUTPUT_CHUNKS_ENV, "").strip()
+    if not raw:
+        return DEFAULT_OUTPUT_CHUNKS_10MS
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise ValueError(f"{OUTPUT_CHUNKS_ENV} must be a positive integer") from exc
+    if value < 1:
+        raise ValueError(f"{OUTPUT_CHUNKS_ENV} must be a positive integer")
+    return value
+
 
 _underflow_installed = False
 _warm_resampler_installed = False

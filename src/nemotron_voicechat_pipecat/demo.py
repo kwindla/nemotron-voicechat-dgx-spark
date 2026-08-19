@@ -42,6 +42,7 @@ from .playout_transport import (
     attach_underflow_counter,
     install_underflow_telemetry,
     install_warm_resampler,
+    output_chunks_10ms,
 )
 from .text_input import VoicechatTypedInputRouter
 from .tool_results import VoicechatLLMContext, VoicechatToolResult
@@ -280,11 +281,13 @@ def create_transport(runner_args: SmallWebRTCRunnerArguments) -> SmallWebRTCTran
             audio_out_sample_rate=24_000,
             audio_in_channels=1,
             audio_out_channels=1,
-            # Forward audio as soon as a 10 ms chunk is complete. The default
-            # of 4 strands up to 40 ms of already-generated audio in the output
-            # byte buffer, which is playout lead we have paid for but cannot
-            # use. Emitting sooner costs no latency; see playout_transport.
-            audio_out_10ms_chunks=1,
+            # How much audio BaseOutputTransport hands the WebRTC track at a
+            # time. Smaller values strand less generated audio in the output
+            # byte buffer, but the track is fed by a separate realtime clock,
+            # so this is also the slack absorbing jitter between the two
+            # clocks. Tunable so the tradeoff can be measured; see
+            # playout_transport and docs/reviews/audio-crackle-root-cause-r1.md.
+            audio_out_10ms_chunks=output_chunks_10ms(),
         ),
     )
 
