@@ -8,6 +8,7 @@ bot's own summary log after disconnect.
 
 import asyncio
 import sys
+
 from playwright.async_api import async_playwright
 
 CHROMIUM = "/home/khkramer/.cache/ms-playwright/chromium-1234/chrome-linux/chrome"
@@ -47,10 +48,17 @@ async def main():
             raise SystemExit(f"never connected: {errors[-10:]}")
         print("connected; replaying", SECONDS, "s", flush=True)
         await page.wait_for_timeout(int(SECONDS * 1000))
-        await disconnect.click()
+        # The fixture is finite and plays with %noloop, so if the replay runs
+        # past the end of the WAV the microphone goes silent and the pipeline
+        # idle timeout ends the session on its own. That is a normal end to the
+        # run, not a failure: the button is simply gone by the time we click.
+        try:
+            await disconnect.click(timeout=5_000)
+            print("disconnected", flush=True)
+        except Exception:
+            print("session already ended (idle timeout past end of fixture)", flush=True)
         await page.wait_for_timeout(1500)
         await browser.close()
-        print("disconnected", flush=True)
 
 
 asyncio.run(main())
