@@ -39,6 +39,8 @@ from pipecat.workers.runner import WorkerRunner
 from .aggregators import create_voicechat_context_aggregators
 from .llm import NemotronVoicechatLLMService
 from .playout_transport import (
+    PlayoutEpoch,
+    PlayoutEpochTagger,
     attach_underflow_counter,
     install_underflow_telemetry,
     install_warm_resampler,
@@ -300,6 +302,12 @@ def create_pipeline(
     context = VoicechatLLMContext(messages=[], tools=tools)
     user_aggregator, assistant_aggregator = create_voicechat_context_aggregators(context)
     typed_input = VoicechatTypedInputRouter()
+    # The underflow counter needs to know which response owns the audio the
+    # output track is draining; the tagger below advances this as each response
+    # starts speaking. Bound to the transport because the track it ultimately
+    # labels is created by the transport, not here.
+    epoch = PlayoutEpoch()
+    transport.voicechat_playout_epoch = epoch
     service = NemotronVoicechatLLMService(
         base_url=_PROCESS_WS_URL
         or os.getenv("NEMOTRON_VOICECHAT_WS_URL", "ws://127.0.0.1:8786/v1/realtime"),
@@ -312,6 +320,10 @@ def create_pipeline(
             typed_input,
             user_aggregator,
             service,
+            # Must sit ahead of the output transport so TTSStartedFrame
+            # advances the epoch before that response's audio can reach the
+            # track.
+            PlayoutEpochTagger(epoch),
             transport.output(),
             assistant_aggregator,
         ]
