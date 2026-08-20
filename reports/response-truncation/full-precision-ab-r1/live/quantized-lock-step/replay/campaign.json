@@ -1,0 +1,349 @@
+{
+  "attempts": [
+    {
+      "responses": [
+        {
+          "audio_bytes": 635040,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-01/response_001.wav",
+          "audio_sha256": "153143ff6b50836a7978851bbb4041d0360573c5efec4d741ac75c53ecb50862",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_3001ab91-2cbc-4716-93fd-a7eab1daec9f_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_3001ab91-2cbc-4716-93fd-a7eab1daec9f_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_3001ab91-2cbc-4716-93fd-a7eab1daec9f_859",
+        "reason": "client_stop",
+        "session_id": "3001ab91-2cbc-4716-93fd-a7eab1daec9f",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "3001ab91-2cbc-4716-93fd-a7eab1daec9f",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 839664,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-02/response_001.wav",
+          "audio_sha256": "706310dd756abe463ac078978cb0f2e8879cffdd80b6ea5b27e01dbd24ebd452",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_1491d963-6f31-44f4-b14b-b58b11ce1461_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_1491d963-6f31-44f4-b14b-b58b11ce1461_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_1491d963-6f31-44f4-b14b-b58b11ce1461_1033",
+        "reason": "client_stop",
+        "session_id": "1491d963-6f31-44f4-b14b-b58b11ce1461",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "1491d963-6f31-44f4-b14b-b58b11ce1461",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 635040,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-03/response_001.wav",
+          "audio_sha256": "985d73d6b4aadb1f19bd0df3ea938af67e5e981633860852de65a07c2560fb60",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_b12d8843-29bb-4ada-9804-010923e3269d_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_b12d8843-29bb-4ada-9804-010923e3269d_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_b12d8843-29bb-4ada-9804-010923e3269d_861",
+        "reason": "client_stop",
+        "session_id": "b12d8843-29bb-4ada-9804-010923e3269d",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "b12d8843-29bb-4ada-9804-010923e3269d",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 635040,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-04/response_001.wav",
+          "audio_sha256": "84758ba4e0f4fcdf4852380a81afa7bd1c3ecb232ca8d327f6e2b04570983983",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_f1a809c4-ba93-4022-a304-dce0e5d44509_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_f1a809c4-ba93-4022-a304-dce0e5d44509_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_f1a809c4-ba93-4022-a304-dce0e5d44509_859",
+        "reason": "client_stop",
+        "session_id": "f1a809c4-ba93-4022-a304-dce0e5d44509",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "f1a809c4-ba93-4022-a304-dce0e5d44509",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 832608,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-05/response_001.wav",
+          "audio_sha256": "84f1af163cf7b2472d5b521ef1c0cb03d80da18553629fdb2ae6eabfaace60bd",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_3433a7c5-723e-4755-9fec-7be18e795cba_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_3433a7c5-723e-4755-9fec-7be18e795cba_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_3433a7c5-723e-4755-9fec-7be18e795cba_1025",
+        "reason": "client_stop",
+        "session_id": "3433a7c5-723e-4755-9fec-7be18e795cba",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "3433a7c5-723e-4755-9fec-7be18e795cba",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 818496,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-06/response_001.wav",
+          "audio_sha256": "a5010254118bdf7b97d294c9797678b1952b4b3b33bffd6fc3c9b9d921dd6fd2",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_3a5271c3-c858-444d-8ceb-6eac00557153_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_3a5271c3-c858-444d-8ceb-6eac00557153_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_3a5271c3-c858-444d-8ceb-6eac00557153_1015",
+        "reason": "client_stop",
+        "session_id": "3a5271c3-c858-444d-8ceb-6eac00557153",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "3a5271c3-c858-444d-8ceb-6eac00557153",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 635040,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-07/response_001.wav",
+          "audio_sha256": "1b54adc654c2ebac4b227a5c55c143ab25bdcd99a7c015180accb5cfb832ec8d",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_f25b08f5-c4d5-4eae-8e37-78d508328737_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_f25b08f5-c4d5-4eae-8e37-78d508328737_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_f25b08f5-c4d5-4eae-8e37-78d508328737_861",
+        "reason": "client_stop",
+        "session_id": "f25b08f5-c4d5-4eae-8e37-78d508328737",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "f25b08f5-c4d5-4eae-8e37-78d508328737",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 818496,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-08/response_001.wav",
+          "audio_sha256": "8776b10b7213866298cfcfdf0db161f5cd1335430f170bef62ce56ce011d9fd6",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_1243dd23-52d6-46d3-a8c3-0feac14c4a19_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_1243dd23-52d6-46d3-a8c3-0feac14c4a19_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_1243dd23-52d6-46d3-a8c3-0feac14c4a19_1013",
+        "reason": "client_stop",
+        "session_id": "1243dd23-52d6-46d3-a8c3-0feac14c4a19",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "1243dd23-52d6-46d3-a8c3-0feac14c4a19",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 670320,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-09/response_001.wav",
+          "audio_sha256": "ea35385aed595a50045c34e4bb1df0051c63002014fba11aa8b2cdc67a5b0e28",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_3f709d5e-7118-45c8-b124-0d581986cda4_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_3f709d5e-7118-45c8-b124-0d581986cda4_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_3f709d5e-7118-45c8-b124-0d581986cda4_889",
+        "reason": "client_stop",
+        "session_id": "3f709d5e-7118-45c8-b124-0d581986cda4",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "3f709d5e-7118-45c8-b124-0d581986cda4",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 807912,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-lock-step/replay/attempt-10/response_001.wav",
+          "audio_sha256": "c6767aa36fcaf466326556ac81ceeb5c4573d2f186b343ec02bd9e09ceaee3b6",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_979e5bff-e71d-4337-97f8-47f7abe9e822_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical unicorn horn. With the horn, the knight could turn water into wine and make the dragon sleep. The knight used this power to save his kingdom and returned home a hero.",
+          "turn_id": "turn_979e5bff-e71d-4337-97f8-47f7abe9e822_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_979e5bff-e71d-4337-97f8-47f7abe9e822_1006",
+        "reason": "client_stop",
+        "session_id": "979e5bff-e71d-4337-97f8-47f7abe9e822",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "979e5bff-e71d-4337-97f8-47f7abe9e822",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    }
+  ],
+  "pacing": "lock-step",
+  "schema": "eartts-truncation-replay-campaign-v1",
+  "source_pcm_sha256": "e0cfde068241c098d1bc615202c11ecf037134cd1ba7fe889fb3d5eebd57395a",
+  "source_session_id": "431ac6df-573c-45af-8746-7cd9f66bd8c3",
+  "source_trace_dir": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/431ac6df-573c-45af-8746-7cd9f66bd8c3"
+}

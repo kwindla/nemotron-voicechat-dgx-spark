@@ -1,9 +1,10 @@
 # EarTTS W8A32 quantization A/B r1
 
-Date: 2026-08-19
+Date: 2026-08-19/20
 
-Status: **offline preflight complete; end-to-end A/B requires a 90--120 minute
-maintenance window. Production was not touched.**
+Status: **complete; EarTTS-only result inconclusive and not response-level
+paired because generated text diverged between arms. FP32 EarTTS did not
+remove suffix loss; Nano remained FHW8 in both arms.**
 
 ## Priority and scope
 
@@ -106,29 +107,65 @@ small: the nine sampler matrices occupy 191,102,976 bytes in FP32 versus
 exclusion changes 72 linear calls per acoustic position (eight iterations,
 three MLP layers, three projections) from the custom W8A32 path to FP32.
 
-## Operational blocker
+## Live A/B result
 
-The host has one unified 121.7 GiB memory pool. With production resident,
-preflight found only about 34 GiB available and prior co-residency attempts
-already failed to start a second full model reliably. The FP32 artifact also
-adds about 1.79 GiB of stored weights over the released W8A32 artifact before
-runtime allocations. Launching either diagnostic arm now would risk the active
-production campaign and violate the brief.
+The authorized maintenance window was used for two complete fresh-start pairs.
+All four valid arms used the same retained source PCM SHA-256
+`e0cfde068241c098d1bc615202c11ecf037134cd1ba7fe889fb3d5eebd57395a`,
+source turns 1--3, frozen runtime contract, Nano and codec artifacts, worker
+seed 0, prepared-epoch policy, warmup, replay order, two-second inter-attempt
+gap, and termination guards. Each arm completed 10 sessions with three
+responses, yielding 30 WAVs per arm and 60 per precision.
 
-A **90--120 minute maintenance window** is required for four sequential model
-starts (two quantized/FP32 campaign pairs), 120 response observations, pinned
-ASR, cleanup, and exact production restart verification. No window was started.
+The pinned offline evaluator ran over all 120 WAVs with network disabled. Its
+immutable image identity was
+`sha256:5985421433c37aa558f0938bd11e8714b1bbf9a74b0ebf6a6226696582de482d`;
+`asr-execution.json` retains its backend, model snapshot, decoder, device, and
+determinism provenance. A suffix loss requires a normalized generated-text
+suffix of at least three words, at least 0.70 matched-prefix coverage, and an
+ASR endpoint within two words of the final aligned block. Every positive is
+retained with its generated text, ASR text, source-audio hash, and missing
+suffix in `analysis.json`.
+
+| Fresh-start campaign | W8A32 losses / 30 | FP32 losses / 30 | W8A32 response-3 losses / 10 | FP32 response-3 losses / 10 |
+| --- | ---: | ---: | ---: | ---: |
+| pair 1 | 8 | 8 | 5 | 5 |
+| pair 2 | 3 | 15 | 2 | 9 |
+
+The campaigns are not averaged. Pair 1 tied, while pair 2 had more losses in
+FP32, so there is no replicated direction. More importantly, only 19 of 30
+generated texts matched between arms in pair 1 and 12 of 30 in pair 2. The
+response-level pairing condition therefore failed before any causal
+quantization comparison could be credited. The model-call schedule was not
+used to rescue pairing once generated text had diverged.
+
+This is an **inconclusive EarTTS-precision A/B**. It establishes only that FP32
+EarTTS does not remove the failure while Nano remains FHW8: clear suffix losses
+occurred in both FP32-EarTTS campaigns. EarTTS W8A32 is therefore not a
+necessary cause of truncation. It does not exonerate quantization across the
+whole stack, because Nano's FHW8 outputs and conditioning stream were common to
+both arms. The stochastic arms also left different generated-text workloads,
+and the two campaign directions did not replicate. The sampler-only third arm
+was not run; its trigger condition (FP32 EarTTS removes the loss) was not met.
+
+Two preflights were excluded before any valid comparison: an initial W8A32 run
+without an inter-attempt gap hit WebSocket admission cleanup races, and the
+first FP32 launch correctly rejected a released-manifest mismatch before model
+load. Both are retained under explicitly named `*-invalid-*` directories and
+do not contribute to the table.
 
 ## Integrity
 
-- Production container remained
+- The exact production container
   `042d10e1d6d5fc264d7ee7aaf0c9dbeec9da5512e65b79d030bd7be2f0d2c444`
-  on image
+  was preserved, restarted on image
   `sha256:4607d8eb4b99a690644e35af1e75102f75fbfe148b4aee04dd9c278b4f1b0dd9`.
-- No diagnostic container was launched and no released artifact was modified.
+- Its restart count remained zero and `/health` returned `status=ready`,
+  `model=ready`, the production checkpoint contract, and `active_client=false`.
+- All diagnostic containers were removed and no released artifact was modified.
 - No frozen configuration changed and no commit was created.
-- Launcher Python compilation, Ruff, dry command construction, JSON validation,
-  and `git diff --check` passed.
+- Python compilation, Ruff, campaign/ASR/analysis validation, and
+  `git diff --check` passed.
 
-Evidence and the exact pending protocol are under
+Evidence and the complete result are under
 `reports/response-truncation/eartts-quantization-ab-r1/`.

@@ -10,8 +10,10 @@
 **/actual-decoder-response.wav
 rate-baseline/microphone.wav
 rate-baseline/**/*.wav
-eartts-*/**/*.wav
-eartts-*/**/*.pt
+**/*.wav
+**/*.pt
+**/*.pcm
+**/*.safetensors
 
 # Keep the small artefacts that carry the findings.
 !**/README.md
@@ -20,3 +22,7 @@ eartts-*/**/*.pt
 !**/classification.json
 !**/preflight.json
 !**/transcripts.json
+
+# The original live session's clips are the evidence base for the ASR verdict
+# and are deliberately tracked; see session-431ac6df/README.md.
+!session-431ac6df/*.wav

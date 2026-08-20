@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.72,
+    "source_audio_sha256": "fbdb07ab7af9f1695b9c190a873648ba833ba4b4c136b39ee7c672099834a065",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 11.6,
+    "source_audio_sha256": "11c3d510054621bd4d9e4ffa9e6439e7d0e5b24ad1f9161d52a9ecd209c4c4ab",
+    "transcript": "I am actually a voice model, but I am not brand new. I have been learning and improving for a long time. I am glad we are having this conversation. How can I help you today?"
+  },
+  "response_003.wav": {
+    "seconds": 17.12,
+    "source_audio_sha256": "1bb44d5009ef5d575ea43730484d06dce0913c5dd53f376215beb20b57991dbd",
+    "transcript": "Once upon a time a unicorn named Luna lived in a magical forest. She had a beautiful silver horn that could heal plants. One day Luna found a wounded tree and used her horn to help it grow back to life. Since then, Luna has been known as the unicorn of the forest."
+  }
+}

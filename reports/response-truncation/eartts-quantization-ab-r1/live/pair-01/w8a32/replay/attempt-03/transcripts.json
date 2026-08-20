@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.8,
+    "source_audio_sha256": "5c331cbb89393f010650c94cfc6d8b954cf40cfce5ad66c3530239d2b17f0206",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 12.72,
+    "source_audio_sha256": "3c0676d88f2e5d70d4628f1131b3da6a031e9648b39dbaf7e25e0f4dc984e366",
+    "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am Nemorton, created by NVIDIA. I can help with anything from answering questions to generating creative content."
+  },
+  "response_003.wav": {
+    "seconds": 26.48,
+    "source_audio_sha256": "3cacf3a9d940af7533d29f67d33863fc07abe7481923c25eed8f00b0049de5ad",
+    "transcript": "Once upon a time a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day he found a magical forest where the unicorn grazed peacefully. The night approached slowly and to his surprise the unicorn did not run away. It stayed and the two formed an unlikely friendship from then on the dight visited the forest every day to spend time with his newfound friend."
+  }
+}

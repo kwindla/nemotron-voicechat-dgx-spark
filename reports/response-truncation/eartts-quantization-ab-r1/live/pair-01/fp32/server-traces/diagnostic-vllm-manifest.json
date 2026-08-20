@@ -1,0 +1,3272 @@
+{
+  "components": {
+    "eartts": {
+      "config": {
+        "architectures": [
+          "EarTTSForCausalLM"
+        ],
+        "backbone_type": "gemma3_text",
+        "codebook_size": 1024,
+        "custom_input_specs": [
+          {
+            "dim": 31,
+            "dtype": "int32",
+            "name": "acoustic_tokens"
+          },
+          {
+            "dtype": "int32",
+            "name": "text_tokens"
+          },
+          {
+            "name": "text_mask"
+          },
+          {
+            "name": "bos_mask"
+          },
+          {
+            "dim": 1152,
+            "name": "speaker_latent"
+          }
+        ],
+        "custom_outputs": [
+          "acoustic_tokens"
+        ],
+        "emb_backbone_config": {
+          "encoder": {
+            "attention_dropout": 0.1,
+            "head_dim": 72,
+            "hidden_size": 1152,
+            "intermediate_size": 4608,
+            "num_attention_heads": 16,
+            "num_hidden_layers": 1,
+            "num_key_value_heads": 16,
+            "use_cache": false
+          },
+          "is_encoder_decoder": false
+        },
+        "emb_backbone_type": "t5gemma",
+        "emb_char_vocab_size": 256,
+        "emb_vocab_size": 131073,
+        "enable_guidance": true,
+        "exponent": 3.0,
+        "guidance_scale": 0.2,
+        "head_dim": 72,
+        "hidden_size": 1152,
+        "intermediate_size": 4608,
+        "latent_size": 512,
+        "layer_types": [
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention"
+        ],
+        "max_char_len": 76,
+        "max_position_embeddings": 131072,
+        "model_type": "eartts",
+        "mog_eps": 1e-06,
+        "mog_low_rank": 64,
+        "mog_min_log_std": -4.0,
+        "mog_num_layers": 3,
+        "mog_num_predictions": 1024,
+        "noise_scale": 0.001,
+        "num_attention_heads": 16,
+        "num_hidden_layers": 28,
+        "num_iter": 8,
+        "num_key_value_heads": 16,
+        "num_quantizers": 31,
+        "pretrained_tokenizer_name": "/models/NVIDIA-Nemotron-Nano-9B-v2",
+        "rope_local_base_freq": 10000.0,
+        "rope_theta": 1000000.0,
+        "sliding_window": 7500,
+        "top_p_or_k": 0.95,
+        "use_audio_prompt_frozen_projection": true,
+        "use_bos_eos_emb": true,
+        "use_gated_fusion_for_text_audio": true,
+        "use_subword_flag_emb": true,
+        "vocab_size": 1,
+        "voicechat_checkpoint_repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+        "voicechat_checkpoint_revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+        "voicechat_checkpoint_sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b",
+        "voicechat_converter_seed": 0,
+        "voicechat_derived_from_ea": false,
+        "voicechat_tokenizer_source": {
+          "path": "/models/NVIDIA-Nemotron-Nano-9B-v2",
+          "repository": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+          "revision": "6533e8de2c68e4536bf7c411d7a3ce5734111476"
+        }
+      },
+      "files": {
+        "config.json": {
+          "bytes": 3010,
+          "sha256": "b0ee63484ea90381f000370216a4ede59940a0342d6119c28648e704d7b7160b"
+        },
+        "model.safetensors": {
+          "bytes": 3337214236,
+          "sha256": "1cb6f131fc92df2b36fd5888ebe9df3c49e9a7e422f356dc924cce801d6e53ee"
+        },
+        "model.safetensors.index.json": {
+          "bytes": 35069,
+          "sha256": "2c177de7ebffa3f695a9ce731561a509da83b4518659e566a04cbaf863d26a6a"
+        }
+      },
+      "model": {
+        "bytes": 3337214236,
+        "inventory": {
+          "payload_bytes": 3337158524,
+          "payload_bytes_by_dtype": {
+            "F32": 3335061348,
+            "I64": 2097176
+          },
+          "tensor_count": 453,
+          "tensors": {
+            "model.backbone.embed_tokens.weight": {
+              "dtype": "F32",
+              "shape": [
+                1,
+                1152
+              ]
+            },
+            "model.backbone.layers.0.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.0.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.0.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.0.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.0.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.0.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.0.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.0.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.0.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.0.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.0.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.0.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.0.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.1.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.1.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.1.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.1.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.1.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.1.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.1.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.1.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.1.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.1.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.1.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.1.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.1.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.10.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.10.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.10.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.10.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.10.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.10.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.10.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.10.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.10.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.10.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.10.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.10.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.10.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.11.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.11.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.11.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.11.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.11.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.11.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.11.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.11.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.11.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.11.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.11.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.11.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.11.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.12.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.12.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.12.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.12.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.12.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.12.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.12.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.12.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.12.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.12.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.12.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.12.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.12.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.13.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.13.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.13.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.13.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.13.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.13.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.13.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.13.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.13.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.13.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.13.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.13.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.13.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.14.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.14.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.14.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.14.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.14.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.14.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.14.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.14.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.14.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.14.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.14.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.14.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.14.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.15.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.15.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.15.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.15.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.15.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.15.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.15.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.15.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.15.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.15.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.15.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.15.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.15.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.16.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.16.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.16.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.16.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.16.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.16.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.16.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.16.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.16.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.16.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.16.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.16.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.16.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.17.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.17.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.17.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.17.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.17.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.17.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.17.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.17.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.17.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.17.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.17.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.17.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.17.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.18.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.18.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.18.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.18.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.18.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.18.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.18.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.18.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.18.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.18.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.18.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.18.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.18.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.19.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.19.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.19.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.19.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.19.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.19.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.19.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.19.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.19.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.19.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.19.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.19.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.19.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.2.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.2.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.2.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.2.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.2.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.2.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.2.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.2.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.2.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.2.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.2.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.2.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.2.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.20.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.20.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.20.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.20.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.20.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.20.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.20.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.20.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.20.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.20.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.20.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.20.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.20.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.21.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.21.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.21.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.21.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.21.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.21.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.21.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.21.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.21.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.21.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.21.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.21.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.21.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.22.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.22.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.22.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.22.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.22.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.22.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.22.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.22.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.22.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.22.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.22.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.22.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.22.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.23.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.23.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.23.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.23.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.23.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.23.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.23.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.23.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.23.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.23.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.23.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.23.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.23.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.24.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.24.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.24.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.24.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.24.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.24.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.24.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.24.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.24.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.24.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.24.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.24.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.24.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.25.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.25.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.25.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.25.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.25.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.25.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.25.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.25.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.25.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.25.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.25.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.25.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.25.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.26.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.26.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.26.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.26.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.26.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.26.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.26.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.26.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.26.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.26.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.26.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.26.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.26.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.27.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.27.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.27.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.27.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.27.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.27.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.27.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.27.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.27.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.27.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.27.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.27.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.27.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.3.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.3.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.3.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.3.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.3.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.3.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.3.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.3.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.3.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.3.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.3.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.3.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.3.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.4.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.4.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.4.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.4.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.4.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.4.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.4.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.4.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.4.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.4.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.4.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.4.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.4.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.5.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.5.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.5.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.5.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.5.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.5.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.5.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.5.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.5.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.5.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.5.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.5.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.5.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.6.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.6.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.6.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.6.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.6.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.6.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.6.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.6.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.6.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.6.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.6.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.6.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.6.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.7.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.7.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.7.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.7.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.7.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.7.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.7.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.7.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.7.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.7.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.7.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.7.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.7.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.8.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.8.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.8.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.8.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.8.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.8.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.8.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.8.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.8.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.8.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.8.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.8.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.8.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.9.input_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.9.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.backbone.layers.9.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.9.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.backbone.layers.9.post_attention_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.9.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.9.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.backbone.layers.9.self_attn.k_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.9.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.9.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.9.self_attn.q_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                72
+              ]
+            },
+            "model.backbone.layers.9.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.layers.9.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.backbone.norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.embed_code.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                512
+              ]
+            },
+            "model.sampler.mog_head.low_mat": {
+              "dtype": "F32",
+              "shape": [
+                1024,
+                512,
+                64
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.0.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.0.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.0.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.0.post_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.0.pre_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.1.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.1.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.1.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.1.post_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.1.pre_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.2.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.2.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.2.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.2.post_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.2.pre_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.mog_head.mlp_stack.3.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.sampler.mog_head.proj_else.weight": {
+              "dtype": "F32",
+              "shape": [
+                512,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.proj_logits.weight": {
+              "dtype": "F32",
+              "shape": [
+                1024,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.proj_logs.weight": {
+              "dtype": "F32",
+              "shape": [
+                1,
+                1152
+              ]
+            },
+            "model.sampler.mog_head.proj_mus.weight": {
+              "dtype": "F32",
+              "shape": [
+                65536,
+                1152
+              ]
+            },
+            "model.sampler.rvq_embs": {
+              "dtype": "F32",
+              "shape": [
+                31,
+                1024,
+                512
+              ]
+            },
+            "model.total_emb.audio_prompt_projection_W": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.bos_emb": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.bos_eos_emb.pad_tensor": {
+              "dtype": "I64",
+              "shape": []
+            },
+            "model.total_emb.bos_eos_emb.special_emb.weight": {
+              "dtype": "F32",
+              "shape": [
+                3,
+                1152
+              ]
+            },
+            "model.total_emb.bos_eos_emb.special_flags": {
+              "dtype": "I64",
+              "shape": [
+                131072
+              ]
+            },
+            "model.total_emb.embed_code.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                512
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.mlp.down_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                4608
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.mlp.gate_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.mlp.up_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                4608,
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.post_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.post_self_attn_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.pre_feedforward_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.pre_self_attn_layernorm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.self_attn.k_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.self_attn.o_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.self_attn.q_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.layers.0.self_attn.v_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.backbone.encoder.norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.embed_subwords.weight": {
+              "dtype": "F32",
+              "shape": [
+                131073,
+                76
+              ]
+            },
+            "model.total_emb.embed_subword.embed_subwords_mask.weight": {
+              "dtype": "F32",
+              "shape": [
+                131073,
+                76
+              ]
+            },
+            "model.total_emb.embed_subword.embed_tokens.weight": {
+              "dtype": "F32",
+              "shape": [
+                257,
+                1152
+              ]
+            },
+            "model.total_emb.embed_subword.proj_embedding.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.gated_fusion_audio_text.audio_proj.bias": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.gated_fusion_audio_text.audio_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.gated_fusion_audio_text.final_norm.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.gated_fusion_audio_text.gate": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.gated_fusion_audio_text.residual_scale": {
+              "dtype": "F32",
+              "shape": []
+            },
+            "model.total_emb.gated_fusion_audio_text.text_proj.bias": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.gated_fusion_audio_text.text_proj.weight": {
+              "dtype": "F32",
+              "shape": [
+                1152,
+                1152
+              ]
+            },
+            "model.total_emb.null_emb": {
+              "dtype": "F32",
+              "shape": [
+                1152
+              ]
+            },
+            "model.total_emb.rvq_embs.0.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.1.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.10.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.11.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.12.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.13.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.14.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.15.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.16.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.17.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.18.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.19.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.2.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.20.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.21.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.22.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.23.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.24.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.25.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.26.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.27.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.28.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.29.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.3.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.30.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.4.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.5.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.6.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.7.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.8.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.rvq_embs.9.weight": {
+              "dtype": "F32",
+              "shape": [
+                1025,
+                512
+              ]
+            },
+            "model.total_emb.subword_flag_emb.cont_emb.weight": {
+              "dtype": "F32",
+              "shape": [
+                2,
+                1152
+              ]
+            },
+            "model.total_emb.subword_flag_emb.is_continuation": {
+              "dtype": "I64",
+              "shape": [
+                131073
+              ]
+            },
+            "model.total_emb.subword_flag_emb.pad_tensor": {
+              "dtype": "I64",
+              "shape": []
+            }
+          }
+        },
+        "sha256": "1cb6f131fc92df2b36fd5888ebe9df3c49e9a7e422f356dc924cce801d6e53ee"
+      },
+      "path": "/models/eartts-diagnostic",
+      "reproducibility": {
+        "byte_identical": true,
+        "runs": 2,
+        "verified_duplicates_removed": [
+          "/work/fp32/.eartts-repro-e8b5721c2965491b81ac4bc3fa89e0d7"
+        ],
+        "verified_file_hashes": {
+          "config.json": {
+            "bytes": 3010,
+            "sha256": "b0ee63484ea90381f000370216a4ede59940a0342d6119c28648e704d7b7160b"
+          },
+          "model.safetensors": {
+            "bytes": 3337214236,
+            "sha256": "1cb6f131fc92df2b36fd5888ebe9df3c49e9a7e422f356dc924cce801d6e53ee"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 35069,
+            "sha256": "2c177de7ebffa3f695a9ce731561a509da83b4518659e566a04cbaf863d26a6a"
+          }
+        }
+      }
+    },
+    "nano": {
+      "files": {
+        "artifact.sha256.json": {
+          "bytes": 1182,
+          "sha256": "09ed428991123ebcd6ca300cc02452112c8b1eb3df2cdc080826ead39f1d3098"
+        },
+        "chat_template.jinja": {
+          "bytes": 4070,
+          "sha256": "b7a3a520a4bc1beae6a25d615f9215580df8eea926f488256c2bef74039433c0"
+        },
+        "config.json": {
+          "bytes": 3994,
+          "sha256": "289b47e1aa92bf31c7767ea3cdb934f148820ba087b3001418f2df3f3470f3d8"
+        },
+        "configuration_nemotron_h.py": {
+          "bytes": 12176,
+          "sha256": "18186204622431c336a7c2813a80f0d37937dde962b8aebddf24caf5bffa03f7"
+        },
+        "model-00001-of-00004.safetensors": {
+          "bytes": 2348810384,
+          "sha256": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8"
+        },
+        "model-00002-of-00004.safetensors": {
+          "bytes": 1945452632,
+          "sha256": "659f015df802e9ec6696def3a194b12610feaaa2d8fcbe6fb3ffa0490b49e32c"
+        },
+        "model-00003-of-00004.safetensors": {
+          "bytes": 4259170776,
+          "sha256": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21"
+        },
+        "model-00004-of-00004.safetensors": {
+          "bytes": 3564975568,
+          "sha256": "ac118ef7f5262be37c37e44ff71b6f95598e0a2e9a8af2912e94aff627948f4a"
+        },
+        "model.safetensors.index.json": {
+          "bytes": 56678,
+          "sha256": "70fd0aa041ea5c4c121032b676c5fbe580f66ebce8b5fa948101ff58be2c2e0f"
+        },
+        "quantize_config.json": {
+          "bytes": 429,
+          "sha256": "32008b58f9497fc019c994ee8b49af6751461b989b696d497ee807fa7f161354"
+        },
+        "special_tokens_map.json": {
+          "bytes": 422,
+          "sha256": "2a4d2e7403546286e5d75f5b6b3c197490be67fb1e2118e5c60ad5c26e6668b1"
+        },
+        "tokenizer.json": {
+          "bytes": 17078330,
+          "sha256": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f"
+        },
+        "tokenizer_config.json": {
+          "bytes": 177181,
+          "sha256": "d05c050a1cffa3b00df7b0d2596425a17a3e5a03159ea04e0457f6cdf8d29cd4"
+        }
+      },
+      "model": {
+        "bytes": 12118409360,
+        "files": [
+          {
+            "bytes": 2348810384,
+            "name": "model-00001-of-00004.safetensors",
+            "sha256": "ff1f20fb81c18448e8744cc8a6142ee817a6a4d47b99571b370d58e7d86f92a8"
+          },
+          {
+            "bytes": 1945452632,
+            "name": "model-00002-of-00004.safetensors",
+            "sha256": "659f015df802e9ec6696def3a194b12610feaaa2d8fcbe6fb3ffa0490b49e32c"
+          },
+          {
+            "bytes": 4259170776,
+            "name": "model-00003-of-00004.safetensors",
+            "sha256": "8def47e0827bc1678804afce6a003f591bca58bbc2cc7ef11c01d8b802aebf21"
+          },
+          {
+            "bytes": 3564975568,
+            "name": "model-00004-of-00004.safetensors",
+            "sha256": "ac118ef7f5262be37c37e44ff71b6f95598e0a2e9a8af2912e94aff627948f4a"
+          }
+        ],
+        "sha256": "dd4ce6a99d03847c8da10708a0214b1815df078a5c43cae9846b7fe136085ce6"
+      },
+      "quantization": {
+        "base_release_nano_composite_sha256": "3acecd057f7367768d621bec649cbe6cbe327ca0857c17f86f7e0929f2bb2d99",
+        "builder": "tools/benchmark/build_fhw8_candidate.py",
+        "campaign": "reports/fhw8-qualification-20260814.md (G0-G2 PASS)",
+        "delta": {
+          "config_quantized_output_heads": [
+            "lm_head",
+            "function_head"
+          ],
+          "embedded_quantization_config_dynamic_removed": [
+            "-:.*function_head$"
+          ],
+          "quantize_config_dynamic_removed": [
+            "-:.*function_head$"
+          ],
+          "quantized": "stt_model.function_head.weight"
+        },
+        "kind": "fhw8_candidate",
+        "packing": {
+          "bits": 8,
+          "construction": "deterministic RTN (preregistered primary)",
+          "group_size": 128,
+          "sym": true,
+          "zero_point_convention": "gptqmodel-v2 qzeros=0, w = s*(q-128)"
+        }
+      },
+      "reproducibility": {
+        "byte_identical": true,
+        "runs": 2
+      }
+    }
+  },
+  "derived_from_ea": false,
+  "kind": "exact_public_vllm_eartts_quantization_ab",
+  "schema": 1,
+  "source": {
+    "model": {
+      "sha256": "d553750c29434a6bb524377e17634c6cafdbf621892e643a77f406e51570354b"
+    },
+    "repository": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+    "revision": "fb0f94eaf4d03ddc430f39565229393fa1b50c26",
+    "runtime": null
+  }
+}
