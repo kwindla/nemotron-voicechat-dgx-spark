@@ -147,6 +147,24 @@ class RealtimeWebServerTest(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 configured_response_wall_seconds(environment)
 
+    def test_response_wall_deadline_diagnostic_override_is_experiment_gated(self) -> None:
+        environment = {
+            "VOICECHAT_RUNTIME_CONTRACT": "production-hotfix-notext-watchdog-v1",
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC": "30",
+            "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC": "900",
+        }
+        with self.assertRaises(SystemExit):
+            configured_response_wall_seconds(environment)
+        environment["VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB"] = "1"
+        self.assertEqual(configured_response_wall_seconds(environment), 900.0)
+        environment.pop("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB")
+        environment["S2S_EARTTS_ACOUSTIC_CAPTURE_DIR"] = "/capture"
+        self.assertEqual(configured_response_wall_seconds(environment), 900.0)
+        for invalid in ("nan", "30", "10"):
+            environment["VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC"] = invalid
+            with self.assertRaises(SystemExit):
+                configured_response_wall_seconds(environment)
+
     def test_response_wall_deadline_expires_on_real_wall_time_without_model_frames(self) -> None:
         fired = threading.Event()
         started = time.monotonic()
@@ -1931,6 +1949,52 @@ class RealtimeWebServerTest(unittest.TestCase):
             clear=True,
         ):
             self.assertNotIn("exact_public_vllm_extraction", accepted_vllm_manifest_kinds())
+
+    def test_eartts_ab_manifest_is_accepted_only_with_diagnostic_attestation(self) -> None:
+        from unittest.mock import patch
+
+        kind = "exact_public_vllm_eartts_quantization_ab"
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertNotIn(kind, accepted_vllm_manifest_kinds())
+        with patch.dict(
+            "os.environ",
+            {
+                "VOICECHAT_DIAGNOSTIC_EARTTS_AB": "1",
+                "VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256": "attested",
+            },
+            clear=True,
+        ):
+            self.assertIn(kind, accepted_vllm_manifest_kinds())
+        with patch.dict(
+            "os.environ",
+            {"VOICECHAT_DIAGNOSTIC_EARTTS_AB": "1"},
+            clear=True,
+        ):
+            self.assertNotIn(kind, accepted_vllm_manifest_kinds())
+
+    def test_full_precision_ab_manifest_requires_both_component_attestations(self) -> None:
+        from unittest.mock import patch
+
+        kind = "exact_public_vllm_full_precision_ab"
+        with patch.dict(
+            "os.environ",
+            {
+                "VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB": "1",
+                "VOICECHAT_DIAGNOSTIC_NANO_CONFIG_SHA256": "nano",
+                "VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256": "eartts",
+            },
+            clear=True,
+        ):
+            self.assertIn(kind, accepted_vllm_manifest_kinds())
+        with patch.dict(
+            "os.environ",
+            {
+                "VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB": "1",
+                "VOICECHAT_DIAGNOSTIC_NANO_CONFIG_SHA256": "nano",
+            },
+            clear=True,
+        ):
+            self.assertNotIn(kind, accepted_vllm_manifest_kinds())
 
     def test_host_runtime_provenance_records_driver_and_kernel(self) -> None:
         banner = (

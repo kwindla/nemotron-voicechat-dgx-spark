@@ -101,6 +101,10 @@ PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
     }
 )
 DIAGNOSTIC_FP32_VLLM_MANIFEST_KIND = "exact_public_vllm_extraction"
+DIAGNOSTIC_EARTTS_AB_VLLM_MANIFEST_KIND = "exact_public_vllm_eartts_quantization_ab"
+DIAGNOSTIC_FULL_PRECISION_AB_VLLM_MANIFEST_KIND = (
+    "exact_public_vllm_full_precision_ab"
+)
 LOGGER = logging.getLogger(__name__)
 STARTUP_READY_SENTINEL = Path("/tmp/voicechat-step9-ready")
 STEP9_FALLBACK_COUNTER = Path("/tmp/voicechat-step9-fallbacks.jsonl")
@@ -194,8 +198,21 @@ def accepted_vllm_manifest_kinds() -> frozenset[str]:
         os.environ.get("VOICECHAT_DIRECT_SEMANTIC_PROBE_DIR", "").strip()
         and os.environ.get("VOICECHAT_DIRECT_SEMANTIC_PRECISION", "").casefold() == "fp32"
     )
+    diagnostic_eartts_ab = bool(
+        os.environ.get("VOICECHAT_DIAGNOSTIC_EARTTS_AB", "").strip()
+        and os.environ.get("VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256", "").strip()
+    )
+    diagnostic_full_precision_ab = bool(
+        os.environ.get("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB", "").strip()
+        and os.environ.get("VOICECHAT_DIAGNOSTIC_NANO_CONFIG_SHA256", "").strip()
+        and os.environ.get("VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256", "").strip()
+    )
     return PUBLIC_VLLM_MANIFEST_KINDS | (
         {DIAGNOSTIC_FP32_VLLM_MANIFEST_KIND} if diagnostic_fp32 else set()
+    ) | ({DIAGNOSTIC_EARTTS_AB_VLLM_MANIFEST_KIND} if diagnostic_eartts_ab else set()) | (
+        {DIAGNOSTIC_FULL_PRECISION_AB_VLLM_MANIFEST_KIND}
+        if diagnostic_full_precision_ab
+        else set()
     )
 
 
@@ -1274,6 +1291,34 @@ def configured_response_wall_seconds(environment: Mapping[str, str] | None = Non
             f"{NOTEXT_WATCHDOG_HOTFIX_V1} requires "
             "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC=30"
         )
+    diagnostic_raw = values.get(
+        "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC", ""
+    ).strip()
+    if diagnostic_raw:
+        capture_enabled = bool(
+            values.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip()
+        )
+        full_precision_ab = bool(
+            values.get("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB", "").strip()
+        )
+        if not capture_enabled and not full_precision_ab:
+            raise SystemExit(
+                "diagnostic response-wall override requires EarTTS acoustic capture "
+                "or the attested full-precision A/B"
+            )
+        try:
+            diagnostic_seconds = float(diagnostic_raw)
+        except (TypeError, ValueError) as exc:
+            raise SystemExit(
+                "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC must be finite and "
+                "greater than the production deadline"
+            ) from exc
+        if not math.isfinite(diagnostic_seconds) or diagnostic_seconds <= seconds:
+            raise SystemExit(
+                "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC must be finite and "
+                "greater than the production deadline"
+            )
+        return diagnostic_seconds
     return seconds
 
 
@@ -4716,9 +4761,22 @@ def checked_speech_root(path: str) -> Path:
     actual_patch = subprocess.check_output(["git", "-C", str(root), "diff", "--", *reviewed_paths])
     expected_patch = retained_patch.read_bytes()
     if actual_patch != expected_patch:
-        raise SystemExit(
-            "Speech runtime working-tree diff does not match the retained, "
-            f"reviewed patch: {retained_patch}"
+        diagnostic_wrapper_sha256 = os.environ.get(
+            "VOICECHAT_DIAGNOSTIC_SPEECH_WRAPPER_SHA256", ""
+        ).strip()
+        wrapper_path = root / reviewed_paths[1]
+        observed_wrapper_sha256 = sha256_file(wrapper_path)
+        if (
+            not diagnostic_wrapper_sha256
+            or observed_wrapper_sha256 != diagnostic_wrapper_sha256
+        ):
+            raise SystemExit(
+                "Speech runtime working-tree diff does not match the retained, "
+                f"reviewed patch: {retained_patch}"
+            )
+        LOGGER.warning(
+            "Diagnostic-only Speech wrapper accepted by exact SHA-256: %s",
+            observed_wrapper_sha256,
         )
     return root
 
@@ -6281,6 +6339,16 @@ def create_app(
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
     engine.external_user_eou_mode = client_turn_detection
+    diagnostic_lockstep = env_bool("VOICECHAT_DIAGNOSTIC_LOCKSTEP", False)
+    capture_enabled = bool(
+        os.environ.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip()
+    )
+    full_precision_ab = env_bool("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB", False)
+    if diagnostic_lockstep and not capture_enabled and not full_precision_ab:
+        raise RuntimeError(
+            "diagnostic lock-step mode requires EarTTS acoustic capture or the "
+            "attested full-precision A/B"
+        )
 
     # With postponed annotations, FastAPI resolves route parameter types from
     # module globals. Keep the heavyweight optional import lazy for unit tests,
@@ -6369,6 +6437,8 @@ def create_app(
             )
         if fc_async_benchmark_enabled():
             diagnostics["fc_async_benchmark"] = True
+        if diagnostic_lockstep:
+            diagnostics["input_event_processed_ack"] = True
         if diagnostics:
             result["diagnostics"] = diagnostics
         return result
@@ -6464,6 +6534,28 @@ def create_app(
         last_model_result: StepResult | None = None
         terminal_cleanup_task: asyncio.Task[None] | None = None
         terminal_origin_task: asyncio.Task[Any] | None = None
+
+        async def publish_diagnostic_processed(
+            client_event_id: str | None,
+            client_event_type: str,
+        ) -> None:
+            if not diagnostic_lockstep:
+                return
+            if not isinstance(client_event_id, str) or not client_event_id:
+                raise RuntimeError("diagnostic lock-step input requires event_id")
+            await websocket.send_json(
+                protocol.diagnostic_event(
+                    "voicechat.client_event.processed",
+                    client_event_id=client_event_id,
+                    client_event_type=client_event_type,
+                    transport_frame=transport_frame,
+                    model_frame=(
+                        None
+                        if last_model_result is None
+                        else int(last_model_result.frame_index)
+                    ),
+                )
+            )
 
         def clear_current_task_cancellation() -> None:
             current = asyncio.current_task()
@@ -8347,6 +8439,7 @@ def create_app(
                         client_turn_id=client_turn_id,
                         preroll_frames=len(preroll_entries),
                     )
+                    await publish_diagnostic_processed(client_event_id, message_type)
                     continue
                 if message_type == "input_audio_buffer.commit":
                     commit_received_at = time.monotonic()
@@ -8592,6 +8685,7 @@ def create_app(
                         ),
                         **({"fused_terminal_bos": True} if fused_terminal else {}),
                     )
+                    await publish_diagnostic_processed(client_event_id, message_type)
                     continue
                 if message_type == "input_text.request":
                     if not configured:
@@ -8730,6 +8824,7 @@ def create_app(
                         )
                         continue
                     await process_pcm(payload, source="microphone", job_id=None)
+                    await publish_diagnostic_processed(client_event_id, message_type)
                     continue
                 if message_type == "session.stop":
                     trace.event("client_event", type=message_type)
@@ -8947,6 +9042,9 @@ def main() -> None:
     candidate_runtime = pipeline.checkpoint_provenance.get("nano_pad_pair_runtime", {}).get(
         "production_candidate"
     )
+    expected_no_text_frames = agent_no_text_frames
+    expected_no_audio_frames = agent_no_audio_frames
+    expected_decoded_silence_frames = agent_decoded_silence_frames
     if candidate_runtime is not None:
         candidate_contract = pipeline.checkpoint_provenance["nano_pad_pair_runtime"]["contract"]
         expected_no_text_frames = int(candidate_contract["agent_no_text_frames"])
@@ -8964,6 +9062,49 @@ def main() -> None:
                 "decoded_silence="
                 f"{agent_decoded_silence_frames}/{expected_decoded_silence_frames}"
             )
+    diagnostic_silence_frames = os.environ.get(
+        "VOICECHAT_DIAGNOSTIC_AGENT_SILENCE_EOS_FRAMES", ""
+    ).strip()
+    if diagnostic_silence_frames:
+        if not os.environ.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip():
+            raise RuntimeError(
+                "diagnostic decoded-silence override requires EarTTS acoustic capture"
+            )
+        agent_decoded_silence_frames = int(diagnostic_silence_frames)
+        if agent_decoded_silence_frames <= expected_decoded_silence_frames:
+            raise RuntimeError(
+                "diagnostic decoded-silence threshold must exceed the production contract"
+            )
+        LOGGER.warning(
+            "Diagnostic-only decoded-silence threshold enabled: %d frames (production=%d)",
+            agent_decoded_silence_frames,
+            expected_decoded_silence_frames,
+        )
+    diagnostic_no_progress_frames = os.environ.get(
+        "VOICECHAT_DIAGNOSTIC_AGENT_NO_PROGRESS_FRAMES", ""
+    ).strip()
+    if diagnostic_no_progress_frames:
+        if not os.environ.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip():
+            raise RuntimeError(
+                "diagnostic no-progress override requires EarTTS acoustic capture"
+            )
+        no_progress_frames = int(diagnostic_no_progress_frames)
+        if (
+            no_progress_frames <= expected_no_text_frames
+            or no_progress_frames <= expected_no_audio_frames
+        ):
+            raise RuntimeError(
+                "diagnostic no-progress threshold must exceed the production contract"
+            )
+        agent_no_text_frames = no_progress_frames
+        agent_no_audio_frames = no_progress_frames
+        LOGGER.warning(
+            "Diagnostic-only no-text/no-audio thresholds enabled: %d frames "
+            "(production text/audio=%d/%d)",
+            no_progress_frames,
+            expected_no_text_frames,
+            expected_no_audio_frames,
+        )
     startup_event("realtime_engine_create_started")
     engine = VoiceChatEngine(
         pipeline,

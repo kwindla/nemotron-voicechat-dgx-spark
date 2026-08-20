@@ -1489,14 +1489,36 @@ def install_eartts_decode_pad_silence(wrapper: Any) -> bool:
         if current is None or current.numel() != 1:
             return code, past_key_values
         ratio = float(os.environ.get("S2S_TTS_PAD_TAIL_RATIO", "3"))
-        if eartts_pad_should_decode_silence(
-            current_token=int(current.item()),
+        current_token = int(current.item())
+        agent_idle = bool(wrapper._get_agent_idle())
+        prior_content = int(getattr(wrapper, "_tts_in_turn_content", 0))
+        prior_pads = int(getattr(wrapper, "_tts_in_turn_pads", 0))
+        eligible = eartts_pad_should_decode_silence(
+            current_token=current_token,
             pad_token=int(tts_model.text_pad_id),
-            agent_idle=bool(wrapper._get_agent_idle()),
-            prior_content_tokens=int(getattr(wrapper, "_tts_in_turn_content", 0)),
-            prior_pad_tokens=int(getattr(wrapper, "_tts_in_turn_pads", 0)),
+            agent_idle=agent_idle,
+            prior_content_tokens=prior_content,
+            prior_pad_tokens=prior_pads,
             tail_ratio=ratio,
-        ):
+        )
+        if getattr(wrapper, "_eartts_capture_dir", None) is not None:
+            # Preserve the true model sample before this first decoder policy.
+            # The baked Speech capture call receives ``code`` only after this
+            # hook returns, so its historical ``raw_generated_code`` argument
+            # is not actually raw when the policy substitutes silence.
+            wrapper._eartts_acoustic_diagnostic_raw_code = code.detach().clone()
+            wrapper._eartts_acoustic_diagnostic_policy = {
+                "current_subword_id": current_token,
+                "prior_content_tokens": prior_content,
+                "prior_pad_tokens": prior_pads,
+                "tail_ratio": ratio,
+                "tail_done": bool(
+                    ratio > 0 and not agent_idle and prior_pads > ratio * prior_content
+                ),
+                "decoder_pad_policy_eligible": bool(eligible),
+                "decoder_pad_policy_applied": bool(eligible),
+            }
+        if eligible:
             silence = tts_model.codec_silence_tokens.view(1, 1, -1).expand_as(code)
             code = silence.clone()
         return code, past_key_values
@@ -1743,7 +1765,17 @@ def install_public_wrapper_hooks() -> None:
             )
             bound_arguments.pop("self", None)
             pad_pair_engine = _prepare_pad_pair_call(wrapper, bound_arguments)
-        result = original(wrapper, *args, **kwargs)
+        acoustic_capture = getattr(wrapper, "_eartts_async_acoustic_capture", None)
+        if acoustic_capture is not None:
+            acoustic_capture.begin_call()
+        try:
+            result = original(wrapper, *args, **kwargs)
+        except BaseException:
+            if acoustic_capture is not None:
+                acoustic_capture.abort_call("model_call_failed")
+            raise
+        if acoustic_capture is not None:
+            acoustic_capture.finish_call(result["decoded_audio_new"])
         if bound_arguments is not None:
             _finalize_pad_pair_call(wrapper, pad_pair_engine, bound_arguments)
         return result
@@ -1765,10 +1797,17 @@ def prepare_public_fixed_stages(pipeline: Any, checkpoint_root: Path) -> dict[st
         "eartts_prepared_epoch": False,
         "eartts_unique_backend_request_ids": False,
         "eartts_reset_on_bos": False,
+        "eartts_acoustic_capture_async": False,
         "nano_pad_pair_control_barrier": enabled("VOICECHAT_NANO_PAD_PAIR_CONTROL_BARRIER"),
     }
     if enabled("VOICECHAT_EARTTS_DECODE_PAD_SILENCE"):
         details["eartts_decode_pad_silence"] = install_eartts_decode_pad_silence(pipeline.s2s_model)
+    if getattr(pipeline.s2s_model, "_eartts_capture_dir", None) is not None:
+        from .eartts_acoustic_diagnostic import install_async_eartts_acoustic_capture
+
+        details["eartts_acoustic_capture_async"] = bool(
+            install_async_eartts_acoustic_capture(pipeline.s2s_model)
+        )
     if enabled("VOICECHAT_EARTTS_IDLE_PAD_BYPASS"):
         details["eartts_idle_pad_bypass"] = install_eartts_idle_pad_bypass(
             pipeline.s2s_model
@@ -1853,6 +1892,12 @@ def finalize_public_fixed_stages(wrapper: Any, stream_id: object, state: Any) ->
         state.audio_buffer = async_codec.finalize_audio(
             state.audio_buffer, output_device=wrapper.device
         )
+        acoustic_capture = getattr(wrapper, "_eartts_async_acoustic_capture", None)
+        if acoustic_capture is not None:
+            acoustic_capture.finalize_codec(
+                state.audio_buffer,
+                samples_per_frame=wrapper._samples_per_audio_output_frame(),
+            )
         persistent = enabled("EA_CPU_CODEC_PERSISTENT")
         details["codec_submitted"] = (
             async_codec.finish_session() if persistent else async_codec.submitted
