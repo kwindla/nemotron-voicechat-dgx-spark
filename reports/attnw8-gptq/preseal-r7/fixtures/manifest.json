@@ -1,0 +1,924 @@
+{
+  "kind": "attnw8_gptq_tool_fixture_manifest",
+  "records": [
+    {
+      "expected": "positive",
+      "expected_transcript": "please use the benchmark word tool now and tell me the fresh word",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 107520,
+        "path": "a2-pos-01.pcm",
+        "sample_rate": 16000,
+        "sha256": "bbf3d84b2157664e0059c9e8f8274ccd4403fd823713b39b64a8e0cad2c1f35f"
+      },
+      "prompt": "Please use the benchmark word tool now and tell me the fresh word.",
+      "scenario_id": "a2-pos-01",
+      "wav": {
+        "bytes": 107564,
+        "path": "a2-pos-01.wav",
+        "sha256": "f8fe3c9faa435434c7d19162c3e05bb79a82d6011e8f695077a94f56f567d2a5"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "call get benchmark word now please.",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 64000,
+        "path": "a2-pos-r7-02.pcm",
+        "sample_rate": 16000,
+        "sha256": "3b4ef2ea3edc0670f37924e43113ea5610e7556ab5a01cb2856cd848616320c1"
+      },
+      "prompt": "Call get benchmark word now please.",
+      "scenario_id": "a2-pos-r7-02",
+      "wav": {
+        "bytes": 64044,
+        "path": "a2-pos-r7-02.wav",
+        "sha256": "2e2db927bcdb4ee4402aff116dec5bcfdae22cb17894aa4326d75cb148d4785d"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "call the benchmark word tool and report the word it returns",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 104960,
+        "path": "a2-pos-03.pcm",
+        "sample_rate": 16000,
+        "sha256": "a4b75d89188863b5e438f7c5a2621b9acdc8183f8dd6772e0c4c34e4c51b2cab"
+      },
+      "prompt": "Call the benchmark word tool and report the word it returns.",
+      "scenario_id": "a2-pos-03",
+      "wav": {
+        "bytes": 105004,
+        "path": "a2-pos-03.wav",
+        "sha256": "420241891205e42e00f6fde02a17ad0af1280df25eeff1f44c9c9edcaa53a556"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "please invoke get benchmark word to retrieve the fresh word for me",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 107520,
+        "path": "a2-pos-r5-04.pcm",
+        "sample_rate": 16000,
+        "sha256": "c8336b9bb5bed052045bcb66691735332bf353068419170d297f804285c14bf4"
+      },
+      "prompt": "Please invoke get benchmark word to retrieve the fresh word for me.",
+      "scenario_id": "a2-pos-r5-04",
+      "wav": {
+        "bytes": 107564,
+        "path": "a2-pos-r5-04.wav",
+        "sha256": "56285be3546324c27ec422263e5fb4fa2ba1d9f2fb8dd44f1462538a25085a3b"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "use get benchmark word now",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 56320,
+        "path": "a2-pos-r6-05.pcm",
+        "sample_rate": 16000,
+        "sha256": "8ba00fe32ba391af53a881f5bfbb989cb838aee2d008290fadd522db2fa5a940"
+      },
+      "prompt": "Use get benchmark word now.",
+      "scenario_id": "a2-pos-r6-05",
+      "wav": {
+        "bytes": 56364,
+        "path": "a2-pos-r6-05.wav",
+        "sha256": "52507061f82925d871017b41b72dc93ed13849f4a5865b10ebe28debad941aed"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "could you invoke the benchmark word tool and tell me its exact answer",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "a2-pos-06.pcm",
+        "sample_rate": 16000,
+        "sha256": "1102cd1d59d1b91d0682526c4b980b11e3a61ad9c16a0f074485cd2d0a35040d"
+      },
+      "prompt": "Could you invoke the benchmark word tool and tell me its exact answer?",
+      "scenario_id": "a2-pos-06",
+      "wav": {
+        "bytes": 115244,
+        "path": "a2-pos-06.wav",
+        "sha256": "bdeff1c6aab754625d8812f286939dc6624340f0ad46cdf04d8ce8b1f7476a47"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "get the verification word through the benchmark tool, then repeat it",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 107520,
+        "path": "a2-pos-07.pcm",
+        "sample_rate": 16000,
+        "sha256": "01cc4b08c0c2e253982c3812ee26b1568a70bda0371611b1da53b98ee1f2df7c"
+      },
+      "prompt": "Get the verification word through the benchmark tool, then repeat it.",
+      "scenario_id": "a2-pos-07",
+      "wav": {
+        "bytes": 107564,
+        "path": "a2-pos-07.wav",
+        "sha256": "95402c14fb908c059b04121aae027c9be26e35778e3134c42528834b573d4b3b"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "i need the fresh benchmark word; please obtain it using the tool",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 110080,
+        "path": "a2-pos-08.pcm",
+        "sample_rate": 16000,
+        "sha256": "3ec84e7de291a98c5324ae9153615dadbb1ccac2d4ae5869200afb5501f3f294"
+      },
+      "prompt": "I need the fresh benchmark word; please obtain it using the tool.",
+      "scenario_id": "a2-pos-08",
+      "wav": {
+        "bytes": 110124,
+        "path": "a2-pos-08.wav",
+        "sha256": "d1f2ff2202dc590a06e257f7a7aacdc05f3e14b2eae5829d7b518d4a967dd9b7"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "ask the benchmark word function for its current word and state it",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "a2-pos-09.pcm",
+        "sample_rate": 16000,
+        "sha256": "41a43d613686e0c7e4acb6bba71a98e9f81e73ff9bfab4dc8257ca8e93b7d2b5"
+      },
+      "prompt": "Ask the benchmark word function for its current word and state it.",
+      "scenario_id": "a2-pos-09",
+      "wav": {
+        "bytes": 115244,
+        "path": "a2-pos-09.wav",
+        "sha256": "fd0d6e3fc2700ba3330b3c28ee7dde44ee1cc9b82680a11bffefe6a7b4adffdc"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "please retrieve the tool's benchmark word and answer with that word",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 99840,
+        "path": "a2-pos-10.pcm",
+        "sample_rate": 16000,
+        "sha256": "93cd0b0a6662f8f10e4f206f4289b05bc1ce28eafd8d99d6889ecd7c82bd2f4c"
+      },
+      "prompt": "Please retrieve the tool's benchmark word and answer with that word.",
+      "scenario_id": "a2-pos-10",
+      "wav": {
+        "bytes": 99884,
+        "path": "a2-pos-10.wav",
+        "sha256": "b5993dd732fcae175937291f3477e91db4933b0eeabfe4bdb6203d77d95b7f16"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "use get benchmark word now, then give me the returned value",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 112640,
+        "path": "a2-pos-11.pcm",
+        "sample_rate": 16000,
+        "sha256": "4ddf32ac0d7308d6f7a35fac23a7638eca67bbcac4dfaaf21cd67e8ac6f84f0d"
+      },
+      "prompt": "Use get benchmark word now, then give me the returned value.",
+      "scenario_id": "a2-pos-11",
+      "wav": {
+        "bytes": 112684,
+        "path": "a2-pos-11.wav",
+        "sha256": "440b2112101a7517197465c50875e2c4bf5d1ca664bbc1e2022d3341997cfa06"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "invoke the fresh-word benchmark function and report the result exactly",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 120320,
+        "path": "a2-pos-12.pcm",
+        "sample_rate": 16000,
+        "sha256": "7182778d826d8ac07c9929a24c15eb669fe4a2a526f06643d1f0f9ab1d11291c"
+      },
+      "prompt": "Invoke the fresh-word benchmark function and report the result exactly.",
+      "scenario_id": "a2-pos-12",
+      "wav": {
+        "bytes": 120364,
+        "path": "a2-pos-12.wav",
+        "sha256": "833bcfb71914f91d7ed46245c57c940579e60c906eceac903542edf654bbb730"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "without using any tool, explain what the word benchmark means",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 117760,
+        "path": "a2-nocall-01.pcm",
+        "sample_rate": 16000,
+        "sha256": "5041f6a2f4824799bd0f251e69b7651615a40733b81e1d7c217a7b1af090bf47"
+      },
+      "prompt": "Without using any tool, explain what the word benchmark means.",
+      "scenario_id": "a2-nocall-01",
+      "wav": {
+        "bytes": 117804,
+        "path": "a2-nocall-01.wav",
+        "sha256": "13a9a92f6806702a8246af4652c13a4cd3ae2d5b5108ecd26bac862e153fe2a0"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "do not call the tool; write a short sentence containing the word harbor",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 107520,
+        "path": "a2-nocall-02.pcm",
+        "sample_rate": 16000,
+        "sha256": "adaeccf7ceccbd6b29c686390e524445745de649f52a080d1b49e2dcabcee867"
+      },
+      "prompt": "Do not call the tool; write a short sentence containing the word harbor.",
+      "scenario_id": "a2-nocall-02",
+      "wav": {
+        "bytes": 107564,
+        "path": "a2-nocall-02.wav",
+        "sha256": "8e9df499a374e01cfc79c35afa700db46c7409c4667302c1605115c5f3a61ffd"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "is benchmark one word or two? answer directly without a lookup",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 112640,
+        "path": "a2-nocall-03.pcm",
+        "sample_rate": 16000,
+        "sha256": "ac4f99cc360b249fd7c618874f04c26a8a609be0609860bbc7728503930f969c"
+      },
+      "prompt": "Is benchmark one word or two? Answer directly without a lookup.",
+      "scenario_id": "a2-nocall-03",
+      "wav": {
+        "bytes": 112684,
+        "path": "a2-nocall-03.wav",
+        "sha256": "03fb52d73410113674d1f2f1e665c034edebfbe883547b28c79e05b2c5bbfd71"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "tell me a brief fact about harbors and do not use the available tool",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 117760,
+        "path": "a2-nocall-04.pcm",
+        "sample_rate": 16000,
+        "sha256": "cf171398a91dbe14852c98837fa660645151380b1c0914e925b87f4b8bef0236"
+      },
+      "prompt": "Tell me a brief fact about harbors and do not use the available tool.",
+      "scenario_id": "a2-nocall-04",
+      "wav": {
+        "bytes": 117804,
+        "path": "a2-nocall-04.wav",
+        "sha256": "b1cf06e657badd9b6f18c6bf9735a8acb387d0001c90e22f5d07dc68dd147c9f"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "what kind of word is fresh? please answer from general knowledge only",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 107520,
+        "path": "a2-nocall-05.pcm",
+        "sample_rate": 16000,
+        "sha256": "84669f39dd30456b584d5a6bc40139b856a116d163df478d4fd55c8e10b2525c"
+      },
+      "prompt": "What kind of word is fresh? Please answer from general knowledge only.",
+      "scenario_id": "a2-nocall-05",
+      "wav": {
+        "bytes": 107564,
+        "path": "a2-nocall-05.wav",
+        "sha256": "5be58e5ca2ef5365d710e77cf8b1bf4f5ee19e0e2321e3267b2854a3ec3cb45b"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "say whether verification is a noun, with no tool call",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 102400,
+        "path": "a2-nocall-06.pcm",
+        "sample_rate": 16000,
+        "sha256": "9b21b7e90195d5be0b7a9d8ea55263bf7e165db13b606087b425c012d77d598f"
+      },
+      "prompt": "Say whether verification is a noun, with no tool call.",
+      "scenario_id": "a2-nocall-06",
+      "wav": {
+        "bytes": 102444,
+        "path": "a2-nocall-06.wav",
+        "sha256": "e161de539fba24bf6aa3c9c843a3c95519b4226953c7f33168b8f673254d280e"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "imagine a benchmark made of wood and describe it in one sentence",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 107520,
+        "path": "a2-nocall-07.pcm",
+        "sample_rate": 16000,
+        "sha256": "090085d3c04db7aaa078a19b0c5b68bce0f7f380f9ca05b5f7fbdf9d0e7737de"
+      },
+      "prompt": "Imagine a benchmark made of wood and describe it in one sentence.",
+      "scenario_id": "a2-nocall-07",
+      "wav": {
+        "bytes": 107564,
+        "path": "a2-nocall-07.wav",
+        "sha256": "35c24de422b8b6550c0ee08a3753a2625c6b5f46af96587993712207586e0251"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "please spell the ordinary english word harbor without using a function",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 104960,
+        "path": "a2-nocall-08.pcm",
+        "sample_rate": 16000,
+        "sha256": "27c5a53879ed03d7fac3b9641b7f6401f639e9f8abbb60ab7631d655fdd1d65d"
+      },
+      "prompt": "Please spell the ordinary English word harbor without using a function.",
+      "scenario_id": "a2-nocall-08",
+      "wav": {
+        "bytes": 105004,
+        "path": "a2-nocall-08.wav",
+        "sha256": "6c296dd5a4f57965029c8793ea6640f107d6d059c3a9b1994d9b7b035e4d7953"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "give me a synonym for retrieve, but do not retrieve anything with a tool",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 110080,
+        "path": "a2-nocall-09.pcm",
+        "sample_rate": 16000,
+        "sha256": "7cef69e2419d5fe1aba6f9f3607a0bd4019093da57744e4093ef4f843f3c57c5"
+      },
+      "prompt": "Give me a synonym for retrieve, but do not retrieve anything with a tool.",
+      "scenario_id": "a2-nocall-09",
+      "wav": {
+        "bytes": 110124,
+        "path": "a2-nocall-09.wav",
+        "sha256": "fe21bc80c8abaa1477a52d8302c5b019187737e3dfee969df735e086aaca3f53"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "in plain language, what does it mean to invoke something? no tools",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 128000,
+        "path": "a2-nocall-10.pcm",
+        "sample_rate": 16000,
+        "sha256": "6a623ce44fa761b09ce3fe98b1385f86a3822d2015726178ba7c07e1f941e2e0"
+      },
+      "prompt": "In plain language, what does it mean to invoke something? No tools.",
+      "scenario_id": "a2-nocall-10",
+      "wav": {
+        "bytes": 128044,
+        "path": "a2-nocall-10.wav",
+        "sha256": "baab5e97310667c1b65d67547d5e7f753f254b6ba103c94ab7177b9a31326ebe"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "do not call any function; answer only with the words hello there",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 125440,
+        "path": "a2-nocall-r4-11.pcm",
+        "sample_rate": 16000,
+        "sha256": "622eb863af1aba5198a8fa31812d14345107b063f79d02ff869e90d51a4a49a0"
+      },
+      "prompt": "Do not call any function; answer only with the words hello there.",
+      "scenario_id": "a2-nocall-r4-11",
+      "wav": {
+        "bytes": 125484,
+        "path": "a2-nocall-r4-11.wav",
+        "sha256": "25a88ae6a9cf673204dc5796a66dedcbcd7748272717c6124cfd07dffc733495"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "the tool is available, but just tell me whether a harbor shelters boats",
+      "partition": "a2",
+      "pcm": {
+        "bytes": 110080,
+        "path": "a2-nocall-12.pcm",
+        "sample_rate": 16000,
+        "sha256": "eb100de2d96ad83a3d88434057d921cd01935fbd4f15ff1f9f399a82af83ffb4"
+      },
+      "prompt": "The tool is available, but just tell me whether a harbor shelters boats.",
+      "scenario_id": "a2-nocall-12",
+      "wav": {
+        "bytes": 110124,
+        "path": "a2-nocall-12.wav",
+        "sha256": "43c27be0bc3fa060efc0905f40ba6c88936d8a07037684702eec89475cd69023"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "find the current benchmark word by using its function, then tell me",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 99840,
+        "path": "c2-pos-01.pcm",
+        "sample_rate": 16000,
+        "sha256": "ee0dbae3e2ee94b9aa420c7b3abc2ef513b5698d6bc84e67e590209c7682fbc1"
+      },
+      "prompt": "Find the current benchmark word by using its function, then tell me.",
+      "scenario_id": "c2-pos-01",
+      "wav": {
+        "bytes": 99884,
+        "path": "c2-pos-01.wav",
+        "sha256": "aa50fd75bf631f1962752af8315424ea0c9618944eb4ad8a6b24f68e243134f4"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "please query the fresh-word tool and speak the returned word",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 102400,
+        "path": "c2-pos-02.pcm",
+        "sample_rate": 16000,
+        "sha256": "98d1160941c3321ee79384d8d8018bb8a496dcbc8280b7fa4f8b928c4a98e91e"
+      },
+      "prompt": "Please query the fresh-word tool and speak the returned word.",
+      "scenario_id": "c2-pos-02",
+      "wav": {
+        "bytes": 102444,
+        "path": "c2-pos-02.wav",
+        "sha256": "013ca69b2c97905212687d0c5d3825e8b40203b0346d92bf53ce7eb97a13bd5e"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "what word does the benchmark service return? use the tool to check",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 133120,
+        "path": "c2-pos-03.pcm",
+        "sample_rate": 16000,
+        "sha256": "49617dc5e9dc1f2a8f9a91a14a39386c5a668cf4162514e30ceba43247b6661e"
+      },
+      "prompt": "What word does the benchmark service return? Use the tool to check.",
+      "scenario_id": "c2-pos-03",
+      "wav": {
+        "bytes": 133164,
+        "path": "c2-pos-03.wav",
+        "sha256": "6a5f90becb87cd283cbd2472945a9ba3ca26b03ebf26a42e537aac8bc4b053de"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "execute the benchmark word function and repeat its response exactly",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 125440,
+        "path": "c2-pos-04.pcm",
+        "sample_rate": 16000,
+        "sha256": "8debfefc6bad5c2c9e706ce0cec6050a8e4d9468ceab520e180c7db5d526ce0b"
+      },
+      "prompt": "Execute the benchmark word function and repeat its response exactly.",
+      "scenario_id": "c2-pos-04",
+      "wav": {
+        "bytes": 125484,
+        "path": "c2-pos-04.wav",
+        "sha256": "a0bebedb852e3ff8bd2b63c9b72ddf606c13510b65f6fa0915cbd4f3d9f8ed8b"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "obtain the fresh verification word from the registered tool for me",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "c2-pos-05.pcm",
+        "sample_rate": 16000,
+        "sha256": "8c7e92eeec0d43808f44a8e5a0d2f495ed1d8d1a5e4da45ee9085c632a6cd4c2"
+      },
+      "prompt": "Obtain the fresh verification word from the registered tool for me.",
+      "scenario_id": "c2-pos-05",
+      "wav": {
+        "bytes": 115244,
+        "path": "c2-pos-05.wav",
+        "sha256": "801df73c5c152e3e8ebd09ee344546b1c8e1bd168d7ead55e6886ab6310ae206"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "consult the benchmark word tool now, then state what it gives you",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 94720,
+        "path": "c2-pos-06.pcm",
+        "sample_rate": 16000,
+        "sha256": "9b62165c6d31b5bbd1fe7b32ae9275632992c2397033146f11f92cefd63d5dde"
+      },
+      "prompt": "Consult the benchmark word tool now, then state what it gives you.",
+      "scenario_id": "c2-pos-06",
+      "wav": {
+        "bytes": 94764,
+        "path": "c2-pos-06.wav",
+        "sha256": "5834f7dd03c4fd8639c418f6ca587a3e2c425d771727f3d0453aaa5aec0ace5b"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "trigger the tool that supplies a benchmark word and report the output",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "c2-pos-07.pcm",
+        "sample_rate": 16000,
+        "sha256": "367d1e4876d576eb8253ab9bfe9fa641c6cb3dd1d8ddb5379846e473e1a4ca30"
+      },
+      "prompt": "Trigger the tool that supplies a benchmark word and report the output.",
+      "scenario_id": "c2-pos-07",
+      "wav": {
+        "bytes": 115244,
+        "path": "c2-pos-07.wav",
+        "sha256": "55e7fd86a30e3f813c2bf0d09485496b6eb15a52761a3fea5a0f8db6daad694a"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "use the registered function to learn the fresh word and say it aloud",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "c2-pos-08.pcm",
+        "sample_rate": 16000,
+        "sha256": "427c69b9997927caa787d153ce442e798b9df1ce5d3999954ee4911d876cf6eb"
+      },
+      "prompt": "Use the registered function to learn the fresh word and say it aloud.",
+      "scenario_id": "c2-pos-08",
+      "wav": {
+        "bytes": 115244,
+        "path": "c2-pos-08.wav",
+        "sha256": "e22b68802e9db30abc6e632ce24979cb46ddcd49e2950dc7fb7c72a29a4c59f0"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "retrieve the benchmark service's exact word through the available call",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 107520,
+        "path": "c2-pos-09.pcm",
+        "sample_rate": 16000,
+        "sha256": "a2d957048d645bb9c000fb310f6f2619e3120e9151c6a517ed950b254d39e6ce"
+      },
+      "prompt": "Retrieve the benchmark service's exact word through the available call.",
+      "scenario_id": "c2-pos-09",
+      "wav": {
+        "bytes": 107564,
+        "path": "c2-pos-09.wav",
+        "sha256": "b8f3d7d9a5527ffde498551e5be1206163e19670f76de95ddbe81fc1fc2d2eae"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "please make a benchmark-word function call and relay the result",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 99840,
+        "path": "c2-pos-10.pcm",
+        "sample_rate": 16000,
+        "sha256": "220c8043ecaf61db1c8a46e63ac17f7b18cfacd3cd16e395190711f251369d0c"
+      },
+      "prompt": "Please make a benchmark-word function call and relay the result.",
+      "scenario_id": "c2-pos-10",
+      "wav": {
+        "bytes": 99884,
+        "path": "c2-pos-10.wav",
+        "sha256": "3c39a4d53c78e95fcc2249273361313756d7b6eb690ec22eb033a47b8843e7dd"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "run get benchmark word and answer using the value it returns",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "c2-pos-11.pcm",
+        "sample_rate": 16000,
+        "sha256": "559e1eeaecb4e6d75c21d4d5c8d5bb642bdf740ce4491b79118717b455f8603e"
+      },
+      "prompt": "Run get benchmark word and answer using the value it returns.",
+      "scenario_id": "c2-pos-11",
+      "wav": {
+        "bytes": 115244,
+        "path": "c2-pos-11.wav",
+        "sha256": "efc14eaae07bf1a2d90e6a1fe7ade95e5741fe18dbd5b14c7b3befffcc33ce3e"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "call for the current fresh benchmark word, then tell me that exact word",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 135680,
+        "path": "c2-pos-12.pcm",
+        "sample_rate": 16000,
+        "sha256": "a53c7071527b58e13cd8fd8ec505cffce16c26af660ddb938cd71684f0d96247"
+      },
+      "prompt": "Call for the current fresh benchmark word, then tell me that exact word.",
+      "scenario_id": "c2-pos-12",
+      "wav": {
+        "bytes": 135724,
+        "path": "c2-pos-12.wav",
+        "sha256": "0692bcfc12bc595eb9e76a13d40550c808e0d27da83c5fe949e000869c4a1d9b"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "do not use a function; define the everyday noun harbor briefly",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "c2-nocall-01.pcm",
+        "sample_rate": 16000,
+        "sha256": "89c62d904cdc415e3f075c8b91efce8b5372eca5b9025a515696ef1f80bbc627"
+      },
+      "prompt": "Do not use a function; define the everyday noun harbor briefly.",
+      "scenario_id": "c2-nocall-01",
+      "wav": {
+        "bytes": 115244,
+        "path": "c2-nocall-01.wav",
+        "sha256": "86a013af58f04596601757b9c0096f7c2cf9dfbbe4a90c35bab22806705754cc"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "answer without tools: can a benchmark be used for comparison",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 115200,
+        "path": "c2-nocall-02.pcm",
+        "sample_rate": 16000,
+        "sha256": "5a6e0a0cd13e294c9601cecdf58d47f9b6075424908bf572f8bba4c73b98c664"
+      },
+      "prompt": "Answer without tools: can a benchmark be used for comparison?",
+      "scenario_id": "c2-nocall-02",
+      "wav": {
+        "bytes": 115244,
+        "path": "c2-nocall-02.wav",
+        "sha256": "ab02c4fd0cfaf405dc22a9d7d4458239d2a4a8c8bf51d78a0fb36dfe01b6b7b8"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "make up a fictional fresh word yourself and do not query anything",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 112640,
+        "path": "c2-nocall-03.pcm",
+        "sample_rate": 16000,
+        "sha256": "a1bfd874fdf5a5b7de1cabbd03e6d1801b7f6a64af793bc2efb64d8ad082746a"
+      },
+      "prompt": "Make up a fictional fresh word yourself and do not query anything.",
+      "scenario_id": "c2-nocall-03",
+      "wav": {
+        "bytes": 112684,
+        "path": "c2-nocall-03.wav",
+        "sha256": "65fbbf0cdf9ba45d7a163de02dd56244396e5d0e3df88da705dae376cf1660f6"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "spell verification slowly in text, with no tool call",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 130560,
+        "path": "c2-nocall-04.pcm",
+        "sample_rate": 16000,
+        "sha256": "b006a149388a104f6e564b2e30eff649a5542006d5c0cc720948877da8b71ecc"
+      },
+      "prompt": "Spell verification slowly in text, with no tool call.",
+      "scenario_id": "c2-nocall-04",
+      "wav": {
+        "bytes": 130604,
+        "path": "c2-nocall-04.wav",
+        "sha256": "d2baa639ed4bf04d989c0c185a41bb32648d9bdb44ff3feb0805a412b231f373"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "tell me whether boats can anchor near a harbor. do not use the tool",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 138240,
+        "path": "c2-nocall-05.pcm",
+        "sample_rate": 16000,
+        "sha256": "99fc1c4acab405835a52eec37b971d1c02233c6c6fc17d558890cbe7b3a6f68b"
+      },
+      "prompt": "Tell me whether boats can anchor near a harbor. Do not use the tool.",
+      "scenario_id": "c2-nocall-05",
+      "wav": {
+        "bytes": 138284,
+        "path": "c2-nocall-05.wav",
+        "sha256": "e2915bb51df4a31318dd99b2bcf0839705db8319357b4d3394abfc759722b93b"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "use the phrase benchmark result in a sentence, but call no functions",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 138240,
+        "path": "c2-nocall-06.pcm",
+        "sample_rate": 16000,
+        "sha256": "7e8f1d79fa5435878c129989a1098bd8405804d4433f3d567f5bac8405939dbc"
+      },
+      "prompt": "Use the phrase benchmark result in a sentence, but call no functions.",
+      "scenario_id": "c2-nocall-06",
+      "wav": {
+        "bytes": 138284,
+        "path": "c2-nocall-06.wav",
+        "sha256": "94da033b8bd918f59218ca6af6fc4f1249499d1f8a17c99ad921ef1275f63196"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "what is the opposite of stale? answer directly from your vocabulary",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 120320,
+        "path": "c2-nocall-07.pcm",
+        "sample_rate": 16000,
+        "sha256": "10f180698435005655343d53f020fd2f43eddd18b57f0e3b934b3e2103ccbdf2"
+      },
+      "prompt": "What is the opposite of stale? Answer directly from your vocabulary.",
+      "scenario_id": "c2-nocall-07",
+      "wav": {
+        "bytes": 120364,
+        "path": "c2-nocall-07.wav",
+        "sha256": "ea181307f6e3745da125556e95ae70b441b4980e710ec293386e9c895464b2dc"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "the benchmark tool should remain idle; give me a two-word greeting",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 112640,
+        "path": "c2-nocall-08.pcm",
+        "sample_rate": 16000,
+        "sha256": "1cebfd3ae1406fe57079c4dec408e352e7df5bd2ab1fa8ccc936ead3d7d98861"
+      },
+      "prompt": "The benchmark tool should remain idle; give me a two-word greeting.",
+      "scenario_id": "c2-nocall-08",
+      "wav": {
+        "bytes": 112684,
+        "path": "c2-nocall-08.wav",
+        "sha256": "019f5d0f86a00d4fb03617f4b5e11a5f134c00b713b2d5379ecf359418700f5c"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "explain the verb retrieve in six words or fewer without a lookup",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 117760,
+        "path": "c2-nocall-09.pcm",
+        "sample_rate": 16000,
+        "sha256": "5b543449d9e148f0c767fcd7af79912252e6307528117fc3b644452dae072017"
+      },
+      "prompt": "Explain the verb retrieve in six words or fewer without a lookup.",
+      "scenario_id": "c2-nocall-09",
+      "wav": {
+        "bytes": 117804,
+        "path": "c2-nocall-09.wav",
+        "sha256": "f6cf7323b11fbeec53edd3a961e65147e1cb622c4650387c8241e64b1e88772b"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "is a function the same as a purpose? just answer; do not invoke one",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 138240,
+        "path": "c2-nocall-10.pcm",
+        "sample_rate": 16000,
+        "sha256": "3a4bb5efd6f700b182ec5fd18c44b6c9610868834c7ebc659229931cf753deeb"
+      },
+      "prompt": "Is a function the same as a purpose? Just answer; do not invoke one.",
+      "scenario_id": "c2-nocall-10",
+      "wav": {
+        "bytes": 138284,
+        "path": "c2-nocall-10.wav",
+        "sha256": "4b019fde5e727241f7a45472a3999caf1a00a7d1571eefe7fecd95ea3f46e046"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "describe a quiet harbor at night in one short clause, using no tools",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 140800,
+        "path": "c2-nocall-11.pcm",
+        "sample_rate": 16000,
+        "sha256": "609126d1c185b04f44e483c9d9fdc15487f5bc82d7706f157e6767668f5faccb"
+      },
+      "prompt": "Describe a quiet harbor at night in one short clause, using no tools.",
+      "scenario_id": "c2-nocall-11",
+      "wav": {
+        "bytes": 140844,
+        "path": "c2-nocall-11.wav",
+        "sha256": "609a70c6a31b105fc04e2badc41a237063df3673ed0025422926c48192b1c013"
+      }
+    },
+    {
+      "expected": "no_call",
+      "expected_transcript": "please answer from memory: what does exact mean? no function call",
+      "partition": "c2",
+      "pcm": {
+        "bytes": 125440,
+        "path": "c2-nocall-12.pcm",
+        "sample_rate": 16000,
+        "sha256": "d723784a1efcea37685b36af0502b4090575a925e3eae367d572fe7e27c22f66"
+      },
+      "prompt": "Please answer from memory: what does exact mean? No function call.",
+      "scenario_id": "c2-nocall-12",
+      "wav": {
+        "bytes": 125484,
+        "path": "c2-nocall-12.wav",
+        "sha256": "36bf1bd240feb792188a5c710302b70adfd1669e36cc0c7cb34d8213d06efc12"
+      }
+    },
+    {
+      "expected": "positive",
+      "expected_transcript": "use the benchmark word tool now, then state the exact fresh word from its result",
+      "partition": "c1",
+      "pcm": {
+        "bytes": 158720,
+        "path": "c1-precedent-carrier.pcm",
+        "sample_rate": 16000,
+        "sha256": "1c7856088512ab3b865665682af1eaa43947ef3b1b403f6f8a13654be0a545ee"
+      },
+      "prompt": "Use the benchmark word tool now, then state the exact fresh word from its result.",
+      "scenario_id": "c1-precedent-carrier",
+      "wav": {
+        "bytes": 158764,
+        "path": "c1-precedent-carrier.wav",
+        "sha256": "02abe0512f27dda3794aecceba8695647d876f5e70cbb05f0fc10072781b471f"
+      }
+    }
+  ],
+  "scenario_source": "/workspace/project/reports/attnw8-gptq/preseal/scenarios.json",
+  "scenario_source_sha256": "56813326c4e6281abdcabf3a396a5d8bfc90b32c8a7452fb8ec4d44657072e2c",
+  "schema": 1,
+  "synthesis": {
+    "assets": {
+      "snapshots/d29db7978e464fb90cb3359ee0c69a273b9142cc/languages/english_2026-04/model.safetensors": {
+        "bytes": 219029196,
+        "sha256": "be9c6b4876d3f30740a8225dfcaa2e43dc4aeb753c15272735bee16bbb4abb0a"
+      },
+      "snapshots/d29db7978e464fb90cb3359ee0c69a273b9142cc/languages/english_2026-04/tokenizer.model": {
+        "bytes": 59339,
+        "sha256": "d461765ae179566678c93091c5fa6f2984c31bbe990bf1aa62d92c64d91bc3f6"
+      },
+      "snapshots/e041936c75475d350b405bc870bcf7c22da4e9e6/languages/english_2026-04/embeddings/alba.safetensors": {
+        "bytes": 6194424,
+        "sha256": "69c32db63ca56843d994f81f343f62e0bf2d73f7e4c9bc73e44bb1110b1d8845"
+      }
+    },
+    "base_seed": 0,
+    "cpus": [
+      7,
+      8,
+      9,
+      15
+    ],
+    "language": "english_2026-04",
+    "package_version": "2.1.0",
+    "pid": 7,
+    "ready": true,
+    "sample_rate": 16000,
+    "seed": 0,
+    "seed_scheme": "sha256-text-plus-base-v1",
+    "socket": "reports/attnw8-gptq/preseal-r7/fixtures/pocket.sock",
+    "status": "ready",
+    "threads": 4,
+    "voice": "alba"
+  }
+}

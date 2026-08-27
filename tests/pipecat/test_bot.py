@@ -126,14 +126,75 @@ async def test_tool_handler_returns_terminal_utc_result():
     async def result_callback(result, **_kwargs):
         results.append(result)
 
-    await bot_module.get_current_utc_time(SimpleNamespace(result_callback=result_callback))
+    bot_module.reset_reporting_timezone()
+    await bot_module.get_current_time(SimpleNamespace(result_callback=result_callback))
 
     assert len(results) == 1
     assert isinstance(results[0], VoicechatToolResult)
     assert results[0].output["timezone"] == "UTC"
     assert results[0].output["spoken"].endswith(" UTC")
     assert results[0].model_output.startswith("It is currently ")
-    assert results[0].model_output.endswith(" UTC.")
+
+
+@pytest.mark.asyncio
+async def test_set_timezone_changes_later_get_current_time():
+    results = []
+
+    async def result_callback(result, **_kwargs):
+        results.append(result)
+
+    bot_module.reset_reporting_timezone()
+    try:
+        await bot_module.set_timezone(
+            SimpleNamespace(result_callback=result_callback, arguments={"timezone": "Pacific"})
+        )
+        assert results[-1].output["ok"] is True
+        assert results[-1].output["timezone"] == "America/Los_Angeles"
+
+        await bot_module.get_current_time(SimpleNamespace(result_callback=result_callback))
+        assert results[-1].output["timezone"] == "America/Los_Angeles"
+        assert results[-1].output["spoken"].endswith(("PDT", "PST"))
+    finally:
+        bot_module.reset_reporting_timezone()
+
+
+@pytest.mark.asyncio
+async def test_set_timezone_rejects_unknown_zone_without_changing_state():
+    results = []
+
+    async def result_callback(result, **_kwargs):
+        results.append(result)
+
+    bot_module.reset_reporting_timezone()
+    await bot_module.set_timezone(
+        SimpleNamespace(result_callback=result_callback, arguments={"timezone": "Marsville"})
+    )
+
+    assert results[-1].output["ok"] is False
+    assert results[-1].output["timezone"] == "UTC"
+    assert "not a time zone I recognize" in results[-1].model_output
+    assert bot_module.reporting_timezone() == "UTC"
+
+
+def test_timezone_resolution_accepts_aliases_and_iana_case_insensitively():
+    assert bot_module.resolve_timezone("eastern") == "America/New_York"
+    assert bot_module.resolve_timezone("UTC") == "UTC"
+    assert bot_module.resolve_timezone("asia/tokyo") == "Asia/Tokyo"
+    assert bot_module.resolve_timezone("America/Denver") == "America/Denver"
+    assert bot_module.resolve_timezone("Marsville") is None
+    assert bot_module.resolve_timezone("") is None
+    assert bot_module.resolve_timezone(None) is None
+
+
+def test_advertised_tools_are_get_current_time_and_set_timezone():
+    names = [tool.name for tool in bot_module.create_tools().standard_tools]
+    assert names == ["get_current_time", "set_timezone"]
+
+
+def test_demo_instruction_requires_the_most_recent_tool_result():
+    instruction = bot_module.SYSTEM_INSTRUCTION
+    assert "MOST RECENT" in instruction
+    assert "Never restate an older tool result" in instruction
 
 
 def test_step4c_browser_fixture_is_explicit_tool_free_and_fail_closed(monkeypatch):
@@ -152,7 +213,7 @@ async def test_concise_tool_result_retains_full_context_and_sidecar(monkeypatch)
     context = VoicechatLLMContext(messages=[])
     _user, assistant = create_voicechat_context_aggregators(context)
     call = FunctionCallFromLLM(
-        function_name="get_current_utc_time",
+        function_name="get_current_time",
         tool_call_id="call_concise",
         arguments={},
         context=context,
@@ -193,7 +254,7 @@ async def test_tool_result_reaches_provider_before_provider_owned_eou(monkeypatc
     context = LLMContext(messages=[])
     _user, assistant = create_voicechat_context_aggregators(context)
     call = FunctionCallFromLLM(
-        function_name="get_current_utc_time",
+        function_name="get_current_time",
         tool_call_id="call_time",
         arguments={},
         context=context,
@@ -276,7 +337,10 @@ async def test_pipeline_uses_smallwebrtc_and_universal_realtime_aggregators(
             isinstance(processor, VoicechatAssistantAggregator) for processor in pipeline.processors
         )
         assert all("VADProcessor" not in name for name in names)
-        assert [tool.name for tool in context.tools.standard_tools] == ["get_current_utc_time"]
+        assert [tool.name for tool in context.tools.standard_tools] == [
+                "get_current_time",
+                "set_timezone",
+            ]
     finally:
         await connection._pc.close()
 

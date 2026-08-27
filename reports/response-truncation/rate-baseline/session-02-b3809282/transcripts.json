@@ -1,0 +1,18 @@
+{
+ "response_1.wav": {
+  "transcript": "Once upon a time a brave knight set out to slay a fearsome dragon along the way he encountered a wise old wizard who gave him a magical horn. When the knight blew the horn, a magnificent unicorn emerged from the forest. The unicorn showed the knight that true strength comes from kindness and wisdom, not just power. And so the knight returned home with a new understanding of what it means to be a hero.",
+  "seconds": 24.0
+ },
+ "response_3.wav": {
+  "transcript": "It",
+  "seconds": 0.48
+ },
+ "response_4.wav": {
+  "transcript": "It is currently three forty PM Pacific Time.",
+  "seconds": 2.88
+ },
+ "response_5.wav": {
+  "transcript": "I am listening.",
+  "seconds": 2.0
+ }
+}

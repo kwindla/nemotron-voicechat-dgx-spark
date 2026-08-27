@@ -1,0 +1,18 @@
+{
+  "finding": "stale-result rate was unchanged; do not claim I4 fixed",
+  "i4_fix_supported": false,
+  "post": {
+    "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/directive-freshness-post-final-v2/summary.json",
+    "sequence_elicitation_rate": 1.0,
+    "stale_rate": 0.0
+  },
+  "post_freshness_gate_passed": false,
+  "pre": {
+    "report": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/directive-freshness-pre-final-v2/summary.json",
+    "sequence_elicitation_rate": 1.0,
+    "stale_rate": 0.0
+  },
+  "rate_changed": false,
+  "rate_improved": false,
+  "schema": "nemotron_voicechat.session_directive_freshness_comparison.v1"
+}

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import fcntl
+import hashlib
 import json
 import math
 import os
@@ -1830,6 +1831,19 @@ class _TracedNemotronVoicechatLLMService(NemotronVoicechatLLMService):
                 response_id=self._response_id,
             )
         accepted_done = event_type == "response.done" and self._is_current_response(event)
+        if event_type == "session.created":
+            session = event.get("session") or {}
+            checkpoint = session.get("checkpoint") or {}
+            runtime_provenance = checkpoint.get("runtime_provenance")
+            canonical = json.dumps(event, sort_keys=True, separators=(",", ":")).encode()
+            self._playout_trace.record(
+                "session.created.provenance",
+                timestamp_field="client_received_monotonic_s",
+                timestamp=received,
+                session_id=session.get("id"),
+                session_created_sha256=hashlib.sha256(canonical).hexdigest(),
+                runtime_provenance=runtime_provenance,
+            )
         if accepted_done:
             self._playout_trace.record(
                 event_type,

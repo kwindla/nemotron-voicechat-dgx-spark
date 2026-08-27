@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import signal
+import tomllib
 import wave
 from pathlib import Path
 from types import SimpleNamespace
@@ -59,6 +60,18 @@ def test_pc2a_config_materializes_hotfix_runtime_contract() -> None:
     environment = config["runtime"]["environment"]
     assert {name: environment.get(name) for name in PC2A_ENVIRONMENT} == PC2A_ENVIRONMENT
     assert environment["VOICECHAT_STEP9_ASSERT_CAPTURE_COVERAGE"] == "0"
+
+
+def test_notext_watchdog_hotfix_has_new_runtime_identity_and_frozen_fhw8_pin() -> None:
+    frozen = tomllib.loads(
+        Path("config/production-candidate-3.toml").read_text(encoding="utf-8")
+    )
+    hotfix = load_config(Path("config/production-hotfix-notext-watchdog-v1.toml"))
+    assert hotfix["candidate"] == "production-hotfix-notext-watchdog-v1"
+    assert hotfix["image"]["runtime"].endswith(":production-hotfix-notext-watchdog-v1")
+    assert hotfix["artifacts"]["release"] == frozen["artifacts"]["release"]
+    assert hotfix["runtime"]["environment"]["VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC"] == "30"
+    assert frozen["runtime"]["environment"]["VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC"] == "0"
 
 
 def test_asr_evaluator_audits_and_returns_one_immutable_resolution(monkeypatch) -> None:

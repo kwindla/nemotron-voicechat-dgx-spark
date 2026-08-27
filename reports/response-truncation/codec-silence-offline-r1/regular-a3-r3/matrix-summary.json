@@ -1,0 +1,40 @@
+{
+  "additional_variants": [],
+  "attempt": 3,
+  "audible_positions_at_or_after_captured_silence_start": {
+    "persistent_off": 0,
+    "pointwise_off": 0,
+    "production": 0,
+    "reference": 0
+  },
+  "capture_run": "7-1787166327711905067",
+  "captured_final_silence_start_frame": 782,
+  "end_frame": 813,
+  "first_required_variant_spread_above_0_1_db": null,
+  "max_required_variant_dbfs_spread": 9.641964680895398e-06,
+  "onset_dbfs": {
+    "persistent_off": -148.82043698256462,
+    "pointwise_off": -148.82043953831055,
+    "production": -148.82043698256462,
+    "reference": -148.82043442681942
+  },
+  "onset_required_variant_dbfs_spread": 5.111491134357493e-06,
+  "positions": 330,
+  "production_faithfulness": {
+    "decode_elapsed_seconds": 30.25934638999024,
+    "decoder_history_replayed": true,
+    "max_abs_error": 0.0,
+    "max_dbfs_difference": 0.0,
+    "mean_of_position_mean_abs_error": 0.0
+  },
+  "required_variants": [
+    "production",
+    "pointwise_off",
+    "persistent_off",
+    "reference"
+  ],
+  "response": 3,
+  "schema": "eartts-codec-silence-matrix-v1",
+  "session_id": "473e2449-eb90-40c1-b1d3-8cd1262c5ad4",
+  "start_frame": 484
+}

@@ -1,0 +1,138 @@
+{
+ "summary": {
+  "sessions": 3,
+  "completed_responses": 7,
+  "truncated_responses": 1,
+  "rate": 0.143,
+  "long_responses": 3,
+  "long_truncated": 1
+ },
+ "responses": [
+  {
+   "index": 1,
+   "generated_words": 117,
+   "spoken_words": 92,
+   "percent": 76.1,
+   "status": "cancelled",
+   "truncated": false,
+   "lost": "adventure that was passed down through generations"
+  },
+  {
+   "index": 2,
+   "generated_words": 18,
+   "spoken_words": 10,
+   "percent": 55.6,
+   "status": "cancelled",
+   "truncated": false,
+   "lost": "what is the time zone you are in"
+  },
+  {
+   "index": 3,
+   "generated_words": 1,
+   "spoken_words": 0,
+   "percent": 0.0,
+   "status": "cancelled",
+   "truncated": false,
+   "lost": "i"
+  },
+  {
+   "index": 4,
+   "generated_words": 8,
+   "spoken_words": 8,
+   "percent": 100.0,
+   "status": "completed",
+   "truncated": false,
+   "lost": ""
+  },
+  {
+   "index": 5,
+   "generated_words": 20,
+   "spoken_words": 18,
+   "percent": 90.0,
+   "status": "cancelled",
+   "truncated": false,
+   "lost": "are in"
+  },
+  {
+   "index": 6,
+   "generated_words": 20,
+   "spoken_words": 20,
+   "percent": 100.0,
+   "status": null,
+   "truncated": false,
+   "lost": ""
+  },
+  {
+   "index": 1,
+   "generated_words": 76,
+   "spoken_words": 76,
+   "percent": 100.0,
+   "status": "completed",
+   "truncated": false,
+   "lost": ""
+  },
+  {
+   "index": 3,
+   "generated_words": 5,
+   "spoken_words": 1,
+   "percent": 20.0,
+   "status": "cancelled",
+   "truncated": false,
+   "lost": "is currently three forty"
+  },
+  {
+   "index": 4,
+   "generated_words": 8,
+   "spoken_words": 8,
+   "percent": 100.0,
+   "status": "completed",
+   "truncated": false,
+   "lost": ""
+  },
+  {
+   "index": 5,
+   "generated_words": 3,
+   "spoken_words": 3,
+   "percent": 100.0,
+   "status": "completed",
+   "truncated": false,
+   "lost": ""
+  },
+  {
+   "index": 1,
+   "generated_words": 33,
+   "spoken_words": 33,
+   "percent": 100.0,
+   "status": "completed",
+   "truncated": false,
+   "lost": ""
+  },
+  {
+   "index": 2,
+   "generated_words": 57,
+   "spoken_words": 41,
+   "percent": 68.4,
+   "status": "completed",
+   "truncated": true,
+   "lost": "from then on they were inseparable exploring the world together and spreading joy wherever they went"
+  },
+  {
+   "index": 4,
+   "generated_words": 3,
+   "spoken_words": 0,
+   "percent": 0.0,
+   "status": "cancelled",
+   "truncated": false,
+   "lost": "i am nemotron"
+  },
+  {
+   "index": 5,
+   "generated_words": 26,
+   "spoken_words": 6,
+   "percent": 23.1,
+   "status": "cancelled",
+   "truncated": false,
+   "lost": "i am here to help with anything from answering questions to generating creative content what would you like to do"
+  }
+ ]
+}

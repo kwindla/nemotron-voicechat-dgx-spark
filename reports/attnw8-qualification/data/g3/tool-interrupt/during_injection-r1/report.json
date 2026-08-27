@@ -1,0 +1,13 @@
+{
+  "errors": [
+    "{'harness': 'tool call never elicited'}"
+  ],
+  "fatals": [],
+  "kind": "tool_call_interrupt_cell",
+  "passed": false,
+  "phase": "during_injection",
+  "responses_done": 1,
+  "schema": 1,
+  "second_lifecycle_after_interrupt": false,
+  "tool_call_count": 0
+}

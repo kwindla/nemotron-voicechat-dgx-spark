@@ -1,0 +1,28 @@
+# Raw capture bulk from the EarTTS truncation campaigns. The conclusions,
+# summaries and per-case verdicts are committed; these are the multi-gigabyte
+# inputs they were derived from, regenerable by the retained tooling.
+*container*.log
+**/events.jsonl
+**/positions.jsonl
+**/matrix.jsonl
+**/report.json
+**/raw-response.wav
+**/actual-decoder-response.wav
+rate-baseline/microphone.wav
+rate-baseline/**/*.wav
+**/*.wav
+**/*.pt
+**/*.pcm
+**/*.safetensors
+
+# Keep the small artefacts that carry the findings.
+!**/README.md
+!**/summary.json
+!**/matrix-summary.json
+!**/classification.json
+!**/preflight.json
+!**/transcripts.json
+
+# The original live session's clips are the evidence base for the ASR verdict
+# and are deliberately tracked; see session-431ac6df/README.md.
+!session-431ac6df/*.wav

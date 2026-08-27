@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 5.2,
+    "source_audio_sha256": "2e208ee9513ed1c4b0a932ceaaf3f49021c0fd8a80a85aceee38e99108575409",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 14.4,
+    "source_audio_sha256": "ed1da69fc2ac6b3377c961b19669253c5a991dfb9dd3ebfbb7938cfacc0e4c7b",
+    "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am Net Thwarten, created by NVIDIA. I can help with anything from answering questions to generating creative content. What would you like to talk about?"
+  },
+  "response_003.wav": {
+    "seconds": 14.0,
+    "source_audio_sha256": "5e0a9ad88a3e951bd3bc06e31f39bef0c3fe3ca6d9a86d3569dd26d20f929078",
+    "transcript": "Once upon a time a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day he found a magical forest where the unicorn grazed peacefully."
+  }
+}

@@ -1,0 +1,349 @@
+{
+  "attempts": [
+    {
+      "responses": [
+        {
+          "audio_bytes": 620928,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-01/response_001.wav",
+          "audio_sha256": "4280df3c73a861dc4e8b798812fc1882997fc7aa8921cbf00ea37214a1db7e69",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_aa585cd9-3128-41e9-84f8-41e3d3760fa3_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_aa585cd9-3128-41e9-84f8-41e3d3760fa3_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_aa585cd9-3128-41e9-84f8-41e3d3760fa3_550",
+        "reason": "client_stop",
+        "session_id": "aa585cd9-3128-41e9-84f8-41e3d3760fa3",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "aa585cd9-3128-41e9-84f8-41e3d3760fa3",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 419832,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-02/response_001.wav",
+          "audio_sha256": "a9b026ec589747b61f6edac422d48c4004f69ec6f77eaf312a0083553d3a0b6c",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_b41931b8-832f-4559-b544-a8bf3779d2b6_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_b41931b8-832f-4559-b544-a8bf3779d2b6_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_b41931b8-832f-4559-b544-a8bf3779d2b6_432",
+        "reason": "client_stop",
+        "session_id": "b41931b8-832f-4559-b544-a8bf3779d2b6",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "b41931b8-832f-4559-b544-a8bf3779d2b6",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 433944,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-03/response_001.wav",
+          "audio_sha256": "52646e1657669111d67b3e802b9e5742fc4f8b8098c506c4adf61993943f3f89",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_c34e4a7d-2479-4f0e-86ac-b9ba309a8fcf_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_c34e4a7d-2479-4f0e-86ac-b9ba309a8fcf_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_c34e4a7d-2479-4f0e-86ac-b9ba309a8fcf_444",
+        "reason": "client_stop",
+        "session_id": "c34e4a7d-2479-4f0e-86ac-b9ba309a8fcf",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "c34e4a7d-2479-4f0e-86ac-b9ba309a8fcf",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 793800,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-04/response_001.wav",
+          "audio_sha256": "969993ffad274ea99caf8e615e3c0ca25eb13616c22f9a6526793878b239de58",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_3c5456dc-6f15-4cff-9c56-f6a82859b437_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_3c5456dc-6f15-4cff-9c56-f6a82859b437_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_3c5456dc-6f15-4cff-9c56-f6a82859b437_644",
+        "reason": "client_stop",
+        "session_id": "3c5456dc-6f15-4cff-9c56-f6a82859b437",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "3c5456dc-6f15-4cff-9c56-f6a82859b437",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 620928,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-05/response_001.wav",
+          "audio_sha256": "dfe00c982a1b271587df1b8c60a4fead58d55d7903af0b93cabf68ccf69fc612",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_47f2d879-c9f2-4326-9908-db195b2ba926_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_47f2d879-c9f2-4326-9908-db195b2ba926_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_47f2d879-c9f2-4326-9908-db195b2ba926_546",
+        "reason": "client_stop",
+        "session_id": "47f2d879-c9f2-4326-9908-db195b2ba926",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "47f2d879-c9f2-4326-9908-db195b2ba926",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 800856,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-06/response_001.wav",
+          "audio_sha256": "a17966d1d1d27d9929b210d5ce9eb5f8364abeae7c2fe80de830fbc56aa19602",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_abb09f33-df64-451d-bb12-8f6e5324ed73_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_abb09f33-df64-451d-bb12-8f6e5324ed73_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_abb09f33-df64-451d-bb12-8f6e5324ed73_649",
+        "reason": "client_stop",
+        "session_id": "abb09f33-df64-451d-bb12-8f6e5324ed73",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "abb09f33-df64-451d-bb12-8f6e5324ed73",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 1174824,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-07/response_001.wav",
+          "audio_sha256": "763753191a90954ffe49a6cd96afb7c5857df6164ca922d6a4abe74bd2ca4c40",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_d98c117b-2eb8-4823-8cdf-f8fd6c344c5b_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_d98c117b-2eb8-4823-8cdf-f8fd6c344c5b_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_d98c117b-2eb8-4823-8cdf-f8fd6c344c5b_868",
+        "reason": "client_stop",
+        "session_id": "d98c117b-2eb8-4823-8cdf-f8fd6c344c5b",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "d98c117b-2eb8-4823-8cdf-f8fd6c344c5b",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 814968,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-08/response_001.wav",
+          "audio_sha256": "ceb733f95db0b408e7b86eae249e4f0322a25c1a11aad99f8e962096f3f57eec",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_7a7981ea-9d60-47a0-9815-74a7ca9c7aee_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_7a7981ea-9d60-47a0-9815-74a7ca9c7aee_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_7a7981ea-9d60-47a0-9815-74a7ca9c7aee_672",
+        "reason": "client_stop",
+        "session_id": "7a7981ea-9d60-47a0-9815-74a7ca9c7aee",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "7a7981ea-9d60-47a0-9815-74a7ca9c7aee",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 804384,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-09/response_001.wav",
+          "audio_sha256": "8fc16d02c9597a5bcec1437e0265af94595d1ea67226f6a4d2d1342f04fa6e8c",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_f9a1da36-fcd5-4505-9cfd-4bfd3a878b9a_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_f9a1da36-fcd5-4505-9cfd-4bfd3a878b9a_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_f9a1da36-fcd5-4505-9cfd-4bfd3a878b9a_658",
+        "reason": "client_stop",
+        "session_id": "f9a1da36-fcd5-4505-9cfd-4bfd3a878b9a",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "f9a1da36-fcd5-4505-9cfd-4bfd3a878b9a",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 1143072,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/full-precision-ab-r1/live/quantized-wall/replay/attempt-10/response_001.wav",
+          "audio_sha256": "8ea9885be749dcb2d94ea32c5fe3af4fc1ad5466182d1dc5bcb77075455c2ad6",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see. Can you tell me a story about a unicorn",
+          "response_id": "response_2e33a656-fc6b-44ca-a0b9-4e43a41e2ef6_1",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": "Once upon a time, a brave knight set out to slay a fearsome dragon. Along the way, he encountered a wise old wizard who gave him a magical horn. The knight followed the horn to a hidden valley where a unicorn grazed peacefully. Instead of harming the creature, he decided to protect it from the dragon. With the help of the wizard, the knight lured the dragon away and saved the unicorn. From then on, the unicorn became a symbol of courage and friendship.",
+          "turn_id": "turn_2e33a656-fc6b-44ca-a0b9-4e43a41e2ef6_1"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_2e33a656-fc6b-44ca-a0b9-4e43a41e2ef6_859",
+        "reason": "client_stop",
+        "session_id": "2e33a656-fc6b-44ca-a0b9-4e43a41e2ef6",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "2e33a656-fc6b-44ca-a0b9-4e43a41e2ef6",
+      "source_turn_ids": [
+        3
+      ],
+      "url": "ws://127.0.0.1:8796/v1/realtime"
+    }
+  ],
+  "pacing": "wall",
+  "schema": "eartts-truncation-replay-campaign-v1",
+  "source_pcm_sha256": "e0cfde068241c098d1bc615202c11ecf037134cd1ba7fe889fb3d5eebd57395a",
+  "source_session_id": "431ac6df-573c-45af-8746-7cd9f66bd8c3",
+  "source_trace_dir": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/431ac6df-573c-45af-8746-7cd9f66bd8c3"
+}

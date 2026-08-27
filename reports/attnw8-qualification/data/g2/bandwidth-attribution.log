@@ -1,0 +1,44 @@
+{
+  "families": {
+    "attention_core": {
+      "instances_per_range": 4.0,
+      "kernel_names": [
+        "reshape_and_cache_kernel_flash"
+      ],
+      "ms_per_range": 0.013065599999999995
+    },
+    "causal_conv": {
+      "instances_per_range": 27.0,
+      "kernel_names": [
+        "_causal_conv1d_update_kernel"
+      ],
+      "ms_per_range": 0.11125811666666824
+    },
+    "gptq_dequant_gemv": {
+      "instances_per_range": 168.0,
+      "kernel_names": [
+        "void marlin::Marlin<(long)1125899906909960, (long)1125899923621888, (long)1125899906909960, (long)1125899906909960, (int)256, (int)1, (int)8, (int)8, (bool)1, (int)4, (int)8, (bool)0>(const int4 *, const int4 *, int4 *, int4 *, const int4 *, const float *, const int4 *, const unsigned short *, const int4 *, const int *, int, int, int, int, int, int *, bool, bool, bool, int)",
+        "triton_red_fused__to_copy_add_marlin_gemm_mean_mul_pow_rsqrt_0",
+        "void marlin::Marlin<(long)1125899906909960, (long)1125899923621888, (long)1125899906909960, (long)1125899906909960, (int)128, (int)1, (int)4, (int)8, (bool)1, (int)4, (int)8, (bool)0>(const int4 *, const int4 *, int4 *, int4 *, const int4 *, const float *, const int4 *, const unsigned short *, const int4 *, const int *, int, int, int, int, int, int *, bool, bool, bool, int)",
+        "triton_poi_fused_constant_pad_nd_marlin_gemm_pow_relu_1"
+      ],
+      "ms_per_range": 41.44268211666668
+    },
+    "mamba_scan": {
+      "instances_per_range": 27.0,
+      "kernel_names": [
+        "_selective_scan_update_kernel"
+      ],
+      "ms_per_range": 0.7276320000000001
+    },
+    "norm_elementwise": {
+      "instances_per_range": 257.0,
+      "kernel_names": [
+        "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctorOnSelf_add<int>, std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::unrolled_elementwise_kernel<at::native::FillFunctor<long>, std::array<char *, (unsigned long)1>, (int)4, TrivialOffsetCalculator<(int)0, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::<unnamed>::silu_kernel(at::TensorIteratorBase &)::[lambda() (instance 1)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, void at::native::<unnamed>::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase &, T2)::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "void at::na

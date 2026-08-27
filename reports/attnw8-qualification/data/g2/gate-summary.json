@@ -1,0 +1,40 @@
+{
+  "baseline": {
+    "artifact": "nano-fhw8",
+    "source": "reports/fhw8-qualification/data/g2-sqlite",
+    "ranges": 60,
+    "mean_wall_ms": 50.5489472,
+    "mean_kernel_union_ms": 43.66427723333333,
+    "unquantized_gemv_bf16_ms": 1.9632533333333326,
+    "unquantized_gemv_bf16_instances": 8.0,
+    "gptq_dequant_gemv_ms": 40.20157120000008,
+    "gptq_dequant_gemv_instances": 156.0
+  },
+  "candidate": {
+    "artifact": "nano-attnw8",
+    "source": "reports/attnw8-qualification/data/g2/sqlite",
+    "ranges": 60,
+    "mean_wall_ms": 49.00287466666667,
+    "mean_kernel_union_ms": 42.9282287,
+    "unquantized_gemv_bf16_ms": 0.0,
+    "unquantized_gemv_bf16_instances": 0.0,
+    "gptq_dequant_gemv_ms": 41.44268211666668,
+    "gptq_dequant_gemv_instances": 168.0
+  },
+  "gate": {
+    "wall_improvement_ms": 1.54607253333333,
+    "required_wall_improvement_ms": 0.5,
+    "target_substitution_net_ms": -0.7221424166667331,
+    "largest_non_target_family_regression_ms": 0.007628799999999936,
+    "maximum_non_target_family_regression_ms": 0.3,
+    "passed": true
+  },
+  "routing": {
+    "bf16_gemv_instances_before": 8.0,
+    "bf16_gemv_instances_after": 0.0,
+    "marlin_instances_before": 156.0,
+    "marlin_instances_after": 168.0,
+    "passed": true
+  },
+  "note": "The Marlin increase is the target replacement workload and is paired with the eliminated bf16 GEMV family. All other families are assessed independently against the 0.3 ms cap. The auxiliary Step-4d graph-envelope check reports no graph-activity table because Nsight node tracing exported explicit child kernels; the preregistered node-level bandwidth analyzer consumed all 60 ranges successfully."
+}

@@ -1,0 +1,23 @@
+{
+  "checked_at_utc": "2026-08-18T01:07:30Z",
+  "demo": {
+    "client_http_status": 200,
+    "host": "127.0.0.1",
+    "pid": 4150054,
+    "port": 7860,
+    "tools_registered": true
+  },
+  "model": {
+    "container": "nemotron-voicechat-model",
+    "health": "ready",
+    "host": "127.0.0.1",
+    "image": "pipecat-ai/nemotron-voicechat-dgx-spark:session-repair-20260818-r4",
+    "image_id": "sha256:4607d8eb4b99a690644e35af1e75102f75fbfe148b4aee04dd9c278b4f1b0dd9",
+    "port": 8786,
+    "protocol": "voicechat.realtime.v3",
+    "server_sha256": "4106fcb0a9b2e444f037f4ceef0c0c2087d16255510b73799b35c02cfbe22034",
+    "typed_input_ready": true
+  },
+  "recoverable_previous_container": "nemotron-voicechat-model-session-repair-r3-backup",
+  "schema": "nemotron_voicechat.session_repair_stack_status.v1"
+}

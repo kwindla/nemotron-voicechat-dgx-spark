@@ -1,0 +1,17 @@
+{
+  "arm": "post",
+  "classification": "hard_i4_freshness_fixture",
+  "eligible_responses": 2,
+  "fixture_sha256": "011f16518d9a26a4d5f700c31902af883f7c01f350621702709d86f92b68473c",
+  "freshness_gate_passed": true,
+  "passed": true,
+  "passed_replicates": 1,
+  "replicate_reports": [
+    "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/session-repair/directive-freshness-post-attempt3/replicate-01/report.json"
+  ],
+  "replicates": 1,
+  "schema": "nemotron_voicechat.session_directive_freshness_arm.v1",
+  "sequence_elicitation_rate": 1.0,
+  "stale_rate": 0.0,
+  "stale_responses": 0
+}

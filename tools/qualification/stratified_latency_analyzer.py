@@ -1085,6 +1085,7 @@ PLAYOUT_TRACE_SCHEMA = "nemotron_voicechat.playout.v1"
 PLAYOUT_TRACE_TYPES = frozenset(
     {
         "voicechat.playout.config",
+        "session.created.provenance",
         "response.created",
         "response.output_text.delta",
         "response.output_audio.delta",
@@ -1107,6 +1108,7 @@ PLAYOUT_TRACE_CLOCKS = (
 )
 PLAYOUT_TRACE_CLOCK_BY_TYPE = {
     "voicechat.playout.config": "client_configured_monotonic_s",
+    "session.created.provenance": "client_received_monotonic_s",
     "response.created": "client_received_monotonic_s",
     "response.output_text.delta": "client_received_monotonic_s",
     "response.output_audio.delta": "client_received_monotonic_s",
@@ -1128,6 +1130,16 @@ _PLAYOUT_TRACE_FIELDS_BY_TYPE = {
             "configured_prebuffer_ms",
             "sample_rate_hz",
             "channels",
+        }
+    ),
+    "session.created.provenance": frozenset(
+        {
+            "trace_schema",
+            "type",
+            "client_received_monotonic_s",
+            "session_id",
+            "session_created_sha256",
+            "runtime_provenance",
         }
     ),
     "response.created": frozenset(
@@ -1270,6 +1282,44 @@ def _validate_playout_record_schema(event: JsonObject, event_ordinal: int) -> No
         expected_fields = _PLAYOUT_TRACE_FIELDS_BY_TYPE.get(event_type)
     if expected_fields is None or set(event) != expected_fields:
         raise ValueError(f"playout trace field schema mismatch at event {event_ordinal}")
+
+    if event_type == "session.created.provenance":
+        provenance = event.get("runtime_provenance")
+        source_hashes = provenance.get("source_sha256") if isinstance(provenance, dict) else None
+        session_hash = event.get("session_created_sha256")
+        image_id = provenance.get("runtime_image_id") if isinstance(provenance, dict) else None
+        try:
+            hash_fields_valid = (
+                isinstance(session_hash, str)
+                and len(session_hash) == 64
+                and int(session_hash, 16) >= 0
+                and isinstance(image_id, str)
+                and image_id.startswith("sha256:")
+                and len(image_id) == 71
+                and int(image_id[7:], 16) >= 0
+                and isinstance(source_hashes, dict)
+                and bool(source_hashes)
+                and all(
+                    isinstance(value, str) and len(value) == 64 and int(value, 16) >= 0
+                    for value in source_hashes.values()
+                )
+            )
+        except ValueError:
+            hash_fields_valid = False
+        if (
+            not isinstance(event.get("session_id"), str)
+            or not event["session_id"]
+            or not isinstance(provenance, dict)
+            or not isinstance(provenance.get("runtime_image"), str)
+            or not provenance["runtime_image"]
+            or not isinstance(provenance.get("runtime_contract"), str)
+            or not provenance["runtime_contract"]
+            or not isinstance(provenance.get("semantic_environment"), dict)
+            or not hash_fields_valid
+        ):
+            raise ValueError(
+                f"session.created provenance schema mismatch at event {event_ordinal}"
+            )
 
     response_id = event.get("response_id")
     response_types = {

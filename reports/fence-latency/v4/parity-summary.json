@@ -1,0 +1,143 @@
+{
+  "adjudication": "I1 and the same L1-2/L2-1 long-rendition transcript mismatches exactly match the retained baseline categories; no new failure class.",
+  "candidate_campaign_seconds": 214.41508316993713,
+  "candidate_error": null,
+  "candidate_fixtures": [
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "S1-1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "S1-2",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L1-1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L1-2",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": false
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L2-1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": false
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L2-2",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "I1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": false
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "capture-off-L1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    }
+  ],
+  "candidate_image_sha256": "b91d6cda65f1c7240b4296e461678358257c727d65cce7fcab80800d2b8e5b46",
+  "candidate_status": "completed",
+  "candidate_terminalization_errors": [],
+  "categorical_fixture_results_equal": true,
+  "gate": "V4 browser parity",
+  "passed": true,
+  "retained_baseline_fixtures": [
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "S1-1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "S1-2",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L1-1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L1-2",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": false
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L2-1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": false
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "L2-2",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "I1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": false
+    },
+    {
+      "completion_status": "completed",
+      "error": null,
+      "fixture_id": "capture-off-L1",
+      "marker_complete": "succeeded",
+      "quiescence_passed": true,
+      "transcript_equal": true
+    }
+  ]
+}

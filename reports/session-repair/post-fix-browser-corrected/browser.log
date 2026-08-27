@@ -1,0 +1,705 @@
+[RTVI Transport] Initialized
+[Pipecat Client] Initialized 1.13.0
+[Pipecat Client] Initializing devices...
+[Pipecat Client] Fetching from http://127.0.0.1:7860/start
+[Pipecat Client] Received response from http://127.0.0.1:7860/start Response
+iceConnectionState: new
+signalingState: stable
+addUserMedia this.tracks(): [object Object]
+addUserMedia audioTrack: [object MediaStreamTrack]
+addUserMedia videoTrack: undefined
+addUserMedia screenVideoTrack: null
+signalingState: have-local-offer
+Waiting for ICE gathering to complete. Current state: new
+icegatheringstatechange: new
+icegatheringstatechange: gathering
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+New ICE candidate: RTCIceCandidate
+ICE gathering timed out after 2000 ms.
+Will create offer for peerId: null
+[Pipecat Client] Fetching from http://127.0.0.1:7860/sessions/04a77d8a-165e-4b20-a374-77176a88ca44/api/offer
+[Pipecat Client] Received response from http://127.0.0.1:7860/sessions/04a77d8a-165e-4b20-a374-77176a88ca44/api/offer Response
+Received answer for peer connection id SmallWebRTCConnection#0-b380909ea10f4a079b3d797c05e482b7
+ICE Connection State: checking
+signalingState: stable
+Received new remote track for microphone
+Received new remote track for camera
+ICE Connection State: connected
+All ICE candidates have been sent.
+datachannel opened
+Remote track unmuted: microphone
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-ready, id: 7922ef6d, data: Object}
+[RTVI Message] {id: 7922ef6d, type: bot-ready, data: Object}
+[Pipecat Client] Bot is ready. Version: 2.1.0
+[Pipecat Client] Bot protocol version 2.1.0 — using RTVI 2.0.0 path (server-side speech progress).
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-transcription, data: Object}
+[RTVI Message] {id: undefined, type: bot-transcription, data: Object}
+[Pipecat Client] Bot transcription is deprecated. Please use the onBotOutput instead.
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-transcription, data: Object}
+[RTVI Message] {id: undefined, type: bot-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-transcription, data: Object}
+[RTVI Message] {id: undefined, type: bot-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-transcription, data: Object}
+[RTVI Message] {id: undefined, type: bot-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: llm-function-call-started, data: Object}
+[RTVI Message] {id: undefined, type: llm-function-call-started, data: Object}
+received message: {label: rtvi-ai, type: llm-function-call-in-progress, data: Object}
+[RTVI Message] {id: undefined, type: llm-function-call-in-progress, data: Object}
+received message: {label: rtvi-ai, type: llm-function-call-stopped, data: Object}
+[RTVI Message] {id: undefined, type: llm-function-call-stopped, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-transcription, data: Object}
+[RTVI Message] {id: undefined, type: bot-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-transcription, data: Object}
+[RTVI Message] {id: undefined, type: bot-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-output, data: Object}
+[RTVI Message] {id: undefined, type: bot-output, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-tts-text, data: Object}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: user-started-speaking}
+[RTVI Message] {id: undefined, type: user-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-interrupted}
+[RTVI Message] {id: undefined, type: bot-interrupted, data: undefined}
+[Pipecat Client] Unrecognized message type bot-interrupted
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-stopped}
+[RTVI Message] {id: undefined, type: bot-tts-stopped, data: undefined}
+received message: {label: rtvi-ai, type: bot-stopped-speaking}
+[RTVI Message] {id: undefined, type: bot-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-stopped}
+[RTVI Message] {id: undefined, type: bot-llm-stopped, data: undefined}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-stopped-speaking}
+[RTVI Message] {id: undefined, type: user-stopped-speaking, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: user-transcription, data: Object}
+[RTVI Message] {id: undefined, type: user-transcription, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-started}
+[RTVI Message] {id: undefined, type: bot-llm-started, data: undefined}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-tts-started}
+[RTVI Message] {id: undefined, type: bot-tts-started, data: undefined}
+received message: {label: rtvi-ai, type: bot-started-speaking}
+[RTVI Message] {id: undefined, type: bot-started-speaking, data: undefined}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+received message: {label: rtvi-ai, type: metrics, data: Object}
+[RTVI Message] {id: undefined, type: metrics, data: Object}
+received message: {label: rtvi-ai, type: bot-llm-text, data: Object}
+[RTVI Message] {id: undefined, type: bot-llm-text, data: Object}
+Remote track ended: microphone
+Remote track ended: camera
+datachannel closed

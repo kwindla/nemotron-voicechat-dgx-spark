@@ -1,0 +1,14 @@
+{
+ "response_001.wav": {
+  "transcript": "Hi, it is great to meet you. How can I help you today?",
+  "seconds": 4.48
+ },
+ "response_002.wav": {
+  "transcript": "I am sorry. I am not sure what you mean by that. Could you clarify?",
+  "seconds": 5.92
+ },
+ "response_003.wav": {
+  "transcript": "Sure, once upon a time a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was hard to find. Finally he saw a flash of color in the distance. It was a magical unicorn standing on a hill. The night was overjoyed and spent the rest of his life caring for the unicorn.",
+  "seconds": 19.84
+ }
+}

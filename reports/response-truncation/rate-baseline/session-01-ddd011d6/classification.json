@@ -1,0 +1,56 @@
+[
+ {
+  "index": 1,
+  "generated_words": 117,
+  "spoken_words": 92,
+  "percent": 76.1,
+  "status": "cancelled",
+  "truncated": false,
+  "lost": "adventure that was passed down through generations"
+ },
+ {
+  "index": 2,
+  "generated_words": 18,
+  "spoken_words": 10,
+  "percent": 55.6,
+  "status": "cancelled",
+  "truncated": false,
+  "lost": "what is the time zone you are in"
+ },
+ {
+  "index": 3,
+  "generated_words": 1,
+  "spoken_words": 0,
+  "percent": 0.0,
+  "status": "cancelled",
+  "truncated": false,
+  "lost": "i"
+ },
+ {
+  "index": 4,
+  "generated_words": 8,
+  "spoken_words": 8,
+  "percent": 100.0,
+  "status": "completed",
+  "truncated": false,
+  "lost": ""
+ },
+ {
+  "index": 5,
+  "generated_words": 20,
+  "spoken_words": 18,
+  "percent": 90.0,
+  "status": "cancelled",
+  "truncated": false,
+  "lost": "are in"
+ },
+ {
+  "index": 6,
+  "generated_words": 20,
+  "spoken_words": 20,
+  "percent": 100.0,
+  "status": null,
+  "truncated": false,
+  "lost": ""
+ }
+]

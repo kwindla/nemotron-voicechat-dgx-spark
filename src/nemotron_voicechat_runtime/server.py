@@ -33,7 +33,7 @@ import traceback
 import uuid
 import wave
 from collections import deque
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -59,6 +59,8 @@ from .protocol import (
 )
 from .provenance import (
     NANO_PAD_PAIR_PRODUCTION_POLICY,
+    NOTEXT_WATCHDOG_HOTFIX_V1,
+    NOTEXT_WATCHDOG_HOTFIX_V1_ENVIRONMENT,
     PRODUCTION_ENVIRONMENT,
     QUAL_NO_TEXT_WATCHDOG_OVERRIDE_ENV,
     QUALIFICATION_MODE_ENV,
@@ -77,6 +79,7 @@ OUTPUT_SAMPLE_RATE = 22_050
 FRAME_SECONDS = 0.08
 FRAME_SAMPLES = int(INPUT_SAMPLE_RATE * FRAME_SECONDS)
 MAX_INPUT_MESSAGE_BYTES = FRAME_SAMPLES * 2 * 16
+REALTIME_RECEIVE_QUEUE_MESSAGES = 256
 MAX_TYPED_INPUT_CHARS = 1_000
 FUNCTION_CALL_TIMEOUT_SECONDS = 30.0
 FUNCTION_OUTPUT_APPLY_MAX_FRAMES = FUNCTION_OUTPUT_RECOVERY_MAX_FRAMES
@@ -87,8 +90,9 @@ TOOL_GROUNDING_INSTRUCTIONS = (
     "words and call no tool. "
     "Never invent or imply a tool result without calling the tool. If you say you "
     "will use a tool, emit that tool call before ending the turn. After a tool "
-    "response arrives, answer the user and explicitly include the exact returned "
-    "result."
+    "response arrives, answer the user and explicitly include the exact MOST RECENT "
+    "returned result for that capability. Never restate an older result after a newer "
+    "result supersedes it."
 )
 PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
     {
@@ -97,6 +101,10 @@ PUBLIC_VLLM_MANIFEST_KINDS = frozenset(
     }
 )
 DIAGNOSTIC_FP32_VLLM_MANIFEST_KIND = "exact_public_vllm_extraction"
+DIAGNOSTIC_EARTTS_AB_VLLM_MANIFEST_KIND = "exact_public_vllm_eartts_quantization_ab"
+DIAGNOSTIC_FULL_PRECISION_AB_VLLM_MANIFEST_KIND = (
+    "exact_public_vllm_full_precision_ab"
+)
 LOGGER = logging.getLogger(__name__)
 STARTUP_READY_SENTINEL = Path("/tmp/voicechat-step9-ready")
 STEP9_FALLBACK_COUNTER = Path("/tmp/voicechat-step9-fallbacks.jsonl")
@@ -190,8 +198,21 @@ def accepted_vllm_manifest_kinds() -> frozenset[str]:
         os.environ.get("VOICECHAT_DIRECT_SEMANTIC_PROBE_DIR", "").strip()
         and os.environ.get("VOICECHAT_DIRECT_SEMANTIC_PRECISION", "").casefold() == "fp32"
     )
+    diagnostic_eartts_ab = bool(
+        os.environ.get("VOICECHAT_DIAGNOSTIC_EARTTS_AB", "").strip()
+        and os.environ.get("VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256", "").strip()
+    )
+    diagnostic_full_precision_ab = bool(
+        os.environ.get("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB", "").strip()
+        and os.environ.get("VOICECHAT_DIAGNOSTIC_NANO_CONFIG_SHA256", "").strip()
+        and os.environ.get("VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256", "").strip()
+    )
     return PUBLIC_VLLM_MANIFEST_KINDS | (
         {DIAGNOSTIC_FP32_VLLM_MANIFEST_KIND} if diagnostic_fp32 else set()
+    ) | ({DIAGNOSTIC_EARTTS_AB_VLLM_MANIFEST_KIND} if diagnostic_eartts_ab else set()) | (
+        {DIAGNOSTIC_FULL_PRECISION_AB_VLLM_MANIFEST_KIND}
+        if diagnostic_full_precision_ab
+        else set()
     )
 
 
@@ -292,6 +313,64 @@ class UserEouSettlementFailure(RuntimeError):
         super().__init__(message)
         self.code = code
         self.evidence = evidence
+
+
+@dataclass
+class UserEouEarlyFenceArm:
+    """Revocable blank-fence evidence captured before a client EOU commit."""
+
+    client_turn_id: int
+    target_blank_frames: int
+    armed_transport_frame: int
+    armed_model_frame: int
+    blank_frames: int
+    eligible_audio_frames: int = 1
+
+    def observe(self, *, blank_frames: int, transport_frame: int, model_frame: int) -> None:
+        """Advance an arm only with another speech-gate-eligible real frame."""
+
+        if blank_frames < 0:
+            raise ValueError("pre-armed RNNT blank count must be non-negative")
+        self.blank_frames = blank_frames
+        self.eligible_audio_frames += 1
+
+    def evidence(self) -> dict[str, int]:
+        return {
+            "client_turn_id": self.client_turn_id,
+            "target_blank_frames": self.target_blank_frames,
+            "armed_transport_frame": self.armed_transport_frame,
+            "armed_model_frame": self.armed_model_frame,
+            "prearmed_blank_frames": self.blank_frames,
+            "eligible_audio_frames": self.eligible_audio_frames,
+        }
+
+
+def split_fence_eligible_pcm(
+    pcm16: bytes,
+    *,
+    threshold_dbfs: float,
+) -> tuple[bytes, bytes, bool]:
+    """Split complete, quiet model frames from queued microphone PCM.
+
+    Eligibility is deliberately fail-closed: only complete 80 ms frames whose
+    measured RMS is strictly below the configured speech gate are returned in
+    the consumable prefix. The first speech-bearing frame and all bytes after it
+    remain ordered for the ordinary input path.
+    """
+
+    if len(pcm16) % 2:
+        raise ValueError("PCM16 settlement audio must contain whole samples")
+    frame_bytes = FRAME_SAMPLES * 2
+    eligible_bytes = 0
+    first_ineligible = False
+    for offset in range(0, len(pcm16) - frame_bytes + 1, frame_bytes):
+        frame = pcm16_bytes_to_float32(pcm16[offset : offset + frame_bytes])
+        rms_dbfs = float(audio_stats(frame)["rms_dbfs"])
+        if not math.isfinite(rms_dbfs) or rms_dbfs >= threshold_dbfs:
+            first_ineligible = True
+            break
+        eligible_bytes += frame_bytes
+    return pcm16[:eligible_bytes], pcm16[eligible_bytes:], first_ineligible
 
 
 def _eartts_reset_count(engine: Any) -> int:
@@ -410,10 +489,17 @@ class UserEouSettlement:
     assistant_text_baseline: str
     function_text_baseline: str
     eartts_reset_count_starting: int
+    prearmed_blank_frames: int = 0
+    post_commit_blank_deficit: int = 0
+    prearm_evidence: dict[str, Any] | None = None
+    post_commit_steps: list[dict[str, Any]] | None = None
     expected_client_turn_id: int | None = None
     eartts_transition_count_starting: int | None = None
     eartts_reuse_count_starting: int | None = None
     model_steps: int = 0
+    real_audio_model_steps: int = 0
+    synthetic_model_steps: int = 0
+    real_audio_stopped_by_speech_gate: bool = False
     steps: list[dict[str, Any]] | None = None
     fused_terminal_bos: bool = False
     separate_terminal_bos: bool = False
@@ -425,6 +511,8 @@ class UserEouSettlement:
             raise ValueError("user EOU settlement target must be positive")
         if self.steps is None:
             self.steps = []
+        if self.post_commit_steps is None:
+            self.post_commit_steps = []
 
     @classmethod
     def begin(
@@ -433,9 +521,15 @@ class UserEouSettlement:
         result: Any,
         *,
         expected_client_turn_id: int | None = None,
+        prearmed_blank_frames: int = 0,
+        prearm_evidence: dict[str, Any] | None = None,
+        post_commit_steps: list[dict[str, Any]] | None = None,
     ) -> UserEouSettlement:
         target = int(engine.user_eou_settlement_blank_frames())
         starting = int(engine.rnnt_blank_count(result))
+        prearmed = int(prearmed_blank_frames)
+        if prearmed < 0 or prearmed > starting:
+            raise ValueError("pre-armed RNNT blank count must be within the commit count")
         epoch = _eartts_epoch_status(engine)
         settlement = cls(
             target_blank_frames=target,
@@ -444,6 +538,14 @@ class UserEouSettlement:
             assistant_text_baseline=str(getattr(result, "assistant_text", "") or ""),
             function_text_baseline=str(getattr(result, "function_text", "") or ""),
             eartts_reset_count_starting=_eartts_reset_count(engine),
+            prearmed_blank_frames=prearmed,
+            post_commit_blank_deficit=max(0, target - starting),
+            prearm_evidence=(None if prearm_evidence is None else dict(prearm_evidence)),
+            post_commit_steps=(
+                []
+                if post_commit_steps is None
+                else [dict(step) for step in post_commit_steps]
+            ),
             expected_client_turn_id=expected_client_turn_id,
             eartts_transition_count_starting=(
                 None if epoch is None else int(epoch["bos_transition_count"])
@@ -474,10 +576,20 @@ class UserEouSettlement:
             )
         return True
 
-    def observe(self, engine: Any, result: Any) -> None:
+    def observe(
+        self,
+        engine: Any,
+        result: Any,
+        *,
+        input_source: str = "synthetic_silence",
+    ) -> None:
         """Record and validate one model step before the caller publishes it."""
 
         self.model_steps += 1
+        if input_source == "queued_microphone_audio":
+            self.real_audio_model_steps += 1
+        else:
+            self.synthetic_model_steps += 1
         self.ending_blank_frames = int(engine.rnnt_blank_count(result))
         turn_state = result.turn_state or {}
         boundary = turn_state.get("response_boundary") or {}
@@ -510,6 +622,7 @@ class UserEouSettlement:
             perception_frame = int(perception_frame_fn())
         step = {
             "model_step": self.model_steps,
+            "settlement_input_source": input_source,
             "frame_index": int(getattr(result, "frame_index", -1)),
             "audio_frame_index_after": int(getattr(engine, "audio_frame_index", -1)),
             "perception_frame_idx_after": perception_frame,
@@ -563,10 +676,20 @@ class UserEouSettlement:
                 self.evidence(),
             )
 
-    def observe_fused_terminal(self, engine: Any, result: Any) -> None:
+    def observe_fused_terminal(
+        self,
+        engine: Any,
+        result: Any,
+        *,
+        input_source: str = "synthetic_silence",
+    ) -> None:
         """Validate the one no-tools position that proves the fence and opens BOS."""
 
         self.model_steps += 1
+        if input_source == "queued_microphone_audio":
+            self.real_audio_model_steps += 1
+        else:
+            self.synthetic_model_steps += 1
         turn_state = result.turn_state or {}
         marker = turn_state.get("client_eou_blank_fence") or {}
         boundary = turn_state.get("response_boundary") or {}
@@ -614,6 +737,7 @@ class UserEouSettlement:
             perception_frame = int(perception_frame_fn())
         step = {
             "model_step": self.model_steps,
+            "settlement_input_source": input_source,
             "frame_index": int(getattr(result, "frame_index", -1)),
             "audio_frame_index_after": int(getattr(engine, "audio_frame_index", -1)),
             "perception_frame_idx_after": perception_frame,
@@ -947,9 +1071,18 @@ class UserEouSettlement:
         evidence = {
             "target_blank_frames": self.target_blank_frames,
             "starting_blank_frames": self.starting_blank_frames,
+            "prearmed_blank_frames": self.prearmed_blank_frames,
+            "post_commit_blank_deficit": self.post_commit_blank_deficit,
+            "prearm": self.prearm_evidence,
+            "post_commit_steps": list(self.post_commit_steps or []),
             "ending_blank_frames": self.ending_blank_frames,
             "max_model_steps": self.max_model_steps,
             "model_steps": self.model_steps,
+            "real_audio_model_steps": self.real_audio_model_steps,
+            "synthetic_model_steps": self.synthetic_model_steps,
+            "real_audio_stopped_by_speech_gate": (
+                self.real_audio_stopped_by_speech_gate
+            ),
             "eartts_reset_count_starting": self.eartts_reset_count_starting,
             "fence_reached": self.ending_blank_frames >= self.target_blank_frames,
             "within_bound": self.model_steps <= self.max_model_steps,
@@ -1135,6 +1268,58 @@ def env_bool(name: str, default: bool) -> bool:
     if normalized in {"0", "false", "no", "off"}:
         return False
     raise SystemExit(f"{name} must be a boolean, got {value!r}")
+
+
+def configured_response_wall_seconds(environment: Mapping[str, str] | None = None) -> float:
+    """Parse the whole-response wall deadline and enforce named contracts."""
+
+    values = os.environ if environment is None else environment
+    raw = values.get("VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC", "0")
+    try:
+        seconds = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise SystemExit(
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC must be a finite non-negative number"
+        ) from exc
+    if not math.isfinite(seconds) or seconds < 0:
+        raise SystemExit(
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC must be a finite non-negative number"
+        )
+    contract = values.get("VOICECHAT_RUNTIME_CONTRACT", "").strip()
+    if contract == NOTEXT_WATCHDOG_HOTFIX_V1 and seconds != 30.0:
+        raise SystemExit(
+            f"{NOTEXT_WATCHDOG_HOTFIX_V1} requires "
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC=30"
+        )
+    diagnostic_raw = values.get(
+        "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC", ""
+    ).strip()
+    if diagnostic_raw:
+        capture_enabled = bool(
+            values.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip()
+        )
+        full_precision_ab = bool(
+            values.get("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB", "").strip()
+        )
+        if not capture_enabled and not full_precision_ab:
+            raise SystemExit(
+                "diagnostic response-wall override requires EarTTS acoustic capture "
+                "or the attested full-precision A/B"
+            )
+        try:
+            diagnostic_seconds = float(diagnostic_raw)
+        except (TypeError, ValueError) as exc:
+            raise SystemExit(
+                "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC must be finite and "
+                "greater than the production deadline"
+            ) from exc
+        if not math.isfinite(diagnostic_seconds) or diagnostic_seconds <= seconds:
+            raise SystemExit(
+                "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC must be finite and "
+                "greater than the production deadline"
+            )
+        return diagnostic_seconds
+    return seconds
 
 
 def fc_async_heartbeat_enabled() -> bool:
@@ -2028,6 +2213,48 @@ def pcm16_bytes_to_float32(payload: bytes) -> np.ndarray:
     return np.frombuffer(payload, dtype="<i2").astype(np.float32) / 32768.0
 
 
+def decode_audio_append_payload(body: dict[str, Any]) -> bytes:
+    """Validate one realtime PCM append and return its exact payload."""
+
+    if body.get("encoding") != "pcm16":
+        raise RealtimeProtocolError(
+            "unsupported_audio_encoding",
+            "Only pcm16 input is supported",
+        )
+    try:
+        sample_rate = int(body.get("sample_rate", 0))
+        channels = int(body.get("channels", 0))
+    except (ValueError, TypeError) as exc:
+        raise RealtimeProtocolError("invalid_audio", str(exc)) from exc
+    if sample_rate != INPUT_SAMPLE_RATE:
+        raise RealtimeProtocolError(
+            "unsupported_sample_rate",
+            f"Input must be {INPUT_SAMPLE_RATE} Hz",
+        )
+    if channels != 1:
+        raise RealtimeProtocolError(
+            "unsupported_channel_count",
+            "Input must be mono",
+        )
+    try:
+        payload = base64.b64decode(body.get("audio", ""), validate=True)
+    except (ValueError, TypeError, base64.binascii.Error) as exc:
+        raise RealtimeProtocolError("invalid_audio", str(exc)) from exc
+    if not payload:
+        raise RealtimeProtocolError("empty_audio", "Audio payload must not be empty")
+    if len(payload) % 2:
+        raise RealtimeProtocolError(
+            "invalid_audio",
+            "PCM16 audio must contain whole samples",
+        )
+    if len(payload) > MAX_INPUT_MESSAGE_BYTES:
+        raise RealtimeProtocolError(
+            "audio_packet_too_large",
+            "Audio packet is too large",
+        )
+    return payload
+
+
 def float32_to_pcm16_bytes(samples: np.ndarray) -> bytes:
     """Encode normalized audio as clipped little-endian PCM16."""
     clipped = np.clip(np.asarray(samples, dtype=np.float32), -1.0, 1.0)
@@ -2269,6 +2496,9 @@ def response_audio_is_deliverable(turn_state: dict[str, Any]) -> bool:
     boundary = turn_state.get("response_boundary")
     if not isinstance(boundary, dict):
         return False
+    deadline = turn_state.get("response_wall_deadline")
+    if isinstance(deadline, dict) and deadline.get("expired") is True:
+        return False
     return (
         boundary.get("phase") in {"responding", "tail_draining"} or boundary.get("event") == "start"
     )
@@ -2477,11 +2707,17 @@ class AgentSilenceEosWatchdog:
             self.function_call_emissions += function_delta.count("<TOOLCALL>")
         if output_dbfs > self.threshold_dbfs:
             self.audible_seen = True
-        if function_delta or text_delta:
+        audio_audible = output_dbfs > self.threshold_dbfs
+        # Text generation and EarTTS rendering are decoupled.  Once Nano has
+        # handed text to EarTTS, the text channel can be quiet for many frames
+        # while decoded speech is still live.  The no-text watchdog is the
+        # joint "neither semantic nor acoustic progress" guard; the independent
+        # no-audio and decoded-silence guards below retain their own contracts.
+        if function_delta or text_delta or audio_audible:
             self.no_text_frames = 0
         else:
             self.no_text_frames += 1
-        if function_delta or output_dbfs > self.threshold_dbfs:
+        if function_delta or audio_audible:
             self.no_audio_frames = 0
         else:
             self.no_audio_frames += 1
@@ -2577,6 +2813,99 @@ class QualificationAgentSilenceEosWatchdog(AgentSilenceEosWatchdog):
             "qualification_mode": self.qualification_mode.label,
             "qualification_candidate": self.qualification_mode.candidate,
         }
+
+
+class ResponseWallClockDeadline:
+    """One monotonic deadline from agent BOS through the acoustic terminal."""
+
+    def __init__(
+        self,
+        seconds: float,
+        request_eos: Callable[[], None],
+        *,
+        clock: Callable[[], float] = time.monotonic,
+        timer_factory: Callable[[float, Callable[[], None]], Any] = threading.Timer,
+    ) -> None:
+        if not math.isfinite(seconds) or seconds < 0:
+            raise ValueError("response wall deadline must be finite and non-negative")
+        self.seconds = float(seconds)
+        self._request_eos = request_eos
+        self._clock = clock
+        self._timer_factory = timer_factory
+        self._lock = threading.Lock()
+        self._timer: Any | None = None
+        self._generation = 0
+        self.started_at: float | None = None
+        self.expired_at: float | None = None
+        self.eos_requested = False
+
+    @property
+    def active(self) -> bool:
+        return self.started_at is not None
+
+    @property
+    def expired(self) -> bool:
+        return self.expired_at is not None
+
+    def arm(self) -> bool:
+        if self.seconds == 0:
+            return False
+        with self._lock:
+            if self.started_at is not None:
+                return False
+            self._generation += 1
+            generation = self._generation
+            self.started_at = self._clock()
+            self.expired_at = None
+            self.eos_requested = False
+            timer = self._timer_factory(
+                self.seconds, lambda: self._expire(generation)
+            )
+            if hasattr(timer, "daemon"):
+                timer.daemon = True
+            self._timer = timer
+            timer.start()
+        return True
+
+    def _expire(self, generation: int) -> None:
+        with self._lock:
+            if generation != self._generation or self.started_at is None or self.expired:
+                return
+            self.expired_at = self._clock()
+            self.eos_requested = True
+        # The wrapper hook only latches EOS; it does not synthesize redirect
+        # text. Calling outside the lock also keeps teardown non-blocking.
+        self._request_eos()
+
+    def reset(self) -> dict[str, Any]:
+        with self._lock:
+            snapshot = self.snapshot_unlocked()
+            self._generation += 1
+            timer, self._timer = self._timer, None
+            self.started_at = None
+            self.expired_at = None
+            self.eos_requested = False
+        if timer is not None:
+            timer.cancel()
+        return snapshot
+
+    def snapshot_unlocked(self) -> dict[str, Any]:
+        elapsed = None
+        if self.started_at is not None:
+            elapsed = max(0.0, (self.expired_at or self._clock()) - self.started_at)
+        return {
+            "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+            "budget_seconds": self.seconds,
+            "active": self.started_at is not None,
+            "expired": self.expired_at is not None,
+            "eos_requested": self.eos_requested,
+            "elapsed_seconds": elapsed,
+            "redirect_policy": "none",
+        }
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            return self.snapshot_unlocked()
 
 
 @dataclass
@@ -2757,6 +3086,7 @@ class AcousticResponseBoundary:
         text_delta: str = "",
         watchdog_eos_pending: bool = False,
         watchdog_eos_reason: str | None = None,
+        response_wall_deadline_expired: bool = False,
         max_response_frames: int = 0,
     ) -> dict[str, Any]:
         event: str | None = None
@@ -2800,6 +3130,8 @@ class AcousticResponseBoundary:
                 self.post_eos_frames = 0
                 if watchdog_eos_pending:
                     self.eos_reason = watchdog_eos_reason or "decoded_silence_watchdog"
+                elif response_wall_deadline_expired:
+                    self.eos_reason = "max_response_wall_time"
                 elif (
                     self.bos_frame is not None
                     and max_response_frames > 0
@@ -2905,6 +3237,7 @@ class VoiceChatEngine:
         response_tail_silence_frames: int = 3,
         response_tail_max_frames: int = 25,
         delivery_silence_frames: int = 12,
+        max_agent_response_seconds: float = 0.0,
     ):
         self.pipeline = pipeline
         self.stream_id = 0
@@ -2917,6 +3250,9 @@ class VoiceChatEngine:
         self.user_text = ""
         self.user_text_prefix = ""
         self.user_text_segment = ""
+        self.pending_response_user_text = ""
+        self.pending_response_attribution: dict[str, Any] | None = None
+        self.pending_post_tool_continuation: dict[str, Any] | None = None
         self.last_rnnt_decoded_count = 0
         self.vllm_request_position_baseline: dict[str, int] = {}
         qualification_identity: _QualificationModeIdentity | None = None
@@ -2948,6 +3284,10 @@ class VoiceChatEngine:
             required_silent_frames=response_tail_silence_frames,
             max_tail_frames=response_tail_max_frames,
             delivery_silence_frames=delivery_silence_frames,
+        )
+        self.response_wall_deadline = ResponseWallClockDeadline(
+            max_agent_response_seconds,
+            self.request_agent_eos,
         )
         self.pad_pair_idle_no_buffer_frames = 0
         self.pad_pair_watchdog_emitted = False
@@ -3727,10 +4067,14 @@ class VoiceChatEngine:
             self.user_text = ""
             self.user_text_prefix = ""
             self.user_text_segment = ""
+            self.pending_response_user_text = ""
+            self.pending_response_attribution = None
+            self.pending_post_tool_continuation = None
             self.last_rnnt_decoded_count = 0
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
+            self.response_wall_deadline.reset()
             self.pad_pair_idle_no_buffer_frames = 0
             self.pad_pair_watchdog_emitted = False
             self.pad_pair_trace_errors = 0
@@ -3791,9 +4135,13 @@ class VoiceChatEngine:
             self.user_text = ""
             self.user_text_prefix = ""
             self.user_text_segment = ""
+            self.pending_response_user_text = ""
+            self.pending_response_attribution = None
+            self.pending_post_tool_continuation = None
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
+            self.response_wall_deadline.reset()
             self.last_rnnt_decoded_count = 0
             raise VoiceChatEngineStartFailure(phase, timings_ms) from exc
 
@@ -4042,6 +4390,7 @@ class VoiceChatEngine:
                     )
                 },
             }
+        user_text = self._bind_pending_transcript_at_bos(turn_state, user_text)
         turn_state["vllm_request_positions"] = self._vllm_request_positions()
         trace_diagnostics = self._pad_pair_trace_diagnostics(context, total_frames - 1, turn_state)
         rnnt_state = turn_state.get("rnnt")
@@ -4092,17 +4441,29 @@ class VoiceChatEngine:
             function_delta=result.function_delta,
         )
         result.turn_state["agent_silence_watchdog"] = self.agent_silence_watchdog.snapshot()
-        result.turn_state["response_boundary"] = self.response_boundary.observe(
+        if control == "agent_bos":
+            self.response_wall_deadline.arm()
+        boundary = self.response_boundary.observe(
             control,
             float(result.output_audio["rms_dbfs"]),
             self.frame_index,
             text_delta=result.assistant_delta,
             watchdog_eos_pending=watchdog_eos_pending,
             watchdog_eos_reason=watchdog_eos_reason,
+            response_wall_deadline_expired=self.response_wall_deadline.expired,
             max_response_frames=int(
                 getattr(self.pipeline.s2s_model, "_max_agent_response_frames", 0)
             ),
         )
+        result.turn_state["response_boundary"] = boundary
+        if boundary.get("event") == "end":
+            deadline = self.response_wall_deadline.reset()
+            deadline["active"] = False
+            deadline["completed"] = True
+        else:
+            deadline = self.response_wall_deadline.snapshot()
+            deadline["completed"] = False
+        result.turn_state["response_wall_deadline"] = deadline
         if request_eos:
             request_fn = getattr(self.pipeline.s2s_model, "request_agent_eos", None)
             if not callable(request_fn):
@@ -4155,9 +4516,13 @@ class VoiceChatEngine:
             self.user_text = ""
             self.user_text_prefix = ""
             self.user_text_segment = ""
+            self.pending_response_user_text = ""
+            self.pending_response_attribution = None
+            self.pending_post_tool_continuation = None
             self.vllm_request_position_baseline = {}
             self.agent_silence_watchdog.reset()
             self.response_boundary.reset()
+            self.response_wall_deadline.reset()
             self.last_rnnt_decoded_count = 0
             if cleanup_error is not None:
                 self.cleanup_failure = f"{type(cleanup_error).__name__}: {cleanup_error}"
@@ -4226,6 +4591,93 @@ class VoiceChatEngine:
         state.output_asr_text_str = ""
         if hasattr(state, "_last_sent_asr_text"):
             state._last_sent_asr_text = None
+
+    def bind_user_transcript_to_next_response(
+        self, *, source: str, source_id: str | int
+    ) -> dict[str, Any]:
+        """Freeze the committed transcript until its possibly deferred BOS.
+
+        Tool-bearing turns use a separate terminal position.  Their BOS is
+        emitted only after the function result has crossed EOTR, after the
+        live RNNT transcript must already have been reset for the next user
+        turn.  This one-response binding keeps attribution independent of that
+        RNNT lifecycle and is consumed exactly once by the next agent BOS.
+        """
+
+        transcript = self.user_text.strip()
+        self.pending_response_user_text = transcript
+        # A newly committed user turn supersedes any tool continuation that
+        # did not open before the user spoke again.
+        self.pending_post_tool_continuation = None
+        self.pending_response_attribution = (
+            {
+                "kind": "user_turn",
+                "source": source,
+                "source_id": source_id,
+            }
+            if transcript
+            else None
+        )
+        return {
+            "bound": bool(transcript),
+            "source": source,
+            "source_id": source_id,
+            "user_text": transcript,
+        }
+
+    def bind_post_tool_continuation_to_next_response(self, *, call_id: str) -> None:
+        """Label a future BOS caused solely by a completed tool cycle."""
+
+        self.pending_post_tool_continuation = {
+            "kind": "post_tool_continuation",
+            "call_id": call_id,
+        }
+
+    def clear_pending_response_binding(self) -> dict[str, Any]:
+        """Cancel the committed-turn binding superseded before FC publication."""
+
+        evidence = {
+            "cleared": bool(
+                self.pending_response_user_text or self.pending_response_attribution
+            ),
+            "source": (
+                self.pending_response_attribution or {}
+            ).get("source"),
+            "source_id": (
+                self.pending_response_attribution or {}
+            ).get("source_id"),
+        }
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        return evidence
+
+    def _bind_pending_transcript_at_bos(
+        self, turn_state: dict[str, Any], user_text: str
+    ) -> str:
+        if turn_state.get("agent_control") != "agent_bos":
+            return user_text
+        pending = self.pending_response_user_text
+        attribution = self.pending_response_attribution
+        post_tool = self.pending_post_tool_continuation
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        self.pending_post_tool_continuation = None
+        if not pending or attribution is None:
+            if post_tool is not None:
+                turn_state["response_attribution"] = post_tool
+            return user_text
+        # The pending value belongs to the committed turn. Do not restore it
+        # into the live RNNT accumulator: on a deferred post-tool BOS that
+        # accumulator has already been reset and now belongs to the next turn.
+        bound_text = pending
+        function_state = turn_state.get("function_calling") or {}
+        forced_frame = function_state.get("post_fc_client_bos_forced_frame")
+        turn_state["response_attribution"] = {
+            **attribution,
+            "user_text_bound": bound_text,
+            "post_tool_continuation": forced_frame == self.frame_index,
+        }
+        return bound_text
 
     @staticmethod
     def _join_user_transcript(prefix: str, segment: str) -> str:
@@ -4309,9 +4761,22 @@ def checked_speech_root(path: str) -> Path:
     actual_patch = subprocess.check_output(["git", "-C", str(root), "diff", "--", *reviewed_paths])
     expected_patch = retained_patch.read_bytes()
     if actual_patch != expected_patch:
-        raise SystemExit(
-            "Speech runtime working-tree diff does not match the retained, "
-            f"reviewed patch: {retained_patch}"
+        diagnostic_wrapper_sha256 = os.environ.get(
+            "VOICECHAT_DIAGNOSTIC_SPEECH_WRAPPER_SHA256", ""
+        ).strip()
+        wrapper_path = root / reviewed_paths[1]
+        observed_wrapper_sha256 = sha256_file(wrapper_path)
+        if (
+            not diagnostic_wrapper_sha256
+            or observed_wrapper_sha256 != diagnostic_wrapper_sha256
+        ):
+            raise SystemExit(
+                "Speech runtime working-tree diff does not match the retained, "
+                f"reviewed patch: {retained_patch}"
+            )
+        LOGGER.warning(
+            "Diagnostic-only Speech wrapper accepted by exact SHA-256: %s",
+            observed_wrapper_sha256,
         )
     return root
 
@@ -4600,9 +5065,10 @@ def build_public_pipeline(args: argparse.Namespace) -> Any:
             os.environ.get("VOICECHAT_TRANSPORT_VAD_MIN_RNNT_TOKENS", "1")
         ),
         "s2s.system_prompt": "",
-        "s2s.max_agent_response_sec": float(
-            os.environ.get("VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC", "0")
-        ),
+        # The production contract is enforced by ResponseWallClockDeadline.
+        # Keep the upstream frame-count guard disabled: it is not wall time and
+        # its redirect tokenization occurs before late configuration updates.
+        "s2s.max_agent_response_sec": 0.0,
         "s2s.tts_text_token_ratio_cap": float(os.environ.get("S2S_TTS_TEXT_TOKEN_RATIO_CAP", "16")),
         "s2s.tts_text_token_min": int(os.environ.get("S2S_TTS_TEXT_TOKEN_MIN", "5")),
         "s2s.fc_fast_tool_grace_ms": fc_fast_tool_grace_ms(),
@@ -5035,15 +5501,37 @@ def _runtime_source_provenance(engine: VoiceChatEngine) -> dict[str, Any]:
     if pocket_worker_install.is_file():
         source_paths["pocket_environment/pocket_worker.py"] = pocket_worker_install
     wrapper = getattr(engine.pipeline, "s2s_model", None)
+    runtime_contract = os.environ.get("VOICECHAT_RUNTIME_CONTRACT", "").strip()
+    semantic_contract = (
+        NOTEXT_WATCHDOG_HOTFIX_V1_ENVIRONMENT
+        if runtime_contract == NOTEXT_WATCHDOG_HOTFIX_V1
+        else PRODUCTION_ENVIRONMENT
+    )
+    response_deadline = getattr(engine, "response_wall_deadline", None)
+    response_deadline_snapshot = (
+        response_deadline.snapshot()
+        if response_deadline is not None
+        else {
+            "contract": "whole_response_monotonic_wall_time_from_agent_bos",
+            "budget_seconds": configured_response_wall_seconds(),
+            "active": False,
+            "expired": False,
+            "eos_requested": False,
+            "elapsed_seconds": None,
+            "redirect_policy": "none",
+        }
+    )
     provenance = {
         "runtime_image": os.environ.get("VOICECHAT_RUNTIME_IMAGE"),
         "runtime_image_id": os.environ.get("VOICECHAT_RUNTIME_IMAGE_ID"),
+        "runtime_contract": runtime_contract or "frozen-production-candidate",
         "speech_commit": PINNED_COMMIT,
         "compute_dtype": str(getattr(wrapper, "dtype", None)),
         "source_sha256": {name: sha256_file(path) for name, path in sorted(source_paths.items())},
         "semantic_environment": {
-            name: os.environ.get(name) for name in sorted(PRODUCTION_ENVIRONMENT)
+            name: os.environ.get(name) for name in sorted(semantic_contract)
         },
+        "response_wall_deadline": response_deadline_snapshot,
         "nano_pad_pair_policy": {
             name: os.environ.get(name, "0") for name in sorted(NANO_PAD_PAIR_PRODUCTION_POLICY)
         },
@@ -5851,6 +6339,16 @@ def create_app(
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
     engine.external_user_eou_mode = client_turn_detection
+    diagnostic_lockstep = env_bool("VOICECHAT_DIAGNOSTIC_LOCKSTEP", False)
+    capture_enabled = bool(
+        os.environ.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip()
+    )
+    full_precision_ab = env_bool("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB", False)
+    if diagnostic_lockstep and not capture_enabled and not full_precision_ab:
+        raise RuntimeError(
+            "diagnostic lock-step mode requires EarTTS acoustic capture or the "
+            "attested full-precision A/B"
+        )
 
     # With postponed annotations, FastAPI resolves route parameter types from
     # module globals. Keep the heavyweight optional import lazy for unit tests,
@@ -5939,6 +6437,8 @@ def create_app(
             )
         if fc_async_benchmark_enabled():
             diagnostics["fc_async_benchmark"] = True
+        if diagnostic_lockstep:
+            diagnostics["input_event_processed_ack"] = True
         if diagnostics:
             result["diagnostics"] = diagnostics
         return result
@@ -6021,6 +6521,7 @@ def create_app(
         open_client_turn_id: int | None = None
         started_client_turns: dict[int, str | None] = {}
         completed_client_turns: dict[int, str | None] = {}
+        early_fence_arm: UserEouEarlyFenceArm | None = None
         function_cycle_call_id: str | None = None
         pending_bos_settlement: UserEouSettlement | None = None
         pending_function_turn_id: str | None = None
@@ -6033,6 +6534,28 @@ def create_app(
         last_model_result: StepResult | None = None
         terminal_cleanup_task: asyncio.Task[None] | None = None
         terminal_origin_task: asyncio.Task[Any] | None = None
+
+        async def publish_diagnostic_processed(
+            client_event_id: str | None,
+            client_event_type: str,
+        ) -> None:
+            if not diagnostic_lockstep:
+                return
+            if not isinstance(client_event_id, str) or not client_event_id:
+                raise RuntimeError("diagnostic lock-step input requires event_id")
+            await websocket.send_json(
+                protocol.diagnostic_event(
+                    "voicechat.client_event.processed",
+                    client_event_id=client_event_id,
+                    client_event_type=client_event_type,
+                    transport_frame=transport_frame,
+                    model_frame=(
+                        None
+                        if last_model_result is None
+                        else int(last_model_result.frame_index)
+                    ),
+                )
+            )
 
         def clear_current_task_cancellation() -> None:
             current = asyncio.current_task()
@@ -6344,13 +6867,17 @@ def create_app(
             before_send: Callable[[StepResult], None] | None = None,
             synthetic_control: bool = False,
             suppress_response_output: bool = False,
+            fence_settlement: bool = False,
+            model_input_provenance: str | None = None,
         ) -> StepResult | None:
             """Feed PCM through the single RNNT-owned model input path."""
 
             nonlocal transport_frame, session_started, last_user_text, close_reason
             nonlocal last_model_result, pending_bos_settlement, pending_function_turn_id
             nonlocal cancelling_unpublished_function_turn_id
+            nonlocal early_fence_arm
             decoded_packet = pcm16_bytes_to_float32(payload)
+            provenance = model_input_provenance or f"{source}_audio"
             last_result: StepResult | None = None
             trace.input_pcm(payload)
             trace.event(
@@ -6358,6 +6885,7 @@ def create_app(
                 bytes=len(payload),
                 source=source,
                 job_id=job_id,
+                model_input_provenance=provenance,
                 audio=audio_stats(decoded_packet),
             )
             async with model_input_lock:
@@ -6444,6 +6972,47 @@ def create_app(
                     )
                     last_result = result
                     last_model_result = result
+                    frame_dbfs = float(frame_stats["rms_dbfs"])
+                    if (
+                        source == "microphone"
+                        and provenance == "microphone_audio"
+                        and open_client_turn_id is not None
+                        and not synthetic_control
+                        and not fence_settlement
+                    ):
+                        if math.isfinite(frame_dbfs) and frame_dbfs < speech_gate_dbfs:
+                            blank_frames = int(engine.rnnt_blank_count(result))
+                            if (
+                                early_fence_arm is None
+                                or early_fence_arm.client_turn_id != open_client_turn_id
+                            ):
+                                early_fence_arm = UserEouEarlyFenceArm(
+                                    client_turn_id=open_client_turn_id,
+                                    target_blank_frames=int(
+                                        engine.user_eou_settlement_blank_frames()
+                                    ),
+                                    armed_transport_frame=transport_frame,
+                                    armed_model_frame=int(result.frame_index),
+                                    blank_frames=blank_frames,
+                                )
+                                trace.event(
+                                    "user_eou_fence_prearmed",
+                                    **early_fence_arm.evidence(),
+                                )
+                            else:
+                                early_fence_arm.observe(
+                                    blank_frames=blank_frames,
+                                    transport_frame=transport_frame,
+                                    model_frame=int(result.frame_index),
+                                )
+                        elif early_fence_arm is not None:
+                            trace.event(
+                                "user_eou_fence_prearm_revoked",
+                                reason="speech_gate_active",
+                                audio_rms_dbfs=frame_dbfs,
+                                **early_fence_arm.evidence(),
+                            )
+                            early_fence_arm = None
                     if (
                         cancelling_unpublished_function_turn_id is not None
                         and function_cycle_call_id is None
@@ -6499,12 +7068,77 @@ def create_app(
                         transport_gate.observe_response_end()
             return last_result
 
+        def requeue_microphone_pcm(
+            payload: bytes,
+            *,
+            template: dict[str, Any],
+        ) -> None:
+            """Put inspected PCM back at the head of ordinary client input."""
+
+            chunks = [
+                payload[offset : offset + MAX_INPUT_MESSAGE_BYTES]
+                for offset in range(0, len(payload), MAX_INPUT_MESSAGE_BYTES)
+            ]
+            for chunk in reversed(chunks):
+                body = dict(template)
+                body["audio"] = base64.b64encode(chunk).decode("ascii")
+                text = json.dumps(body, separators=(",", ":"))
+                received_ahead.appendleft(
+                    {"type": "websocket.receive", "text": text}
+                )
+
+        def take_queued_settlement_frame() -> tuple[bytes | None, bool]:
+            """Take one complete quiet frame without crossing a client event."""
+
+            combined = bytearray()
+            template: dict[str, Any] | None = None
+            while len(combined) < FRAME_SAMPLES * 2:
+                message = receive_buffered_nowait()
+                if message is None:
+                    break
+                text = message.get("text")
+                try:
+                    body = json.loads(text) if isinstance(text, str) else None
+                except json.JSONDecodeError:
+                    body = None
+                if not isinstance(body, dict) or body.get("type") != "input_audio_buffer.append":
+                    received_ahead.appendleft(message)
+                    break
+                try:
+                    payload = decode_audio_append_payload(body)
+                except (RealtimeProtocolError, ValueError, TypeError):
+                    received_ahead.appendleft(message)
+                    break
+                if template is None:
+                    template = body
+                combined.extend(payload)
+            frame_bytes = FRAME_SAMPLES * 2
+            if template is None:
+                return None, False
+            if len(combined) < frame_bytes:
+                requeue_microphone_pcm(bytes(combined), template=template)
+                return None, False
+            frame = bytes(combined[:frame_bytes])
+            remainder = bytes(combined[frame_bytes:])
+            eligible, _, first_ineligible = split_fence_eligible_pcm(
+                frame,
+                threshold_dbfs=speech_gate_dbfs,
+            )
+            if not eligible:
+                requeue_microphone_pcm(bytes(combined), template=template)
+                return None, first_ineligible
+            if remainder:
+                requeue_microphone_pcm(remainder, template=template)
+            return frame, False
+
         async def settle_user_eou(
             *,
             source: str,
             job_id: str | None,
             fuse_final_bos: bool,
             expected_client_turn_id: int | None = None,
+            prearm: UserEouEarlyFenceArm | None = None,
+            post_commit_steps: list[dict[str, Any]] | None = None,
             on_fused_terminal: Callable[[], Awaitable[None]] | None = None,
         ) -> UserEouSettlement:
             """Advance the minimum bounded blank fence before forcing BOS."""
@@ -6514,17 +7148,30 @@ def create_app(
                 engine,
                 last_model_result,
                 expected_client_turn_id=expected_client_turn_id,
+                prearmed_blank_frames=(0 if prearm is None else prearm.blank_frames),
+                prearm_evidence=(None if prearm is None else prearm.evidence()),
+                post_commit_steps=post_commit_steps,
             )
             latch_armed = False
+            settlement_input_source = "synthetic_silence"
+            real_audio_consumption_stopped = False
 
             async def observe_settlement(result: StepResult) -> None:
                 marker = (result.turn_state or {}).get("client_eou_blank_fence")
                 if marker is not None:
-                    settlement.observe_fused_terminal(engine, result)
+                    settlement.observe_fused_terminal(
+                        engine,
+                        result,
+                        input_source=settlement_input_source,
+                    )
                     if on_fused_terminal is not None:
                         await on_fused_terminal()
                 else:
-                    settlement.observe(engine, result)
+                    settlement.observe(
+                        engine,
+                        result,
+                        input_source=settlement_input_source,
+                    )
 
             try:
                 while settlement.needs_step(engine, last_model_result):
@@ -6535,11 +7182,35 @@ def create_app(
                     ):
                         engine.request_user_eou_at_blank_fence(settlement.target_blank_frames)
                         latch_armed = True
+                    queued_frame = None
+                    real_audio_blocked = False
+                    if source == "microphone" and not real_audio_consumption_stopped:
+                        queued_frame, real_audio_blocked = take_queued_settlement_frame()
+                    settlement_input_source = (
+                        "queued_microphone_audio"
+                        if queued_frame is not None
+                        else "synthetic_silence"
+                    )
+                    if real_audio_blocked:
+                        real_audio_consumption_stopped = True
+                        settlement.real_audio_stopped_by_speech_gate = True
+                        trace.event(
+                            "user_eou_settlement_real_audio_blocked",
+                            reason="speech_gate_active",
+                            threshold_dbfs=speech_gate_dbfs,
+                            settlement=settlement.evidence(),
+                        )
                     await process_pcm(
-                        b"\x00\x00" * FRAME_SAMPLES,
+                        queued_frame or (b"\x00\x00" * FRAME_SAMPLES),
                         source=source,
                         job_id=job_id,
                         before_send=observe_settlement,
+                        fence_settlement=True,
+                        model_input_provenance=(
+                            "queued_microphone_audio"
+                            if queued_frame is not None
+                            else "synthetic_settlement"
+                        ),
                     )
             except UserEouSettlementFailure as exc:
                 failure_code = exc.code
@@ -6696,6 +7367,7 @@ def create_app(
                     job_id=None,
                     synthetic_control=True,
                     suppress_response_output=True,
+                    model_input_provenance="synthetic_response_cancel",
                 )
                 if not protocol.response_open:
                     return
@@ -6767,6 +7439,7 @@ def create_app(
                     source="microphone",
                     job_id=None,
                     synthetic_control=True,
+                    model_input_provenance="synthetic_response_drain",
                 )
                 drained_frames += 1
             evidence["drained_frames"] = drained_frames
@@ -6785,7 +7458,12 @@ def create_app(
             )
             frame = b"\x00\x00" * (INPUT_SAMPLE_RATE // 50)
             for _ in range(math.ceil(seconds / 0.02)):
-                await process_pcm(frame, source="typed", job_id=job.job_id)
+                await process_pcm(
+                    frame,
+                    source="typed",
+                    job_id=job.job_id,
+                    model_input_provenance="typed_trailing_silence",
+                )
 
         async def run_typed_job(job: ActiveTypedInput) -> None:
             nonlocal active_typed, close_reason
@@ -6848,6 +7526,7 @@ def create_app(
                             source="typed",
                             job_id=job.job_id,
                             before_first_model_frame=begin_mutation,
+                            model_input_provenance="typed_tail_padding",
                         )
             except PocketSynthesisCancelled:
                 disposition = "replaced" if job.replacement_requested else "cancelled"
@@ -6902,10 +7581,19 @@ def create_app(
                                     float32_to_pcm16_bytes(tail),
                                     source="typed",
                                     job_id=job.job_id,
+                                    model_input_provenance="typed_tail_padding",
                                 )
                             # No recovery here: the typed path owns deliberate
                             # cancel-then-replace interruption semantics; recovery
                             # would drain a response the client intends to cancel.
+                            bind_transcript = getattr(
+                                engine, "bind_user_transcript_to_next_response", None
+                            )
+                            if callable(bind_transcript):
+                                bind_transcript(
+                                    source="typed",
+                                    source_id=job.job_id,
+                                )
                             typed_settlement = await settle_user_eou(
                                 source="typed",
                                 job_id=job.job_id,
@@ -6924,6 +7612,7 @@ def create_app(
                                     source="typed",
                                     job_id=job.job_id,
                                     before_send=validate_typed_terminal,
+                                    model_input_provenance="synthetic_terminal_bos",
                                 )
                             engine.reset_user_transcript()
                         else:
@@ -7064,8 +7753,43 @@ def create_app(
         )
         engine.configure_external_tools({})
 
+        inbound_messages: asyncio.Queue[dict[str, Any]] = asyncio.Queue(
+            maxsize=REALTIME_RECEIVE_QUEUE_MESSAGES
+        )
+        received_ahead: deque[dict[str, Any]] = deque()
+        receiver_task: asyncio.Task[None] | None = None
+
+        async def receive_pump() -> None:
+            """Keep transport input flowing while model work owns the handler."""
+
+            try:
+                while True:
+                    message = await websocket.receive()
+                    await inbound_messages.put(message)
+                    if message.get("type") == "websocket.disconnect":
+                        return
+            except asyncio.CancelledError:
+                raise
+            except WebSocketDisconnect:
+                await inbound_messages.put({"type": "websocket.disconnect"})
+            except Exception as exc:
+                await inbound_messages.put(
+                    {"type": "voicechat.receive_error", "exception": exc}
+                )
+
+        def receive_buffered_nowait() -> dict[str, Any] | None:
+            if received_ahead:
+                return received_ahead.popleft()
+            try:
+                return inbound_messages.get_nowait()
+            except asyncio.QueueEmpty:
+                return None
+
         async def receive_or_terminal() -> dict[str, Any]:
-            receive_task = asyncio.create_task(websocket.receive())
+            buffered = receive_buffered_nowait()
+            if buffered is not None:
+                return buffered
+            receive_task = asyncio.create_task(inbound_messages.get())
             terminal_task = asyncio.create_task(terminal_session.wait())
             done, _ = await asyncio.wait(
                 {receive_task, terminal_task},
@@ -7092,6 +7816,10 @@ def create_app(
                     }
                 )
             )
+            receiver_task = asyncio.create_task(
+                receive_pump(),
+                name=f"voicechat-receive-{session_id}",
+            )
             while True:
                 if deferred_client_input and function_cycle_call_id is None:
                     body = deferred_client_input.popleft()
@@ -7113,6 +7841,8 @@ def create_app(
                         message = receive_task.result()
                     else:
                         message = await receive_or_terminal()
+                    if message.get("type") == "voicechat.receive_error":
+                        raise message["exception"]
                     if message.get("type") == "websocket.disconnect":
                         break
                     if message.get("bytes") is not None:
@@ -7434,6 +8164,13 @@ def create_app(
                             ),
                         )
                         tool_bridge.submit(call_id, function_output)
+                        bind_continuation = getattr(
+                            engine,
+                            "bind_post_tool_continuation_to_next_response",
+                            None,
+                        )
+                        if callable(bind_continuation):
+                            bind_continuation(call_id=call_id)
                     except ValueError as exc:
                         await websocket.send_json(
                             protocol.error(
@@ -7500,6 +8237,8 @@ def create_app(
                             source="microphone",
                             job_id=None,
                             before_send=validate_pending_terminal,
+                            synthetic_control=True,
+                            model_input_provenance="synthetic_function_recovery",
                         )
 
                     applied = await advance_function_output_recovery(
@@ -7632,6 +8371,12 @@ def create_app(
                                 interrupt_evidence = await model_call(
                                     engine.interrupt_unpublished_function_cycle
                                 )
+                                interrupt_evidence = {
+                                    **interrupt_evidence,
+                                    "superseded_response_binding": (
+                                        engine.clear_pending_response_binding()
+                                    ),
+                                }
                     if publication_race:
                         if not deferred_client_input.append(body, message_bytes):
                             raise RuntimeError(
@@ -7672,6 +8417,7 @@ def create_app(
                         evidence=prepare_evidence,
                     )
                     open_client_turn_id = client_turn_id
+                    early_fence_arm = None
                     await websocket.send_json(
                         protocol.begin_input_turn("microphone", client_turn_id)
                     )
@@ -7693,6 +8439,7 @@ def create_app(
                         client_turn_id=client_turn_id,
                         preroll_frames=len(preroll_entries),
                     )
+                    await publish_diagnostic_processed(client_event_id, message_type)
                     continue
                 if message_type == "input_audio_buffer.commit":
                     commit_received_at = time.monotonic()
@@ -7752,6 +8499,11 @@ def create_app(
                             close_code=1002,
                         )
                         return
+                    # The commit-receipt edge freezes precommit evidence. Nothing
+                    # processed below this point may create or advance the arm.
+                    commit_prearm = early_fence_arm
+                    early_fence_arm = None
+                    post_commit_steps: list[dict[str, Any]] = []
                     raw_diagnostics = body.get("diagnostics")
                     client_diagnostics = {
                         key: value
@@ -7790,11 +8542,38 @@ def create_app(
                         ),
                     )
                     if pcm_buffer.pending_samples:
+                        real_samples = pcm_buffer.pending_samples
+                        blank_frames_before = int(
+                            engine.rnnt_blank_count(last_model_result)
+                        )
                         tail = pcm_buffer.flush()
-                        await process_pcm(
+                        tail_result = await process_pcm(
                             float32_to_pcm16_bytes(tail),
                             source="microphone",
                             job_id=None,
+                            model_input_provenance="commit_tail_padding",
+                        )
+                        blank_frames_after = int(engine.rnnt_blank_count(tail_result))
+                        padding_evidence = {
+                            "model_input_provenance": "commit_tail_padding",
+                            "real_samples": real_samples,
+                            "padded_samples": FRAME_SAMPLES - real_samples,
+                            "blank_frames_before": blank_frames_before,
+                            "blank_frames_after": blank_frames_after,
+                            "blank_frames_advanced": max(
+                                0, blank_frames_after - blank_frames_before
+                            ),
+                            "model_frame": (
+                                None
+                                if tail_result is None
+                                else int(tail_result.frame_index)
+                            ),
+                        }
+                        post_commit_steps.append(padding_evidence)
+                        trace.event(
+                            "user_eou_post_commit_frame",
+                            client_turn_id=client_turn_id,
+                            **padding_evidence,
                         )
                     arm_fn = getattr(engine, "arm_eartts_epoch", None)
                     if callable(arm_fn):
@@ -7828,11 +8607,35 @@ def create_app(
                         commit_ack_sent = True
 
                     await recover_pre_eou_activity("microphone_commit")
+                    current_blank_frames = int(engine.rnnt_blank_count(last_model_result))
+                    if (
+                        commit_prearm is not None
+                        and (
+                            commit_prearm.client_turn_id != client_turn_id
+                            or commit_prearm.blank_frames > current_blank_frames
+                        )
+                    ):
+                        trace.event(
+                            "user_eou_fence_prearm_rejected",
+                            current_blank_frames=current_blank_frames,
+                            **commit_prearm.evidence(),
+                        )
+                        commit_prearm = None
+                    bind_transcript = getattr(
+                        engine, "bind_user_transcript_to_next_response", None
+                    )
+                    if callable(bind_transcript):
+                        bind_transcript(
+                            source="microphone",
+                            source_id=client_turn_id,
+                        )
                     microphone_settlement = await settle_user_eou(
                         source="microphone",
                         job_id=None,
                         fuse_final_bos=not session_tools,
                         expected_client_turn_id=client_turn_id,
+                        prearm=commit_prearm,
+                        post_commit_steps=post_commit_steps,
                         on_fused_terminal=acknowledge_fused_terminal,
                     )
                     fused_terminal = microphone_settlement.fused_terminal_bos
@@ -7859,6 +8662,8 @@ def create_app(
                             source="microphone",
                             job_id=None,
                             before_send=validate_microphone_terminal,
+                            synthetic_control=True,
+                            model_input_provenance="synthetic_terminal_bos",
                         )
                     engine.reset_user_transcript()
                     open_client_turn_id = None
@@ -7880,6 +8685,7 @@ def create_app(
                         ),
                         **({"fused_terminal_bos": True} if fused_terminal else {}),
                     )
+                    await publish_diagnostic_processed(client_event_id, message_type)
                     continue
                 if message_type == "input_text.request":
                     if not configured:
@@ -7921,10 +8727,50 @@ def create_app(
                         await active_typed.done.wait()
                         if typed_task is not None:
                             await asyncio.gather(typed_task, return_exceptions=True)
-                    seen_typed_job_ids.add(job_id)
+                    publication_race = False
+                    interrupt_evidence = None
                     async with model_input_lock:
-                        discarded = pcm_buffer.discard()
-                        gate_preroll.clear()
+                        # Publication wins if the function call became visible
+                        # while this request waited for typed-input ownership.
+                        # Otherwise the new typed turn supersedes the same
+                        # unpublished deferred-BOS owner as a microphone turn.
+                        if function_cycle_call_id is not None:
+                            publication_race = True
+                            discarded = 0
+                        else:
+                            discarded = pcm_buffer.discard()
+                            gate_preroll.clear()
+                            if pending_bos_settlement is not None:
+                                if pending_function_turn_id is None:
+                                    raise RuntimeError(
+                                        "deferred FC settlement has no initiating turn"
+                                    )
+                                cancelling_unpublished_function_turn_id = (
+                                    pending_function_turn_id
+                                )
+                                interrupt_evidence = await model_call(
+                                    engine.interrupt_unpublished_function_cycle
+                                )
+                                interrupt_evidence = {
+                                    **interrupt_evidence,
+                                    "superseded_response_binding": (
+                                        engine.clear_pending_response_binding()
+                                    ),
+                                }
+                    if publication_race:
+                        await websocket.send_json(
+                            protocol.typed_input_rejected(job_id, "function_cycle_active")
+                        )
+                        continue
+                    if interrupt_evidence is not None:
+                        trace.event(
+                            "unpublished_function_cycle_interrupt",
+                            source="typed",
+                            job_id=job_id,
+                            initiating_turn_id=cancelling_unpublished_function_turn_id,
+                            evidence=interrupt_evidence,
+                        )
+                    seen_typed_job_ids.add(job_id)
                     if discarded:
                         trace.event(
                             "microphone_partial_discarded_for_typed_input",
@@ -7959,43 +8805,7 @@ def create_app(
                         )
                         continue
                     try:
-                        if body.get("encoding") != "pcm16":
-                            raise RealtimeProtocolError(
-                                "unsupported_audio_encoding",
-                                "Only pcm16 input is supported",
-                            )
-                        if int(body.get("sample_rate", 0)) != INPUT_SAMPLE_RATE:
-                            raise RealtimeProtocolError(
-                                "unsupported_sample_rate",
-                                f"Input must be {INPUT_SAMPLE_RATE} Hz",
-                            )
-                        if int(body.get("channels", 0)) != 1:
-                            raise RealtimeProtocolError(
-                                "unsupported_channel_count", "Input must be mono"
-                            )
-                        payload = base64.b64decode(body.get("audio", ""), validate=True)
-                        if not payload:
-                            raise RealtimeProtocolError(
-                                "empty_audio", "Audio payload must not be empty"
-                            )
-                        if len(payload) % 2:
-                            raise RealtimeProtocolError(
-                                "invalid_audio",
-                                "PCM16 audio must contain whole samples",
-                            )
-                        if len(payload) > MAX_INPUT_MESSAGE_BYTES:
-                            raise RealtimeProtocolError(
-                                "audio_packet_too_large", "Audio packet is too large"
-                            )
-                    except (ValueError, TypeError, base64.binascii.Error) as exc:
-                        await websocket.send_json(
-                            protocol.error(
-                                "invalid_audio",
-                                str(exc),
-                                client_event_id=client_event_id,
-                            )
-                        )
-                        continue
+                        payload = decode_audio_append_payload(body)
                     except RealtimeProtocolError as exc:
                         await websocket.send_json(
                             protocol.error(
@@ -8014,6 +8824,7 @@ def create_app(
                         )
                         continue
                     await process_pcm(payload, source="microphone", job_id=None)
+                    await publish_diagnostic_processed(client_event_id, message_type)
                     continue
                 if message_type == "session.stop":
                     trace.event("client_event", type=message_type)
@@ -8085,6 +8896,9 @@ def create_app(
                 ],
             )
         finally:
+            if receiver_task is not None and not receiver_task.done():
+                receiver_task.cancel()
+                await asyncio.gather(receiver_task, return_exceptions=True)
             if terminal_cleanup_task is None:
                 if active_typed is not None:
                     active_typed.cancel_event.set()
@@ -8171,6 +8985,9 @@ def main() -> None:
     STARTUP_READY_SENTINEL.unlink(missing_ok=True)
     startup_event("main_entered")
     args = parse_args()
+    # Validate the named production response contract before loading models or
+    # mutating CUDA state.
+    response_wall_seconds = configured_response_wall_seconds()
     if os.environ.get("VOICECHAT_STEP9_VALIDATE_BAKED_CACHE", "0") == "1":
         from .step9_cache_guard import validate_baked_vllm_cache
 
@@ -8225,6 +9042,9 @@ def main() -> None:
     candidate_runtime = pipeline.checkpoint_provenance.get("nano_pad_pair_runtime", {}).get(
         "production_candidate"
     )
+    expected_no_text_frames = agent_no_text_frames
+    expected_no_audio_frames = agent_no_audio_frames
+    expected_decoded_silence_frames = agent_decoded_silence_frames
     if candidate_runtime is not None:
         candidate_contract = pipeline.checkpoint_provenance["nano_pad_pair_runtime"]["contract"]
         expected_no_text_frames = int(candidate_contract["agent_no_text_frames"])
@@ -8242,6 +9062,49 @@ def main() -> None:
                 "decoded_silence="
                 f"{agent_decoded_silence_frames}/{expected_decoded_silence_frames}"
             )
+    diagnostic_silence_frames = os.environ.get(
+        "VOICECHAT_DIAGNOSTIC_AGENT_SILENCE_EOS_FRAMES", ""
+    ).strip()
+    if diagnostic_silence_frames:
+        if not os.environ.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip():
+            raise RuntimeError(
+                "diagnostic decoded-silence override requires EarTTS acoustic capture"
+            )
+        agent_decoded_silence_frames = int(diagnostic_silence_frames)
+        if agent_decoded_silence_frames <= expected_decoded_silence_frames:
+            raise RuntimeError(
+                "diagnostic decoded-silence threshold must exceed the production contract"
+            )
+        LOGGER.warning(
+            "Diagnostic-only decoded-silence threshold enabled: %d frames (production=%d)",
+            agent_decoded_silence_frames,
+            expected_decoded_silence_frames,
+        )
+    diagnostic_no_progress_frames = os.environ.get(
+        "VOICECHAT_DIAGNOSTIC_AGENT_NO_PROGRESS_FRAMES", ""
+    ).strip()
+    if diagnostic_no_progress_frames:
+        if not os.environ.get("S2S_EARTTS_ACOUSTIC_CAPTURE_DIR", "").strip():
+            raise RuntimeError(
+                "diagnostic no-progress override requires EarTTS acoustic capture"
+            )
+        no_progress_frames = int(diagnostic_no_progress_frames)
+        if (
+            no_progress_frames <= expected_no_text_frames
+            or no_progress_frames <= expected_no_audio_frames
+        ):
+            raise RuntimeError(
+                "diagnostic no-progress threshold must exceed the production contract"
+            )
+        agent_no_text_frames = no_progress_frames
+        agent_no_audio_frames = no_progress_frames
+        LOGGER.warning(
+            "Diagnostic-only no-text/no-audio thresholds enabled: %d frames "
+            "(production text/audio=%d/%d)",
+            no_progress_frames,
+            expected_no_text_frames,
+            expected_no_audio_frames,
+        )
     startup_event("realtime_engine_create_started")
     engine = VoiceChatEngine(
         pipeline,
@@ -8258,6 +9121,7 @@ def main() -> None:
             os.environ.get("VOICECHAT_WEB_RESPONSE_TAIL_MAX_FRAMES", "25")
         ),
         delivery_silence_frames=int(os.environ.get("VOICECHAT_WEB_DELIVERY_SILENCE_FRAMES", "12")),
+        max_agent_response_seconds=response_wall_seconds,
     )
     startup_event("realtime_engine_create_finished")
     if (

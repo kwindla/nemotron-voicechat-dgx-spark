@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.64,
+    "source_audio_sha256": "c16bad0dc816429dd68a8fb9ebea2f1e9ba8e355364ef7114c84de11e4bcb5bf",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 12.56,
+    "source_audio_sha256": "a0002a28a43094eb06b9b25b8830d9383ea119939323d349ddb49c57ca67ba9f",
+    "transcript": "I am actually a voice assistant, not a model. I am here to help with things like telling time, setting time zones or other practical tasks. What would you like to do?"
+  },
+  "response_003.wav": {
+    "seconds": 11.52,
+    "source_audio_sha256": "ab4f13e88702a8a5158acdf84c5f50fc40d18c6af0730939dd71fba7648de898",
+    "transcript": "I am sorry, but I cannot help with creative writing or storytelling. I am here to help with practical tasks like telling time, setting time zones, or other practical tasks."
+  }
+}

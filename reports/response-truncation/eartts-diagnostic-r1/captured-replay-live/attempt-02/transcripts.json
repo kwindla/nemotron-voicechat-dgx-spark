@@ -1,0 +1,14 @@
+{
+ "response_001.wav": {
+  "transcript": "Hi it is great to meet you. How can I help you today?",
+  "seconds": 4.32
+ },
+ "response_002.wav": {
+  "transcript": "I am actually a voice model, but I am not brand new. I have been learning and improving for a long time. I am glad we can have a conversation. What would you like to talk about?",
+  "seconds": 11.28
+ },
+ "response_003.wav": {
+  "transcript": "Once upon a time a unicorn named Luna lived in a magical forest. She had a beautiful silver horn that could heal plants. One day Luna found a wounded tree and used her horn to help it grow back to life. Since then Luna has been known as the kind unicorn who saves the forest.",
+  "seconds": 18.16
+ }
+}

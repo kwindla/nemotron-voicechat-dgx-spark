@@ -1,0 +1,297 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________________________ test_step2_live_fixture_plan _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-khkramer/pytest-1402/test_step2_live_fixture_plan0')
+
+    @pytest.mark.browser_e2e
+    @pytest.mark.asyncio
+    async def test_step2_live_fixture_plan(tmp_path):
+        """Run the preregistered plan in one session per capture mode."""
+    
+        raw_plan = os.environ.get("VOICECHAT_LIVE_FIXTURE_PLAN")
+        if not raw_plan:
+            pytest.skip("set VOICECHAT_LIVE_FIXTURE_PLAN for the Step 2 live fixture driver")
+        plan = parse_fixture_plan(raw_plan)
+        try:
+            quiescence_window_ms = parse_rtvi_quiescence_window_ms(
+                os.environ.get("VOICECHAT_LIVE_RTVI_QUIET_WINDOW_MS")
+            )
+        except ValueError as exc:
+            pytest.fail(f"invalid VOICECHAT_LIVE_RTVI_QUIET_WINDOW_MS: {exc}")
+        url = os.environ.get("VOICECHAT_LIVE_PLAYGROUND_URL")
+        if not url:
+            pytest.fail("VOICECHAT_LIVE_PLAYGROUND_URL is required with the Step 2 fixture plan")
+        if CHROMIUM and not Path(CHROMIUM).exists():
+            pytest.fail(f"configured Chromium is not installed at {CHROMIUM}")
+    
+        configured_microphone = os.environ.get("VOICECHAT_LIVE_MIC_WAV")
+        if configured_microphone:
+            microphone_wav = Path(configured_microphone).expanduser().resolve()
+            if not microphone_wav.is_file():
+                pytest.fail(f"VOICECHAT_LIVE_MIC_WAV does not exist: {microphone_wav}")
+        else:
+            microphone_wav = tmp_path / "step2-silent-microphone.wav"
+            _write_silent_microphone(microphone_wav)
+    
+        configured_trace = os.environ.get("VOICECHAT_LIVE_PLAYOUT_TRACE")
+        configured_pipecat_trace = os.environ.get("NEMOTRON_VOICECHAT_PLAYOUT_TRACE")
+        if not configured_pipecat_trace:
+            pytest.fail("NEMOTRON_VOICECHAT_PLAYOUT_TRACE is required for response attribution")
+        configured_output = os.environ.get("VOICECHAT_LIVE_FIXTURE_OUTPUT_DIR")
+        if configured_output:
+            output_dir = Path(configured_output).expanduser()
+        elif configured_trace:
+            output_dir = Path(configured_trace).expanduser().parent
+        else:
+            output_dir = tmp_path / "step2-live-session"
+        if configured_trace:
+            capture_on_artifact = Path(configured_trace).expanduser()
+        else:
+            capture_on_artifact = output_dir / "browser-playout-capture-on.jsonl"
+        capture_off_artifact = capture_on_artifact.with_name(
+            capture_on_artifact.stem + "-capture-off" + capture_on_artifact.suffix
+        )
+        artifacts = {"on": capture_on_artifact, "off": capture_off_artifact}
+        configured_summary = os.environ.get("VOICECHAT_LIVE_FIXTURE_SUMMARY")
+        summary_path = (
+            Path(configured_summary).expanduser()
+            if configured_summary
+            else output_dir / "fixture-summary.json"
+        )
+        try:
+            resolved_paths = resolve_step2_paths(
+                microphone=microphone_wav,
+                capture_on=capture_on_artifact,
+                capture_off=capture_off_artifact,
+                summary=summary_path,
+                pipecat_trace=Path(configured_pipecat_trace),
+                output_dir=output_dir,
+            )
+        except (ValueError, FileExistsError) as exc:
+            pytest.fail(f"unsafe Step 2 path configuration: {exc}")
+        microphone_wav = Path(resolved_paths["microphone"])
+        capture_on_artifact = Path(resolved_paths["browser_capture_on"])
+        capture_off_artifact = Path(resolved_paths["browser_capture_off"])
+        pipecat_trace_path = Path(resolved_paths["pipecat_playout_trace"])
+        summary_path = Path(resolved_paths["summary"])
+        artifacts = {"on": capture_on_artifact, "off": capture_off_artifact}
+    
+        summary: dict[str, Any] = {
+            "schema": SUMMARY_SCHEMA,
+            "status": "running",
+            "started_wall_time_s": time.time(),
+            "completed_wall_time_s": None,
+            "plan": plan_document(plan),
+            "resolved_paths": resolved_paths,
+            "terminalization_errors": [],
+            "sessions": [
+                {
+                    "capture": mode,
+                    "artifact": str(artifacts[mode]),
+                    "status": "not_run",
+                    "capture_shutdown": None,
+                    "error": None,
+                    "teardown_errors": [],
+                    "browser_artifact_validation": None,
+                    "pipecat_artifact": resolved_paths[f"pipecat_playout_capture_{mode}"],
+                    "pipecat_publication_wait_s": None,
+                    "observed_playout_trace": None,
+                }
+                for mode, _fixtures in plan.sessions()
+            ],
+            "fixtures": [blank_fixture_result(fixture) for fixture in plan.fixtures],
+        }
+    
+        def persist() -> None:
+            _write_fixture_summary(summary_path, summary, reservation=resolved_paths)
+    
+        persist()
+        failure: str | None = None
+        playwright_manager = async_playwright()
+        playwright = None
+        try:
+            playwright = await _start_playwright(playwright_manager)
+            for session_index, (capture_mode, fixtures) in enumerate(plan.sessions()):
+                session = summary["sessions"][session_index]
+                session_pipecat_trace = connection_playout_trace_path(
+                    pipecat_trace_path, session_index + 1
+                )
+                session["status"] = "running"
+                persist()
+                browser = None
+                context = None
+                page = None
+                sink = None
+                current_fixture: FixtureSpec | None = None
+                capture_started = time.perf_counter()
+                browser_log: list[str] = []
+                setup_state = {
+                    "browser": None,
+                    "context": None,
+                    "page": None,
+                    "sink": None,
+                }
+                try:
+                    text_box = await _setup_step2_session(
+                        state=setup_state,
+                        playwright=playwright,
+                        url=url,
+                        microphone_wav=microphone_wav,
+                        artifact=artifacts[capture_mode],
+                        capture_mode=capture_mode,
+                        browser_log=browser_log,
+                        reservation=resolved_paths,
+                    )
+                    browser = setup_state["browser"]
+                    context = setup_state["context"]
+                    page = setup_state["page"]
+                    sink = setup_state["sink"]
+                    attribution_cursor: dict[str, int | None] = {
+                        "rtvi_index": 0,
+                        "playout_index": len(
+                            read_playout_trace(session_pipecat_trace, reservation=resolved_paths)
+                        ),
+                    }
+    
+                    for current_fixture in fixtures:
+                        result = summary["fixtures"][current_fixture.plan_index]
+                        if not await _run_step2_fixture(
+                            page,
+                            text_box,
+                            sink,
+                            current_fixture,
+                            result,
+                            persist,
+                            session_pipecat_trace,
+                            trace_reader=lambda path: read_playout_trace(
+                                path, reservation=resolved_paths
+                            ),
+                            attribution_cursor=attribution_cursor,
+                            quiescence_window_ms=quiescence_window_ms,
+                        ):
+                            failure = f"{current_fixture.fixture_id}: {result['error']}"
+                            break
+                    if failure is None:
+                        session["status"] = "completed"
+                    else:
+                        session["status"] = "failed"
+                        session["error"] = failure
+                except Exception as exc:  # noqa: BLE001 - retain live partial evidence
+                    failure = failure or f"capture-{capture_mode} session failed: {exc!r}"
+                    session["error"] = repr(exc)
+                    if current_fixture is not None:
+                        result = summary["fixtures"][current_fixture.plan_index]
+                        if result["completion_status"] == "running":
+                            result["completion_status"] = "error"
+                            result["completion_wall_time_s"] = time.time()
+                            result["error"] = repr(exc)
+                            marker_available = False
+                            try:
+                                marker_available = (
+                                    page is not None and sink is not None and not page.is_closed()
+                                )
+                            except Exception as availability_exc:  # noqa: BLE001
+                                result["marker_emission"]["error"] = {
+                                    "status": "failed",
+                                    "error": (
+                                        f"error marker availability check failed: {availability_exc!r}"
+                                    ),
+                                }
+                            if marker_available:
+                                try:
+                                    await _emit_fixture_boundary_recorded(
+                                        page,
+                                        sink,
+                                        current_fixture,
+                                        result,
+                                        "error",
+                                        persist,
+                                        detail=repr(exc),
+                                    )
+                                except Exception as marker_exc:  # noqa: BLE001
+                                    result["error"] += f"; error marker failed: {marker_exc!r}"
+                            elif result["marker_emission"]["error"]["status"] == "not_attempted":
+                                result["marker_emission"]["error"] = {
+                                    "status": "failed",
+                                    "error": "error marker unavailable: page or sink closed/missing",
+                                }
+                    session["status"] = "failed"
+                    persist()
+                finally:
+                    browser = setup_state["browser"]
+                    context = setup_state["context"]
+                    page = setup_state["page"]
+                    sink = setup_state["sink"]
+                    (
+                        capture_shutdown,
+                        artifact_validation,
+                        teardown_errors,
+                    ) = await _teardown_step2_session(
+                        page=page,
+                        sink=sink,
+                        context=context,
+                        browser=browser,
+                        artifact=artifacts[capture_mode],
+                        capture_enabled=capture_mode == "on",
+                        reservation=resolved_paths,
+                    )
+                    sink = None
+                    if capture_shutdown is not None:
+                        capture_shutdown["test_elapsed_ms"] = (
+                            time.perf_counter() - capture_started
+                        ) * 1000.0
+                        session["capture_shutdown"] = capture_shutdown
+                        print(
+                            "BROWSER_PLAYOUT_CAPTURE_OVERHEAD "
+                            + json.dumps(
+                                {"capture_mode": capture_mode, **capture_shutdown},
+                                sort_keys=True,
+                            )
+                        )
+                    session["browser_artifact_validation"] = artifact_validation
+                    session["teardown_errors"].extend(teardown_errors)
+                    publication_wait_started = time.monotonic()
+                    try:
+                        session["observed_playout_trace"] = await wait_for_playout_trace_publication(
+                            session_pipecat_trace, reservation=resolved_paths
+                        )
+                    except Exception as exc:  # noqa: BLE001 - terminal evidence is mandatory
+                        session["teardown_errors"].append(
+                            f"Pipecat artifact publication/validation failed: {exc!r}"
+                        )
+                    finally:
+                        session["pipecat_publication_wait_s"] = (
+                            time.monotonic() - publication_wait_started
+                        )
+                    if teardown_errors:
+                        failure = failure or f"capture-{capture_mode} {teardown_errors[0]}"
+                        session["status"] = "failed"
+                    if session["teardown_errors"]:
+                        failure = failure or (f"capture-{capture_mode} {session['teardown_errors'][0]}")
+                        session["status"] = "failed"
+                    persist()
+                if failure is not None:
+                    break
+        except Exception as exc:  # noqa: BLE001 - outer setup/runner boundary
+            failure = failure or f"Step 2 campaign failed: {exc!r}"
+            summary["terminalization_errors"].append(repr(exc))
+        finally:
+            if playwright is not None:
+                error = await _stop_playwright_recorded(playwright, summary["terminalization_errors"])
+                if error is not None:
+                    failure = failure or error
+            try:
+                _terminalize_step2_summary(summary, failure, persist)
+            finally:
+                resolved_paths.close()
+        if failure is not None:
+>           pytest.fail(f"Step 2 fixture driver failed closed: {failure}; summary={summary_path}")
+E           Failed: Step 2 fixture driver failed closed: capture-on session failed: Error('Page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:7860/\nCall log:\n  - navigating to "http://127.0.0.1:7860/", waiting until "load"\n'); summary=/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/fixture-summary.json
+
+tests/e2e/test_browser_smallwebrtc_e2e.py:4464: Failed
+----------------------------- Captured stdout call -----------------------------
+BROWSER_PLAYOUT_CAPTURE_OVERHEAD {"capture_enabled": false, "capture_mode": "on", "shutdown_error": null, "sink_close_error": null, "test_elapsed_ms": 477.35157050192356, "webrtc_disconnect": {"attempted": false, "completed": false, "connection_state": null, "error": "RuntimeError('Playground disconnect control is not uniquely visible')", "peer_connection_present": false, "signaling_state": null}}
+=========================== short test summary info ============================
+FAILED tests/e2e/test_browser_smallwebrtc_e2e.py::test_step2_live_fixture_plan
+1 failed in 91.45s (0:01:31)

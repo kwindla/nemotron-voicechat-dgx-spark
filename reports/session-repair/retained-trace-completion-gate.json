@@ -1,0 +1,157 @@
+{
+  "audible_watchdog_defects": [],
+  "audible_window_frames": 5,
+  "completion_reasons": {
+    "decoded_silence_watchdog": 3,
+    "model_or_turn_taking": 4,
+    "no_audio_since_bos_watchdog": 1,
+    "session_terminated": 1
+  },
+  "decoded_silence_watchdog_closures": 3,
+  "incomplete_responses": [],
+  "input_schema_errors": [],
+  "input_schema_valid": true,
+  "max_consecutive_text_quiet_but_audible_frames": 32,
+  "passed": true,
+  "responses": [
+    {
+      "bos_frame": 29,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 92,
+      "max_consecutive_text_quiet_audible_frames": 19,
+      "text_quiet_audible_frames": 22,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    },
+    {
+      "bos_frame": 185,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 239,
+      "max_consecutive_text_quiet_audible_frames": 25,
+      "text_quiet_audible_frames": 25,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    },
+    {
+      "bos_frame": 370,
+      "completion_reason": "decoded_silence_watchdog",
+      "eos_frame": 410,
+      "max_consecutive_text_quiet_audible_frames": 15,
+      "text_quiet_audible_frames": 15,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    },
+    {
+      "bos_frame": 547,
+      "completion_reason": "no_audio_since_bos_watchdog",
+      "eos_frame": 577,
+      "max_consecutive_text_quiet_audible_frames": 0,
+      "text_quiet_audible_frames": 0,
+      "watchdog_audible_window": [
+        {
+          "audible": false,
+          "frame": 572,
+          "rms_dbfs": -120.0
+        },
+        {
+          "audible": false,
+          "frame": 573,
+          "rms_dbfs": -120.0
+        },
+        {
+          "audible": false,
+          "frame": 574,
+          "rms_dbfs": -120.0
+        },
+        {
+          "audible": false,
+          "frame": 575,
+          "rms_dbfs": -120.0
+        },
+        {
+          "audible": false,
+          "frame": 576,
+          "rms_dbfs": -120.0
+        }
+      ],
+      "watchdog_request_frame": 576
+    },
+    {
+      "bos_frame": 676,
+      "completion_reason": "model_or_turn_taking",
+      "eos_frame": 738,
+      "max_consecutive_text_quiet_audible_frames": 18,
+      "text_quiet_audible_frames": 23,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    },
+    {
+      "bos_frame": 788,
+      "completion_reason": "model_or_turn_taking",
+      "eos_frame": 846,
+      "max_consecutive_text_quiet_audible_frames": 32,
+      "text_quiet_audible_frames": 32,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    },
+    {
+      "bos_frame": 871,
+      "completion_reason": "model_or_turn_taking",
+      "eos_frame": 933,
+      "max_consecutive_text_quiet_audible_frames": 18,
+      "text_quiet_audible_frames": 32,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    },
+    {
+      "bos_frame": 942,
+      "completion_reason": "model_or_turn_taking",
+      "eos_frame": 950,
+      "max_consecutive_text_quiet_audible_frames": 2,
+      "text_quiet_audible_frames": 2,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    },
+    {
+      "bos_frame": 975,
+      "completion_reason": "session_terminated",
+      "eos_frame": null,
+      "max_consecutive_text_quiet_audible_frames": 19,
+      "termination": {
+        "bos_frame": 975,
+        "disposition": "session_terminated_open_response",
+        "trace_stop_reason": "internal_error",
+        "trace_stop_record_index": 4729
+      },
+      "text_quiet_audible_frames": 19,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    }
+  ],
+  "schema": "nemotron_voicechat.response_completion_gate.v1",
+  "session_id": "c42c6701-f14d-4960-83fc-3c24bd269194",
+  "session_terminated_open_response_count": 1,
+  "session_terminated_open_responses": [
+    {
+      "bos_frame": 975,
+      "completion_reason": "session_terminated",
+      "eos_frame": null,
+      "max_consecutive_text_quiet_audible_frames": 19,
+      "termination": {
+        "bos_frame": 975,
+        "disposition": "session_terminated_open_response",
+        "trace_stop_reason": "internal_error",
+        "trace_stop_record_index": 4729
+      },
+      "text_quiet_audible_frames": 19,
+      "watchdog_audible_window": [],
+      "watchdog_request_frame": null
+    }
+  ],
+  "source": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/c42c6701-f14d-4960-83fc-3c24bd269194/events.jsonl",
+  "text_quiet_but_audible_frames": 170,
+  "threshold_dbfs": -90.0,
+  "total_responses": 9,
+  "watchdog_closures_while_audible": 0,
+  "watchdog_closures_without_audible_audio": 1
+}

@@ -1,0 +1,38 @@
+[
+ {
+  "index": 1,
+  "generated_words": 76,
+  "spoken_words": 76,
+  "percent": 100.0,
+  "status": "completed",
+  "truncated": false,
+  "lost": ""
+ },
+ {
+  "index": 3,
+  "generated_words": 5,
+  "spoken_words": 1,
+  "percent": 20.0,
+  "status": "cancelled",
+  "truncated": false,
+  "lost": "is currently three forty"
+ },
+ {
+  "index": 4,
+  "generated_words": 8,
+  "spoken_words": 8,
+  "percent": 100.0,
+  "status": "completed",
+  "truncated": false,
+  "lost": ""
+ },
+ {
+  "index": 5,
+  "generated_words": 3,
+  "spoken_words": 3,
+  "percent": 100.0,
+  "status": "completed",
+  "truncated": false,
+  "lost": ""
+ }
+]

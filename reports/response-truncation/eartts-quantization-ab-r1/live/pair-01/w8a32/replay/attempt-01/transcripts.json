@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.4,
+    "source_audio_sha256": "b5d02856b339b03aed89de29a9a71e1f1aa86c72c5f76aac54c9b6db046620ca",
+    "transcript": "Hi, it is great to meet you. How can I help you today"
+  },
+  "response_002.wav": {
+    "seconds": 14.48,
+    "source_audio_sha256": "a4285783eb0685aa995d72e5eb5b65fb94de67d10c285da8f9d6d68bb473bdf8",
+    "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am the Martin created by NVIDIA. I can help with anything from answering questions to creative writing. What would you like to talk about"
+  },
+  "response_003.wav": {
+    "seconds": 14.32,
+    "source_audio_sha256": "7a86ab9dd0eaa2e3159a3414c4c1e646ef1692ddb45158d68fb90672f9574d34",
+    "transcript": "Once upon a time a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day he found a magical forest where the unicorn grazed peacefully."
+  }
+}

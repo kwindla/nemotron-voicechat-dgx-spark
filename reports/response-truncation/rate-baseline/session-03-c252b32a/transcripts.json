@@ -1,0 +1,18 @@
+{
+ "response_1.wav": {
+  "transcript": "I love talking to voice models too. I am Nemotron created by NVIDIA. I am here to help with anything from answering questions to generating creative content. What would you like to do?",
+  "seconds": 12.8
+ },
+ "response_2.wav": {
+  "transcript": "Once upon a time in a land of magic there was a young girl named Leela who found a mysterious unicorn in her backyard. The creature had a shimmering horn and was as curious about Leela as she was about it.",
+  "seconds": 12.96
+ },
+ "response_4.wav": {
+  "transcript": "",
+  "seconds": 0.48
+ },
+ "response_5.wav": {
+  "transcript": "I am Nemotron created by NVIDIA.",
+  "seconds": 3.36
+ }
+}

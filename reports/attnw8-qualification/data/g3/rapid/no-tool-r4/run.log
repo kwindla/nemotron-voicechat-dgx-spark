@@ -1,0 +1,142 @@
+/home/khkramer/src/nemotron-voicechat-dgx-spark/tools/qualification/rapid_turn_settlement_suite.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+  import audioop
+{
+  "all_response_transcripts_nonempty": true,
+  "empty_response_count": 0,
+  "empty_response_ids": [],
+  "errors": [],
+  "fatal_errors": [],
+  "kind": "rapid_turn_settlement_v1",
+  "passed": true,
+  "responses": [
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 38,
+      "commit_to_first_audio_ms": 855.402,
+      "created_monotonic_s": 5086557.005237355,
+      "empty": false,
+      "first_audio_monotonic_s": 5086557.005251035,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_1",
+      "status": "completed",
+      "text": "Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_1"
+    },
+    {
+      "audible_audio_chunks": 19,
+      "audio_chunks": 36,
+      "commit_to_first_audio_ms": 801.775,
+      "created_monotonic_s": 5086562.741209296,
+      "empty": false,
+      "first_audio_monotonic_s": 5086562.741235712,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_2",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_2"
+    },
+    {
+      "audible_audio_chunks": 20,
+      "audio_chunks": 37,
+      "commit_to_first_audio_ms": 679.473,
+      "created_monotonic_s": 5086568.181469287,
+      "empty": false,
+      "first_audio_monotonic_s": 5086568.181495655,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_3",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_3"
+    },
+    {
+      "audible_audio_chunks": 19,
+      "audio_chunks": 35,
+      "commit_to_first_audio_ms": 670.018,
+      "created_monotonic_s": 5086573.598565575,
+      "empty": false,
+      "first_audio_monotonic_s": 5086573.598591912,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_4",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_4"
+    },
+    {
+      "audible_audio_chunks": 22,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 707.001,
+      "created_monotonic_s": 5086578.940348313,
+      "empty": false,
+      "first_audio_monotonic_s": 5086578.940374714,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_5",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_5"
+    },
+    {
+      "audible_audio_chunks": 24,
+      "audio_chunks": 41,
+      "commit_to_first_audio_ms": 804.023,
+      "created_monotonic_s": 5086584.753883428,
+      "empty": false,
+      "first_audio_monotonic_s": 5086584.753909844,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_6",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_6"
+    },
+    {
+      "audible_audio_chunks": 20,
+      "audio_chunks": 37,
+      "commit_to_first_audio_ms": 808.715,
+      "created_monotonic_s": 5086590.745891621,
+      "empty": false,
+      "first_audio_monotonic_s": 5086590.745904917,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_7",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_7"
+    },
+    {
+      "audible_audio_chunks": 18,
+      "audio_chunks": 35,
+      "commit_to_first_audio_ms": 735.109,
+      "created_monotonic_s": 5086596.232747967,
+      "empty": false,
+      "first_audio_monotonic_s": 5086596.232765615,
+      "response_id": "response_f327f99e-08b7-4402-895b-61730d39ec8f_8",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_f327f99e-08b7-4402-895b-61730d39ec8f_8"
+    }
+  ],
+  "responses_completed": 8,
+  "scenario": "attnw8-no-tool-r4",
+  "six_turn_ttfb_ms": [
+    855.402,
+    801.775,
+    679.473,
+    670.018,
+    707.001,
+    804.023
+  ],
+  "tool_call_count": 0,
+  "ttfb_ms": [
+    855.402,
+    801.775,
+    679.473,
+    670.018,
+    707.001,
+    804.023,
+    808.715,
+    735.109
+  ],
+  "turns_requested": 8,
+  "user_transcripts": [
+    "what's going on",
+    "what's going on",
+    "it's going on",
+    "it's going on",
+    "going on",
+    "what's going on",
+    "what's going on",
+    "going on"
+  ],
+  "with_tool": false
+}

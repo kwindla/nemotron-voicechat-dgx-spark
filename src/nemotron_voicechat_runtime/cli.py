@@ -21,6 +21,7 @@ import wave
 from pathlib import Path
 from typing import Any
 
+from . import pipecat_ui_patch
 from .artifacts import (
     DEFAULT_CONFIG,
     REPO_ROOT,
@@ -1042,6 +1043,9 @@ def _pipecat_command(layout: Layout, host: str, port: int) -> list[str]:
 
 
 def _start_pipecat(layout: Layout, model_port: int, host: str, port: int) -> subprocess.Popen:
+    # The vendored prebuilt UI cannot reconnect on the same page without this
+    # repair; it is pinned by hash and fails closed. See pipecat_ui_patch.
+    print(pipecat_ui_patch.apply(layout.cache / "venv"))
     environment = os.environ.copy()
     environment["NEMOTRON_VOICECHAT_WS_URL"] = f"ws://127.0.0.1:{model_port}/v1/realtime"
     return subprocess.Popen(

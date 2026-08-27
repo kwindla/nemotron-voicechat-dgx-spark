@@ -1,0 +1,96 @@
+{
+  "schema": "nemotron_voicechat.notext_watchdog_gate_evidence.r2",
+  "generated_utc": "2026-08-17",
+  "known_bad": {
+    "trace_id": "2f88c304-b895-4b81-aa1d-adde6043d58c",
+    "events_sha256": "bd093498395adf3222fcd90c34fd7de3b5830015a41b414c712998eee1f0b703",
+    "result": {
+      "audible_window_frames": 5,
+      "completion_reasons": {
+        "no_text_since_bos_watchdog": 5
+      },
+      "decoded_silence_watchdog_closures": 0,
+      "incomplete_responses": [],
+      "max_consecutive_text_quiet_but_audible_frames": 26,
+      "passed": false,
+      "schema": "nemotron_voicechat.response_completion_gate.v1",
+      "session_id": "2f88c304-b895-4b81-aa1d-adde6043d58c",
+      "text_quiet_but_audible_frames": 122,
+      "threshold_dbfs": -90.0,
+      "total_responses": 5,
+      "watchdog_closures_while_audible": 4,
+      "watchdog_closures_without_audible_audio": 1
+    }
+  },
+  "repaired": [
+    {
+      "audible_window_frames": 5,
+      "completion_reasons": {
+        "decoded_silence_watchdog": 7,
+        "model_or_turn_taking": 1
+      },
+      "decoded_silence_watchdog_closures": 7,
+      "incomplete_responses": [],
+      "max_consecutive_text_quiet_but_audible_frames": 42,
+      "passed": true,
+      "schema": "nemotron_voicechat.response_completion_gate.v1",
+      "session_id": "5ca16bcb-9c4a-4074-a69e-951c173e591e",
+      "text_quiet_but_audible_frames": 454,
+      "threshold_dbfs": -90.0,
+      "total_responses": 8,
+      "watchdog_closures_while_audible": 0,
+      "watchdog_closures_without_audible_audio": 0
+    },
+    {
+      "audible_window_frames": 5,
+      "completion_reasons": {
+        "decoded_silence_watchdog": 1
+      },
+      "decoded_silence_watchdog_closures": 1,
+      "incomplete_responses": [],
+      "max_consecutive_text_quiet_but_audible_frames": 29,
+      "passed": true,
+      "schema": "nemotron_voicechat.response_completion_gate.v1",
+      "session_id": "5a09f1bd-c027-453e-814a-0e8716dad110",
+      "text_quiet_but_audible_frames": 53,
+      "threshold_dbfs": -90.0,
+      "total_responses": 1,
+      "watchdog_closures_while_audible": 0,
+      "watchdog_closures_without_audible_audio": 0
+    },
+    {
+      "audible_window_frames": 5,
+      "completion_reasons": {
+        "decoded_silence_watchdog": 8
+      },
+      "decoded_silence_watchdog_closures": 8,
+      "incomplete_responses": [],
+      "max_consecutive_text_quiet_but_audible_frames": 16,
+      "passed": true,
+      "schema": "nemotron_voicechat.response_completion_gate.v1",
+      "session_id": "60d0ecf8-6a5e-4ab4-ba21-6f163bcd6c16",
+      "text_quiet_but_audible_frames": 129,
+      "threshold_dbfs": -90.0,
+      "total_responses": 8,
+      "watchdog_closures_while_audible": 0,
+      "watchdog_closures_without_audible_audio": 0
+    },
+    {
+      "audible_window_frames": 5,
+      "completion_reasons": {
+        "decoded_silence_watchdog": 8
+      },
+      "decoded_silence_watchdog_closures": 8,
+      "incomplete_responses": [],
+      "max_consecutive_text_quiet_but_audible_frames": 19,
+      "passed": true,
+      "schema": "nemotron_voicechat.response_completion_gate.v1",
+      "session_id": "93d79622-9d69-4f88-8c6c-f5e5774d9245",
+      "text_quiet_but_audible_frames": 129,
+      "threshold_dbfs": -90.0,
+      "total_responses": 8,
+      "watchdog_closures_while_audible": 0,
+      "watchdog_closures_without_audible_audio": 0
+    }
+  ]
+}

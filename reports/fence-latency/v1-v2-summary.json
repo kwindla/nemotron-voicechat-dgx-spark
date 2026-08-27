@@ -1,0 +1,323 @@
+{
+  "baseline": {
+    "all_passed": true,
+    "empty_responses": 0,
+    "fatal_errors": 0,
+    "first_turn_ms": [
+      818.364,
+      835.124,
+      812.261,
+      820.98,
+      836.36,
+      886.848,
+      942.541,
+      896.793,
+      952.923,
+      885.929
+    ],
+    "responses_completed": 80,
+    "sequences": [
+      {
+        "scenario": "baseline-no-tool-r1",
+        "six_turn_ttfb_ms": [
+          818.364,
+          1194.083,
+          1464.66,
+          1902.975,
+          2240.507,
+          2327.84
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "baseline-no-tool-r2",
+        "six_turn_ttfb_ms": [
+          835.124,
+          1305.159,
+          1762.975,
+          2098.316,
+          2463.42,
+          2787.875
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "baseline-no-tool-r3",
+        "six_turn_ttfb_ms": [
+          812.261,
+          1286.476,
+          1844.912,
+          2352.673,
+          2800.705,
+          3176.051
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "baseline-no-tool-r4",
+        "six_turn_ttfb_ms": [
+          820.98,
+          1196.767,
+          1473.478,
+          1945.668,
+          2169.527,
+          2342.601
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "baseline-no-tool-r5",
+        "six_turn_ttfb_ms": [
+          836.36,
+          1412.436,
+          1658.646,
+          2140.405,
+          2586.748,
+          3050.726
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "baseline-with-tool-r1",
+        "six_turn_ttfb_ms": [
+          886.848,
+          1440.139,
+          1875.13,
+          2252.137,
+          2969.218,
+          3496.483
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "baseline-with-tool-r2",
+        "six_turn_ttfb_ms": [
+          942.541,
+          1733.651,
+          2410.7,
+          3017.234,
+          3661.162,
+          3899.686
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "baseline-with-tool-r3",
+        "six_turn_ttfb_ms": [
+          896.793,
+          1374.585,
+          1737.292,
+          2174.728,
+          2404.648,
+          2561.587
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "baseline-with-tool-r4",
+        "six_turn_ttfb_ms": [
+          952.923,
+          1722.445,
+          2442.052,
+          2848.844,
+          3167.331,
+          3253.669
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "baseline-with-tool-r5",
+        "six_turn_ttfb_ms": [
+          885.929,
+          1279.437,
+          1601.683,
+          1873.163,
+          2343.43,
+          2731.698
+        ],
+        "with_tool": true
+      }
+    ],
+    "sessions": 10,
+    "sixth_turn_ms": [
+      2327.84,
+      2787.875,
+      3176.051,
+      2342.601,
+      3050.726,
+      3496.483,
+      3899.686,
+      2561.587,
+      3253.669,
+      2731.698
+    ],
+    "turns_requested": 80
+  },
+  "candidate": {
+    "all_passed": true,
+    "all_replicates_nonmonotonic": true,
+    "all_transcripts_nonempty": true,
+    "empty_responses": 0,
+    "fatal_errors": 0,
+    "first_turn_ms": [
+      890.925,
+      828.453,
+      825.433,
+      881.753,
+      876.234,
+      896.329,
+      939.116,
+      913.906,
+      946.373,
+      897.503
+    ],
+    "responses_completed": 80,
+    "sequences": [
+      {
+        "scenario": "candidate-r2-no-tool-r1",
+        "six_turn_ttfb_ms": [
+          890.925,
+          887.489,
+          761.719,
+          788.294,
+          706.12,
+          689.917
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "candidate-r2-no-tool-r2",
+        "six_turn_ttfb_ms": [
+          828.453,
+          81.131,
+          685.633,
+          689.837,
+          687.134,
+          686.477
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "candidate-r2-no-tool-r3",
+        "six_turn_ttfb_ms": [
+          825.433,
+          80.304,
+          685.672,
+          704.854,
+          690.923,
+          688.963
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "candidate-r2-no-tool-r4",
+        "six_turn_ttfb_ms": [
+          881.753,
+          913.987,
+          765.99,
+          794.521,
+          756.884,
+          749.127
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "candidate-r2-no-tool-r5",
+        "six_turn_ttfb_ms": [
+          876.234,
+          887.341,
+          743.757,
+          698.427,
+          688.912,
+          685.868
+        ],
+        "with_tool": false
+      },
+      {
+        "scenario": "candidate-r2-with-tool-r1",
+        "six_turn_ttfb_ms": [
+          896.329,
+          860.141,
+          759.093,
+          755.514,
+          757.79,
+          757.845
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "candidate-r2-with-tool-r2",
+        "six_turn_ttfb_ms": [
+          939.116,
+          969.215,
+          904.902,
+          760.71,
+          760.038,
+          802.021
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "candidate-r2-with-tool-r3",
+        "six_turn_ttfb_ms": [
+          913.906,
+          859.156,
+          881.898,
+          757.529,
+          756.607,
+          756.884
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "candidate-r2-with-tool-r4",
+        "six_turn_ttfb_ms": [
+          946.373,
+          838.937,
+          766.366,
+          764.517,
+          758.476,
+          760.786
+        ],
+        "with_tool": true
+      },
+      {
+        "scenario": "candidate-r2-with-tool-r5",
+        "six_turn_ttfb_ms": [
+          897.503,
+          823.821,
+          759.48,
+          753.883,
+          777.742,
+          849.17
+        ],
+        "with_tool": true
+      }
+    ],
+    "sessions": 10,
+    "six_turn_median_ttfb_ms": [
+      893.627,
+      859.649,
+      760.6,
+      756.522,
+      756.745,
+      753.005
+    ],
+    "sixth_turn_ms": [
+      689.917,
+      686.477,
+      688.963,
+      749.127,
+      685.868,
+      757.845,
+      802.021,
+      756.884,
+      760.786,
+      849.17
+    ],
+    "steady_state_target_passed": true,
+    "turns_requested": 80
+  },
+  "evidence_manifest": "reports/fence-latency/r2-evidence-manifest.json",
+  "schema": "fence-latency-v1-v2.v2"
+}

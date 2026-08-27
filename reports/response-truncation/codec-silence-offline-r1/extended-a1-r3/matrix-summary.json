@@ -1,0 +1,44 @@
+{
+  "additional_variants": [
+    "fresh_response_cache"
+  ],
+  "attempt": 1,
+  "audible_positions_at_or_after_captured_silence_start": {
+    "fresh_response_cache": 0,
+    "persistent_off": 0,
+    "pointwise_off": 0,
+    "production": 0,
+    "reference": 0
+  },
+  "capture_run": "7-1787167262004070899",
+  "captured_final_silence_start_frame": 722,
+  "end_frame": 823,
+  "first_required_variant_spread_above_0_1_db": null,
+  "max_required_variant_dbfs_spread": 9.638180046067646e-06,
+  "onset_dbfs": {
+    "fresh_response_cache": -146.74273044057665,
+    "persistent_off": -146.74273044057665,
+    "pointwise_off": -146.74272775788376,
+    "production": -146.74273044057665,
+    "reference": -146.74273647663873
+  },
+  "onset_required_variant_dbfs_spread": 8.718754969549991e-06,
+  "positions": 339,
+  "production_faithfulness": {
+    "decode_elapsed_seconds": 30.333805616970494,
+    "decoder_history_replayed": true,
+    "max_abs_error": 0.0,
+    "max_dbfs_difference": 0.0,
+    "mean_of_position_mean_abs_error": 0.0
+  },
+  "required_variants": [
+    "production",
+    "pointwise_off",
+    "persistent_off",
+    "reference"
+  ],
+  "response": 3,
+  "schema": "eartts-codec-silence-matrix-v1",
+  "session_id": "454e8d56-d8ba-4a44-8258-770828f52486",
+  "start_frame": 485
+}

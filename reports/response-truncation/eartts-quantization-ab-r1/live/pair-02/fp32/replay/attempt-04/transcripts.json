@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.8,
+    "source_audio_sha256": "7f8638c24f4424921b67f1e0cb70d75b216c41df0828ae2a8ee9c4fe9ea73abb",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 12.56,
+    "source_audio_sha256": "027f814fb5bf967e329a534b3f432741ac5cc3f7bad5d9a7b83f2a124b8e1c1c",
+    "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am Nemotron created by NVIDIA. I can help with anything from answering questions to creative writing."
+  },
+  "response_003.wav": {
+    "seconds": 18.32,
+    "source_audio_sha256": "a481f076de12b0589be157cce3ada133c63e32b601473ec114772df54033ca43",
+    "transcript": "Once upon a time a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day he found a magical forest where the unicorn grazed peacefully. The night did not capture it, but spent the rest of his life learning from the creature."
+  }
+}

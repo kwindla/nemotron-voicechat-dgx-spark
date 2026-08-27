@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.64,
+    "source_audio_sha256": "d9378d7f61c8c39ac1be1b626b2c666b19f72b10b78c32347645ab99c0dc54b7",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 12.72,
+    "source_audio_sha256": "51a0a3232d097f0dca7f0067f760494ad841a19b4088c2b452e7a30afcecd3e8",
+    "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to creative writing."
+  },
+  "response_003.wav": {
+    "seconds": 22.8,
+    "source_audio_sha256": "dc1d432baaf206860da270166e02c55ff30021aa17c2fdc6b32dda2d355ffe47",
+    "transcript": "Once upon a time a brave knight set out to find a unicorn, he traveled through forests and across rivers, but the unicorn remained elusive. One day he found a magical forest where the unicorn grazed peacefully. The knight offered it a flower and the unicorn granted him a single wish. From then on, the unicorn became a symbol of hope and magic. The end"
+  }
+}

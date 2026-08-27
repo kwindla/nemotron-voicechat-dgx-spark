@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.56,
+    "source_audio_sha256": "d2320d007e46c6fb9a926201ce9ae5e2d10b7921828d732eb5dfac40cf675ace",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 4.4,
+    "source_audio_sha256": "2b2ffbf6af60d8292188858defc74e524781c42afcb0fdc679c01b09b792096c",
+    "transcript": "I am actually a voice assistant, not a model"
+  },
+  "response_003.wav": {
+    "seconds": 8.96,
+    "source_audio_sha256": "eb7db4cf671820be37e3c7e2fec31f1bcfbdb2a27aef3c20bb080b66a6a83bbc",
+    "transcript": "I cannot tell stories about unicorns, but I can help with time related tasks. Would you like to know the current time or set a time zone?"
+  }
+}

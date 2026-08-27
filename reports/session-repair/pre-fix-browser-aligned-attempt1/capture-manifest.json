@@ -1,0 +1,60 @@
+{
+  "artifacts": [
+    {
+      "bytes": 3278700,
+      "path": "retained-input-16000.wav",
+      "sha256": "47df8c3fc6bf0e885e13292bfd5c812cf58777fb3ce87e7587493ac748850a0e"
+    },
+    {
+      "bytes": 9350144,
+      "path": "rendered-bot-raw-remote-track.pcm",
+      "sha256": "5ffc7d2bef41f27cd6e39c6b84e22178ffd9318de17b8233cfd344cfac57f7a0"
+    },
+    {
+      "bytes": 4728330,
+      "path": "rendered-bot-chunks.jsonl",
+      "sha256": "2bb6d410140df827e5d0f36df92f329126334d3743288856bbdd7b39b709d120"
+    },
+    {
+      "bytes": 9350188,
+      "path": "rendered-bot-remote-track.wav",
+      "sha256": "8eef08e6c3eee282a16e2e70ea53c358d7e898639569f6e83185b304bf0105ad"
+    },
+    {
+      "bytes": 85546,
+      "path": "rtvi-messages.json",
+      "sha256": "65b93c8362883c93830e00d4aeb72c088672a9c0e503ee28e9629073b9a34662"
+    },
+    {
+      "bytes": 47734,
+      "path": "browser.log",
+      "sha256": "e2358914723c161766cc17b5dc1e62914359dee1aae8b10cd7c9aa6991a10fe7"
+    },
+    {
+      "bytes": 106971,
+      "path": "playground.png",
+      "sha256": "1fa903196c1501aed1edf023b247e764f250f87c0e3ffeb6cd64c1c9167359be"
+    },
+    {
+      "bytes": 7233776,
+      "path": "model-trace/events.jsonl",
+      "sha256": "63421e8c2f246460aa345c57593089059d84d7db12745265e0d964eeee29416b"
+    },
+    {
+      "bytes": 7556651,
+      "path": "pipecat-playout-0001.jsonl",
+      "sha256": "d8f0c41edb74d30419de37383c983c22232518b2760649e84ab05a598d9b0281"
+    },
+    {
+      "bytes": 22296,
+      "path": "analysis.json",
+      "sha256": "ff7fcb7de102c04e36165f3bc74182e787f57b5952afce40c6f755fcb309a96a"
+    },
+    {
+      "bytes": 25148,
+      "path": "report.json",
+      "sha256": "cb8d9b71b8321d675e7110c6dd3ee01fdcf401a80894c975ae4aa65357048ed3"
+    }
+  ],
+  "schema": 1
+}

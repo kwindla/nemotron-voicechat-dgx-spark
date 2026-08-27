@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "kind": "attnw8_gptq_a0_fail_closed",
+  "recorded_utc": "2026-08-17T07:05:58Z",
+  "seal0_parent_sha256": "780bdac05690dc02e8657f9770d2862a466120b1ddb15678d71b288f42dc0c37",
+  "boundary": "A0 eager categorical tool-window validation",
+  "passed": false,
+  "exit_code": 1,
+  "failure": {
+    "scenario_id": "a2-nocall-r25-01",
+    "sealed_expected_outcome": "no_call",
+    "observed_eager_outcome": "one_or_more_function_tokens",
+    "exception": "RuntimeError: a2-nocall-r25-01: eager unexpected function token",
+    "source": "tools/benchmark/attnw8_gptq_a0.py:tool_windows"
+  },
+  "live_pooled_baseline_for_scenario": {
+    "audio_sha256": "5de8732c8d286fc907864393abee00462e3f6a051a03c1ee0f9cf3ec28238279",
+    "expected_transcript": "please explain the word benchmark without any tools",
+    "observed_transcript": "please explain the word benchmark without any tools",
+    "normalized_word_sequence_similarity": 1.0,
+    "tool_call_count": 0,
+    "injection_count": 0,
+    "errors": [],
+    "session_fatal": null,
+    "categorical_outcome_exact": true
+  },
+  "pool_baseline": {
+    "candidate_count": 48,
+    "validated_positive_count": 24,
+    "validated_no_call_count": 24,
+    "minimum_transcript_similarity": 0.8888888888888888,
+    "selected_positive_count": 12,
+    "selected_no_call_count": 12
+  },
+  "disposition": "stop_campaign_before_seal1_hessian_candidate_or_gate_ladder",
+  "seal1_created": false,
+  "hessian_or_candidate_work_started": false
+}

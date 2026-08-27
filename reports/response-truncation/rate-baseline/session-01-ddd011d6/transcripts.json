@@ -1,0 +1,26 @@
+{
+ "response_1.wav": {
+  "transcript": "Once upon a time in a land of magic and wonder there was a young girl named Leela who dreamed of finding a hidden kingdom one day she discovered a mysterious map that led her to the enchanted forest where it was set a powerful unicorn named Aurora lived with courage and determination. Lila embarked on a journey to find Aurora and learn the secrets of the forest after many trials and tribulations she finally found the unicorn and the girl who dared to dream became a tale of friendship and advent",
+  "seconds": 27.92
+ },
+ "response_2.wav": {
+  "transcript": "I am not sure, but I can check for you.",
+  "seconds": 2.56
+ },
+ "response_3.wav": {
+  "transcript": "",
+  "note": "all-zero audio"
+ },
+ "response_4.wav": {
+  "transcript": "It is currently eight PM in Pacific Time",
+  "seconds": 3.28
+ },
+ "response_5.wav": {
+  "transcript": "I can set the time zone for you. I just need to know the specific time zone you.",
+  "seconds": 4.56
+ },
+ "response_6.wav": {
+  "transcript": "I can set the time zone for you. I just need to know the specific time zone you are in.",
+  "seconds": 5.84
+ }
+}

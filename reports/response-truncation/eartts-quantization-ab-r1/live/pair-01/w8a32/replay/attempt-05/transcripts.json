@@ -1,0 +1,17 @@
+{
+  "response_001.wav": {
+    "seconds": 4.56,
+    "source_audio_sha256": "2eb439b9437853a04b886d3cb67b6794c38eed00b1643b3de4acbde2fbe33987",
+    "transcript": "Hi, it is great to meet you. How can I help you today?"
+  },
+  "response_002.wav": {
+    "seconds": 12.88,
+    "source_audio_sha256": "243f90ca312d7d24ea5b324730ce6e181f5141d8d7fb8d31269dd5fcd6fecf8e",
+    "transcript": "I am actually a text to speech model, but I love talking to voice models too. I am pneumotron created by NVIDIA. I can help with anything from answering questions to creative writing."
+  },
+  "response_003.wav": {
+    "seconds": 14.64,
+    "source_audio_sha256": "5825bad594be9f563dac7b865c3a1472978c65d897928eb7a0bd3eaa3ab18312",
+    "transcript": "Once upon a time a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day he found a magical forest where the unicorn grazed peacefully."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "files": [
+    {
+      "bytes": 2718735,
+      "path": "seal0.json",
+      "sha256": "7b01665d9bf379e7b0ecfce40f638dfaf81a14d96a4692a6e3d98a2e76c6ed12"
+    }
+  ],
+  "root": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-gptq/seal0-r25",
+  "sha256": "c802b9f65b31254e5ccfda2da7428fffd96ea3ad71a64092d18732206f7b3c30"
+}

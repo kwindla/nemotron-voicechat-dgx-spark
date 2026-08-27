@@ -1,0 +1,13 @@
+{"fatals": [], "passed": false, "phase": "control", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "control", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "control", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "pre_response", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "pre_response", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "pre_response", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "during_injection", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "during_injection", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "during_injection", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "during_ack", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "during_ack", "responses_done": 1, "tool_call_count": 0}
+{"fatals": [], "passed": false, "phase": "during_ack", "responses_done": 1, "tool_call_count": 0}
+{"all_passed": false, "cells": 12, "fatal_cells": 0, "kind": "tool_call_interrupt_matrix", "passed_cells": 0}

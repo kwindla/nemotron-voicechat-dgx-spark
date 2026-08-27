@@ -1,0 +1,1845 @@
+[NeMo W 2026-08-16 14:49:42 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:323: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+", " ", text)
+    
+[NeMo W 2026-08-16 14:49:42 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/lhotse/recipes/iwslt22_ta.py:324: SyntaxWarning: invalid escape sequence '\s'
+      text = re.sub("\s+\.\s+", ".", text)
+    
+[NeMo W 2026-08-16 14:49:43 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:300: SyntaxWarning: invalid escape sequence '\('
+      m = re.match('([su]([0-9]{1,2})p?) \(([0-9]{1,2}) bit\)$', token)
+    
+[NeMo W 2026-08-16 14:49:43 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:301: SyntaxWarning: invalid escape sequence '\('
+      m2 = re.match('([su]([0-9]{1,2})p?)( \(default\))?$', token)
+    
+[NeMo W 2026-08-16 14:49:43 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:310: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(flt)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-16 14:49:43 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:314: SyntaxWarning: invalid escape sequence '\('
+      elif re.match('(dbl)p?( \(default\))?$', token):
+    
+[NeMo W 2026-08-16 14:49:43 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/pydub/utils.py:170: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+      warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+    
+[NeMo I 2026-08-16 14:49:46 nemo_logging:393] Triton available & CUDA detected. Using Triton kernel for batch_matmul.
+[NeMo W 2026-08-16 14:49:46 nemo_logging:405] /usr/local/lib/python3.12/dist-packages/whisper_normalizer/basic.py:97: SyntaxWarning: invalid escape sequence '\X'
+      """
+    
+INFO 08-16 14:49:48 [__init__.py:224] Automatically detected platform cuda.
+[NeMo I 2026-08-16 14:49:50 nemo_logging:393] LLMStreamingEngine initialized for model: /models/candidates/nano-attnw8
+[NeMo I 2026-08-16 14:49:50 nemo_logging:393] Initializing vLLM engine (this may take a moment)...
+[NeMo I 2026-08-16 14:49:50 nemo_logging:393] Initializing vLLM engine...
+ERROR 08-16 14:49:50 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+ERROR 08-16 14:49:50 [__init__.py:57] Traceback (most recent call last):
+ERROR 08-16 14:49:50 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+ERROR 08-16 14:49:50 [__init__.py:57]     func = plugin.load()
+ERROR 08-16 14:49:50 [__init__.py:57]            ^^^^^^^^^^^^^
+ERROR 08-16 14:49:50 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+ERROR 08-16 14:49:50 [__init__.py:57]     module = import_module(match.group('module'))
+ERROR 08-16 14:49:50 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-16 14:49:50 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+ERROR 08-16 14:49:50 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+ERROR 08-16 14:49:50 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR 08-16 14:49:50 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+ERROR 08-16 14:49:50 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+ERROR 08-16 14:49:50 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ERROR 08-16 14:49:50 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+INFO 08-16 14:49:50 [arg_utils.py:535] HF_HUB_OFFLINE is True, replace model_id [/models/candidates/nano-attnw8] to model_path [/models/candidates/nano-attnw8]
+INFO 08-16 14:49:55 [model.py:653] Resolved architecture: NemotronHForCausalLM
+INFO 08-16 14:49:55 [model.py:1729] Using max model len 12288
+`torch_dtype` is deprecated! Use `dtype` instead!
+INFO 08-16 14:49:56 [gptq_marlin.py:226] The model is convertible to gptq_marlin during runtime. Using gptq_marlin kernel.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 08-16 14:49:56 [scheduler.py:225] Chunked prefill is enabled with max_num_batched_tokens=768.
+INFO 08-16 14:49:56 [config.py:313] Disabling cascade attention since it is not supported for hybrid models.
+INFO 08-16 14:49:56 [config.py:403] Setting attention block size to 1312 tokens to ensure that attention page size is >= mamba page size.
+INFO 08-16 14:49:56 [config.py:427] Padding mamba page size by 1.08% to ensure that mamba page size and attention page size are exactly equal.
+WARNING 08-16 14:49:56 [__init__.py:3134] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+INFO 08-16 14:49:57 [__init__.py:224] Automatically detected platform cuda.
+/usr/local/lib/python3.12/dist-packages/torch/library.py:356: UserWarning: Warning only once for all operators,  other operators may also be overridden.
+  Overriding a previously registered kernel for the same operator and the same dispatch key
+  operator: flash_attn::_flash_attn_backward(Tensor dout, Tensor q, Tensor k, Tensor v, Tensor out, Tensor softmax_lse, Tensor(a6!)? dq, Tensor(a7!)? dk, Tensor(a8!)? dv, float dropout_p, float softmax_scale, bool causal, SymInt window_size_left, SymInt window_size_right, float softcap, Tensor? alibi_slopes, bool deterministic, Tensor? rng_state=None) -> Tensor
+    registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922
+  dispatch key: ADInplaceOrView
+  previous kernel: no debug info
+       new kernel: registered at /usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py:922 (Triggered internally at /opt/pytorch/pytorch/aten/src/ATen/core/dispatch/OperatorEntry.cpp:208.)
+  self.m.impl(
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:00 [core.py:721] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57] Failed to load plugin lora_hf_hub_resolver
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57] Traceback (most recent call last):
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]   File "/usr/local/lib/python3.12/dist-packages/vllm/plugins/__init__.py", line 54, in load_plugins_by_group
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]     func = plugin.load()
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]            ^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]   File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]     module = import_module(match.group('module'))
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]   File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]     return _bootstrap._gcd_import(name[level:], package, level)
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57]   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+[1;36m(EngineCore_DP0 pid=386)[0;0m ERROR 08-16 14:50:00 [__init__.py:57] ModuleNotFoundError: No module named 'vllm.plugins.lora_resolvers.hf_hub_resolver'
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:00 [core.py:96] Initializing a V1 LLM engine (v0.17.1.dev0+gb31e9326a.fi065) with config: model='/models/candidates/nano-attnw8', speculative_config=None, tokenizer='/models/candidates/nano-attnw8', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=12288, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=gptq_marlin, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=/models/candidates/nano-attnw8, enable_prefix_caching=False, chunked_prefill_enabled=True, pooler_config=None, compilation_config={'level': 3, 'debug_dump_path': None, 'cache_dir': '', 'backend': '', 'custom_ops': [], 'splitting_ops': ['vllm.unified_attention', 'vllm.unified_attention_with_output', 'vllm.mamba_mixer2', 'vllm.mamba_mixer', 'vllm.short_conv', 'vllm.linear_attention', 'vllm.plamo2_mamba_mixer', 'vllm.gdn_attention', 'vllm.sparse_attn_indexer'], 'use_inductor': True, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'use_cudagraph': True, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [256, 248, 240, 232, 224, 216, 208, 200, 192, 184, 176, 168, 160, 152, 144, 136, 128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1], 'cudagraph_copy_inputs': False, 'full_cuda_graph': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_capture_size': 256, 'local_cache_dir': None}
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:01 [parallel_state.py:1231] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:01 [topk_topp_sampler.py:59] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:01 [gpu_model_runner.py:3224] Starting to load model /models/candidates/nano-attnw8...
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:02 [gpu_model_runner.py:3254] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:02 [gptq_marlin.py:374] Using MarlinLinearKernel for GPTQMarlinLinearMethod
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:02 [cuda.py:347] Using Triton backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=386)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=386)[0;0m Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:16<00:50, 16.86s/it]
+[1;36m(EngineCore_DP0 pid=386)[0;0m Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:37<00:38, 19.02s/it]
+[1;36m(EngineCore_DP0 pid=386)[0;0m Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:37<00:10, 10.61s/it]
+[1;36m(EngineCore_DP0 pid=386)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:46<00:00,  9.87s/it]
+[1;36m(EngineCore_DP0 pid=386)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:46<00:00, 11.68s/it]
+[1;36m(EngineCore_DP0 pid=386)[0;0m 
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:49 [default_loader.py:309] Loading weights took 46.91 seconds
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:50 [gpu_model_runner.py:3286] Model loading took 9.5424 GiB and 47.693837 seconds
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:51 [backends.py:594] Using cache directory: /root/.cache/vllm/torch_compile_cache/ad68f36eb0/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:51 [backends.py:608] Dynamo bytecode transform time: 1.44 s
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:52 [backends.py:214] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:50:57 [backends.py:241] Compiling a graph for dynamic shape takes 5.29 s
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:51:18 [monitor.py:33] torch.compile takes 6.73 s in total
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:51:18 [gpu_worker.py:314] Available KV cache memory: 40.62 GiB
+[1;36m(EngineCore_DP0 pid=386)[0;0m WARNING 08-16 14:51:18 [kv_cache_utils.py:1022] Add 1 padding layers, may waste at most 3.70% KV cache memory
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:51:18 [kv_cache_utils.py:1133] GPU KV cache size: 331,936 tokens
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:51:18 [kv_cache_utils.py:1138] Maximum concurrency for 12,288 tokens per request: 119.29x
+[1;36m(EngineCore_DP0 pid=386)[0;0m 2026-08-16 14:51:20,579 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=386)[0;0m 2026-08-16 14:51:21,118 - INFO - autotuner.py:268 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=386)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 1/35 [00:00<00:09,  3.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 2/35 [00:00<00:09,  3.64it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▊         | 3/35 [00:00<00:08,  3.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  11%|█▏        | 4/35 [00:01<00:08,  3.66it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  14%|█▍        | 5/35 [00:01<00:08,  3.68it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  17%|█▋        | 6/35 [00:01<00:07,  3.69it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|██        | 7/35 [00:01<00:07,  3.71it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  23%|██▎       | 8/35 [00:02<00:07,  3.72it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  26%|██▌       | 9/35 [00:02<00:06,  4.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▊       | 10/35 [00:02<00:05,  4.23it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 11/35 [00:02<00:05,  4.41it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 12/35 [00:02<00:05,  4.56it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 13/35 [00:03<00:04,  4.68it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 14/35 [00:03<00:04,  4.77it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 15/35 [00:03<00:04,  4.85it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  46%|████▌     | 16/35 [00:03<00:03,  4.93it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▊     | 17/35 [00:03<00:03,  5.46it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████▏    | 18/35 [00:04<00:02,  5.81it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  54%|█████▍    | 19/35 [00:04<00:02,  6.05it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 20/35 [00:04<00:02,  6.28it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|██████    | 21/35 [00:04<00:02,  6.49it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 22/35 [00:04<00:01,  6.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  66%|██████▌   | 23/35 [00:04<00:01,  6.75it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 24/35 [00:04<00:01,  6.85it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  74%|███████▍  | 26/35 [00:05<00:01,  8.67it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 28/35 [00:05<00:00,  9.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▌ | 30/35 [00:05<00:00, 11.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  91%|█████████▏| 32/35 [00:05<00:00, 11.85it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  97%|█████████▋| 34/35 [00:05<00:00, 12.59it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:05<00:00,  6.09it/s]
+[1;36m(EngineCore_DP0 pid=386)[0;0m Capturing CUDA graphs (decode, FULL):   0%|          | 0/19 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   5%|▌         | 1/19 [00:01<00:23,  1.28s/it]Capturing CUDA graphs (decode, FULL):  11%|█         | 2/19 [00:01<00:14,  1.19it/s]Capturing CUDA graphs (decode, FULL):  16%|█▌        | 3/19 [00:01<00:08,  1.94it/s]Capturing CUDA graphs (decode, FULL):  21%|██        | 4/19 [00:02<00:05,  2.75it/s]Capturing CUDA graphs (decode, FULL):  26%|██▋       | 5/19 [00:02<00:03,  3.61it/s]Capturing CUDA graphs (decode, FULL):  32%|███▏      | 6/19 [00:02<00:02,  4.45it/s]Capturing CUDA graphs (decode, FULL):  37%|███▋      | 7/19 [00:02<00:02,  5.24it/s]Capturing CUDA graphs (decode, FULL):  42%|████▏     | 8/19 [00:02<00:01,  5.95it/s]Capturing CUDA graphs (decode, FULL):  53%|█████▎    | 10/19 [00:02<00:01,  8.10it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 12/19 [00:02<00:00,  9.91it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▎  | 14/19 [00:02<00:00, 11.48it/s]Capturing CUDA graphs (decode, FULL):  84%|████████▍ | 16/19 [00:03<00:00,  4.83it/s]Capturing CUDA graphs (decode, FULL):  95%|█████████▍| 18/19 [00:03<00:00,  6.38it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 19/19 [00:04<00:00,  3.83it/s]
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:51:32 [gpu_model_runner.py:4203] Graph capturing finished in 11 secs, took 0.21 GiB
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:51:32 [core.py:237] init engine (profile, create kv cache, warmup model) took 42.24 seconds
+INFO 08-16 14:51:33 [loggers.py:148] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 2028
+[NeMo I 2026-08-16 14:51:33 nemo_logging:393] Engine initialized with custom input specs:
+[NeMo I 2026-08-16 14:51:33 nemo_logging:393]   - CustomInputSpec(name='combined_embeds', dtype='bfloat16', dim=4480)
+[NeMo I 2026-08-16 14:51:33 nemo_logging:393] text_pad_id resolved to: 12
+[NeMo I 2026-08-16 14:51:33 nemo_logging:393] vLLM engine ready!
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:51:33 [gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+[NeMo I 2026-08-16 14:51:33 nemo_logging:393] Starting generation session with request_id: step4d-profile-warmup-000
+[NeMo I 2026-08-16 14:51:33 nemo_logging:393] Initializing generation for request step4d-profile-warmup-000 with first embedding
+WARNING 08-16 14:51:33 [async_llm.py:283] Processor has been moved under OpenAIServing and will be removed from AsyncLLM in v0.13.
+[NeMo I 2026-08-16 14:52:06 nemo_logging:393] Aborted generation for request: step4d-profile-warmup-000
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:52:06 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [1, 2, 3, 4, 5, 6, 7, 8]
+[NeMo I 2026-08-16 14:52:06 nemo_logging:393] Starting generation session with request_id: step4d-profile-warmup-001
+[NeMo I 2026-08-16 14:52:06 nemo_logging:393] Initializing generation for request step4d-profile-warmup-001 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:52:06 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:52:39 nemo_logging:393] Aborted generation for request: step4d-profile-warmup-001
+[NeMo I 2026-08-16 14:52:39 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-000
+[NeMo I 2026-08-16 14:52:39 nemo_logging:393] Initializing generation for request step4d-profile-measured-000 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:52:39 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [9, 10, 11, 12, 13, 14, 15, 16]
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:52:39 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:53:17 nemo_logging:393] Aborted generation for request: step4d-profile-measured-000
+[NeMo I 2026-08-16 14:53:17 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-001
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:53:17 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [17, 18, 19, 20, 21, 22, 23, 24]
+[NeMo I 2026-08-16 14:53:17 nemo_logging:393] Initializing generation for request step4d-profile-measured-001 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:53:17 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:53:56 nemo_logging:393] Aborted generation for request: step4d-profile-measured-001
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:53:56 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [25, 26, 27, 28, 29, 30, 31, 32]
+[NeMo I 2026-08-16 14:53:56 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-002
+[NeMo I 2026-08-16 14:53:56 nemo_logging:393] Initializing generation for request step4d-profile-measured-002 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:53:56 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:54:35 nemo_logging:393] Aborted generation for request: step4d-profile-measured-002
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:54:35 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [33, 34, 35, 36, 37, 38, 39, 40]
+[NeMo I 2026-08-16 14:54:35 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-003
+[NeMo I 2026-08-16 14:54:35 nemo_logging:393] Initializing generation for request step4d-profile-measured-003 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:54:35 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:55:13 nemo_logging:393] Aborted generation for request: step4d-profile-measured-003
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:55:13 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [41, 42, 43, 44, 45, 46, 47, 48]
+[NeMo I 2026-08-16 14:55:13 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-004
+[NeMo I 2026-08-16 14:55:13 nemo_logging:393] Initializing generation for request step4d-profile-measured-004 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:55:13 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:55:52 nemo_logging:393] Aborted generation for request: step4d-profile-measured-004
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:55:52 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [49, 50, 51, 52, 53, 54, 55, 56]
+[NeMo I 2026-08-16 14:55:52 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-005
+[NeMo I 2026-08-16 14:55:52 nemo_logging:393] Initializing generation for request step4d-profile-measured-005 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:55:52 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-2581.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-c22e.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-2a1c.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-365f.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-51bd.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-13d5.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-08af.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-f034.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-d3e9.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-e9c6.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-ea40.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-43ea.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-cea9.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-d76c.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-602b.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-a930.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-38e6.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-517c.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-be73.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-b3d5.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-8274.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-8855.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-198b.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-811a.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-9e41.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-7d20.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-f02a.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-49a9.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-ef80.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-5956.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-8a1b.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-bb38.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-af1f.qdstrm'
+Capt[NeMo I 2026-08-16 14:56:31 nemo_logging:393] Aborted generation for request: step4d-profile-measured-005
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:56:31 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [57, 58, 59, 60, 61, 62, 63, 64]
+[NeMo I 2026-08-16 14:56:31 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-006
+[NeMo I 2026-08-16 14:56:32 nemo_logging:393] Initializing generation for request step4d-profile-measured-006 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:56:32 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:57:10 nemo_logging:393] Aborted generation for request: step4d-profile-measured-006
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:57:10 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [65, 66, 67, 68, 69, 70, 71, 72]
+[NeMo I 2026-08-16 14:57:10 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-007
+[NeMo I 2026-08-16 14:57:10 nemo_logging:393] Initializing generation for request step4d-profile-measured-007 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:57:10 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:57:49 nemo_logging:393] Aborted generation for request: step4d-profile-measured-007
+[NeMo I 2026-08-16 14:57:49 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-008
+[NeMo I 2026-08-16 14:57:49 nemo_logging:393] Initializing generation for request step4d-profile-measured-008 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:57:49 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [73, 74, 75, 76, 77, 78, 79, 80]
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:57:49 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:58:28 nemo_logging:393] Aborted generation for request: step4d-profile-measured-008
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:58:28 [gpu_model_runner.py:4541] [WORKER_ZERO_BLOCKS] Zeroing 8 blocks: [81, 82, 83, 84, 85, 86, 87, 88]
+[NeMo I 2026-08-16 14:58:28 nemo_logging:393] Starting generation session with request_id: step4d-profile-measured-009
+[NeMo I 2026-08-16 14:58:28 nemo_logging:393] Initializing generation for request step4d-profile-measured-009 with first embedding
+[1;36m(EngineCore_DP0 pid=386)[0;0m INFO 08-16 14:58:28 [gpu_model_runner.py:4570] [WORKER_ZERO_BLOCKS] Zeroed 464 tensors across 8 blocks
+[NeMo I 2026-08-16 14:59:07 nemo_logging:393] Aborted generation for request: step4d-profile-measured-009
+[NeMo I 2026-08-16 14:59:07 nemo_logging:393] Shutting down engine...
+[rank0]:[W816 14:59:07.324985675 ProcessGroupNCCL.cpp:1564] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[NeMo I 2026-08-16 14:59:08 nemo_logging:393] Engine shutdown complete.
+{
+  "blocks": [
+    {
+      "block": 0,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "warmup",
+      "request_id": "step4d-profile-warmup-000",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.10253530740738,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 46.630583703517914,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 47.3668621852994,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 46.23657837510109,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 47.83627297729254,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.36682230234146,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 33101.77789349109
+    },
+    {
+      "block": 1,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "warmup",
+      "request_id": "step4d-profile-warmup-001",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 47.541837207973,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.22664428502321,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 46.81701213121414,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 46.09548393636942,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.7662460654974,
+          "nvtx_range": null,
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.51915594190359,
+          "nvtx_range": null,
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 32873.47743101418
+    },
+    {
+      "block": 0,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-000",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.96575212478638,
+          "nvtx_range": "step4d:block=000;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.1254972293973,
+          "nvtx_range": "step4d:block=000;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.57787396758795,
+          "nvtx_range": "step4d:block=000;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.87446854263544,
+          "nvtx_range": "step4d:block=000;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.952627927064896,
+          "nvtx_range": "step4d:block=000;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.627482891082764,
+          "nvtx_range": "step4d:block=000;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38785.406393930316
+    },
+    {
+      "block": 1,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-001",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.31339900940657,
+          "nvtx_range": "step4d:block=001;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.8166743889451,
+          "nvtx_range": "step4d:block=001;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.54984784126282,
+          "nvtx_range": "step4d:block=001;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.716879449784756,
+          "nvtx_range": "step4d:block=001;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.799182288348675,
+          "nvtx_range": "step4d:block=001;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.88603091239929,
+          "nvtx_range": "step4d:block=001;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38702.35039293766
+    },
+    {
+      "block": 2,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-002",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.7066050991416,
+          "nvtx_range": "step4d:block=002;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.956687562167645,
+          "nvtx_range": "step4d:block=002;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 47.69468866288662,
+          "nvtx_range": "step4d:block=002;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.334439285099506,
+          "nvtx_range": "step4d:block=002;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.664312809705734,
+          "nvtx_range": "step4d:block=002;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.06673263758421,
+          "nvtx_range": "step4d:block=002;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38670.82915455103
+    },
+    {
+      "block": 3,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-003",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.37476757913828,
+          "nvtx_range": "step4d:block=003;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.913851380348206,
+          "nvtx_range": "step4d:block=003;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.126096837222576,
+          "nvtx_range": "step4d:block=003;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.053983598947525,
+          "nvtx_range": "step4d:block=003;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.38321823626757,
+          "nvtx_range": "step4d:block=003;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.393634147942066,
+          "nvtx_range": "step4d:block=003;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38672.03452810645
+    },
+    {
+      "block": 4,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-004",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.91026392579079,
+          "nvtx_range": "step4d:block=004;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.52837137877941,
+          "nvtx_range": "step4d:block=004;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.09753815829754,
+          "nvtx_range": "step4d:block=004;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.24279900640249,
+          "nvtx_range": "step4d:block=004;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.54695515334606,
+          "nvtx_range": "step4d:block=004;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.57588203251362,
+          "nvtx_range": "step4d:block=004;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38943.868869915605
+    },
+    {
+      "block": 5,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-005",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.66081848740578,
+          "nvtx_range": "step4d:block=005;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.09982904791832,
+          "nvtx_range": "step4d:block=005;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.953676760196686,
+          "nvtx_range": "step4d:block=005;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.802908673882484,
+          "nvtx_range": "step4d:block=005;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.81823994219303,
+          "nvtx_range": "step4d:block=005;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.3993710950017,
+          "nvtx_range": "step4d:block=005;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 39148.64175114781
+    },
+    {
+      "block": 6,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-006",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.757839016616344,
+          "nvtx_range": "step4d:block=006;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.61815832555294,
+          "nvtx_range": "step4d:block=006;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.93508832901716,
+          "nvtx_range": "step4d:block=006;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.38978685438633,
+          "nvtx_range": "step4d:block=006;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.767895601689816,
+          "nvtx_range": "step4d:block=006;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.79394918680191,
+          "nvtx_range": "step4d:block=006;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38844.974705949426
+    },
+    {
+      "block": 7,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-007",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.80767052620649,
+          "nvtx_range": "step4d:block=007;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.97305462509394,
+          "nvtx_range": "step4d:block=007;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.16945472359657,
+          "nvtx_range": "step4d:block=007;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.495800234377384,
+          "nvtx_range": "step4d:block=007;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 50.1016229391098,
+          "nvtx_range": "step4d:block=007;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.13798067718744,
+          "nvtx_range": "step4d:block=007;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38590.40098078549
+    },
+    {
+      "block": 8,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-008",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.41319005936384,
+          "nvtx_range": "step4d:block=008;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 47.95521683990955,
+          "nvtx_range": "step4d:block=008;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.35431946069002,
+          "nvtx_range": "step4d:block=008;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 49.27385412156582,
+          "nvtx_range": "step4d:block=008;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.654447473585606,
+          "nvtx_range": "step4d:block=008;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.34616868942976,
+          "nvtx_range": "step4d:block=008;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38833.841231651604
+    },
+    {
+      "block": 9,
+      "calls": 687,
+      "cleanup_ok": true,
+      "phase": "measured",
+      "request_id": "step4d-profile-measured-009",
+      "selected": [
+        {
+          "actual_token": 1046,
+          "call_index": 45,
+          "class": "content",
+          "current_step": 45,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 49.655440263450146,
+          "nvtx_range": "step4d:block=009;pair=1;class=content;call=45;step=45",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 46,
+          "class": "pad",
+          "current_step": 46,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 48.362914472818375,
+          "nvtx_range": "step4d:block=009;pair=1;class=pad;call=46;step=46",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 1,
+          "reference_digest": null,
+          "reference_key": "pair-1-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 326,
+          "class": "content",
+          "current_step": 326,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.89530222862959,
+          "nvtx_range": "step4d:block=009;pair=2;class=content;call=326;step=326",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 327,
+          "class": "pad",
+          "current_step": 327,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 47.76185192167759,
+          "nvtx_range": "step4d:block=009;pair=2;class=pad;call=327;step=327",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 2,
+          "reference_digest": null,
+          "reference_key": "pair-2-pad"
+        },
+        {
+          "actual_token": 1046,
+          "call_index": 685,
+          "class": "content",
+          "current_step": 685,
+          "exact_output_match": null,
+          "expected_token": 1046,
+          "interface_ms": 48.786564730107784,
+          "nvtx_range": "step4d:block=009;pair=3;class=content;call=685;step=685",
+          "output_digest": "750c398d605368abb14d36d0fe25893ac416236edee88bb1cd2079cdd2bae8b5",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-content"
+        },
+        {
+          "actual_token": 12,
+          "call_index": 686,
+          "class": "pad",
+          "current_step": 686,
+          "exact_output_match": null,
+          "expected_token": 12,
+          "interface_ms": 50.82359258085489,
+          "nvtx_range": "step4d:block=009;pair=3;class=pad;call=686;step=686",
+          "output_digest": "742dd46efe70fa686228ce62858717a2752355388b70446352998998bc7c9a1f",
+          "pair": 3,
+          "reference_digest": null,
+          "reference_key": "pair-3-pad"
+        }
+      ],
+      "token_mismatches": [
+        {
+          "actual_token": 1044,
+          "call_index": 39,
+          "expected_token": 10592
+        }
+      ],
+      "valid": false,
+      "wall_ms": 38738.42884786427
+    }
+  ],
+  "capture": {
+    "capture_calls": 1172,
+    "capture_manifest_sha256": "55d9e815ec235a588b0aa6eacb4a97a2d5a77f19aa00954d0c2e205d4108d1aa",
+    "capture_metadata_sha256": "7f4eecced31a79b0504ef5ddb5720461fd86939d1bbd4d38c97baffe4d5f5471",
+    "capture_root": "/corpus/evaluation/0",
+    "kind": "step4d_nano_matched_state_selection",
+    "max_replayed_call": 686,
+    "pairs": [
+      {
+        "content": {
+          "call_index": 45,
+          "current_step": 45,
+          "expected_token": 1046,
+          "file": "nano-call-000045.pt",
+          "sha256": "4504dc68c6de534a2f1e9e70a33de48ae7e7d7652db948d3ad51fe4b02684fea"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 46,
+          "current_step": 46,
+          "expected_token": 12,
+          "file": "nano-call-000046.pt",
+          "sha256": "44db1da01a77558bf472efcc93ff62c16ceaa7c00c3c233ce20fec0d5c3df542"
+        },
+        "pair": 1,
+        "request_id": "1",
+        "sequence_epoch": 0
+      },
+      {
+        "content": {
+          "call_index": 326,
+          "current_step": 326,
+          "expected_token": 1046,
+          "file": "nano-call-000326.pt",
+          "sha256": "9c8246e75dea73cd0378e187d56588657530cb2be33d81e1f1bb6513d493f63c"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 327,
+          "current_step": 327,
+          "expected_token": 12,
+          "file": "nano-call-000327.pt",
+          "sha256": "5a136ada55a2d61202d2bf8ec4621076580a02cfbf62838aa2a871d40d168d64"
+        },
+        "pair": 2,
+        "request_id": "1",
+        "sequence_epoch": 0
+      },
+      {
+        "content": {
+          "call_index": 685,
+          "current_step": 685,
+          "expected_token": 1046,
+          "file": "nano-call-000685.pt",
+          "sha256": "5545684267d3c4457a42c94d58a14b9170ac34f06f5d307d6f76aac9f26b0258"
+        },
+        "decode_steps": 1,
+        "input_contract": {
+          "decode_steps": 1,
+          "input_embed_dtype": "torch.bfloat16",
+          "input_embed_shape": [
+            1,
+            1,
+            4480
+          ],
+          "prompt_token_ids": null
+        },
+        "pad": {
+          "call_index": 686,
+          "current_step": 686,
+          "expected_token": 12,
+          "file": "nano-call-000686.pt",
+          "sha256": "27ea43d1e7fdc22db6a20f8a65ce152776fa2753ce7590eed78147d8af011fb3"
+        },
+        "pair": 3,
+        "request_id": "1",
+        "sequence_epoch": 0
+      }
+    ],
+    "rules": {
+      "boundary": "last lexical state immediately followed by PAD",
+      "causal_replay": "every call from zero through max_replayed_call",
+      "content": "predicted_token > 12",
+      "controls_excluded": [
+        1,
+        2
+      ],
+      "pad": "predicted_token == 12"
+    },
+    "schema": 1
+  },
+  "component": {
+    "config_sha256": "2d9fd7dfc860eaae7f098d3ec761eda07f5e85f323bb060bf55d64a553755aed",
+    "enforce_eager": false,
+    "gpu_memory_utilization": 0.42,
+    "max_model_len": 12288,
+    "path": "/models/candidates/nano-attnw8",
+    "sampling": {
+      "repetition_penalty": 1.0,
+      "temperature": 0.0,
+      "top_p": 1.0
+    }
+  },
+  "kind": "step4d_nano_component_replay",
+  "measured_blocks": 10,
+  "mode": "profile",
+  "passed": false,
+  "reference_output_digests": {},
+  "reference_source": "first-measured-block",
+  "schema": 1,
+  "warmup_blocks": 2
+}
+ure range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-2998.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-5f29.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-8038.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-edf2.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-d65f.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-81f5.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-33ba.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-1c1c.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-18f4.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-1fb3.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-c41f.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-8b8d.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-2ebf.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-490d.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-a767.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-2443.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-a87f.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-6dd9.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-aed4.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-a5d7.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-867c.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-d5e1.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-0725.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-03c9.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-3fce.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-3025.qdstrm'
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-2830.qdstrm'
+Processing events...
+[ 2/60] [0%                          ] g2-profile.2.nsys-rep[ 2/60] [0%                          ] g2-profile.2.nsys-rep[ 2/60] [=====29%                    ] g2-profile.2.nsys-rep[ 2/60] [=============58%            ] g2-profile.2.nsys-rep[ 2/60] [=====================88%    ] g2-profile.2.nsys-rep[ 2/60] [========================98% ] g2-profile.2.nsys-rep[ 2/60] [========================100%] g2-profile.2.nsys-rep[ 2/60] [========================100%] g2-profile.2.nsys-rep
+[ 3/60] [0%                          ] g2-profile.3.nsys-rep[ 3/60] [0%                          ] g2-profile.3.nsys-rep[ 3/60] [=====29%                    ] g2-profile.3.nsys-rep[ 3/60] [=============58%            ] g2-profile.3.nsys-rep[ 3/60] [=====================88%    ] g2-profile.3.nsys-rep[ 3/60] [========================98% ] g2-profile.3.nsys-rep[ 3/60] [========================100%] g2-profile.3.nsys-rep[ 3/60] [========================100%] g2-profile.3.nsys-rep
+[ 4/60] [0%                          ] g2-profile.4.nsys-rep[ 4/60] [0%                          ] g2-profile.4.nsys-rep[ 4/60] [=====32%                    ] g2-profile.4.nsys-rep[ 4/60] [=====29%                    ] g2-profile.4.nsys-rep[ 4/60] [=============58%            ] g2-profile.4.nsys-rep[ 4/60] [=====================88%    ] g2-profile.4.nsys-rep[ 4/60] [========================98% ] g2-profile.4.nsys-rep[ 4/60] [========================100%] g2-profile.4.nsys-rep[ 4/60] [========================100%] g2-profile.4.nsys-rep
+[ 5/60] [0%                          ] g2-profile.5.nsys-rep[ 5/60] [0%                          ] g2-profile.5.nsys-rep[ 5/60] [=====32%                    ] g2-profile.5.nsys-rep[ 5/60] [=====29%                    ] g2-profile.5.nsys-rep[ 5/60] [=============58%            ] g2-profile.5.nsys-rep[ 5/60] [=====================88%    ] g2-profile.5.nsys-rep[ 5/60] [========================98% ] g2-profile.5.nsys-rep[ 5/60] [========================100%] g2-profile.5.nsys-rep[ 5/60] [========================100%] g2-profile.5.nsys-rep
+[ 6/60] [0%                          ] g2-profile.6.nsys-rep[ 6/60] [0%                          ] g2-profile.6.nsys-rep[ 6/60] [==========48%               ] g2-profile.6.nsys-rep[ 6/60] [=====32%                    ] g2-profile.6.nsys-rep[ 6/60] [=====29%                    ] g2-profile.6.nsys-rep[ 6/60] [=============58%            ] g2-profile.6.nsys-rep[ 6/60] [=====================88%    ] g2-profile.6.nsys-rep[ 6/60] [========================98% ] g2-profile.6.nsys-rep[ 6/60] [========================100%] g2-profile.6.nsys-rep[ 6/60] [========================100%] g2-profile.6.nsys-rep
+[ 7/60] [0%                          ] g2-profile.7.nsys-rep[ 7/60] [0%                          ] g2-profile.7.nsys-rep[ 7/60] [=====29%                    ] g2-profile.7.nsys-rep[ 7/60] [=============58%            ] g2-profile.7.nsys-rep[ 7/60] [=====================88%    ] g2-profile.7.nsys-rep[ 7/60] [========================98% ] g2-profile.7.nsys-rep[ 7/60] [========================100%] g2-profile.7.nsys-rep[ 7/60] [========================100%] g2-profile.7.nsys-rep
+[ 8/60] [0%                          ] g2-profile.8.nsys-rep[ 8/60] [0%                          ] g2-profile.8.nsys-rep[ 8/60] [=====29%                    ] g2-profile.8.nsys-rep[ 8/60] [=============58%            ] g2-profile.8.nsys-rep[ 8/60] [=====================88%    ] g2-profile.8.nsys-rep[ 8/60] [========================98% ] g2-profile.8.nsys-rep[ 8/60] [========================100%] g2-profile.8.nsys-rep[ 8/60] [========================100%] g2-profile.8.nsys-rep
+[ 9/60] [0%                          ] g2-profile.9.nsys-rep[ 9/60] [0%                          ] g2-profile.9.nsys-rep[ 9/60] [=====29%                    ] g2-profile.9.nsys-rep[ 9/60] [=============58%            ] g2-profile.9.nsys-rep[ 9/60] [=====================88%    ] g2-profile.9.nsys-rep[ 9/60] [========================98% ] g2-profile.9.nsys-rep[ 9/60] [========================100%] g2-profile.9.nsys-rep[ 9/60] [========================100%] g2-profile.9.nsys-rep
+[10/60] [0%                          ] g2-profile.10.nsys-rep[10/60] [0%                          ] g2-profile.10.nsys-rep[10/60] [=====29%                    ] g2-profile.10.nsys-rep[10/60] [=============58%            ] g2-profile.10.nsys-rep[10/60] [=====================88%    ] g2-profile.10.nsys-rep[10/60] [========================98% ] g2-profile.10.nsys-rep[10/60] [========================100%] g2-profile.10.nsys-rep[10/60] [========================100%] g2-profile.10.nsys-rep
+[11/60] [0%                          ] g2-profile.11.nsys-rep[11/60] [0%                          ] g2-profile.11.nsys-rep[11/60] [=====32%                    ] g2-profile.11.nsys-rep[11/60] [=====29%                    ] g2-profile.11.nsys-rep[11/60] [=============58%            ] g2-profile.11.nsys-rep[11/60] [=====================88%    ] g2-profile.11.nsys-rep[11/60] [========================98% ] g2-profile.11.nsys-rep[11/60] [========================100%] g2-profile.11.nsys-rep[11/60] [========================100%] g2-profile.11.nsys-rep
+[12/60] [0%                          ] g2-profile.12.nsys-rep[12/60] [0%                          ] g2-profile.12.nsys-rep[12/60] [=====29%                    ] g2-profile.12.nsys-rep[12/60] [=============58%            ] g2-profile.12.nsys-rep[12/60] [=====================88%    ] g2-profile.12.nsys-rep[12/60] [========================98% ] g2-profile.12.nsys-rep[12/60] [========================100%] g2-profile.12.nsys-rep[12/60] [========================100%] g2-profile.12.nsys-rep
+[13/60] [0%                          ] g2-profile.13.nsys-rep[13/60] [0%                          ] g2-profile.13.nsys-rep[13/60] [=====29%                    ] g2-profile.13.nsys-rep[13/60] [=============58%            ] g2-profile.13.nsys-rep[13/60] [=====================88%    ] g2-profile.13.nsys-rep[13/60] [========================98% ] g2-profile.13.nsys-rep[13/60] [========================100%] g2-profile.13.nsys-rep[13/60] [========================100%] g2-profile.13.nsys-rep
+[14/60] [0%                          ] g2-profile.14.nsys-rep[14/60] [0%                          ] g2-profile.14.nsys-rep[14/60] [=====29%                    ] g2-profile.14.nsys-rep[14/60] [=============58%            ] g2-profile.14.nsys-rep[14/60] [=====================88%    ] g2-profile.14.nsys-rep[14/60] [========================98% ] g2-profile.14.nsys-rep[14/60] [========================100%] g2-profile.14.nsys-rep[14/60] [========================100%] g2-profile.14.nsys-rep
+[15/60] [0%                          ] g2-profile.15.nsys-rep[15/60] [0%                          ] g2-profile.15.nsys-rep[15/60] [=====32%                    ] g2-profile.15.nsys-rep[15/60] [=====29%                    ] g2-profile.15.nsys-rep[15/60] [=============58%            ] g2-profile.15.nsys-rep[15/60] [=====================88%    ] g2-profile.15.nsys-rep[15/60] [========================98% ] g2-profile.15.nsys-rep[15/60] [========================100%] g2-profile.15.nsys-rep[15/60] [========================100%] g2-profile.15.nsys-rep
+[16/60] [0%                          ] g2-profile.16.nsys-rep[16/60] [0%                          ] g2-profile.16.nsys-rep[16/60] [=====29%                    ] g2-profile.16.nsys-rep[16/60] [=============58%            ] g2-profile.16.nsys-rep[16/60] [=====================88%    ] g2-profile.16.nsys-rep[16/60] [========================98% ] g2-profile.16.nsys-rep[16/60] [========================100%] g2-profile.16.nsys-rep[16/60] [========================100%] g2-profile.16.nsys-rep
+[17/60] [0%                          ] g2-profile.17.nsys-rep[17/60] [0%                          ] g2-profile.17.nsys-rep[17/60] [=====29%                    ] g2-profile.17.nsys-rep[17/60] [=============58%            ] g2-profile.17.nsys-rep[17/60] [=====================88%    ] g2-profile.17.nsys-rep[17/60] [========================98% ] g2-profile.17.nsys-rep[17/60] [========================100%] g2-profile.17.nsys-rep[17/60] [========================100%] g2-profile.17.nsys-rep
+[18/60] [0%                          ] g2-profile.18.nsys-rep[18/60] [0%                          ] g2-profile.18.nsys-rep[18/60] [=====29%                    ] g2-profile.18.nsys-rep[18/60] [=============58%            ] g2-profile.18.nsys-rep[18/60] [=====================88%    ] g2-profile.18.nsys-rep[18/60] [========================98% ] g2-profile.18.nsys-rep[18/60] [========================100%] g2-profile.18.nsys-rep[18/60] [========================100%] g2-profile.18.nsys-rep
+[19/60] [0%                          ] g2-profile.19.nsys-rep[19/60] [0%                          ] g2-profile.19.nsys-rep[19/60] [=====29%                    ] g2-profile.19.nsys-rep[19/60] [=============58%            ] g2-profile.19.nsys-rep[19/60] [=====================88%    ] g2-profile.19.nsys-rep[19/60] [========================98% ] g2-profile.19.nsys-rep[19/60] [========================100%] g2-profile.19.nsys-rep[19/60] [========================100%] g2-profile.19.nsys-rep
+[20/60] [0%                          ] g2-profile.20.nsys-rep[20/60] [0%                          ] g2-profile.20.nsys-rep[20/60] [=====29%                    ] g2-profile.20.nsys-rep[20/60] [=============58%            ] g2-profile.20.nsys-rep[20/60] [=====================88%    ] g2-profile.20.nsys-rep[20/60] [========================98% ] g2-profile.20.nsys-rep[20/60] [========================100%] g2-profile.20.nsys-rep[20/60] [========================100%] g2-profile.20.nsys-rep
+[21/60] [0%                          ] g2-profile.21.nsys-rep[21/60] [0%                          ] g2-profile.21.nsys-rep[21/60] [=====29%                    ] g2-profile.21.nsys-rep[21/60] [=============58%            ] g2-profile.21.nsys-rep[21/60] [=====================88%    ] g2-profile.21.nsys-rep[21/60] [========================98% ] g2-profile.21.nsys-rep[21/60] [========================100%] g2-profile.21.nsys-rep[21/60] [========================100%] g2-profile.21.nsys-rep
+[22/60] [0%                          ] g2-profile.22.nsys-rep[22/60] [0%                          ] g2-profile.22.nsys-rep[22/60] [=====32%                    ] g2-profile.22.nsys-rep[22/60] [=====29%                    ] g2-profile.22.nsys-rep[22/60] [=============58%            ] g2-profile.22.nsys-rep[22/60] [=====================88%    ] g2-profile.22.nsys-rep[22/60] [========================98% ] g2-profile.22.nsys-rep[22/60] [========================100%] g2-profile.22.nsys-rep[22/60] [========================100%] g2-profile.22.nsys-rep
+[23/60] [0%                          ] g2-profile.23.nsys-rep[23/60] [0%                          ] g2-profile.23.nsys-rep[23/60] [=====29%                    ] g2-profile.23.nsys-rep[23/60] [=============58%            ] g2-profile.23.nsys-rep[23/60] [=====================88%    ] g2-profile.23.nsys-rep[23/60] [========================98% ] g2-profile.23.nsys-rep[23/60] [========================100%] g2-profile.23.nsys-rep[23/60] [========================100%] g2-profile.23.nsys-rep
+[24/60] [0%                          ] g2-profile.24.nsys-rep[24/60] [0%                          ] g2-profile.24.nsys-rep[24/60] [=====29%                    ] g2-profile.24.nsys-rep[24/60] [=============58%            ] g2-profile.24.nsys-rep[24/60] [=====================88%    ] g2-profile.24.nsys-rep[24/60] [========================98% ] g2-profile.24.nsys-rep[24/60] [========================100%] g2-profile.24.nsys-rep[24/60] [========================100%] g2-profile.24.nsys-rep
+[25/60] [0%                          ] g2-profile.25.nsys-rep[25/60] [0%                          ] g2-profile.25.nsys-rep[25/60] [=====32%                    ] g2-profile.25.nsys-rep[25/60] [=====29%                    ] g2-profile.25.nsys-rep[25/60] [=============58%            ] g2-profile.25.nsys-rep[25/60] [=====================88%    ] g2-profile.25.nsys-rep[25/60] [========================98% ] g2-profile.25.nsys-rep[25/60] [========================100%] g2-profile.25.nsys-rep[25/60] [========================100%] g2-profile.25.nsys-rep
+[26/60] [0%                          ] g2-profile.26.nsys-rep[26/60] [0%                          ] g2-profile.26.nsys-rep[26/60] [=====29%                    ] g2-profile.26.nsys-rep[26/60] [=============58%            ] g2-profile.26.nsys-rep[26/60] [=====================88%    ] g2-profile.26.nsys-rep[26/60] [========================98% ] g2-profile.26.nsys-rep[26/60] [========================100%] g2-profile.26.nsys-rep[26/60] [========================100%] g2-profile.26.nsys-rep
+[27/60] [0%                          ] g2-profile.27.nsys-rep[27/60] [0%                          ] g2-profile.27.nsys-rep[27/60] [=====32%                    ] g2-profile.27.nsys-rep[27/60] [=====29%                    ] g2-profile.27.nsys-rep[27/60] [=============58%            ] g2-profile.27.nsys-rep[27/60] [=====================88%    ] g2-profile.27.nsys-rep[27/60] [========================98% ] g2-profile.27.nsys-rep[27/60] [========================100%] g2-profile.27.nsys-rep[27/60] [========================100%] g2-profile.27.nsys-rep
+[28/60] [0%                          ] g2-profile.28.nsys-rep[28/60] [0%                          ] g2-profile.28.nsys-rep[28/60] [=====29%                    ] g2-profile.28.nsys-rep[28/60] [=============58%            ] g2-profile.28.nsys-rep[28/60] [=====================88%    ] g2-profile.28.nsys-rep[28/60] [========================97% ] g2-profile.28.nsys-rep[28/60] [========================100%] g2-profile.28.nsys-rep[28/60] [========================100%] g2-profile.28.nsys-rep
+[29/60] [0%                          ] g2-profile.29.nsys-rep[29/60] [0%                          ] g2-profile.29.nsys-rep[29/60] [=====29%                    ] g2-profile.29.nsys-rep[29/60] [=============58%            ] g2-profile.29.nsys-rep[29/60] [=====================88%    ] g2-profile.29.nsys-rep[29/60] [========================97% ] g2-profile.29.nsys-rep[29/60] [========================100%] g2-profile.29.nsys-rep[29/60] [========================100%] g2-profile.29.nsys-rep
+[30/60] [0%                          ] g2-profile.30.nsys-rep[30/60] [0%                          ] g2-profile.30.nsys-rep[30/60] [=====29%                    ] g2-profile.30.nsys-rep[30/60] [=============58%            ] g2-profile.30.nsys-rep[30/60] [=====================88%    ] g2-profile.30.nsys-rep[30/60] [========================97% ] g2-profile.30.nsys-rep[30/60] [========================100%] g2-profile.30.nsys-rep[30/60] [========================100%] g2-profile.30.nsys-rep
+[31/60] [0%                          ] g2-profile.31.nsys-rep[31/60] [0%                          ] g2-profile.31.nsys-rep[31/60] [=====32%                    ] g2-profile.31.nsys-rep[31/60] [=====29%                    ] g2-profile.31.nsys-rep[31/60] [=============58%            ] g2-profile.31.nsys-rep[31/60] [=====================88%    ] g2-profile.31.nsys-rep[31/60] [========================97% ] g2-profile.31.nsys-rep[31/60] [========================100%] g2-profile.31.nsys-rep[31/60] [========================100%] g2-profile.31.nsys-rep
+[32/60] [0%                          ] g2-profile.32.nsys-rep[32/60] [0%                          ] g2-profile.32.nsys-rep[32/60] [=====32%                    ] g2-profile.32.nsys-rep[32/60] [====28%                     ] g2-profile.32.nsys-rep[32/60] [=============58%            ] g2-profile.32.nsys-rep[32/60] [=====================88%    ] g2-profile.32.nsys-rep[32/60] [========================97% ] g2-profile.32.nsys-rep[32/60] [========================100%] g2-profile.32.nsys-rep[32/60] [========================100%] g2-profile.32.nsys-rep
+[33/60] [0%                          ] g2-profile.33.nsys-rep[33/60] [0%                          ] g2-profile.33.nsys-rep[33/60] [=====32%                    ] g2-profile.33.nsys-rep[33/60] [====28%                     ] g2-profile.33.nsys-rep[33/60] [=============58%            ] g2-profile.33.nsys-rep[33/60] [=====================88%    ] g2-profile.33.nsys-rep[33/60] [========================97% ] g2-profile.33.nsys-rep[33/60] [========================100%] g2-profile.33.nsys-rep[33/60] [========================100%] g2-profile.33.nsys-rep
+[34/60] [0%                          ] g2-profile.34.nsys-rep[34/60] [0%                          ] g2-profile.34.nsys-rep[34/60] [====28%                     ] g2-profile.34.nsys-rep[34/60] [=============58%            ] g2-profile.34.nsys-rep[34/60] [=====================88%    ] g2-profile.34.nsys-rep[34/60] [========================97% ] g2-profile.34.nsys-rep[34/60] [========================100%] g2-profile.34.nsys-rep[34/60] [========================100%] g2-profile.34.nsys-rep
+[35/60] [0%                          ] g2-profile.35.nsys-rep[35/60] [0%                          ] g2-profile.35.nsys-rep[35/60] [==========48%               ] g2-profile.35.nsys-rep[35/60] [=====32%                    ] g2-profile.35.nsys-rep[35/60] [====28%                     ] g2-profile.35.nsys-rep[35/60] [=============58%            ] g2-profile.35.nsys-rep[35/60] [=====================88%    ] g2-profile.35.nsys-rep[35/60] [========================97% ] g2-profile.35.nsys-rep[35/60] [========================100%] g2-profile.35.nsys-rep[35/60] [========================100%] g2-profile.35.nsys-rep
+[36/60] [0%                          ] g2-profile.36.nsys-rep[36/60] [0%                          ] g2-profile.36.nsys-rep[36/60] [====28%                     ] g2-profile.36.nsys-rep[36/60] [=============58%            ] g2-profile.36.nsys-rep[36/60] [=====================88%    ] g2-profile.36.nsys-rep[36/60] [========================97% ] g2-profile.36.nsys-rep[36/60] [========================100%] g2-profile.36.nsys-rep[36/60] [========================100%] g2-profile.36.nsys-rep
+[37/60] [0%                          ] g2-profile.37.nsys-rep[37/60] [0%                          ] g2-profile.37.nsys-rep[37/60] [====28%                     ] g2-profile.37.nsys-rep[37/60] [=============58%            ] g2-profile.37.nsys-rep[37/60] [=====================88%    ] g2-profile.37.nsys-rep[37/60] [========================97% ] g2-profile.37.nsys-rep[37/60] [========================100%] g2-profile.37.nsys-rep[37/60] [========================100%] g2-profile.37.nsys-rep
+[38/60] [0%                          ] g2-profile.38.nsys-rep[38/60] [0%                          ] g2-profile.38.nsys-rep[38/60] [====28%                     ] g2-profile.38.nsys-rep[38/60] [=============58%            ] g2-profile.38.nsys-rep[38/60] [=====================88%    ] g2-profile.38.nsys-rep[38/60] [========================97% ] g2-profile.38.nsys-rep[38/60] [========================100%] g2-profile.38.nsys-rep[38/60] [========================100%] g2-profile.38.nsys-rep
+[39/60] [0%                          ] g2-profile.39.nsys-rep[39/60] [0%                          ] g2-profile.39.nsys-rep[39/60] [====28%                     ] g2-profile.39.nsys-rep[39/60] [=============58%            ] g2-profile.39.nsys-rep[39/60] [=====================88%    ] g2-profile.39.nsys-rep[39/60] [========================97% ] g2-profile.39.nsys-rep[39/60] [========================100%] g2-profile.39.nsys-rep[39/60] [========================100%] g2-profile.39.nsys-rep
+[40/60] [0%                          ] g2-profile.40.nsys-rep[40/60] [0%                          ] g2-profile.40.nsys-rep[40/60] [====28%                     ] g2-profile.40.nsys-rep[40/60] [=============58%            ] g2-profile.40.nsys-rep[40/60] [=====================88%    ] g2-profile.40.nsys-rep[40/60] [========================97% ] g2-profile.40.nsys-rep[40/60] [========================100%] g2-profile.40.nsys-rep[40/60] [========================100%] g2-profile.40.nsys-rep
+[41/60] [0%                          ] g2-profile.41.nsys-rep[41/60] [0%                          ] g2-profile.41.nsys-rep[41/60] [====28%                     ] g2-profile.41.nsys-rep[41/60] [=============58%            ] g2-profile.41.nsys-rep[41/60] [=====================88%    ] g2-profile.41.nsys-rep[41/60] [========================97% ] g2-profile.41.nsys-rep[41/60] [========================100%] g2-profile.41.nsys-rep[41/60] [========================100%] g2-profile.41.nsys-rep
+[42/60] [0%                          ] g2-profile.42.nsys-rep[42/60] [0%                          ] g2-profile.42.nsys-rep[42/60] [==========48%               ] g2-profile.42.nsys-rep[42/60] [=====32%                    ] g2-profile.42.nsys-rep[42/60] [====28%                     ] g2-profile.42.nsys-rep[42/60] [=============58%            ] g2-profile.42.nsys-rep[42/60] [=====================88%    ] g2-profile.42.nsys-rep[42/60] [========================97% ] g2-profile.42.nsys-rep[42/60] [========================100%] g2-profile.42.nsys-rep[42/60] [========================100%] g2-profile.42.nsys-rep
+[43/60] [0%                          ] g2-profile.43.nsys-rep[43/60] [0%                          ] g2-profile.43.nsys-rep[43/60] [=====32%                    ] g2-profile.43.nsys-rep[43/60] [====28%                     ] g2-profile.43.nsys-rep[43/60] [=============58%            ] g2-profile.43.nsys-rep[43/60] [=====================88%    ] g2-profile.43.nsys-rep[43/60] [========================97% ] g2-profile.43.nsys-rep[43/60] [========================100%] g2-profile.43.nsys-rep[43/60] [========================100%] g2-profile.43.nsys-rep
+[44/60] [0%                          ] g2-profile.44.nsys-rep[44/60] [0%                          ] g2-profile.44.nsys-rep[44/60] [==========48%               ] g2-profile.44.nsys-rep[44/60] [=====32%                    ] g2-profile.44.nsys-rep[44/60] [====28%                     ] g2-profile.44.nsys-rep[44/60] [=============58%            ] g2-profile.44.nsys-rep[44/60] [=====================88%    ] g2-profile.44.nsys-rep[44/60] [========================97% ] g2-profile.44.nsys-rep[44/60] [========================100%] g2-profile.44.nsys-rep[44/60] [========================100%] g2-profile.44.nsys-rep
+[45/60] [0%                          ] g2-profile.45.nsys-rep[45/60] [0%                          ] g2-profile.45.nsys-rep[45/60] [====28%                     ] g2-profile.45.nsys-rep[45/60] [=============58%            ] g2-profile.45.nsys-rep[45/60] [=====================87%    ] g2-profile.45.nsys-rep[45/60] [========================97% ] g2-profile.45.nsys-rep[45/60] [========================100%] g2-profile.45.nsys-rep[45/60] [========================100%] g2-profile.45.nsys-rep
+[46/60] [0%                          ] g2-profile.46.nsys-rep[46/60] [0%                          ] g2-profile.46.nsys-rep[46/60] [=====32%                    ] g2-profile.46.nsys-rep[46/60] [====28%                     ] g2-profile.46.nsys-rep[46/60] [=============58%            ] g2-profile.46.nsys-rep[46/60] [=====================88%    ] g2-profile.46.nsys-rep[46/60] [========================97% ] g2-profile.46.nsys-rep[46/60] [========================100%] g2-profile.46.nsys-rep[46/60] [========================100%] g2-profile.46.nsys-rep
+[47/60] [0%                          ] g2-profile.47.nsys-rep[47/60] [0%                          ] g2-profile.47.nsys-rep[47/60] [====28%                     ] g2-profile.47.nsys-rep[47/60] [=============58%            ] g2-profile.47.nsys-rep[47/60] [=====================88%    ] g2-profile.47.nsys-rep[47/60] [========================97% ] g2-profile.47.nsys-rep[47/60] [========================100%] g2-profile.47.nsys-rep[47/60] [========================100%] g2-profile.47.nsys-rep
+[48/60] [0%                          ] g2-profile.48.nsys-rep[48/60] [0%                          ] g2-profile.48.nsys-rep[48/60] [====28%                     ] g2-profile.48.nsys-rep[48/60] [=============58%            ] g2-profile.48.nsys-rep[48/60] [=====================87%    ] g2-profile.48.nsys-rep[48/60] [========================97% ] g2-profile.48.nsys-rep[48/60] [========================100%] g2-profile.48.nsys-rep[48/60] [========================100%] g2-profile.48.nsys-rep
+[49/60] [0%                          ] g2-profile.49.nsys-rep[49/60] [0%                          ] g2-profile.49.nsys-rep[49/60] [====28%                     ] g2-profile.49.nsys-rep[49/60] [=============58%            ] g2-profile.49.nsys-rep[49/60] [=====================87%    ] g2-profile.49.nsys-rep[49/60] [========================97% ] g2-profile.49.nsys-rep[49/60] [========================100%] g2-profile.49.nsys-rep[49/60] [========================100%] g2-profile.49.nsys-rep
+[50/60] [0%                          ] g2-profile.50.nsys-rep[50/60] [0%                          ] g2-profile.50.nsys-rep[50/60] [=====32%                    ] g2-profile.50.nsys-rep[50/60] [====28%                     ] g2-profile.50.nsys-rep[50/60] [=============58%            ] g2-profile.50.nsys-rep[50/60] [=====================87%    ] g2-profile.50.nsys-rep[50/60] [========================97% ] g2-profile.50.nsys-rep[50/60] [========================100%] g2-profile.50.nsys-rep[50/60] [========================100%] g2-profile.50.nsys-rep
+[51/60] [0%                          ] g2-profile.51.nsys-rep[51/60] [0%                          ] g2-profile.51.nsys-rep[51/60] [=====32%                    ] g2-profile.51.nsys-rep[51/60] [====28%                     ] g2-profile.51.nsys-rep[51/60] [=============58%            ] g2-profile.51.nsys-rep[51/60] [=====================87%    ] g2-profile.51.nsys-rep[51/60] [========================97% ] g2-profile.51.nsys-rep[51/60] [========================100%] g2-profile.51.nsys-rep[51/60] [========================100%] g2-profile.51.nsys-rep
+[52/60] [0%                          ] g2-profile.52.nsys-rep[52/60] [0%                          ] g2-profile.52.nsys-rep[52/60] [=====32%                    ] g2-profile.52.nsys-rep[52/60] [====28%                     ] g2-profile.52.nsys-rep[52/60] [=============58%            ] g2-profile.52.nsys-rep[52/60] [=====================87%    ] g2-profile.52.nsys-rep[52/60] [========================97% ] g2-profile.52.nsys-rep[52/60] [========================100%] g2-profile.52.nsys-rep[52/60] [========================100%] g2-profile.52.nsys-rep
+[53/60] [0%                          ] g2-profile.53.nsys-rep[53/60] [0%                          ] g2-profile.53.nsys-rep[53/60] [====28%                     ] g2-profile.53.nsys-rep[53/60] [=============58%            ] g2-profile.53.nsys-rep[53/60] [=====================87%    ] g2-profile.53.nsys-rep[53/60] [========================97% ] g2-profile.53.nsys-rep[53/60] [========================100%] g2-profile.53.nsys-rep[53/60] [========================100%] g2-profile.53.nsys-rep
+[54/60] [0%                          ] g2-profile.54.nsys-rep[54/60] [0%                          ] g2-profile.54.nsys-rep[54/60] [====28%                     ] g2-profile.54.nsys-rep[54/60] [=============58%            ] g2-profile.54.nsys-rep[54/60] [=====================87%    ] g2-profile.54.nsys-rep[54/60] [========================97% ] g2-profile.54.nsys-rep[54/60] [========================100%] g2-profile.54.nsys-rep[54/60] [========================100%] g2-profile.54.nsys-rep
+[55/60] [0%                          ] g2-profile.55.nsys-rep[55/60] [0%                          ] g2-profile.55.nsys-rep[55/60] [==========48%               ] g2-profile.55.nsys-rep[55/60] [=====32%                    ] g2-profile.55.nsys-rep[55/60] [====28%                     ] g2-profile.55.nsys-rep[55/60] [=============58%            ] g2-profile.55.nsys-rep[55/60] [=====================87%    ] g2-profile.55.nsys-rep[55/60] [========================97% ] g2-profile.55.nsys-rep[55/60] [========================100%] g2-profile.55.nsys-rep[55/60] [========================100%] g2-profile.55.nsys-rep
+[56/60] [0%                          ] g2-profile.56.nsys-rep[56/60] [0%                          ] g2-profile.56.nsys-rep[56/60] [====28%                     ] g2-profile.56.nsys-rep[56/60] [=============58%            ] g2-profile.56.nsys-rep[56/60] [=====================87%    ] g2-profile.56.nsys-rep[56/60] [========================97% ] g2-profile.56.nsys-rep[56/60] [========================100%] g2-profile.56.nsys-rep[56/60] [========================100%] g2-profile.56.nsys-rep
+[57/60] [0%                          ] g2-profile.57.nsys-rep[57/60] [0%                          ] g2-profile.57.nsys-rep[57/60] [====28%                     ] g2-profile.57.nsys-rep[57/60] [=============58%            ] g2-profile.57.nsys-rep[57/60] [=====================87%    ] g2-profile.57.nsys-rep[57/60] [========================97% ] g2-profile.57.nsys-rep[57/60] [========================100%] g2-profile.57.nsys-rep[57/60] [========================100%] g2-profile.57.nsys-rep
+[58/60] [0%                          ] g2-profile.58.nsys-rep[58/60] [0%                          ] g2-profile.58.nsys-rep[58/60] [====28%                     ] g2-profile.58.nsys-rep[58/60] [=============58%            ] g2-profile.58.nsys-rep[58/60] [=====================87%    ] g2-profile.58.nsys-rep[58/60] [========================97% ] g2-profile.58.nsys-rep[58/60] [========================100%] g2-profile.58.nsys-rep[58/60] [========================100%] g2-profile.58.nsys-rep
+[59/60] [0%                          ] g2-profile.59.nsys-rep[59/60] [0%                          ] g2-profile.59.nsys-rep[59/60] [====28%                     ] g2-profile.59.nsys-rep[59/60] [=============58%            ] g2-profile.59.nsys-rep[59/60] [=====================87%    ] g2-profile.59.nsys-rep[59/60] [========================97% ] g2-profile.59.nsys-rep[59/60] [========================100%] g2-profile.59.nsys-rep[59/60] [========================100%] g2-profile.59.nsys-rep
+[60/60] [0%                          ] g2-profile.60.nsys-rep[60/60] [0%                          ] g2-profile.60.nsys-rep[60/60] [====28%                     ] g2-profile.60.nsys-rep[60/60] [=============58%            ] g2-profile.60.nsys-rep[60/60] [=====================87%    ] g2-profile.60.nsys-rep[60/60] [========================97% ] g2-profile.60.nsys-rep[60/60] [========================100%] g2-profile.60.nsys-rep[60/60] [========================100%] g2-profile.60.nsys-rep
+Generated:
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.1.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.2.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.3.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.4.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.5.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.6.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.7.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.8.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.9.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.10.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.11.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.12.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.13.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.14.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.15.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.16.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.17.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.18.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.19.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.20.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.21.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.22.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.23.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.24.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.25.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.26.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.27.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.28.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.29.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.30.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.31.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.32.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.33.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.34.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.35.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.36.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.37.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.38.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.39.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.40.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.41.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.42.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.43.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.44.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.45.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.46.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.47.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.48.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.49.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.50.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.51.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.52.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.53.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.54.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.55.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.56.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.57.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.58.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.59.nsys-rep
+	/workspace/project/reports/attnw8-qualification/data/g2/nsys/g2-profile.60.nsys-rep

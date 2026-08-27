@@ -1,0 +1,568 @@
+{
+  "completed_wall_time_s": 1786894523.890195,
+  "fixtures": [
+    {
+      "capture": "on",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "S1-1",
+      "interruption": null,
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 0,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "S1",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "12f858aef7ac50adbba4a7d4bc275152c4f3aff662fcbe04503d511e10f3f52d"
+    },
+    {
+      "capture": "on",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "S1-2",
+      "interruption": null,
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 1,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "S1",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "12f858aef7ac50adbba4a7d4bc275152c4f3aff662fcbe04503d511e10f3f52d"
+    },
+    {
+      "capture": "on",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "L1-1",
+      "interruption": null,
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 2,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "L1",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035"
+    },
+    {
+      "capture": "on",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "L1-2",
+      "interruption": null,
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 3,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "L1",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035"
+    },
+    {
+      "capture": "on",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "L2-1",
+      "interruption": null,
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 4,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "L2",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "62731a75e20da65cf7c05dff344bcc9a11adbfcd2456bfd69aa8e08f5e9fdce1"
+    },
+    {
+      "capture": "on",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "L2-2",
+      "interruption": null,
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 5,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "L2",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "62731a75e20da65cf7c05dff344bcc9a11adbfcd2456bfd69aa8e08f5e9fdce1"
+    },
+    {
+      "capture": "on",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "I1",
+      "interruption": {
+        "actual_offset_s": null,
+        "after_first_audio_s": 4.0,
+        "rtvi_send_marker_event_index": null,
+        "second_answer_gate_evidence": null,
+        "second_answer_transcript_evidence": [],
+        "send_attempt_wall_time_s": null,
+        "send_wall_time_s": null,
+        "typed_text": "Stop. What is two plus two?",
+        "typed_text_sha256": "a7f0422c32dd6d4bb5898d78e7aeee4004bfc3abd7a67a43d7d748cf757034a4"
+      },
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 6,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "I1",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035"
+    },
+    {
+      "capture": "off",
+      "completion_status": "not_run",
+      "completion_wall_time_s": null,
+      "error": null,
+      "first_audio_wall_time_s": null,
+      "fixture_id": "capture-off-L1",
+      "interruption": null,
+      "last_audio_wall_time_s": null,
+      "marker_emission": {
+        "complete": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "error": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "interruption-send": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "start": {
+          "error": null,
+          "status": "not_attempted"
+        },
+        "timeout": {
+          "error": null,
+          "status": "not_attempted"
+        }
+      },
+      "observed_rtvi_messages": [],
+      "plan_index": 7,
+      "quiescence_barrier": null,
+      "response_attribution": null,
+      "response_ids": [],
+      "rtvi_observation_error": null,
+      "rtvi_window_start_index": null,
+      "schema": "nemotron_voicechat.step2_fixture_result.v2",
+      "script_id": "L1",
+      "send_attempt_wall_time_s": null,
+      "send_wall_time_s": null,
+      "transcript_evidence": [],
+      "transcript_gate_evidence": null,
+      "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035"
+    }
+  ],
+  "plan": {
+    "fixtures": [
+      {
+        "capture": "on",
+        "fixture_id": "S1-1",
+        "interruption": null,
+        "plan_index": 0,
+        "script_id": "S1",
+        "typed_text": "The red balloon rose over the quiet village square.",
+        "typed_text_sha256": "12f858aef7ac50adbba4a7d4bc275152c4f3aff662fcbe04503d511e10f3f52d",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      },
+      {
+        "capture": "on",
+        "fixture_id": "S1-2",
+        "interruption": null,
+        "plan_index": 1,
+        "script_id": "S1",
+        "typed_text": "The red balloon rose over the quiet village square.",
+        "typed_text_sha256": "12f858aef7ac50adbba4a7d4bc275152c4f3aff662fcbe04503d511e10f3f52d",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      },
+      {
+        "capture": "on",
+        "fixture_id": "L1-1",
+        "interruption": null,
+        "plan_index": 2,
+        "script_id": "L1",
+        "typed_text": "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+        "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      },
+      {
+        "capture": "on",
+        "fixture_id": "L1-2",
+        "interruption": null,
+        "plan_index": 3,
+        "script_id": "L1",
+        "typed_text": "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+        "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      },
+      {
+        "capture": "on",
+        "fixture_id": "L2-1",
+        "interruption": null,
+        "plan_index": 4,
+        "script_id": "L2",
+        "typed_text": "On Tuesday morning the harbor filled with small boats carrying baskets of silver fish, and the old lighthouse keeper wrote down the number of gulls, the color of the clouds, and the exact minute the tide turned.",
+        "typed_text_sha256": "62731a75e20da65cf7c05dff344bcc9a11adbfcd2456bfd69aa8e08f5e9fdce1",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      },
+      {
+        "capture": "on",
+        "fixture_id": "L2-2",
+        "interruption": null,
+        "plan_index": 5,
+        "script_id": "L2",
+        "typed_text": "On Tuesday morning the harbor filled with small boats carrying baskets of silver fish, and the old lighthouse keeper wrote down the number of gulls, the color of the clouds, and the exact minute the tide turned.",
+        "typed_text_sha256": "62731a75e20da65cf7c05dff344bcc9a11adbfcd2456bfd69aa8e08f5e9fdce1",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      },
+      {
+        "capture": "on",
+        "fixture_id": "I1",
+        "interruption": {
+          "after_first_audio_s": 4.0,
+          "typed_text": "Stop. What is two plus two?",
+          "typed_text_sha256": "a7f0422c32dd6d4bb5898d78e7aeee4004bfc3abd7a67a43d7d748cf757034a4"
+        },
+        "plan_index": 6,
+        "script_id": "I1",
+        "typed_text": "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+        "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      },
+      {
+        "capture": "off",
+        "fixture_id": "capture-off-L1",
+        "interruption": null,
+        "plan_index": 7,
+        "script_id": "L1",
+        "typed_text": "The quick brown fox jumps over the lazy dog while seventeen green dragons circle the ancient stone tower, counting every window, every door, and every flag that flies above the northern gate.",
+        "typed_text_sha256": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+        "wait": {
+          "event": "bot-stopped-speaking",
+          "require_transcription": true,
+          "timeout_s": 180.0
+        }
+      }
+    ],
+    "plan_sha256": "3e056280f4042aacd4209983fa5252019cbe0bc92820059f351dda70fee67e26",
+    "schema": "nemotron_voicechat.step2_fixture_plan.v2",
+    "script_hashes_sha256": {
+      "I1": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+      "I1-replacement": "a7f0422c32dd6d4bb5898d78e7aeee4004bfc3abd7a67a43d7d748cf757034a4",
+      "L1": "2300ce7a5211655815abcdc1e24ab5b696000eebc553dc37071d806820c36035",
+      "L2": "62731a75e20da65cf7c05dff344bcc9a11adbfcd2456bfd69aa8e08f5e9fdce1",
+      "S1": "12f858aef7ac50adbba4a7d4bc275152c4f3aff662fcbe04503d511e10f3f52d"
+    }
+  },
+  "resolved_paths": {
+    "browser_capture_off": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/browser-playout-capture-on-capture-off.jsonl",
+    "browser_capture_on": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/browser-playout-capture-on.jsonl",
+    "microphone": "/tmp/pytest-of-khkramer/pytest-1402/test_step2_live_fixture_plan0/step2-silent-microphone.wav",
+    "output_dir": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver",
+    "pipecat_playout_capture_off": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/pipecat-playout-0002.jsonl",
+    "pipecat_playout_capture_on": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/pipecat-playout-0001.jsonl",
+    "pipecat_playout_trace": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/pipecat-playout-{connection}.jsonl",
+    "summary": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/fixture-summary.json"
+  },
+  "schema": "nemotron_voicechat.step2_fixture_summary.v2",
+  "sessions": [
+    {
+      "artifact": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/browser-playout-capture-on.jsonl",
+      "browser_artifact_validation": null,
+      "capture": "on",
+      "capture_shutdown": {
+        "capture_enabled": false,
+        "shutdown_error": null,
+        "sink_close_error": null,
+        "test_elapsed_ms": 477.35157050192356,
+        "webrtc_disconnect": {
+          "attempted": false,
+          "completed": false,
+          "connection_state": null,
+          "error": "RuntimeError('Playground disconnect control is not uniquely visible')",
+          "peer_connection_present": false,
+          "signaling_state": null
+        }
+      },
+      "error": "Error('Page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:7860/\\nCall log:\\n  - navigating to \"http://127.0.0.1:7860/\", waiting until \"load\"\\n')",
+      "observed_playout_trace": null,
+      "pipecat_artifact": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/pipecat-playout-0001.jsonl",
+      "pipecat_publication_wait_s": 90.00202443264425,
+      "status": "failed",
+      "teardown_errors": [
+        "WebRTC disconnect failed: RuntimeError('Playground disconnect control is not uniquely visible')",
+        "Pipecat artifact publication/validation failed: TimeoutError('Pipecat playout trace did not publish cleanly: /home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/pipecat-playout-0001.jsonl: published=False pending_staging_records=0')"
+      ]
+    },
+    {
+      "artifact": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/browser-playout-capture-on-capture-off.jsonl",
+      "browser_artifact_validation": null,
+      "capture": "off",
+      "capture_shutdown": null,
+      "error": null,
+      "observed_playout_trace": null,
+      "pipecat_artifact": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/attnw8-qualification/data/g3/browser/driver/pipecat-playout-0002.jsonl",
+      "pipecat_publication_wait_s": null,
+      "status": "not_run",
+      "teardown_errors": []
+    }
+  ],
+  "started_wall_time_s": 1786894433.0633993,
+  "status": "failed",
+  "terminalization_errors": []
+}

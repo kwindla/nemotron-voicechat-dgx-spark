@@ -23,3 +23,24 @@ traces/
 *.nemo
 *.tar
 *.tar.gz
+
+# attnW8-GPTQ A0 campaign raw capture inputs (~90 GB): per-call tensor dumps,
+# profiler traces, run logs, and event streams. The structured evidence
+# distilled from them is retained (report.json, manifest.json, metadata.json,
+# progress.json, receipt.json, and the seal0-revision reason notes); these raw
+# inputs are not. Scoped to this campaign because attnw8-qualification,
+# session-repair, and the step4/step5 data sets deliberately track their own
+# .nsys-rep/.sqlite/.log evidence.
+reports/attnw8-gptq/**/*.pt
+reports/attnw8-gptq/**/*.nsys-rep
+reports/attnw8-gptq/**/*.sqlite
+reports/attnw8-gptq/**/*.log
+reports/attnw8-gptq/**/*.jsonl
+reports/attnw8-gptq/**/*.lock
+reports/attnw8-gptq/**/seal0.json
+
+# Root-cause evidence exception: the exact PCM two truncated responses emitted.
+# The ASR verdict in reports/response-truncation rests on these seven clips, and
+# the model trace they were cut from lives outside the repo under root-owned
+# state that rotates. 2.1 MB total, one session, deliberately retained.
+!reports/response-truncation/**/*.wav

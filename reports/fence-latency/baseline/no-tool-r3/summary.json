@@ -1,0 +1,140 @@
+{
+  "all_response_transcripts_nonempty": true,
+  "empty_response_count": 0,
+  "empty_response_ids": [],
+  "errors": [],
+  "fatal_errors": [],
+  "kind": "rapid_turn_settlement_v1",
+  "passed": true,
+  "responses": [
+    {
+      "audible_audio_chunks": 24,
+      "audio_chunks": 40,
+      "commit_to_first_audio_ms": 812.261,
+      "created_monotonic_s": 5031472.010584694,
+      "empty": false,
+      "first_audio_monotonic_s": 5031472.010597782,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_1",
+      "status": "completed",
+      "text": "Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_1"
+    },
+    {
+      "audible_audio_chunks": 21,
+      "audio_chunks": 38,
+      "commit_to_first_audio_ms": 1286.476,
+      "created_monotonic_s": 5031477.425349093,
+      "empty": false,
+      "first_audio_monotonic_s": 5031477.425385445,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_2",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_2"
+    },
+    {
+      "audible_audio_chunks": 19,
+      "audio_chunks": 36,
+      "commit_to_first_audio_ms": 1844.912,
+      "created_monotonic_s": 5031483.53705355,
+      "empty": false,
+      "first_audio_monotonic_s": 5031483.537081103,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_3",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_3"
+    },
+    {
+      "audible_audio_chunks": 22,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 2352.673,
+      "created_monotonic_s": 5031490.111151942,
+      "empty": false,
+      "first_audio_monotonic_s": 5031490.111178118,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_4",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_4"
+    },
+    {
+      "audible_audio_chunks": 17,
+      "audio_chunks": 36,
+      "commit_to_first_audio_ms": 2800.705,
+      "created_monotonic_s": 5031497.167342553,
+      "empty": false,
+      "first_audio_monotonic_s": 5031497.167368745,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_5",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_5"
+    },
+    {
+      "audible_audio_chunks": 25,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 3176.051,
+      "created_monotonic_s": 5031504.58734166,
+      "empty": false,
+      "first_audio_monotonic_s": 5031504.587367741,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_6",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_6"
+    },
+    {
+      "audible_audio_chunks": 23,
+      "audio_chunks": 40,
+      "commit_to_first_audio_ms": 3468.434,
+      "created_monotonic_s": 5031512.303453146,
+      "empty": false,
+      "first_audio_monotonic_s": 5031512.303479931,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_7",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_7"
+    },
+    {
+      "audible_audio_chunks": 22,
+      "audio_chunks": 39,
+      "commit_to_first_audio_ms": 3662.338,
+      "created_monotonic_s": 5031520.214203354,
+      "empty": false,
+      "first_audio_monotonic_s": 5031520.214236618,
+      "response_id": "response_3b702ffc-24aa-436f-842f-b046d5e04a5c_8",
+      "status": "completed",
+      "text": " Hi! How can I help you today?",
+      "turn_id": "turn_3b702ffc-24aa-436f-842f-b046d5e04a5c_8"
+    }
+  ],
+  "responses_completed": 8,
+  "scenario": "baseline-no-tool-r3",
+  "six_turn_ttfb_ms": [
+    812.261,
+    1286.476,
+    1844.912,
+    2352.673,
+    2800.705,
+    3176.051
+  ],
+  "tool_call_count": 0,
+  "ttfb_ms": [
+    812.261,
+    1286.476,
+    1844.912,
+    2352.673,
+    2800.705,
+    3176.051,
+    3468.434,
+    3662.338
+  ],
+  "turns_requested": 8,
+  "user_transcripts": [
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on",
+    "what's going on"
+  ],
+  "with_tool": false
+}

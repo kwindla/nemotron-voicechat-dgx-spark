@@ -290,16 +290,17 @@ def test_dynamic_watchdog_thresholds_resets_and_reason_precedence() -> None:
         SimpleNamespace(),
         agent_silence_eos_frames=3,
         agent_no_text_frames=3,
-        agent_no_audio_frames=4,
+        agent_no_audio_frames=100,
         qualification_mode=validated_mode(frames=5),
     ).agent_silence_watchdog
-    assert not watchdog.observe("agent_bos", "", -40.0)
+    assert not watchdog.observe("agent_bos", "", -120.0)
     for _ in range(3):
-        assert not watchdog.observe("pad", "", -40.0)
-    assert watchdog.observe("pad", "", -40.0)
+        assert not watchdog.observe("pad", "", -120.0)
+    assert watchdog.observe("pad", "", -120.0)
     assert watchdog.request_reason == "no_text_since_bos_watchdog"
 
     watchdog.reset()
+    watchdog.no_audio_required_frames = 4
     assert not watchdog.observe("agent_bos", "text", -120.0)
     assert not watchdog.observe("pad", "", -120.0)
     assert not watchdog.observe("pad", "", -120.0)

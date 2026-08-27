@@ -1,0 +1,3615 @@
+[
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0
+          }
+        ],
+        "ttfb": [
+          {
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 10474.10000038147,
+    "receivedWallTimeS": 1787001251.833
+  },
+  {
+    "message": {
+      "data": {
+        "about": {
+          "library": "pipecat-ai",
+          "library_version": "1.7.1.dev21"
+        },
+        "version": "2.1.0"
+      },
+      "id": "85bcec3a",
+      "label": "rtvi-ai",
+      "type": "bot-ready"
+    },
+    "receivedPerformanceMs": 10474.699999809265,
+    "receivedWallTimeS": 1787001251.834
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 21003.400000572205,
+    "receivedWallTimeS": 1787001262.362
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 21004.199999809265,
+    "receivedWallTimeS": 1787001262.363
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "what",
+        "timestamp": "2026-08-17T21:14:23.216+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 21859.800000190735,
+    "receivedWallTimeS": 1787001263.219
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "what time",
+        "timestamp": "2026-08-17T21:14:23.289+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 21932.300000190735,
+    "receivedWallTimeS": 1787001263.291
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "what time is",
+        "timestamp": "2026-08-17T21:14:23.355+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 21997.199999809265,
+    "receivedWallTimeS": 1787001263.356
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "what time is it",
+        "timestamp": "2026-08-17T21:14:23.490+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 22133.699999809265,
+    "receivedWallTimeS": 1787001263.493
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "what time is it right",
+        "timestamp": "2026-08-17T21:14:23.565+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 22293.699999809265,
+    "receivedWallTimeS": 1787001263.653
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "what time is it right now",
+        "timestamp": "2026-08-17T21:14:23.639+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 22305.800000190735,
+    "receivedWallTimeS": 1787001263.665
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 22306.199999809265,
+    "receivedWallTimeS": 1787001263.665
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 22306.699999809265,
+    "receivedWallTimeS": 1787001263.666
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "what time is it right now?",
+        "timestamp": "2026-08-17T21:14:24.256+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 22899,
+    "receivedWallTimeS": 1787001264.258
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "what time is it right now?",
+        "timestamp": "2026-08-17T21:14:24.405+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 23050.5,
+    "receivedWallTimeS": 1787001264.409
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 23051.10000038147,
+    "receivedWallTimeS": 1787001264.41
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0.7571728229522705
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 23051.400000572205,
+    "receivedWallTimeS": 1787001264.41
+  },
+  {
+    "message": {
+      "data": {
+        "text": "I"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23154.199999809265,
+    "receivedWallTimeS": 1787001264.513
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 23155,
+    "receivedWallTimeS": 1787001264.514
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 23155.300000190735,
+    "receivedWallTimeS": 1787001264.514
+  },
+  {
+    "message": {
+      "data": {
+        "text": " can"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23201.900000572205,
+    "receivedWallTimeS": 1787001264.561
+  },
+  {
+    "message": {
+      "data": {
+        "text": " check"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23277.5,
+    "receivedWallTimeS": 1787001264.636
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.24444444444444444,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 1.001617267396715,
+            "ttfb": 0.7571728229522705
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 23277.900000572205,
+    "receivedWallTimeS": 1787001264.637
+  },
+  {
+    "message": {
+      "data": {
+        "text": " that"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23351.10000038147,
+    "receivedWallTimeS": 1787001264.71
+  },
+  {
+    "message": {
+      "data": {
+        "text": " for"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23427.800000190735,
+    "receivedWallTimeS": 1787001264.787
+  },
+  {
+    "message": {
+      "data": {
+        "text": " you"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23504.699999809265,
+    "receivedWallTimeS": 1787001264.864
+  },
+  {
+    "message": {
+      "data": {
+        "text": "."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23581.699999809265,
+    "receivedWallTimeS": 1787001264.941
+  },
+  {
+    "message": {
+      "data": {
+        "text": "I can check that for you."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 23582.300000190735,
+    "receivedWallTimeS": 1787001264.941
+  },
+  {
+    "message": {
+      "data": {
+        "text": " what"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23657.60000038147,
+    "receivedWallTimeS": 1787001265.016
+  },
+  {
+    "message": {
+      "data": {
+        "aggregated_by": "sentence",
+        "segment_id": 1047,
+        "spoken": true,
+        "text": "I can check that for you.",
+        "will_be_spoken": false
+      },
+      "label": "rtvi-ai",
+      "type": "bot-output"
+    },
+    "receivedPerformanceMs": 23732.900000572205,
+    "receivedWallTimeS": 1787001265.092
+  },
+  {
+    "message": {
+      "data": {
+        "text": "I can check that for you."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-tts-text"
+    },
+    "receivedPerformanceMs": 23733.60000038147,
+    "receivedWallTimeS": 1787001265.092
+  },
+  {
+    "message": {
+      "data": {
+        "text": " is"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23742,
+    "receivedWallTimeS": 1787001265.101
+  },
+  {
+    "message": {
+      "data": {
+        "text": " the"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23821.199999809265,
+    "receivedWallTimeS": 1787001265.18
+  },
+  {
+    "message": {
+      "data": {
+        "text": " time"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23897.900000572205,
+    "receivedWallTimeS": 1787001265.257
+  },
+  {
+    "message": {
+      "data": {
+        "text": " zone"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 23977.60000038147,
+    "receivedWallTimeS": 1787001265.337
+  },
+  {
+    "message": {
+      "data": {
+        "text": " you"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 24056.5,
+    "receivedWallTimeS": 1787001265.415
+  },
+  {
+    "message": {
+      "data": {
+        "text": " are"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 24137.400000572205,
+    "receivedWallTimeS": 1787001265.496
+  },
+  {
+    "message": {
+      "data": {
+        "text": " in"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 24219.199999809265,
+    "receivedWallTimeS": 1787001265.578
+  },
+  {
+    "message": {
+      "data": {
+        "text": "?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 24298.699999809265,
+    "receivedWallTimeS": 1787001265.658
+  },
+  {
+    "message": {
+      "data": {
+        "text": " what is the time zone you are in?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 24299,
+    "receivedWallTimeS": 1787001265.658
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 28193.5,
+    "receivedWallTimeS": 1787001269.552
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 28193.900000572205,
+    "receivedWallTimeS": 1787001269.553
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 5.89995265007019
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 28194.199999809265,
+    "receivedWallTimeS": 1787001269.553
+  },
+  {
+    "message": {
+      "data": {
+        "aggregated_by": "sentence",
+        "segment_id": 1473,
+        "spoken": true,
+        "text": "what is the time zone you are in?",
+        "will_be_spoken": false
+      },
+      "label": "rtvi-ai",
+      "type": "bot-output"
+    },
+    "receivedPerformanceMs": 28194.5,
+    "receivedWallTimeS": 1787001269.553
+  },
+  {
+    "message": {
+      "data": {
+        "text": "what is the time zone you are in?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-tts-text"
+    },
+    "receivedPerformanceMs": 28195.199999809265,
+    "receivedWallTimeS": 1787001269.554
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 28226.800000190735,
+    "receivedWallTimeS": 1787001269.586
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 28543.900000572205,
+    "receivedWallTimeS": 1787001269.903
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 28544.5,
+    "receivedWallTimeS": 1787001269.903
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I",
+        "timestamp": "2026-08-17T21:14:30.447+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 29090.400000572205,
+    "receivedWallTimeS": 1787001270.449
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I'm",
+        "timestamp": "2026-08-17T21:14:30.584+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 29226.800000190735,
+    "receivedWallTimeS": 1787001270.586
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I'm in",
+        "timestamp": "2026-08-17T21:14:30.723+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 29365,
+    "receivedWallTimeS": 1787001270.724
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I'm in Pac",
+        "timestamp": "2026-08-17T21:14:31.289+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 29932.10000038147,
+    "receivedWallTimeS": 1787001271.291
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I'm in Pacific",
+        "timestamp": "2026-08-17T21:14:31.370+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 30013.699999809265,
+    "receivedWallTimeS": 1787001271.373
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I'm in Pacific time",
+        "timestamp": "2026-08-17T21:14:31.525+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 30168.10000038147,
+    "receivedWallTimeS": 1787001271.527
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 30267.199999809265,
+    "receivedWallTimeS": 1787001271.626
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 30268,
+    "receivedWallTimeS": 1787001271.627
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I'm in Pacific time.",
+        "timestamp": "2026-08-17T21:14:32.033+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 30675.900000572205,
+    "receivedWallTimeS": 1787001272.035
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "I'm in Pacific time.",
+        "timestamp": "2026-08-17T21:14:32.319+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 30962.800000190735,
+    "receivedWallTimeS": 1787001272.322
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 30963.300000190735,
+    "receivedWallTimeS": 1787001272.322
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0.696561336517334
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 30963.300000190735,
+    "receivedWallTimeS": 1787001272.322
+  },
+  {
+    "message": {
+      "data": {
+        "text": " I"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31039.10000038147,
+    "receivedWallTimeS": 1787001272.398
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 31039.400000572205,
+    "receivedWallTimeS": 1787001272.398
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 31039.60000038147,
+    "receivedWallTimeS": 1787001272.398
+  },
+  {
+    "message": {
+      "data": {
+        "text": " can"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31113.900000572205,
+    "receivedWallTimeS": 1787001272.473
+  },
+  {
+    "message": {
+      "data": {
+        "text": " check"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31188.699999809265,
+    "receivedWallTimeS": 1787001272.548
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.24843537414965985,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 0.9449967106669939,
+            "ttfb": 0.696561336517334
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 31189.10000038147,
+    "receivedWallTimeS": 1787001272.548
+  },
+  {
+    "message": {
+      "data": {
+        "text": " that"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31263.800000190735,
+    "receivedWallTimeS": 1787001272.623
+  },
+  {
+    "message": {
+      "data": {
+        "text": " for"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31338.900000572205,
+    "receivedWallTimeS": 1787001272.698
+  },
+  {
+    "message": {
+      "data": {
+        "text": " you"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31415.199999809265,
+    "receivedWallTimeS": 1787001272.774
+  },
+  {
+    "message": {
+      "data": {
+        "text": "."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31489.800000190735,
+    "receivedWallTimeS": 1787001272.849
+  },
+  {
+    "message": {
+      "data": {
+        "text": " I can check that for you."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 31490.10000038147,
+    "receivedWallTimeS": 1787001272.849
+  },
+  {
+    "message": {
+      "data": {
+        "text": " what"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31572.300000190735,
+    "receivedWallTimeS": 1787001272.931
+  },
+  {
+    "message": {
+      "data": {
+        "aggregated_by": "sentence",
+        "segment_id": 1914,
+        "spoken": true,
+        "text": "I can check that for you.",
+        "will_be_spoken": false
+      },
+      "label": "rtvi-ai",
+      "type": "bot-output"
+    },
+    "receivedPerformanceMs": 31632.900000572205,
+    "receivedWallTimeS": 1787001272.992
+  },
+  {
+    "message": {
+      "data": {
+        "text": "I can check that for you."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-tts-text"
+    },
+    "receivedPerformanceMs": 31633.400000572205,
+    "receivedWallTimeS": 1787001272.992
+  },
+  {
+    "message": {
+      "data": {
+        "text": " is"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31647.400000572205,
+    "receivedWallTimeS": 1787001273.006
+  },
+  {
+    "message": {
+      "data": {
+        "text": " the"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31723.60000038147,
+    "receivedWallTimeS": 1787001273.082
+  },
+  {
+    "message": {
+      "data": {
+        "text": " time"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31804.10000038147,
+    "receivedWallTimeS": 1787001273.163
+  },
+  {
+    "message": {
+      "data": {
+        "text": " zone"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31884.199999809265,
+    "receivedWallTimeS": 1787001273.243
+  },
+  {
+    "message": {
+      "data": {
+        "text": " you"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 31964.300000190735,
+    "receivedWallTimeS": 1787001273.323
+  },
+  {
+    "message": {
+      "data": {
+        "text": " are"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 32044.5,
+    "receivedWallTimeS": 1787001273.403
+  },
+  {
+    "message": {
+      "data": {
+        "text": " in"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 32124.300000190735,
+    "receivedWallTimeS": 1787001273.483
+  },
+  {
+    "message": {
+      "data": {
+        "text": "?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 32203.300000190735,
+    "receivedWallTimeS": 1787001273.562
+  },
+  {
+    "message": {
+      "data": {
+        "text": " what is the time zone you are in?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 32203.5,
+    "receivedWallTimeS": 1787001273.562
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 36394.199999809265,
+    "receivedWallTimeS": 1787001277.753
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 36394.800000190735,
+    "receivedWallTimeS": 1787001277.754
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 6.126786470413208
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 36395.10000038147,
+    "receivedWallTimeS": 1787001277.754
+  },
+  {
+    "message": {
+      "data": {
+        "aggregated_by": "sentence",
+        "segment_id": 2348,
+        "spoken": true,
+        "text": "what is the time zone you are in?",
+        "will_be_spoken": false
+      },
+      "label": "rtvi-ai",
+      "type": "bot-output"
+    },
+    "receivedPerformanceMs": 36395.300000190735,
+    "receivedWallTimeS": 1787001277.754
+  },
+  {
+    "message": {
+      "data": {
+        "text": "what is the time zone you are in?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-tts-text"
+    },
+    "receivedPerformanceMs": 36395.900000572205,
+    "receivedWallTimeS": 1787001277.755
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 36435.800000190735,
+    "receivedWallTimeS": 1787001277.795
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 42082.900000572205,
+    "receivedWallTimeS": 1787001283.442
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 42083.300000190735,
+    "receivedWallTimeS": 1787001283.442
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah",
+        "timestamp": "2026-08-17T21:14:43.774+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 42416.10000038147,
+    "receivedWallTimeS": 1787001283.775
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I",
+        "timestamp": "2026-08-17T21:14:43.912+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 42554.300000190735,
+    "receivedWallTimeS": 1787001283.913
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm",
+        "timestamp": "2026-08-17T21:14:43.981+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 42623.900000572205,
+    "receivedWallTimeS": 1787001283.983
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in",
+        "timestamp": "2026-08-17T21:14:44.119+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 42761.60000038147,
+    "receivedWallTimeS": 1787001284.12
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pac",
+        "timestamp": "2026-08-17T21:14:44.186+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 42828.300000190735,
+    "receivedWallTimeS": 1787001284.187
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific",
+        "timestamp": "2026-08-17T21:14:44.324+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 42967.10000038147,
+    "receivedWallTimeS": 1787001284.326
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific tim",
+        "timestamp": "2026-08-17T21:14:44.489+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 43131.900000572205,
+    "receivedWallTimeS": 1787001284.491
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time",
+        "timestamp": "2026-08-17T21:14:44.649+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 43292.60000038147,
+    "receivedWallTimeS": 1787001284.651
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set",
+        "timestamp": "2026-08-17T21:14:44.809+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 43451.60000038147,
+    "receivedWallTimeS": 1787001284.81
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the",
+        "timestamp": "2026-08-17T21:14:44.970+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 43613,
+    "receivedWallTimeS": 1787001284.972
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the tim",
+        "timestamp": "2026-08-17T21:14:45.128+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 43771.5,
+    "receivedWallTimeS": 1787001285.13
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the time",
+        "timestamp": "2026-08-17T21:14:45.209+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 43851.199999809265,
+    "receivedWallTimeS": 1787001285.21
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the time zone",
+        "timestamp": "2026-08-17T21:14:45.289+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 43932.199999809265,
+    "receivedWallTimeS": 1787001285.291
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the time zone to",
+        "timestamp": "2026-08-17T21:14:45.449+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 44091.699999809265,
+    "receivedWallTimeS": 1787001285.451
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the time zone to Pac",
+        "timestamp": "2026-08-17T21:14:45.609+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 44251.60000038147,
+    "receivedWallTimeS": 1787001285.61
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the time zone to Pacific",
+        "timestamp": "2026-08-17T21:14:45.691+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 44333.400000572205,
+    "receivedWallTimeS": 1787001285.692
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "yeah I'm in Pacific time set the time zone to Pacific time",
+        "timestamp": "2026-08-17T21:14:45.930+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 44572.900000572205,
+    "receivedWallTimeS": 1787001285.932
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 44662.900000572205,
+    "receivedWallTimeS": 1787001286.022
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 44663.199999809265,
+    "receivedWallTimeS": 1787001286.022
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "yeah I'm in Pacific time set the time zone to Pacific time",
+        "timestamp": "2026-08-17T21:14:46.716+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 45360.800000190735,
+    "receivedWallTimeS": 1787001286.72
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 47982.400000572205,
+    "receivedWallTimeS": 1787001289.341
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "llm-function-call-started"
+    },
+    "receivedPerformanceMs": 47982.5,
+    "receivedWallTimeS": 1787001289.341
+  },
+  {
+    "message": {
+      "data": {
+        "tool_call_id": "call_fb9129c6029b42e3a3b25602da6b9a5d"
+      },
+      "label": "rtvi-ai",
+      "type": "llm-function-call-in-progress"
+    },
+    "receivedPerformanceMs": 47988.199999809265,
+    "receivedWallTimeS": 1787001289.347
+  },
+  {
+    "message": {
+      "data": {
+        "cancelled": false,
+        "tool_call_id": "call_fb9129c6029b42e3a3b25602da6b9a5d"
+      },
+      "label": "rtvi-ai",
+      "type": "llm-function-call-stopped"
+    },
+    "receivedPerformanceMs": 47988.5,
+    "receivedWallTimeS": 1787001289.347
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 5.847257375717163
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 50506.5,
+    "receivedWallTimeS": 1787001291.865
+  },
+  {
+    "message": {
+      "data": {
+        "text": " It"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 50592.800000190735,
+    "receivedWallTimeS": 1787001291.952
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 50593.199999809265,
+    "receivedWallTimeS": 1787001291.952
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 50593.5,
+    "receivedWallTimeS": 1787001291.952
+  },
+  {
+    "message": {
+      "data": {
+        "text": " is"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 50675.60000038147,
+    "receivedWallTimeS": 1787001292.034
+  },
+  {
+    "message": {
+      "data": {
+        "text": " currently"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 50755.60000038147,
+    "receivedWallTimeS": 1787001292.114
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.24643990929705215,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 6.0936972850142155,
+            "ttfb": 5.847257375717163
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 50755.699999809265,
+    "receivedWallTimeS": 1787001292.115
+  },
+  {
+    "message": {
+      "data": {
+        "text": " three"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 50836.699999809265,
+    "receivedWallTimeS": 1787001292.195
+  },
+  {
+    "message": {
+      "data": {
+        "text": " PM"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 50919.199999809265,
+    "receivedWallTimeS": 1787001292.278
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 53844.199999809265,
+    "receivedWallTimeS": 1787001295.203
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 53844.60000038147,
+    "receivedWallTimeS": 1787001295.203
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 9.18579888343811
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 53844.800000190735,
+    "receivedWallTimeS": 1787001295.204
+  },
+  {
+    "message": {
+      "data": {
+        "aggregated_by": "sentence",
+        "segment_id": 3701,
+        "spoken": true,
+        "text": "It is currently three PM",
+        "will_be_spoken": false
+      },
+      "label": "rtvi-ai",
+      "type": "bot-output"
+    },
+    "receivedPerformanceMs": 53845,
+    "receivedWallTimeS": 1787001295.204
+  },
+  {
+    "message": {
+      "data": {
+        "text": "It is currently three PM"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-tts-text"
+    },
+    "receivedPerformanceMs": 53845.60000038147,
+    "receivedWallTimeS": 1787001295.204
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 53884.900000572205,
+    "receivedWallTimeS": 1787001295.244
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 57382.5,
+    "receivedWallTimeS": 1787001298.741
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 57383.300000190735,
+    "receivedWallTimeS": 1787001298.742
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay",
+        "timestamp": "2026-08-17T21:14:59.184+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 57826.400000572205,
+    "receivedWallTimeS": 1787001299.185
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay cool",
+        "timestamp": "2026-08-17T21:14:59.391+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 58034,
+    "receivedWallTimeS": 1787001299.393
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay cool what",
+        "timestamp": "2026-08-17T21:15:00.005+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 58648.10000038147,
+    "receivedWallTimeS": 1787001300.007
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay cool what time",
+        "timestamp": "2026-08-17T21:15:00.086+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 58728.5,
+    "receivedWallTimeS": 1787001300.087
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay cool what time is it",
+        "timestamp": "2026-08-17T21:15:00.329+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 58970.900000572205,
+    "receivedWallTimeS": 1787001300.33
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay cool what time is it now",
+        "timestamp": "2026-08-17T21:15:00.494+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 59151.199999809265,
+    "receivedWallTimeS": 1787001300.51
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 59167.5,
+    "receivedWallTimeS": 1787001300.526
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 59167.900000572205,
+    "receivedWallTimeS": 1787001300.527
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "okay cool what time is it now",
+        "timestamp": "2026-08-17T21:15:01.270+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 59913.400000572205,
+    "receivedWallTimeS": 1787001301.272
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 59913.900000572205,
+    "receivedWallTimeS": 1787001301.273
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0.7620878219604492
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 59914,
+    "receivedWallTimeS": 1787001301.273
+  },
+  {
+    "message": {
+      "data": {
+        "text": " It"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 59990.10000038147,
+    "receivedWallTimeS": 1787001301.349
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 59990.300000190735,
+    "receivedWallTimeS": 1787001301.349
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 59990.400000572205,
+    "receivedWallTimeS": 1787001301.349
+  },
+  {
+    "message": {
+      "data": {
+        "text": " is"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 60065.699999809265,
+    "receivedWallTimeS": 1787001301.425
+  },
+  {
+    "message": {
+      "data": {
+        "text": " currently"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 60143.10000038147,
+    "receivedWallTimeS": 1787001301.502
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.2454421768707483,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 1.0075299988311974,
+            "ttfb": 0.7620878219604492
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 60143.5,
+    "receivedWallTimeS": 1787001301.502
+  },
+  {
+    "message": {
+      "data": {
+        "text": " three"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 60217,
+    "receivedWallTimeS": 1787001301.576
+  },
+  {
+    "message": {
+      "data": {
+        "text": " PM"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 60293.800000190735,
+    "receivedWallTimeS": 1787001301.653
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 63331.10000038147,
+    "receivedWallTimeS": 1787001304.69
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 63331.400000572205,
+    "receivedWallTimeS": 1787001304.69
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 4.179508209228516
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 63331.400000572205,
+    "receivedWallTimeS": 1787001304.69
+  },
+  {
+    "message": {
+      "data": {
+        "aggregated_by": "sentence",
+        "segment_id": 4540,
+        "spoken": true,
+        "text": "It is currently three PM",
+        "will_be_spoken": false
+      },
+      "label": "rtvi-ai",
+      "type": "bot-output"
+    },
+    "receivedPerformanceMs": 63331.800000190735,
+    "receivedWallTimeS": 1787001304.691
+  },
+  {
+    "message": {
+      "data": {
+        "text": "It is currently three PM"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-tts-text"
+    },
+    "receivedPerformanceMs": 63332.5,
+    "receivedWallTimeS": 1787001304.691
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 63364.5,
+    "receivedWallTimeS": 1787001304.723
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 73342.30000019073,
+    "receivedWallTimeS": 1787001314.701
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 73342.9000005722,
+    "receivedWallTimeS": 1787001314.702
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "sorry",
+        "timestamp": "2026-08-17T21:15:14.925+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 73566.9000005722,
+    "receivedWallTimeS": 1787001314.926
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "sorry what",
+        "timestamp": "2026-08-17T21:15:15.140+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 73782.9000005722,
+    "receivedWallTimeS": 1787001315.142
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "sorry what time",
+        "timestamp": "2026-08-17T21:15:15.283+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 73925.60000038147,
+    "receivedWallTimeS": 1787001315.284
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "sorry what time is",
+        "timestamp": "2026-08-17T21:15:15.357+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 74000.19999980927,
+    "receivedWallTimeS": 1787001315.359
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "sorry what time is it",
+        "timestamp": "2026-08-17T21:15:15.430+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 74072.80000019073,
+    "receivedWallTimeS": 1787001315.432
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "sorry what time is it?",
+        "timestamp": "2026-08-17T21:15:15.507+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 74170.60000038147,
+    "receivedWallTimeS": 1787001315.529
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 74185,
+    "receivedWallTimeS": 1787001315.544
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 74189.30000019073,
+    "receivedWallTimeS": 1787001315.548
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "sorry what time is it?",
+        "timestamp": "2026-08-17T21:15:16.298+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 74944.69999980927,
+    "receivedWallTimeS": 1787001316.304
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 74945.10000038147,
+    "receivedWallTimeS": 1787001316.304
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0.7717018127441406
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 74945.19999980927,
+    "receivedWallTimeS": 1787001316.304
+  },
+  {
+    "message": {
+      "data": {
+        "text": " I"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75024.19999980927,
+    "receivedWallTimeS": 1787001316.383
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 75024.4000005722,
+    "receivedWallTimeS": 1787001316.383
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 75024.5,
+    "receivedWallTimeS": 1787001316.383
+  },
+  {
+    "message": {
+      "data": {
+        "text": " can"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75102.5,
+    "receivedWallTimeS": 1787001316.461
+  },
+  {
+    "message": {
+      "data": {
+        "text": " check"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75179.9000005722,
+    "receivedWallTimeS": 1787001316.539
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.24244897959183673,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 1.0141507923359774,
+            "ttfb": 0.7717018127441406
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 75180.5,
+    "receivedWallTimeS": 1787001316.539
+  },
+  {
+    "message": {
+      "data": {
+        "text": " that"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75257.69999980927,
+    "receivedWallTimeS": 1787001316.617
+  },
+  {
+    "message": {
+      "data": {
+        "text": " for"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75335.5,
+    "receivedWallTimeS": 1787001316.694
+  },
+  {
+    "message": {
+      "data": {
+        "text": " you"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75413.80000019073,
+    "receivedWallTimeS": 1787001316.773
+  },
+  {
+    "message": {
+      "data": {
+        "text": "."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75491.30000019073,
+    "receivedWallTimeS": 1787001316.85
+  },
+  {
+    "message": {
+      "data": {
+        "text": " It is currently three PM It is currently three PM I can check that for you."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 75491.5,
+    "receivedWallTimeS": 1787001316.85
+  },
+  {
+    "message": {
+      "data": {
+        "text": " what"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75570.80000019073,
+    "receivedWallTimeS": 1787001316.93
+  },
+  {
+    "message": {
+      "data": {
+        "aggregated_by": "sentence",
+        "segment_id": 5336,
+        "spoken": true,
+        "text": "I can check that for you.",
+        "will_be_spoken": false
+      },
+      "label": "rtvi-ai",
+      "type": "bot-output"
+    },
+    "receivedPerformanceMs": 75613,
+    "receivedWallTimeS": 1787001316.972
+  },
+  {
+    "message": {
+      "data": {
+        "text": "I can check that for you."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-tts-text"
+    },
+    "receivedPerformanceMs": 75614.10000038147,
+    "receivedWallTimeS": 1787001316.973
+  },
+  {
+    "message": {
+      "data": {
+        "text": " is"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75652.80000019073,
+    "receivedWallTimeS": 1787001317.012
+  },
+  {
+    "message": {
+      "data": {
+        "text": " the"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75732.5,
+    "receivedWallTimeS": 1787001317.091
+  },
+  {
+    "message": {
+      "data": {
+        "text": " time"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75814.19999980927,
+    "receivedWallTimeS": 1787001317.173
+  },
+  {
+    "message": {
+      "data": {
+        "text": " zone"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75894.60000038147,
+    "receivedWallTimeS": 1787001317.253
+  },
+  {
+    "message": {
+      "data": {
+        "text": " you"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 75974.9000005722,
+    "receivedWallTimeS": 1787001317.334
+  },
+  {
+    "message": {
+      "data": {
+        "text": " are"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 76054.9000005722,
+    "receivedWallTimeS": 1787001317.414
+  },
+  {
+    "message": {
+      "data": {
+        "text": " in"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 76133,
+    "receivedWallTimeS": 1787001317.492
+  },
+  {
+    "message": {
+      "data": {
+        "text": "?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 76212.4000005722,
+    "receivedWallTimeS": 1787001317.571
+  },
+  {
+    "message": {
+      "data": {
+        "text": " what is the time zone you are in?"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 76212.80000019073,
+    "receivedWallTimeS": 1787001317.572
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 79846.80000019073,
+    "receivedWallTimeS": 1787001321.206
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 79847.60000038147,
+    "receivedWallTimeS": 1787001321.207
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 5.6749303340911865
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 79847.80000019073,
+    "receivedWallTimeS": 1787001321.207
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 79848,
+    "receivedWallTimeS": 1787001321.207
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 79859.10000038147,
+    "receivedWallTimeS": 1787001321.218
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 80068.10000038147,
+    "receivedWallTimeS": 1787001321.427
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think",
+        "timestamp": "2026-08-17T21:15:21.575+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 80217.5,
+    "receivedWallTimeS": 1787001321.576
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you",
+        "timestamp": "2026-08-17T21:15:21.924+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 80566.19999980927,
+    "receivedWallTimeS": 1787001321.925
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did",
+        "timestamp": "2026-08-17T21:15:21.992+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 80634.9000005722,
+    "receivedWallTimeS": 1787001321.994
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check",
+        "timestamp": "2026-08-17T21:15:22.272+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 80914.80000019073,
+    "receivedWallTimeS": 1787001322.274
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it",
+        "timestamp": "2026-08-17T21:15:22.341+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 80983.30000019073,
+    "receivedWallTimeS": 1787001322.342
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look",
+        "timestamp": "2026-08-17T21:15:22.688+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 81330.5,
+    "receivedWallTimeS": 1787001322.689
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in",
+        "timestamp": "2026-08-17T21:15:22.827+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 81469.69999980927,
+    "receivedWallTimeS": 1787001322.828
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your",
+        "timestamp": "2026-08-17T21:15:22.965+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 81607.9000005722,
+    "receivedWallTimeS": 1787001322.967
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your hist",
+        "timestamp": "2026-08-17T21:15:23.033+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 81675.9000005722,
+    "receivedWallTimeS": 1787001323.035
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history",
+        "timestamp": "2026-08-17T21:15:23.171+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 81813.5,
+    "receivedWallTimeS": 1787001323.172
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what",
+        "timestamp": "2026-08-17T21:15:23.545+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 82187.9000005722,
+    "receivedWallTimeS": 1787001323.547
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what was",
+        "timestamp": "2026-08-17T21:15:23.625+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 82267.69999980927,
+    "receivedWallTimeS": 1787001323.627
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what was a",
+        "timestamp": "2026-08-17T21:15:23.785+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 82427.80000019073,
+    "receivedWallTimeS": 1787001323.787
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what was a funct",
+        "timestamp": "2026-08-17T21:15:23.871+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 82514.10000038147,
+    "receivedWallTimeS": 1787001323.873
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what was a function",
+        "timestamp": "2026-08-17T21:15:23.951+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 82594,
+    "receivedWallTimeS": 1787001323.953
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what was a function call",
+        "timestamp": "2026-08-17T21:15:24.106+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 82748.4000005722,
+    "receivedWallTimeS": 1787001324.107
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what was a function call res",
+        "timestamp": "2026-08-17T21:15:24.345+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 82987.9000005722,
+    "receivedWallTimeS": 1787001324.347
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "I think you did check it look in your history what was a function call result",
+        "timestamp": "2026-08-17T21:15:24.424+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 83066.19999980927,
+    "receivedWallTimeS": 1787001324.425
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 83251.30000019073,
+    "receivedWallTimeS": 1787001324.61
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 86145.5,
+    "receivedWallTimeS": 1787001327.504
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "I think you did check it look in your history what was a function call result",
+        "timestamp": "2026-08-17T21:15:27.700+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 86343.60000038147,
+    "receivedWallTimeS": 1787001327.702
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 86344.19999980927,
+    "receivedWallTimeS": 1787001327.703
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0.196763277053833
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 86344.30000019073,
+    "receivedWallTimeS": 1787001327.703
+  },
+  {
+    "message": {
+      "data": {
+        "text": " The"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86423.80000019073,
+    "receivedWallTimeS": 1787001327.783
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 86424.10000038147,
+    "receivedWallTimeS": 1787001327.783
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 86424.10000038147,
+    "receivedWallTimeS": 1787001327.783
+  },
+  {
+    "message": {
+      "data": {
+        "text": " last"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86502.10000038147,
+    "receivedWallTimeS": 1787001327.861
+  },
+  {
+    "message": {
+      "data": {
+        "text": " function"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86580.69999980927,
+    "receivedWallTimeS": 1787001327.94
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.2673922902494331,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 0.4641555673032661,
+            "ttfb": 0.196763277053833
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 86581,
+    "receivedWallTimeS": 1787001327.94
+  },
+  {
+    "message": {
+      "data": {
+        "text": " call"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86657.9000005722,
+    "receivedWallTimeS": 1787001328.017
+  },
+  {
+    "message": {
+      "data": {
+        "text": " returned"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86737.10000038147,
+    "receivedWallTimeS": 1787001328.096
+  },
+  {
+    "message": {
+      "data": {
+        "text": " America"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86813.4000005722,
+    "receivedWallTimeS": 1787001328.172
+  },
+  {
+    "message": {
+      "data": {
+        "text": " or"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86887.5,
+    "receivedWallTimeS": 1787001328.246
+  },
+  {
+    "message": {
+      "data": {
+        "text": " Los"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 86963.30000019073,
+    "receivedWallTimeS": 1787001328.322
+  },
+  {
+    "message": {
+      "data": {
+        "text": " underscore"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 87041.10000038147,
+    "receivedWallTimeS": 1787001328.4
+  },
+  {
+    "message": {
+      "data": {
+        "text": " Angeles"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 87116.69999980927,
+    "receivedWallTimeS": 1787001328.476
+  },
+  {
+    "message": {
+      "data": {
+        "text": "."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 87195,
+    "receivedWallTimeS": 1787001328.554
+  },
+  {
+    "message": {
+      "data": {
+        "text": " The last function call returned America or Los underscore Angeles."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 87195.4000005722,
+    "receivedWallTimeS": 1787001328.554
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 88742.5,
+    "receivedWallTimeS": 1787001330.101
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 88742.9000005722,
+    "receivedWallTimeS": 1787001330.102
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 2.5969841480255127
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 88743.19999980927,
+    "receivedWallTimeS": 1787001330.102
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 88743.5,
+    "receivedWallTimeS": 1787001330.102
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 88743.69999980927,
+    "receivedWallTimeS": 1787001330.103
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 89251.80000019073,
+    "receivedWallTimeS": 1787001330.611
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay but",
+        "timestamp": "2026-08-17T21:15:30.784+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 89425.80000019073,
+    "receivedWallTimeS": 1787001330.785
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay but I'm",
+        "timestamp": "2026-08-17T21:15:31.059+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 89702,
+    "receivedWallTimeS": 1787001331.061
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay but I'm in",
+        "timestamp": "2026-08-17T21:15:31.195+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 89837.4000005722,
+    "receivedWallTimeS": 1787001331.196
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 89961.60000038147,
+    "receivedWallTimeS": 1787001331.32
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 89962.4000005722,
+    "receivedWallTimeS": 1787001331.321
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay but I'm in Pac",
+        "timestamp": "2026-08-17T21:15:31.337+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 89980.60000038147,
+    "receivedWallTimeS": 1787001331.34
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay but I'm in Pacific",
+        "timestamp": "2026-08-17T21:15:31.405+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 90048.69999980927,
+    "receivedWallTimeS": 1787001331.408
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay but I'm in Pacific tim",
+        "timestamp": "2026-08-17T21:15:31.543+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 90186.60000038147,
+    "receivedWallTimeS": 1787001331.545
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "okay but I'm in Pacific time",
+        "timestamp": "2026-08-17T21:15:31.613+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 90257.19999980927,
+    "receivedWallTimeS": 1787001331.616
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "okay but I'm in Pacific time",
+        "timestamp": "2026-08-17T21:15:32.378+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 91022.30000019073,
+    "receivedWallTimeS": 1787001332.381
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 91023.69999980927,
+    "receivedWallTimeS": 1787001332.383
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 1.065101146697998
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 91024,
+    "receivedWallTimeS": 1787001332.383
+  },
+  {
+    "message": {
+      "data": {
+        "text": " The"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91098.60000038147,
+    "receivedWallTimeS": 1787001332.457
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 91099,
+    "receivedWallTimeS": 1787001332.458
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 91099.10000038147,
+    "receivedWallTimeS": 1787001332.458
+  },
+  {
+    "message": {
+      "data": {
+        "text": " time"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91174.69999980927,
+    "receivedWallTimeS": 1787001332.534
+  },
+  {
+    "message": {
+      "data": {
+        "text": " zone"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91249.80000019073,
+    "receivedWallTimeS": 1787001332.609
+  },
+  {
+    "message": {
+      "data": {
+        "text": " is"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91328,
+    "receivedWallTimeS": 1787001332.687
+  },
+  {
+    "message": {
+      "data": {
+        "text": " currently"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91409.5,
+    "receivedWallTimeS": 1787001332.768
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.40208616780045353,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 1.4671873144984515,
+            "ttfb": 1.065101146697998
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 91409.9000005722,
+    "receivedWallTimeS": 1787001332.769
+  },
+  {
+    "message": {
+      "data": {
+        "text": " America"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91490.10000038147,
+    "receivedWallTimeS": 1787001332.849
+  },
+  {
+    "message": {
+      "data": {
+        "text": " or"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91567.10000038147,
+    "receivedWallTimeS": 1787001332.926
+  },
+  {
+    "message": {
+      "data": {
+        "text": " Los"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91644.69999980927,
+    "receivedWallTimeS": 1787001333.004
+  },
+  {
+    "message": {
+      "data": {
+        "text": " underscore"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91723.69999980927,
+    "receivedWallTimeS": 1787001333.083
+  },
+  {
+    "message": {
+      "data": {
+        "text": " Angeles"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91803.19999980927,
+    "receivedWallTimeS": 1787001333.162
+  },
+  {
+    "message": {
+      "data": {
+        "text": "."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 91877.4000005722,
+    "receivedWallTimeS": 1787001333.236
+  },
+  {
+    "message": {
+      "data": {
+        "text": " The time zone is currently America or Los underscore Angeles."
+      },
+      "label": "rtvi-ai",
+      "type": "bot-transcription"
+    },
+    "receivedPerformanceMs": 91877.69999980927,
+    "receivedWallTimeS": 1787001333.236
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 95209.9000005722,
+    "receivedWallTimeS": 1787001336.569
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 95210.4000005722,
+    "receivedWallTimeS": 1787001336.569
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 5.2517030239105225
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 95210.60000038147,
+    "receivedWallTimeS": 1787001336.569
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 95210.60000038147,
+    "receivedWallTimeS": 1787001336.569
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 95210.60000038147,
+    "receivedWallTimeS": 1787001336.569
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 95595.9000005722,
+    "receivedWallTimeS": 1787001336.955
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 95600.19999980927,
+    "receivedWallTimeS": 1787001336.959
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 95619.60000038147,
+    "receivedWallTimeS": 1787001336.978
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0.03593134880065918
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 95619.80000019073,
+    "receivedWallTimeS": 1787001336.979
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 0.03633761405944824
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 95619.9000005722,
+    "receivedWallTimeS": 1787001336.979
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 96175.4000005722,
+    "receivedWallTimeS": 1787001337.534
+  },
+  {
+    "message": {
+      "data": {
+        "text": " It"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 96259.5,
+    "receivedWallTimeS": 1787001337.618
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 96259.80000019073,
+    "receivedWallTimeS": 1787001337.619
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 96259.9000005722,
+    "receivedWallTimeS": 1787001337.619
+  },
+  {
+    "message": {
+      "data": {
+        "text": " is"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 96340.5,
+    "receivedWallTimeS": 1787001337.699
+  },
+  {
+    "message": {
+      "data": {
+        "text": " currently"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 96423.69999980927,
+    "receivedWallTimeS": 1787001337.783
+  },
+  {
+    "message": {
+      "data": {
+        "ttfa": [
+          {
+            "leading_silence": 0.2494331065759637,
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "ttfa": 0.2853644553766229,
+            "ttfb": 0.03593134880065918
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 96424,
+    "receivedWallTimeS": 1787001337.783
+  },
+  {
+    "message": {
+      "data": {
+        "text": " three"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 96504.9000005722,
+    "receivedWallTimeS": 1787001337.864
+  },
+  {
+    "message": {
+      "data": {
+        "text": " PM"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 96588.5,
+    "receivedWallTimeS": 1787001337.947
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-started-speaking"
+    },
+    "receivedPerformanceMs": 97325,
+    "receivedWallTimeS": 1787001338.684
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-interrupted"
+    },
+    "receivedPerformanceMs": 97325.4000005722,
+    "receivedWallTimeS": 1787001338.684
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 97325.60000038147,
+    "receivedWallTimeS": 1787001338.684
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-stopped-speaking"
+    },
+    "receivedPerformanceMs": 97325.69999980927,
+    "receivedWallTimeS": 1787001338.685
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 98080.30000019073,
+    "receivedWallTimeS": 1787001339.439
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "again",
+        "timestamp": "2026-08-17T21:15:39.606+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 98261.80000019073,
+    "receivedWallTimeS": 1787001339.621
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "user-stopped-speaking"
+    },
+    "receivedPerformanceMs": 98263,
+    "receivedWallTimeS": 1787001339.622
+  },
+  {
+    "message": {
+      "data": {},
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 98263.69999980927,
+    "receivedWallTimeS": 1787001339.623
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "again for",
+        "timestamp": "2026-08-17T21:15:39.753+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 98396.10000038147,
+    "receivedWallTimeS": 1787001339.755
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "again for Pac",
+        "timestamp": "2026-08-17T21:15:39.965+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 98607.9000005722,
+    "receivedWallTimeS": 1787001339.967
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "again for Pacific",
+        "timestamp": "2026-08-17T21:15:40.102+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 98744.60000038147,
+    "receivedWallTimeS": 1787001340.103
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "again for Pacific tim",
+        "timestamp": "2026-08-17T21:15:40.243+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 98885.9000005722,
+    "receivedWallTimeS": 1787001340.245
+  },
+  {
+    "message": {
+      "data": {
+        "final": false,
+        "text": "again for Pacific time",
+        "timestamp": "2026-08-17T21:15:40.315+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 98957.60000038147,
+    "receivedWallTimeS": 1787001340.316
+  },
+  {
+    "message": {
+      "data": {
+        "final": true,
+        "text": "again for Pacific time",
+        "timestamp": "2026-08-17T21:15:41.084+00:00",
+        "user_id": ""
+      },
+      "label": "rtvi-ai",
+      "type": "user-transcription"
+    },
+    "receivedPerformanceMs": 99727.69999980927,
+    "receivedWallTimeS": 1787001341.087
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-started"
+    },
+    "receivedPerformanceMs": 99728.4000005722,
+    "receivedWallTimeS": 1787001341.087
+  },
+  {
+    "message": {
+      "data": {
+        "ttfb": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 1.4717521667480469
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 99728.60000038147,
+    "receivedWallTimeS": 1787001341.088
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-started"
+    },
+    "receivedPerformanceMs": 99804,
+    "receivedWallTimeS": 1787001341.163
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-started-speaking"
+    },
+    "receivedPerformanceMs": 99804.5,
+    "receivedWallTimeS": 1787001341.163
+  },
+  {
+    "message": {
+      "data": {
+        "text": " time"
+      },
+      "label": "rtvi-ai",
+      "type": "bot-llm-text"
+    },
+    "receivedPerformanceMs": 99885.4000005722,
+    "receivedWallTimeS": 1787001341.244
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-tts-stopped"
+    },
+    "receivedPerformanceMs": 99885.69999980927,
+    "receivedWallTimeS": 1787001341.245
+  },
+  {
+    "message": {
+      "label": "rtvi-ai",
+      "type": "bot-llm-stopped"
+    },
+    "receivedPerformanceMs": 99885.80000019073,
+    "receivedWallTimeS": 1787001341.245
+  },
+  {
+    "message": {
+      "data": {
+        "processing": [
+          {
+            "model": "nvidia/NVIDIA-NemotronLabs-VoiceChat-11B",
+            "processor": "_TracedNemotronVoicechatLLMService#0",
+            "value": 1.6295480728149414
+          }
+        ]
+      },
+      "label": "rtvi-ai",
+      "type": "metrics"
+    },
+    "receivedPerformanceMs": 99885.9000005722,
+    "receivedWallTimeS": 1787001341.245
+  }
+]

@@ -20,6 +20,7 @@ from nemotron_voicechat_runtime.pocket_controller import PocketSynthesis, Pocket
 from nemotron_voicechat_runtime.server import (
     FRAME_SAMPLES,
     INPUT_SAMPLE_RATE,
+    REALTIME_RECEIVE_QUEUE_MESSAGES,
     StepResult,
     audio_stats,
     create_app,
@@ -403,6 +404,31 @@ class DeferredToolTimeoutFakeEngine(PreparedEpochFakeEngine):
         self.cleanup_completed = Event()
         self.pipeline._fc_async_bg = {}
         self.wrapper._build_fc_response_tokens = lambda value: list(value.encode())
+        self.user_text = "old deferred tool request"
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        self.pending_post_tool_continuation = None
+        self.cleared_response_bindings = 0
+        self.precommit_bos_after_interrupt = False
+
+    def bind_user_transcript_to_next_response(self, *, source, source_id):
+        self.pending_response_user_text = self.user_text
+        self.pending_response_attribution = {
+            "kind": "user_turn",
+            "source": source,
+            "source_id": source_id,
+        }
+
+    def clear_pending_response_binding(self):
+        evidence = {
+            "cleared": bool(self.pending_response_user_text),
+            "source": (self.pending_response_attribution or {}).get("source"),
+            "source_id": (self.pending_response_attribution or {}).get("source_id"),
+        }
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        self.cleared_response_bindings += 1
+        return evidence
 
     def interrupt_unpublished_function_cycle(self, _timeout_seconds=5.0):
         self.unpublished_interrupts += 1
@@ -442,6 +468,29 @@ class DeferredToolTimeoutFakeEngine(PreparedEpochFakeEngine):
             is_last=is_last,
             input_active=input_active,
         )
+        if self.precommit_bos_after_interrupt and np.max(np.abs(samples)) > 0:
+            self.precommit_bos_after_interrupt = False
+            result.user_text = "new microphone partial"
+            result.assistant_delta = "New response."
+            result.assistant_text = result.assistant_delta
+            result.audio[:] = 0.05
+            result.output_audio = audio_stats(result.audio)
+            result.turn_state["agent_control"] = "agent_bos"
+            result.turn_state["response_boundary"] = {
+                "event": "start",
+                "phase": "responding",
+            }
+            pending = self.pending_response_user_text
+            attribution = self.pending_response_attribution
+            self.pending_response_user_text = ""
+            self.pending_response_attribution = None
+            if pending and attribution:
+                result.user_text = pending
+                result.turn_state["response_attribution"] = {
+                    **attribution,
+                    "user_text_bound": pending,
+                }
+            return result
         if not start_tool:
             return result
         self._tool_started = True
@@ -475,6 +524,180 @@ class DeferredToolTimeoutFakeEngine(PreparedEpochFakeEngine):
             self.abort_join_timed_out = worker.is_alive()
         super().abort()
         self.cleanup_completed.set()
+
+
+class SupersededBindingFakeEngine(DeferredToolTimeoutFakeEngine):
+    def interrupt_unpublished_function_cycle(self, _timeout_seconds=5.0):
+        evidence = super().interrupt_unpublished_function_cycle(_timeout_seconds)
+        self.precommit_bos_after_interrupt = True
+        return evidence
+
+
+class FunctionOutputFakeEngine(FakeEngine):
+    """Exercise endpoint settlement and output recovery without helper shortcuts."""
+
+    def __init__(self, *, tool_calls: int = 1) -> None:
+        super().__init__()
+        self.simulate_eou_settlement = True
+        self.settlement_target = 2
+        self.settlement_blank_count = 0
+        self.wrapper._build_fc_response_tokens = lambda value: list(value.encode())
+        self.user_text = "hello"
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        self.pending_post_tool_continuation = None
+        self.cleared_response_bindings = 0
+        self.tool_results: list[str] = []
+        self.tool_calls_remaining = tool_calls
+        self._tool_worker_active = False
+        self._tool_output_ready = False
+        self._continue_tool_cycle = False
+
+    def bind_user_transcript_to_next_response(self, *, source, source_id):
+        self.pending_response_user_text = self.user_text
+        self.pending_response_attribution = {
+            "kind": "user_turn",
+            "source": source,
+            "source_id": source_id,
+        }
+
+    def bind_post_tool_continuation_to_next_response(self, *, call_id):
+        self.pending_post_tool_continuation = {
+            "kind": "post_tool_continuation",
+            "call_id": call_id,
+        }
+
+    def clear_pending_response_binding(self):
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        self.cleared_response_bindings += 1
+        return {"cleared": True}
+
+    def _start_tool_worker(self) -> None:
+        self._tool_worker_active = True
+        self.tool_calls_remaining -= 1
+        handler = next(iter(self.tools.values()))
+
+        def invoke() -> None:
+            self.tool_results.append(handler({}))
+            self._tool_worker_active = False
+            self._tool_output_ready = True
+
+        Thread(target=invoke, daemon=True).start()
+
+    def _bind_at_forced_bos(self, result: StepResult) -> None:
+        pending = self.pending_response_user_text
+        attribution = self.pending_response_attribution
+        continuation = self.pending_post_tool_continuation
+        self.pending_response_user_text = ""
+        self.pending_response_attribution = None
+        self.pending_post_tool_continuation = None
+        if pending and attribution:
+            result.user_text = pending
+            result.turn_state["response_attribution"] = {
+                **attribution,
+                "user_text_bound": pending,
+                "post_tool_continuation": True,
+            }
+        elif continuation:
+            result.turn_state["response_attribution"] = continuation
+
+    def process(self, samples, *, is_last=False, input_active=None):
+        start_first_tool = bool(
+            self.user_eou_requests
+            and self.tools
+            and self.tool_calls_remaining
+            and not self._tool_worker_active
+            and not self._tool_output_ready
+            and not self._continue_tool_cycle
+            and not self._settled_response_started
+        )
+        start_continuation = bool(
+            self._continue_tool_cycle
+            and self.tool_calls_remaining
+            and not self._tool_worker_active
+        )
+        if start_first_tool:
+            self._settled_response_started = True
+        result = super().process(samples, is_last=is_last, input_active=input_active)
+        if result.user_text:
+            self.user_text = result.user_text
+        if (
+            self.agent_eos_requests
+            and not self._tool_worker_active
+            and not self._tool_output_ready
+        ):
+            self.agent_eos_requests = 0
+            result.assistant_delta = ""
+            result.assistant_text = ""
+            result.audio[:] = 0
+            result.output_audio = audio_stats(result.audio)
+            result.turn_state["agent_control"] = "agent_eos"
+            result.turn_state["response_boundary"] = {
+                "event": "end",
+                "phase": "idle",
+                "boundary_reason": "cancelled",
+            }
+            result.turn_state["function_calling"] = {
+                "active": False,
+                "effective_token_is_pad": True,
+            }
+            return result
+        if start_first_tool or start_continuation:
+            self._continue_tool_cycle = False
+            result.assistant_delta = ""
+            result.assistant_text = ""
+            result.audio[:] = 0
+            result.output_audio = audio_stats(result.audio)
+            result.turn_state["agent_control"] = "agent_eos" if start_continuation else "pad"
+            result.turn_state["response_boundary"] = (
+                {
+                    "event": "end",
+                    "phase": "idle",
+                    "boundary_reason": "multi_tool_continuation",
+                }
+                if start_continuation
+                else {"event": None, "phase": "idle"}
+            )
+            result.turn_state["function_calling"] = {
+                "active": True,
+                "awaiting_response": True,
+                "awaiting_eotr": True,
+                "effective_token_is_pad": False,
+            }
+            self._start_tool_worker()
+            return result
+        if self._tool_worker_active:
+            result.turn_state["function_calling"] = {
+                "active": True,
+                "awaiting_response": True,
+                "awaiting_eotr": True,
+                "effective_token_is_pad": False,
+            }
+            return result
+        if self._tool_output_ready:
+            self._tool_output_ready = False
+            self._continue_tool_cycle = self.tool_calls_remaining > 0
+            self.eartts._reset_on_bos_count += 1
+            result.assistant_delta = "Tool result."
+            result.assistant_text = result.assistant_delta
+            result.audio[:] = 0.05
+            result.output_audio = audio_stats(result.audio)
+            result.turn_state["agent_control"] = "agent_bos"
+            result.turn_state["response_boundary"] = {
+                "event": "start",
+                "phase": "responding",
+            }
+            result.turn_state["function_calling"] = {
+                "active": False,
+                "awaiting_response": False,
+                "awaiting_eotr": False,
+                "post_fc_client_bos_pending": False,
+                "post_fc_client_bos_forced_count": len(self.tool_results),
+                "post_fc_client_bos_forced_frame": result.frame_index,
+            }
+            self._bind_at_forced_bos(result)
+        return result
 
 
 class BlockingAbortFakeEngine(FakeEngine):
@@ -532,8 +755,13 @@ class RecordingAsyncWebSocket:
         )
 
 
-def audio_event(event_id: str = "audio-1", *, amplitude: float = 0.1) -> dict:
-    pcm = np.full(FRAME_SAMPLES, amplitude, dtype="<f4")
+def audio_event(
+    event_id: str = "audio-1",
+    *,
+    amplitude: float = 0.1,
+    samples: int = FRAME_SAMPLES,
+) -> dict:
+    pcm = np.full(samples, amplitude, dtype="<f4")
     pcm16 = np.clip(pcm * 32768.0, -32768, 32767).astype("<i2").tobytes()
     return {
         "type": "input_audio_buffer.append",
@@ -1580,6 +1808,450 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
             1,
         )
 
+    def test_new_turn_interrupt_clears_superseded_binding_before_precommit_bos(self) -> None:
+        engine = SupersededBindingFakeEngine()
+        engine.publication_delay = 0.2
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "old-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            websocket.send_json(audio_event("old-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "old-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.committed")
+            self.assertEqual(engine.pending_response_user_text, "old deferred tool request")
+            self.assertEqual(engine.pending_response_attribution["source"], "microphone")
+
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "new-start",
+                    "client_turn_id": 2,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started", limit=30)
+            self.assertEqual(engine.cleared_response_bindings, 1)
+            websocket.send_json(audio_event("new-precommit-bos"))
+            metric, events = receive_until(websocket, "voicechat.metrics", limit=30)
+            bos_metric = next(
+                event
+                for event in events
+                if event.get("type") == "voicechat.metrics"
+                and (event.get("turn_state") or {}).get("agent_control") == "agent_bos"
+            )
+            self.assertIs(metric, bos_metric)
+            self.assertNotIn("response_attribution", bos_metric["turn_state"])
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed", limit=40)
+
+        precommit_bos = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "model_step"
+            and event["turn_state"].get("agent_control") == "agent_bos"
+            and event["user_text"] == "new microphone partial"
+        )
+        self.assertNotIn("response_attribution", precommit_bos["turn_state"])
+        self.assertNotEqual(precommit_bos["user_text"], "old deferred tool request")
+
+    def test_typed_turn_interrupt_clears_superseded_binding_before_typed_bos(self) -> None:
+        engine = SupersededBindingFakeEngine()
+        engine.publication_delay = 0.2
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            typed_input=True,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "old-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            websocket.send_json(audio_event("old-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "old-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.committed")
+            self.assertEqual(engine.pending_response_user_text, "old deferred tool request")
+            self.assertEqual(engine.pending_response_attribution["source"], "microphone")
+
+            websocket.send_json(
+                {
+                    "type": "input_text.request",
+                    "job_id": "new-typed",
+                    "text": "new typed request",
+                }
+            )
+            typed_bos = None
+            for _ in range(80):
+                event = websocket.receive_json()
+                if (
+                    event.get("type") == "voicechat.metrics"
+                    and (event.get("turn_state") or {}).get("agent_control")
+                    == "agent_bos"
+                ):
+                    typed_bos = event
+                    break
+            self.assertIsNotNone(typed_bos)
+            self.assertEqual(engine.unpublished_interrupts, 1)
+            self.assertEqual(engine.cleared_response_bindings, 1)
+            self.assertNotIn("response_attribution", typed_bos["turn_state"])
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed", limit=40)
+
+        typed_bos_trace = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "model_step"
+            and event["turn_state"].get("agent_control") == "agent_bos"
+            and event["user_text"] == "new microphone partial"
+        )
+        self.assertNotIn("response_attribution", typed_bos_trace["turn_state"])
+        self.assertNotEqual(typed_bos_trace["user_text"], "old deferred tool request")
+
+    def test_typed_and_microphone_tool_output_reach_forced_bos_with_bound_text(self) -> None:
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        for source in ("typed", "microphone"):
+            with self.subTest(source=source):
+                engine = FunctionOutputFakeEngine()
+                temporary, engine, client = self.make_client(
+                    engine=engine,
+                    typed_input=source == "typed",
+                    client_turn_detection=True,
+                    function_template_path=Path("/unused/test-template.jinja"),
+                )
+                self.addCleanup(temporary.cleanup)
+                with (
+                    mock.patch(
+                        "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                        return_value="tool-aware prompt",
+                    ),
+                    client.websocket_connect("/v1/realtime") as websocket,
+                ):
+                    websocket.receive_json()
+                    self.configure(websocket, tools=tools, model_output=True)
+                    if source == "typed":
+                        websocket.send_json(
+                            {
+                                "type": "input_text.request",
+                                "job_id": "typed-tool",
+                                "text": "check weather",
+                            }
+                        )
+                    else:
+                        websocket.send_json(
+                            {
+                                "type": "input_audio_buffer.turn_start",
+                                "event_id": "mic-start",
+                                "client_turn_id": 1,
+                            }
+                        )
+                        receive_until(websocket, "input_audio_buffer.turn_started")
+                        websocket.send_json(audio_event("mic-audio"))
+                        receive_until(websocket, "voicechat.metrics")
+                        websocket.send_json(
+                            {
+                                "type": "input_audio_buffer.commit",
+                                "event_id": "mic-commit",
+                                "client_turn_id": 1,
+                            }
+                        )
+                    function_call, _events = receive_until(
+                        websocket, "response.function_call_arguments.done", limit=120
+                    )
+                    websocket.send_json(
+                        {
+                            "type": "conversation.item.create",
+                            "event_id": f"{source}-output",
+                            "item": {
+                                "type": "function_call_output",
+                                "call_id": function_call["call_id"],
+                                "output": '{"weather":"sunny"}',
+                                "model_output": "Sunny.",
+                            },
+                        }
+                    )
+                    _applied, recovery_events = receive_until(
+                        websocket,
+                        "conversation.item.function_call_output.applied",
+                        limit=40,
+                    )
+                    forced = next(
+                        event
+                        for event in recovery_events
+                        if event.get("type") == "voicechat.metrics"
+                        and (event.get("turn_state") or {}).get("agent_control")
+                        == "agent_bos"
+                    )
+                    function_state = forced["turn_state"]["function_calling"]
+                    self.assertFalse(function_state["awaiting_eotr"])
+                    self.assertEqual(
+                        function_state["post_fc_client_bos_forced_frame"],
+                        forced["frame"],
+                    )
+                    attribution = forced["turn_state"]["response_attribution"]
+                    self.assertEqual(attribution["source"], source)
+                    self.assertEqual(attribution["user_text_bound"], "hello")
+                    websocket.send_json({"type": "session.stop", "event_id": "stop"})
+                    receive_until(websocket, "session.closed", limit=40)
+
+                settled = next(
+                    event
+                    for event in self.trace_events(temporary)
+                    if event["event"] == "user_eou_settled"
+                )
+                self.assertTrue(settled["fence_reached"])
+                self.assertTrue(settled["pre_eou_clean"])
+                self.assertTrue(settled["within_bound"])
+                self.assertEqual(engine.tool_results, ["Sunny."])
+
+    def test_multi_tool_continuation_keeps_explicit_post_tool_attribution(self) -> None:
+        engine = FunctionOutputFakeEngine(tool_calls=2)
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools, model_output=True)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "multi-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            websocket.send_json(audio_event("multi-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "multi-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            first, _events = receive_until(
+                websocket, "response.function_call_arguments.done", limit=40
+            )
+            websocket.send_json(
+                {
+                    "type": "conversation.item.create",
+                    "item": {
+                        "type": "function_call_output",
+                        "call_id": first["call_id"],
+                        "output": "first",
+                        "model_output": "First.",
+                    },
+                }
+            )
+            receive_until(
+                websocket, "conversation.item.function_call_output.applied", limit=40
+            )
+            websocket.send_json(audio_event("multi-continuation-clock"))
+            second, _events = receive_until(
+                websocket, "response.function_call_arguments.done", limit=40
+            )
+            self.assertNotEqual(first["call_id"], second["call_id"])
+            websocket.send_json(
+                {
+                    "type": "conversation.item.create",
+                    "item": {
+                        "type": "function_call_output",
+                        "call_id": second["call_id"],
+                        "output": "second",
+                        "model_output": "Second.",
+                    },
+                }
+            )
+            _applied, events = receive_until(
+                websocket, "conversation.item.function_call_output.applied", limit=40
+            )
+            final_bos = next(
+                event
+                for event in events
+                if event.get("type") == "voicechat.metrics"
+                and (event.get("turn_state") or {}).get("agent_control") == "agent_bos"
+            )
+            self.assertEqual(
+                final_bos["turn_state"]["response_attribution"],
+                {"kind": "post_tool_continuation", "call_id": second["call_id"]},
+            )
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed", limit=40)
+
+        self.assertEqual(engine.tool_results, ["First.", "Second."])
+
+    def test_publication_race_preserves_binding_for_deferred_input_branch(self) -> None:
+        engine = FunctionOutputFakeEngine()
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+            function_template_path=Path("/unused/test-template.jinja"),
+        )
+        self.addCleanup(temporary.cleanup)
+        tools = [
+            {
+                "name": "get_weather",
+                "description": "Get weather.",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ]
+        with (
+            mock.patch(
+                "nemotron_voicechat_runtime.server.render_tool_system_prompt",
+                return_value="tool-aware prompt",
+            ),
+            client.websocket_connect("/v1/realtime") as websocket,
+        ):
+            websocket.receive_json()
+            self.configure(websocket, tools=tools, model_output=True)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "race-old-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            websocket.send_json(audio_event("race-old-audio"))
+            receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "race-old-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            function_call, _events = receive_until(
+                websocket, "response.function_call_arguments.done", limit=40
+            )
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "race-new-start",
+                    "client_turn_id": 2,
+                }
+            )
+            websocket.send_json(
+                {
+                    "type": "conversation.item.create",
+                    "item": {
+                        "type": "function_call_output",
+                        "call_id": function_call["call_id"],
+                        "output": "sunny",
+                        "model_output": "Sunny.",
+                    },
+                }
+            )
+            _applied, events = receive_until(
+                websocket, "conversation.item.function_call_output.applied", limit=40
+            )
+            forced = next(
+                event
+                for event in events
+                if event.get("type") == "voicechat.metrics"
+                and (event.get("turn_state") or {}).get("agent_control") == "agent_bos"
+            )
+            self.assertEqual(
+                forced["turn_state"]["response_attribution"]["source"],
+                "microphone",
+            )
+            self.assertEqual(engine.cleared_response_bindings, 0)
+            started, _events = receive_until(
+                websocket, "input_audio_buffer.turn_started", limit=20
+            )
+            self.assertEqual(started["client_turn_id"], 2)
+            websocket.send_json({"type": "session.stop", "event_id": "stop"})
+            receive_until(websocket, "session.closed", limit=40)
+
+        self.assertTrue(
+            any(
+                event["event"] == "client_input_deferred_for_function"
+                and event["type"] == "input_audio_buffer.turn_start"
+                for event in self.trace_events(temporary)
+            )
+        )
+
     def test_typed_finished_is_immediate_readiness_barrier_during_deferred_tool(self) -> None:
         engine = DeferredToolTimeoutFakeEngine()
         engine.publication_delay = 0.2
@@ -1810,6 +2482,523 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
         self.assertTrue(committed[0]["fused_terminal_bos"])
         self.assertGreaterEqual(committed[0]["receive_to_bos_ms"], 0)
 
+    def test_precommit_quiet_frames_overlap_settlement_fence(self) -> None:
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+        )
+        self.addCleanup(temporary.cleanup)
+        with client.websocket_connect("/v1/realtime") as websocket:
+            websocket.receive_json()
+            self.configure(websocket)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "prearm-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            websocket.send_json(audio_event("prearm-speech"))
+            receive_until(websocket, "voicechat.metrics")
+            for index in range(3):
+                websocket.send_json(
+                    audio_event(f"prearm-quiet-{index}", amplitude=0.0)
+                )
+                receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "prearm-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "response.created")
+
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 3)
+        self.assertEqual(settled["post_commit_blank_deficit"], 0)
+        self.assertEqual(settled["model_steps"], 0)
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 0)
+        self.assertEqual(engine.user_eou_requests, 1)
+
+    def test_precommit_arm_is_revoked_at_and_above_the_speech_gate(self) -> None:
+        gate_payload = base64.b64decode(audio_event("gate", amplitude=0.01)["audio"])
+        gate_samples = np.frombuffer(gate_payload, dtype="<i2").astype(np.float32) / 32768.0
+        exact_gate_dbfs = float(audio_stats(gate_samples)["rms_dbfs"])
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        temporary, engine, client = self.make_client(
+            engine=engine,
+            client_turn_detection=True,
+            speech_gate_dbfs=exact_gate_dbfs,
+        )
+        self.addCleanup(temporary.cleanup)
+        with client.websocket_connect("/v1/realtime") as websocket:
+            websocket.receive_json()
+            self.configure(websocket)
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "revoke-start",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "input_audio_buffer.turn_started")
+            for event in (
+                audio_event("revoke-speech", amplitude=0.1),
+                audio_event("revoke-quiet-exact", amplitude=0.0),
+                audio_event("revoke-exact", amplitude=0.01),
+                audio_event("revoke-quiet-above", amplitude=0.0),
+                audio_event("revoke-above", amplitude=0.1),
+            ):
+                websocket.send_json(event)
+                receive_until(websocket, "voicechat.metrics")
+            websocket.send_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "revoke-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            receive_until(websocket, "response.created")
+
+        trace_events = self.trace_events(temporary)
+        revoked = [
+            event
+            for event in trace_events
+            if event["event"] == "user_eou_fence_prearm_revoked"
+        ]
+        self.assertEqual(len(revoked), 2)
+        self.assertEqual(revoked[0]["audio_rms_dbfs"], exact_gate_dbfs)
+        self.assertGreater(revoked[1]["audio_rms_dbfs"], exact_gate_dbfs)
+        settled = next(
+            event for event in trace_events if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["post_commit_blank_deficit"], 3)
+        self.assertEqual(settled["synthetic_model_steps"], 3)
+
+    def test_commit_tail_padding_cannot_arm_after_commit_receipt(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "partial-before-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("partial-before-speech"))
+            websocket.queue_json(
+                audio_event(
+                    "partial-before-quiet",
+                    amplitude=0.0,
+                    samples=FRAME_SAMPLES // 2,
+                )
+            )
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "partial-before-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        trace_events = self.trace_events(temporary)
+        commit_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_input_turn_commit_received"
+        )
+        padded_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "user_eou_post_commit_frame"
+        )
+        self.assertLess(commit_index, padded_index)
+        self.assertFalse(
+            any(
+                event["event"] == "user_eou_fence_prearmed"
+                for event in trace_events[commit_index + 1 :]
+            )
+        )
+        settled = next(
+            event for event in trace_events if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["starting_blank_frames"], 1)
+        self.assertEqual(settled["post_commit_blank_deficit"], 2)
+        self.assertEqual(settled["model_steps"], 2)
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 2)
+        self.assertEqual(
+            settled["post_commit_steps"],
+            [
+                {
+                    "model_input_provenance": "commit_tail_padding",
+                    "real_samples": FRAME_SAMPLES // 2,
+                    "padded_samples": FRAME_SAMPLES // 2,
+                    "blank_frames_before": 0,
+                    "blank_frames_after": 1,
+                    "blank_frames_advanced": 1,
+                    "model_frame": 1,
+                }
+            ],
+        )
+
+    def test_partial_audio_after_commit_remains_on_ordinary_path(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "partial-after-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("partial-after-speech"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "partial-after-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(
+                audio_event(
+                    "partial-after-audio",
+                    amplitude=0.2,
+                    samples=FRAME_SAMPLES // 2,
+                )
+            )
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["post_commit_blank_deficit"], 3)
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 3)
+        self.assertEqual(settled["post_commit_steps"], [])
+        self.assertTrue(engine.process_calls[-1]["is_last"])
+        self.assertEqual(
+            int(np.count_nonzero(engine.process_calls[-1]["samples"])),
+            FRAME_SAMPLES // 2,
+        )
+
+    def test_postcommit_quiet_queue_supplies_settlement_frames(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "queued-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("queued-speech"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "queued-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            for index in range(3):
+                websocket.queue_json(
+                    audio_event(f"queued-quiet-{index}", amplitude=0.0)
+                )
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["prearmed_blank_frames"], 0)
+        self.assertEqual(settled["post_commit_blank_deficit"], 3)
+        self.assertEqual(settled["real_audio_model_steps"], 3)
+        self.assertEqual(settled["synthetic_model_steps"], 0)
+        self.assertEqual(
+            [step["settlement_input_source"] for step in settled["steps"]],
+            ["queued_microphone_audio"] * 3,
+        )
+
+    def test_settlement_does_not_cross_non_audio_event_in_receive_fifo(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "fifo-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("fifo-speech"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "fifo-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("fifo-quiet", amplitude=0.0))
+            websocket.queue_json(
+                {
+                    "type": "session.update",
+                    "event_id": "fifo-boundary",
+                    "session": {"protocol_version": 3},
+                }
+            )
+            websocket.queue_json(audio_event("fifo-later-audio", amplitude=0.2))
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        trace_events = self.trace_events(temporary)
+        settled_index, settled = next(
+            (index, event)
+            for index, event in enumerate(trace_events)
+            if event["event"] == "user_eou_settled"
+        )
+        boundary_index = [
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_event" and event.get("type") == "session.update"
+        ][-1]
+        later_audio_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "input_packet"
+            and event["audio"]["rms_dbfs"] > -20.0
+        )
+        self.assertEqual(settled["real_audio_model_steps"], 1)
+        self.assertEqual(settled["synthetic_model_steps"], 2)
+        self.assertLess(settled_index, boundary_index)
+        self.assertLess(boundary_index, later_audio_index)
+        later_calls = [
+            call
+            for call in engine.process_calls
+            if np.isclose(float(call["samples"].mean()), 0.2, atol=1 / 32768)
+        ]
+        self.assertEqual(len(later_calls), 1)
+
+    def test_postcommit_speech_is_not_fence_eligible(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.simulate_eou_settlement = True
+        engine.settlement_target = 3
+        engine.settlement_blank_count = 0
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+            speech_gate_dbfs=-40.0,
+        )
+
+        async def exercise() -> None:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "speech-gate-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("speech-gate-first"))
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.commit",
+                    "event_id": "speech-gate-commit",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("speech-gate-barge", amplitude=0.2))
+            websocket.queue_json({"type": "session.stop"})
+            await self.realtime_endpoint(app)(websocket)
+
+        asyncio.run(exercise())
+        settled = next(
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settled"
+        )
+        self.assertEqual(settled["real_audio_model_steps"], 0)
+        self.assertEqual(settled["synthetic_model_steps"], 3)
+        self.assertTrue(settled["real_audio_stopped_by_speech_gate"])
+        blocked = [
+            event
+            for event in self.trace_events(temporary)
+            if event["event"] == "user_eou_settlement_real_audio_blocked"
+        ]
+        self.assertEqual(len(blocked), 1)
+        barge_calls = [
+            call
+            for call in engine.process_calls
+            if np.isclose(float(call["samples"].mean()), 0.2, atol=1 / 32768)
+        ]
+        self.assertEqual(len(barge_calls), 1)
+        trace_events = self.trace_events(temporary)
+        settled_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "user_eou_settled"
+        )
+        barge_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "input_packet"
+            and event["audio"]["rms_dbfs"] > -20.0
+        )
+        stop_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_event" and event.get("type") == "session.stop"
+        )
+        self.assertLess(settled_index, barge_index)
+        self.assertLess(barge_index, stop_index)
+
+    def test_bounded_receive_pump_releases_and_shutdown_makes_progress(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        engine = FakeEngine()
+        engine.block_process = True
+        app = create_app(
+            engine,
+            trace_dir=Path(temporary.name),
+            client_turn_detection=True,
+        )
+
+        async def exercise() -> RecordingAsyncWebSocket:
+            websocket = RecordingAsyncWebSocket(engine)
+            self.queue_configuration(websocket)
+            websocket.queue_json(
+                {
+                    "type": "input_audio_buffer.turn_start",
+                    "event_id": "pump-start",
+                    "client_turn_id": 1,
+                }
+            )
+            websocket.queue_json(audio_event("pump-blocked-audio"))
+            endpoint_task = asyncio.create_task(self.realtime_endpoint(app)(websocket))
+            try:
+                self.assertTrue(
+                    await self.wait_until(engine.process_started.is_set),
+                    "model step did not block",
+                )
+                for index in range(REALTIME_RECEIVE_QUEUE_MESSAGES + 1):
+                    websocket.queue_json(
+                        {
+                            "type": "session.update",
+                            "event_id": f"pump-queued-{index}",
+                            "session": {"protocol_version": 3},
+                        }
+                    )
+                websocket.queue_json({"type": "session.stop"})
+                self.assertTrue(
+                    await self.wait_until(
+                        lambda: websocket.inbound.qsize() <= 2,
+                        timeout=2.0,
+                    ),
+                    "receive pump did not fill its bounded queue",
+                )
+                self.assertFalse(endpoint_task.done())
+                engine.process_release.set()
+                await asyncio.wait_for(endpoint_task, timeout=5.0)
+            finally:
+                engine.process_release.set()
+                if not endpoint_task.done():
+                    endpoint_task.cancel()
+                    await asyncio.gather(endpoint_task, return_exceptions=True)
+            return websocket
+
+        websocket = asyncio.run(exercise())
+        self.assertTrue(websocket.closed)
+        self.assertIn("abort", engine.lifecycle)
+        trace_events = self.trace_events(temporary)
+        self.assertTrue(
+            any(
+                event["event"] == "client_event" and event.get("type") == "session.stop"
+                for event in trace_events
+            )
+        )
+
     def test_tool_session_keeps_separate_settlement_and_legacy_eou_position(self) -> None:
         engine = FakeEngine()
         engine.simulate_eou_settlement = True
@@ -1877,6 +3066,24 @@ class RealtimeWebSocketEndpointTest(unittest.TestCase):
         ]
         self.assertEqual(len(committed), 1)
         self.assertNotIn("fused_terminal_bos", committed[0])
+        trace_events = self.trace_events(temporary)
+        commit_index = next(
+            index
+            for index, event in enumerate(trace_events)
+            if event["event"] == "client_input_turn_commit_received"
+        )
+        self.assertFalse(
+            any(
+                event["event"] == "user_eou_fence_prearmed"
+                for event in trace_events[commit_index + 1 :]
+            )
+        )
+        input_provenance = [
+            event["model_input_provenance"]
+            for event in trace_events[commit_index + 1 :]
+            if event["event"] == "input_packet"
+        ]
+        self.assertEqual(input_provenance[-1], "synthetic_terminal_bos")
 
     def test_client_commit_settlement_has_fatal_twice_fence_bound(self) -> None:
         engine = FakeEngine()

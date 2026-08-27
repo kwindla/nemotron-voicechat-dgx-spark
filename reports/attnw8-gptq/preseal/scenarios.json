@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "kind": "attnw8_gptq_tool_scenario_candidates",
+  "system_prompt": "You are a helpful voice assistant in a live conversation.\nKeep answers concise, natural, and easy to understand when spoken aloud.\nUse a tool only when the user's request matches that tool's purpose. Never use an available tool as a substitute for an unrelated or unavailable capability. After a tool returns, state its result accurately and continue the conversation normally.",
+  "tool": {
+    "name": "get_benchmark_word",
+    "description": "Return the fresh benchmark word.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "injected_result": {
+    "output": {"word": "Harbor"},
+    "model_output": "Harbor is the fresh verification word for this request."
+  },
+  "expected_call": {"name": "get_benchmark_word", "arguments": {}},
+  "a2": {
+    "positive": [
+      ["a2-pos-01", "Please use the benchmark word tool now and tell me the fresh word."],
+      ["a2-pos-r8-02", "Please call get benchmark word now and report the return word exactly."],
+      ["a2-pos-03", "Call the benchmark word tool and report the word it returns."],
+      ["a2-pos-r5-04", "Please invoke get benchmark word to retrieve the fresh word for me."],
+      ["a2-pos-r9-05", "Please use get benchmark word and read back the result now."],
+      ["a2-pos-r10-06", "Please invoke the benchmark word tool and tell me the exact answer now."],
+      ["a2-pos-07", "Get the verification word through the benchmark tool, then repeat it."],
+      ["a2-pos-r14-08", "Please run get benchmark word to fetch the fresh word for me"],
+      ["a2-pos-r16-09", "Please ask the benchmark word function for its current word and state it now."],
+      ["a2-pos-r18-10", "Please call get benchmark word and answer with the word it returns now."],
+      ["a2-pos-r23-11", "Please run the benchmark word function and report its exact result."],
+      ["a2-pos-r24-12", "Please invoke the benchmark word function and report the exact result."]
+    ],
+    "no_call": [
+      ["a2-nocall-r25-01", "Please explain the word benchmark without any tools."],
+      ["a2-nocall-r28-02", "Write one short sentence about boats without using tools."],
+      ["a2-nocall-03", "Is benchmark one word or two? Answer directly without a lookup."],
+      ["a2-nocall-04", "Tell me a brief fact about harbors and do not use the available tool."],
+      ["a2-nocall-05", "What kind of word is fresh? Please answer from general knowledge only."],
+      ["a2-nocall-06", "Say whether verification is a noun, with no tool call."],
+      ["a2-nocall-r29-07", "Describe a wooden bench in one short sentence without tools."],
+      ["a2-nocall-r30-08", "Please spell the ordinary English word ocean without using a function."],
+      ["a2-nocall-r31-09", "Name one synonym for retrieve without tools."],
+      ["a2-nocall-10", "In plain language, what does it mean to invoke something? No tools."],
+      ["a2-nocall-r4-11", "Do not call any function; answer only with the words hello there."],
+      ["a2-nocall-r32-12", "The tool is available but just tell me whether a marina shelters boats."]
+    ]
+  },
+  "c2": {
+    "positive": [
+      ["c2-pos-r33-01", "Please call get benchmark word and tell me the exact word it returns."],
+      ["c2-pos-r34-02", "Please invoke get benchmark word and report the exact word it returns."],
+      ["c2-pos-03", "What word does the benchmark service return? Use the tool to check."],
+      ["c2-pos-04", "Execute the benchmark word function and repeat its response exactly."],
+      ["c2-pos-05", "Obtain the fresh verification word from the registered tool for me."],
+      ["c2-pos-06", "Consult the benchmark word tool now, then state what it gives you."],
+      ["c2-pos-07", "Trigger the tool that supplies a benchmark word and report the output."],
+      ["c2-pos-08", "Use the registered function to learn the fresh word and say it aloud."],
+      ["c2-pos-09", "Retrieve the benchmark service's exact word through the available call."],
+      ["c2-pos-10", "Please make a benchmark-word function call and relay the result."],
+      ["c2-pos-11", "Run get benchmark word and answer using the value it returns."],
+      ["c2-pos-12", "Call for the current fresh benchmark word, then tell me that exact word."]
+    ],
+    "no_call": [
+      ["c2-nocall-01", "Do not use a function; define the everyday noun harbor briefly."],
+      ["c2-nocall-02", "Answer without tools: can a benchmark be used for comparison?"],
+      ["c2-nocall-03", "Make up a fictional fresh word yourself and do not query anything."],
+      ["c2-nocall-04", "Spell verification slowly in text, with no tool call."],
+      ["c2-nocall-05", "Tell me whether boats can anchor near a harbor. Do not use the tool."],
+      ["c2-nocall-06", "Use the phrase benchmark result in a sentence, but call no functions."],
+      ["c2-nocall-07", "What is the opposite of stale? Answer directly from your vocabulary."],
+      ["c2-nocall-08", "The benchmark tool should remain idle; give me a two-word greeting."],
+      ["c2-nocall-09", "Explain the verb retrieve in six words or fewer without a lookup."],
+      ["c2-nocall-10", "Is a function the same as a purpose? Just answer; do not invoke one."],
+      ["c2-nocall-11", "Describe a quiet harbor at night in one short clause, using no tools."],
+      ["c2-nocall-12", "Please answer from memory: what does exact mean? No function call."]
+    ]
+  },
+  "c1": {
+    "scenario_id": "c1-precedent-carrier",
+    "prompt": "Use the benchmark word tool now, then state the exact fresh word from its result.",
+    "expected_transcript": "use the benchmark word tool now, then state the exact fresh word from its result",
+    "pcm_sha256": "1c7856088512ab3b865665682af1eaa43947ef3b1b403f6f8a13654be0a545ee",
+    "trailing_silence_frames_80ms": 8
+  },
+  "rules": {
+    "a2_positive_window": "r_star_minus_4_through_r_star_plus_4",
+    "a2_no_call_center": "first_agent_bos_decision_row",
+    "c2_rows": "all rows from four before the first categorical boundary through the bounded post-result continuation; for no-call scenarios, all rows from four before first agent BOS through response EOS",
+    "call_limit": 1,
+    "loop_bound": 4,
+    "post_result_continuation_required": true
+  }
+}

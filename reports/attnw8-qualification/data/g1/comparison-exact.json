@@ -1,0 +1,10 @@
+{
+  "baseline_valid_blocks": 3,
+  "basin": "exact",
+  "candidate_valid_blocks": 3,
+  "decision_flips": [],
+  "decision_pairs_checked": 10548,
+  "kind": "fhw8_g1_comparison",
+  "min_valid_blocks": 3,
+  "passed": true
+}

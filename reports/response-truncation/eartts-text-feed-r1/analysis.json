@@ -1,0 +1,3082 @@
+{
+  "cases": [
+    {
+      "all_subword_masks_true": true,
+      "asr_text": "Hi, it is great to meet you.",
+      "asr_word_count": 7,
+      "attempt": 1,
+      "capture_run": "7-1787166327711905067",
+      "delivery_timing": {
+        "audible_continuation_frames_to_last_audible": 11,
+        "final_silence_onset_frame": 83,
+        "frame_ms": 80.0,
+        "frames_from_last_content_to_final_silence_onset": 12,
+        "last_audible_pcm_frame_after_content": 82,
+        "last_content_increment_frame": 71,
+        "pad_counter_before_onset": 11,
+        "pad_frames_before_final_silence_onset": 11,
+        "pad_started_immediately_after_last_content": true,
+        "pcm_audible_frames_after_last_content": 11,
+        "terminal_eos_frame": 114,
+        "terminal_pad_end_frame": 113,
+        "terminal_pad_start_frame": 72
+      },
+      "generated_text": "Hi! it is great to meet you. How can I help you today?",
+      "generated_word_count": 13,
+      "missing_suffix": {
+        "char_start": 29,
+        "delivered_before_final_silence": true,
+        "delivered_before_pad_run": true,
+        "first_delivery_frame": 65,
+        "first_token_index": 9,
+        "fully_delivered": true,
+        "last_delivery_frame": 71,
+        "last_token_index": 15,
+        "text": "How can I help you today?",
+        "token_count": 7,
+        "token_ids": [
+          3075,
+          1710,
+          1362,
+          3508,
+          1636,
+          9406,
+          1063
+        ],
+        "word_count": 6
+      },
+      "name": "regular-a1-r1",
+      "normalized_generated_text": "Hi! it is great to meet you. How can I help you today?",
+      "ratio_guard": {
+        "armed": true,
+        "captured_eos_positions": 1,
+        "captured_response_positions_upper_bound": 60,
+        "could_have_fired_within_capture": false,
+        "force_eos_threshold_talking_frames": 256,
+        "ratio_cap": 16,
+        "token_min": 5
+      },
+      "removed_leading_whitespace_for_channel_alignment": "",
+      "response": 1,
+      "response_frames": {
+        "end": 114,
+        "positions": 60,
+        "start": 55
+      },
+      "role": "truncated_loss",
+      "session_id": "11f31fed-b45f-4cbd-97be-095c047e0662",
+      "termination_reason": "no_text_since_bos_watchdog",
+      "tokenization": {
+        "counter_final": 16,
+        "decoded_delivered_text": "Hi! it is great to meet you. How can I help you today?",
+        "delivered_content_tokens": 16,
+        "delivered_token_ids": [
+          37133,
+          1033,
+          1494,
+          1395,
+          4824,
+          1317,
+          6531,
+          1636,
+          1046,
+          3075,
+          1710,
+          1362,
+          3508,
+          1636,
+          9406,
+          1063
+        ],
+        "exact_full_sequence_match": true,
+        "normalized_text_required_content_tokens": 16,
+        "offset_mapping": [
+          [
+            0,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            9,
+            15
+          ],
+          [
+            15,
+            18
+          ],
+          [
+            18,
+            23
+          ],
+          [
+            23,
+            27
+          ],
+          [
+            27,
+            28
+          ],
+          [
+            28,
+            32
+          ],
+          [
+            32,
+            36
+          ],
+          [
+            36,
+            38
+          ],
+          [
+            38,
+            43
+          ],
+          [
+            43,
+            47
+          ],
+          [
+            47,
+            53
+          ],
+          [
+            53,
+            54
+          ]
+        ],
+        "reported_text_required_content_tokens": 16,
+        "reported_text_sequence_exact": true,
+        "reported_text_token_ids": [
+          37133,
+          1033,
+          1494,
+          1395,
+          4824,
+          1317,
+          6531,
+          1636,
+          1046,
+          3075,
+          1710,
+          1362,
+          3508,
+          1636,
+          9406,
+          1063
+        ],
+        "required_content_tokens": 16,
+        "required_token_ids": [
+          37133,
+          1033,
+          1494,
+          1395,
+          4824,
+          1317,
+          6531,
+          1636,
+          1046,
+          3075,
+          1710,
+          1362,
+          3508,
+          1636,
+          9406,
+          1063
+        ]
+      }
+    },
+    {
+      "all_subword_masks_true": true,
+      "asr_text": "Once upon a time a brave knight set out to find a unicorn, he traveled through forests and across rivers, but the unicorn remained elusive. One day he found a magical forest where the unicorn grazed peacefully. The night offered it a flower and the unicorn granted him a single wish.",
+      "asr_word_count": 51,
+      "attempt": 1,
+      "capture_run": "7-1787166327711905067",
+      "delivery_timing": {
+        "audible_continuation_frames_to_last_audible": 134,
+        "final_silence_onset_frame": 666,
+        "frame_ms": 80.0,
+        "frames_from_last_content_to_final_silence_onset": 135,
+        "last_audible_pcm_frame_after_content": 665,
+        "last_content_increment_frame": 531,
+        "pad_counter_before_onset": 134,
+        "pad_frames_before_final_silence_onset": 134,
+        "pad_started_immediately_after_last_content": true,
+        "pcm_audible_frames_after_last_content": 121,
+        "terminal_eos_frame": 697,
+        "terminal_pad_end_frame": 696,
+        "terminal_pad_start_frame": 532
+      },
+      "generated_text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day, he found a magical forest where the unicorn grazed peacefully. The knight offered it a flower, and the unicorn granted him a single wish. From then on, the unicorn became a symbol of hope and magic. The end.",
+      "generated_word_count": 65,
+      "missing_suffix": {
+        "char_start": 288,
+        "delivered_before_final_silence": true,
+        "delivered_before_pad_run": true,
+        "first_delivery_frame": 514,
+        "first_token_index": 65,
+        "fully_delivered": true,
+        "last_delivery_frame": 531,
+        "last_token_index": 82,
+        "text": "From then on, the unicorn became a symbol of hope and magic. The end.",
+        "token_count": 18,
+        "token_ids": [
+          8956,
+          2430,
+          1408,
+          1044,
+          1278,
+          82155,
+          3257,
+          5872,
+          1261,
+          9501,
+          1307,
+          10789,
+          1321,
+          20976,
+          1046,
+          1531,
+          2362,
+          1046
+        ],
+        "word_count": 14
+      },
+      "name": "regular-a1-r3",
+      "normalized_generated_text": "Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day, he found a magical forest where the unicorn grazed peacefully. The knight offered it a flower, and the unicorn granted him a single wish. From then on, the unicorn became a symbol of hope and magic. The end.",
+      "ratio_guard": {
+        "armed": true,
+        "captured_eos_positions": 1,
+        "captured_response_positions_upper_bound": 250,
+        "could_have_fired_within_capture": false,
+        "force_eos_threshold_talking_frames": 1328,
+        "ratio_cap": 16,
+        "token_min": 5
+      },
+      "removed_leading_whitespace_for_channel_alignment": " ",
+      "response": 3,
+      "response_frames": {
+        "end": 697,
+        "positions": 250,
+        "start": 448
+      },
+      "role": "truncated_loss",
+      "session_id": "11f31fed-b45f-4cbd-97be-095c047e0662",
+      "termination_reason": "no_text_since_bos_watchdog",
+      "tokenization": {
+        "counter_final": 83,
+        "decoded_delivered_text": "Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day, he found a magical forest where the unicorn grazed peacefully. The knight offered it a flower, and the unicorn granted him a single wish. From then on, the unicorn became a symbol of hope and magic. The end.",
+        "delivered_content_tokens": 83,
+        "delivered_token_ids": [
+          23322,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          5669,
+          41981,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          11092,
+          105598,
+          1046,
+          5661,
+          3950,
+          1044,
+          1514,
+          2959,
+          1261,
+          49995,
+          17144,
+          2478,
+          1278,
+          82155,
+          3257,
+          4216,
+          37421,
+          15630,
+          6949,
+          1046,
+          1531,
+          71566,
+          13502,
+          1494,
+          1261,
+          33936,
+          1044,
+          1321,
+          1278,
+          82155,
+          3257,
+          23369,
+          2414,
+          1261,
+          4249,
+          13341,
+          1046,
+          8956,
+          2430,
+          1408,
+          1044,
+          1278,
+          82155,
+          3257,
+          5872,
+          1261,
+          9501,
+          1307,
+          10789,
+          1321,
+          20976,
+          1046,
+          1531,
+          2362,
+          1046
+        ],
+        "exact_full_sequence_match": true,
+        "normalized_text_required_content_tokens": 83,
+        "offset_mapping": [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            16,
+            17
+          ],
+          [
+            17,
+            19
+          ],
+          [
+            19,
+            25
+          ],
+          [
+            25,
+            32
+          ],
+          [
+            32,
+            36
+          ],
+          [
+            36,
+            40
+          ],
+          [
+            40,
+            43
+          ],
+          [
+            43,
+            48
+          ],
+          [
+            48,
+            50
+          ],
+          [
+            50,
+            55
+          ],
+          [
+            55,
+            58
+          ],
+          [
+            58,
+            59
+          ],
+          [
+            59,
+            62
+          ],
+          [
+            62,
+            71
+          ],
+          [
+            71,
+            79
+          ],
+          [
+            79,
+            87
+          ],
+          [
+            87,
+            91
+          ],
+          [
+            91,
+            98
+          ],
+          [
+            98,
+            105
+          ],
+          [
+            105,
+            106
+          ],
+          [
+            106,
+            110
+          ],
+          [
+            110,
+            114
+          ],
+          [
+            114,
+            119
+          ],
+          [
+            119,
+            122
+          ],
+          [
+            122,
+            131
+          ],
+          [
+            131,
+            139
+          ],
+          [
+            139,
+            140
+          ],
+          [
+            140,
+            144
+          ],
+          [
+            144,
+            148
+          ],
+          [
+            148,
+            149
+          ],
+          [
+            149,
+            152
+          ],
+          [
+            152,
+            158
+          ],
+          [
+            158,
+            160
+          ],
+          [
+            160,
+            168
+          ],
+          [
+            168,
+            175
+          ],
+          [
+            175,
+            181
+          ],
+          [
+            181,
+            185
+          ],
+          [
+            185,
+            190
+          ],
+          [
+            190,
+            193
+          ],
+          [
+            193,
+            197
+          ],
+          [
+            197,
+            200
+          ],
+          [
+            200,
+            206
+          ],
+          [
+            206,
+            211
+          ],
+          [
+            211,
+            212
+          ],
+          [
+            212,
+            216
+          ],
+          [
+            216,
+            223
+          ],
+          [
+            223,
+            231
+          ],
+          [
+            231,
+            234
+          ],
+          [
+            234,
+            236
+          ],
+          [
+            236,
+            243
+          ],
+          [
+            243,
+            244
+          ],
+          [
+            244,
+            248
+          ],
+          [
+            248,
+            252
+          ],
+          [
+            252,
+            257
+          ],
+          [
+            257,
+            260
+          ],
+          [
+            260,
+            268
+          ],
+          [
+            268,
+            272
+          ],
+          [
+            272,
+            274
+          ],
+          [
+            274,
+            281
+          ],
+          [
+            281,
+            286
+          ],
+          [
+            286,
+            287
+          ],
+          [
+            287,
+            292
+          ],
+          [
+            292,
+            297
+          ],
+          [
+            297,
+            300
+          ],
+          [
+            300,
+            301
+          ],
+          [
+            301,
+            305
+          ],
+          [
+            305,
+            310
+          ],
+          [
+            310,
+            313
+          ],
+          [
+            313,
+            320
+          ],
+          [
+            320,
+            322
+          ],
+          [
+            322,
+            329
+          ],
+          [
+            329,
+            332
+          ],
+          [
+            332,
+            337
+          ],
+          [
+            337,
+            341
+          ],
+          [
+            341,
+            347
+          ],
+          [
+            347,
+            348
+          ],
+          [
+            348,
+            352
+          ],
+          [
+            352,
+            356
+          ],
+          [
+            356,
+            357
+          ]
+        ],
+        "reported_text_required_content_tokens": 83,
+        "reported_text_sequence_exact": false,
+        "reported_text_token_ids": [
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          5669,
+          41981,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          11092,
+          105598,
+          1046,
+          5661,
+          3950,
+          1044,
+          1514,
+          2959,
+          1261,
+          49995,
+          17144,
+          2478,
+          1278,
+          82155,
+          3257,
+          4216,
+          37421,
+          15630,
+          6949,
+          1046,
+          1531,
+          71566,
+          13502,
+          1494,
+          1261,
+          33936,
+          1044,
+          1321,
+          1278,
+          82155,
+          3257,
+          23369,
+          2414,
+          1261,
+          4249,
+          13341,
+          1046,
+          8956,
+          2430,
+          1408,
+          1044,
+          1278,
+          82155,
+          3257,
+          5872,
+          1261,
+          9501,
+          1307,
+          10789,
+          1321,
+          20976,
+          1046,
+          1531,
+          2362,
+          1046
+        ],
+        "required_content_tokens": 83,
+        "required_token_ids": [
+          23322,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          5669,
+          41981,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          11092,
+          105598,
+          1046,
+          5661,
+          3950,
+          1044,
+          1514,
+          2959,
+          1261,
+          49995,
+          17144,
+          2478,
+          1278,
+          82155,
+          3257,
+          4216,
+          37421,
+          15630,
+          6949,
+          1046,
+          1531,
+          71566,
+          13502,
+          1494,
+          1261,
+          33936,
+          1044,
+          1321,
+          1278,
+          82155,
+          3257,
+          23369,
+          2414,
+          1261,
+          4249,
+          13341,
+          1046,
+          8956,
+          2430,
+          1408,
+          1044,
+          1278,
+          82155,
+          3257,
+          5872,
+          1261,
+          9501,
+          1307,
+          10789,
+          1321,
+          20976,
+          1046,
+          1531,
+          2362,
+          1046
+        ]
+      }
+    },
+    {
+      "all_subword_masks_true": true,
+      "asr_text": "Once upon a time a brave knight set out to find a unicorn, he traveled through forests and mountains, but the unicorn was always just out of reach. One day he found a magical forest where the unicorn grazed peacefully. The night did not capture it, but he learned the unicorn was not a mythical creature but a symbol of purity and grace. He returned home with a new understanding of the true meaning of a unicorn.",
+      "asr_word_count": 77,
+      "attempt": 3,
+      "capture_run": "7-1787166327711905067",
+      "delivery_timing": {
+        "audible_continuation_frames_to_last_audible": 199,
+        "final_silence_onset_frame": 782,
+        "frame_ms": 80.0,
+        "frames_from_last_content_to_final_silence_onset": 200,
+        "last_audible_pcm_frame_after_content": 781,
+        "last_content_increment_frame": 582,
+        "pad_counter_before_onset": 199,
+        "pad_frames_before_final_silence_onset": 199,
+        "pad_started_immediately_after_last_content": true,
+        "pcm_audible_frames_after_last_content": 178,
+        "terminal_eos_frame": 813,
+        "terminal_pad_end_frame": 812,
+        "terminal_pad_start_frame": 583
+      },
+      "generated_text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he learned the unicorn was not a mythical creature, but a symbol of purity and grace. He returned home with a new understanding of the true meaning of a unicorn. The End.",
+      "generated_word_count": 79,
+      "missing_suffix": {
+        "char_start": 418,
+        "delivered_before_final_silence": true,
+        "delivered_before_pad_run": true,
+        "first_delivery_frame": 580,
+        "first_token_index": 95,
+        "fully_delivered": true,
+        "last_delivery_frame": 582,
+        "last_token_index": 97,
+        "text": "The End.",
+        "token_count": 3,
+        "token_ids": [
+          1531,
+          7114,
+          1046
+        ],
+        "word_count": 2
+      },
+      "name": "regular-a3-r3",
+      "normalized_generated_text": "Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he learned the unicorn was not a mythical creature, but a symbol of purity and grace. He returned home with a new understanding of the true meaning of a unicorn. The End.",
+      "ratio_guard": {
+        "armed": true,
+        "captured_eos_positions": 1,
+        "captured_response_positions_upper_bound": 330,
+        "could_have_fired_within_capture": false,
+        "force_eos_threshold_talking_frames": 1568,
+        "ratio_cap": 16,
+        "token_min": 5
+      },
+      "removed_leading_whitespace_for_channel_alignment": " ",
+      "response": 3,
+      "response_frames": {
+        "end": 813,
+        "positions": 330,
+        "start": 484
+      },
+      "role": "truncated_loss",
+      "session_id": "473e2449-eb90-40c1-b1d3-8cd1262c5ad4",
+      "termination_reason": "no_text_since_bos_watchdog",
+      "tokenization": {
+        "counter_final": 98,
+        "decoded_delivered_text": "Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he learned the unicorn was not a mythical creature, but a symbol of purity and grace. He returned home with a new understanding of the true meaning of a unicorn. The End.",
+        "delivered_content_tokens": 98,
+        "delivered_token_ids": [
+          23322,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          35463,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          1486,
+          5282,
+          2586,
+          1848,
+          1307,
+          8132,
+          1046,
+          5661,
+          3950,
+          1044,
+          1514,
+          2959,
+          1261,
+          49995,
+          17144,
+          2478,
+          1278,
+          82155,
+          3257,
+          4216,
+          37421,
+          15630,
+          6949,
+          1046,
+          1531,
+          71566,
+          2697,
+          1605,
+          16543,
+          1494,
+          1044,
+          1809,
+          1514,
+          16984,
+          1278,
+          82155,
+          3257,
+          1486,
+          1605,
+          1261,
+          25259,
+          1685,
+          36374,
+          1044,
+          1809,
+          1261,
+          9501,
+          1307,
+          52210,
+          1321,
+          34856,
+          1046,
+          2182,
+          8583,
+          4590,
+          1454,
+          1261,
+          1875,
+          9705,
+          1307,
+          1278,
+          2925,
+          10138,
+          1307,
+          1261,
+          82155,
+          3257,
+          1046,
+          1531,
+          7114,
+          1046
+        ],
+        "exact_full_sequence_match": true,
+        "normalized_text_required_content_tokens": 98,
+        "offset_mapping": [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            16,
+            17
+          ],
+          [
+            17,
+            19
+          ],
+          [
+            19,
+            25
+          ],
+          [
+            25,
+            32
+          ],
+          [
+            32,
+            36
+          ],
+          [
+            36,
+            40
+          ],
+          [
+            40,
+            43
+          ],
+          [
+            43,
+            48
+          ],
+          [
+            48,
+            50
+          ],
+          [
+            50,
+            55
+          ],
+          [
+            55,
+            58
+          ],
+          [
+            58,
+            59
+          ],
+          [
+            59,
+            62
+          ],
+          [
+            62,
+            71
+          ],
+          [
+            71,
+            79
+          ],
+          [
+            79,
+            87
+          ],
+          [
+            87,
+            91
+          ],
+          [
+            91,
+            101
+          ],
+          [
+            101,
+            102
+          ],
+          [
+            102,
+            106
+          ],
+          [
+            106,
+            110
+          ],
+          [
+            110,
+            115
+          ],
+          [
+            115,
+            118
+          ],
+          [
+            118,
+            122
+          ],
+          [
+            122,
+            129
+          ],
+          [
+            129,
+            134
+          ],
+          [
+            134,
+            138
+          ],
+          [
+            138,
+            141
+          ],
+          [
+            141,
+            147
+          ],
+          [
+            147,
+            148
+          ],
+          [
+            148,
+            152
+          ],
+          [
+            152,
+            156
+          ],
+          [
+            156,
+            157
+          ],
+          [
+            157,
+            160
+          ],
+          [
+            160,
+            166
+          ],
+          [
+            166,
+            168
+          ],
+          [
+            168,
+            176
+          ],
+          [
+            176,
+            183
+          ],
+          [
+            183,
+            189
+          ],
+          [
+            189,
+            193
+          ],
+          [
+            193,
+            198
+          ],
+          [
+            198,
+            201
+          ],
+          [
+            201,
+            205
+          ],
+          [
+            205,
+            208
+          ],
+          [
+            208,
+            214
+          ],
+          [
+            214,
+            219
+          ],
+          [
+            219,
+            220
+          ],
+          [
+            220,
+            224
+          ],
+          [
+            224,
+            231
+          ],
+          [
+            231,
+            235
+          ],
+          [
+            235,
+            239
+          ],
+          [
+            239,
+            247
+          ],
+          [
+            247,
+            250
+          ],
+          [
+            250,
+            251
+          ],
+          [
+            251,
+            255
+          ],
+          [
+            255,
+            258
+          ],
+          [
+            258,
+            266
+          ],
+          [
+            266,
+            270
+          ],
+          [
+            270,
+            275
+          ],
+          [
+            275,
+            278
+          ],
+          [
+            278,
+            282
+          ],
+          [
+            282,
+            286
+          ],
+          [
+            286,
+            288
+          ],
+          [
+            288,
+            293
+          ],
+          [
+            293,
+            297
+          ],
+          [
+            297,
+            306
+          ],
+          [
+            306,
+            307
+          ],
+          [
+            307,
+            311
+          ],
+          [
+            311,
+            313
+          ],
+          [
+            313,
+            320
+          ],
+          [
+            320,
+            323
+          ],
+          [
+            323,
+            330
+          ],
+          [
+            330,
+            334
+          ],
+          [
+            334,
+            340
+          ],
+          [
+            340,
+            341
+          ],
+          [
+            341,
+            344
+          ],
+          [
+            344,
+            353
+          ],
+          [
+            353,
+            358
+          ],
+          [
+            358,
+            363
+          ],
+          [
+            363,
+            365
+          ],
+          [
+            365,
+            369
+          ],
+          [
+            369,
+            383
+          ],
+          [
+            383,
+            386
+          ],
+          [
+            386,
+            390
+          ],
+          [
+            390,
+            395
+          ],
+          [
+            395,
+            403
+          ],
+          [
+            403,
+            406
+          ],
+          [
+            406,
+            408
+          ],
+          [
+            408,
+            413
+          ],
+          [
+            413,
+            416
+          ],
+          [
+            416,
+            417
+          ],
+          [
+            417,
+            421
+          ],
+          [
+            421,
+            425
+          ],
+          [
+            425,
+            426
+          ]
+        ],
+        "reported_text_required_content_tokens": 98,
+        "reported_text_sequence_exact": false,
+        "reported_text_token_ids": [
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          35463,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          1486,
+          5282,
+          2586,
+          1848,
+          1307,
+          8132,
+          1046,
+          5661,
+          3950,
+          1044,
+          1514,
+          2959,
+          1261,
+          49995,
+          17144,
+          2478,
+          1278,
+          82155,
+          3257,
+          4216,
+          37421,
+          15630,
+          6949,
+          1046,
+          1531,
+          71566,
+          2697,
+          1605,
+          16543,
+          1494,
+          1044,
+          1809,
+          1514,
+          16984,
+          1278,
+          82155,
+          3257,
+          1486,
+          1605,
+          1261,
+          25259,
+          1685,
+          36374,
+          1044,
+          1809,
+          1261,
+          9501,
+          1307,
+          52210,
+          1321,
+          34856,
+          1046,
+          2182,
+          8583,
+          4590,
+          1454,
+          1261,
+          1875,
+          9705,
+          1307,
+          1278,
+          2925,
+          10138,
+          1307,
+          1261,
+          82155,
+          3257,
+          1046,
+          1531,
+          7114,
+          1046
+        ],
+        "required_content_tokens": 98,
+        "required_token_ids": [
+          23322,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          35463,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          1486,
+          5282,
+          2586,
+          1848,
+          1307,
+          8132,
+          1046,
+          5661,
+          3950,
+          1044,
+          1514,
+          2959,
+          1261,
+          49995,
+          17144,
+          2478,
+          1278,
+          82155,
+          3257,
+          4216,
+          37421,
+          15630,
+          6949,
+          1046,
+          1531,
+          71566,
+          2697,
+          1605,
+          16543,
+          1494,
+          1044,
+          1809,
+          1514,
+          16984,
+          1278,
+          82155,
+          3257,
+          1486,
+          1605,
+          1261,
+          25259,
+          1685,
+          36374,
+          1044,
+          1809,
+          1261,
+          9501,
+          1307,
+          52210,
+          1321,
+          34856,
+          1046,
+          2182,
+          8583,
+          4590,
+          1454,
+          1261,
+          1875,
+          9705,
+          1307,
+          1278,
+          2925,
+          10138,
+          1307,
+          1261,
+          82155,
+          3257,
+          1046,
+          1531,
+          7114,
+          1046
+        ]
+      }
+    },
+    {
+      "all_subword_masks_true": true,
+      "asr_text": "Sure, once upon a time a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was hard to find. Finally he saw a flash of color in the distance. It was a magical unicorn standing on a hill. The night was overjoyed and spent the rest of his life caring for the unicorn.",
+      "asr_word_count": 61,
+      "attempt": 1,
+      "capture_run": "7-1787167262004070899",
+      "delivery_timing": {
+        "audible_continuation_frames_to_last_audible": 157,
+        "final_silence_onset_frame": 722,
+        "frame_ms": 80.0,
+        "frames_from_last_content_to_final_silence_onset": 158,
+        "last_audible_pcm_frame_after_content": 721,
+        "last_content_increment_frame": 564,
+        "pad_counter_before_onset": 157,
+        "pad_frames_before_final_silence_onset": 157,
+        "pad_started_immediately_after_last_content": true,
+        "pcm_audible_frames_after_last_content": 142,
+        "terminal_eos_frame": 823,
+        "terminal_pad_end_frame": 822,
+        "terminal_pad_start_frame": 565
+      },
+      "generated_text": " Sure! Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was hard to find. Finally, he saw a flash of color in the distance. It was a magical unicorn standing on a hill. The knight was overjoyed and spent the rest of his life caring for the unicorn. The end.",
+      "generated_word_count": 63,
+      "missing_suffix": {
+        "char_start": 318,
+        "delivered_before_final_silence": true,
+        "delivered_before_pad_run": true,
+        "first_delivery_frame": 562,
+        "first_token_index": 76,
+        "fully_delivered": true,
+        "last_delivery_frame": 564,
+        "last_token_index": 78,
+        "text": "The end.",
+        "token_count": 3,
+        "token_ids": [
+          1531,
+          2362,
+          1046
+        ],
+        "word_count": 2
+      },
+      "name": "extended-a1-r3",
+      "normalized_generated_text": "Sure! Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was hard to find. Finally, he saw a flash of color in the distance. It was a magical unicorn standing on a hill. The knight was overjoyed and spent the rest of his life caring for the unicorn. The end.",
+      "ratio_guard": {
+        "armed": true,
+        "captured_eos_positions": 1,
+        "captured_response_positions_upper_bound": 339,
+        "could_have_fired_within_capture": false,
+        "force_eos_threshold_talking_frames": 1264,
+        "ratio_cap": 16,
+        "token_min": 5
+      },
+      "removed_leading_whitespace_for_channel_alignment": " ",
+      "response": 3,
+      "response_frames": {
+        "end": 823,
+        "positions": 339,
+        "start": 485
+      },
+      "role": "truncated_loss",
+      "session_id": "454e8d56-d8ba-4a44-8258-770828f52486",
+      "termination_reason": "no_text_since_bos_watchdog",
+      "tokenization": {
+        "counter_final": 79,
+        "decoded_delivered_text": "Sure! Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was hard to find. Finally, he saw a flash of color in the distance. It was a magical unicorn standing on a hill. The knight was overjoyed and spent the rest of his life caring for the unicorn. The end.",
+        "delivered_content_tokens": 79,
+        "delivered_token_ids": [
+          69957,
+          1033,
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          35463,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          1486,
+          5132,
+          1317,
+          3081,
+          1046,
+          15513,
+          1044,
+          1514,
+          7455,
+          1261,
+          18276,
+          1307,
+          4558,
+          1294,
+          1278,
+          7786,
+          1046,
+          2157,
+          1486,
+          1261,
+          49995,
+          82155,
+          3257,
+          15866,
+          1408,
+          1261,
+          33839,
+          1046,
+          1531,
+          71566,
+          1486,
+          2136,
+          11727,
+          1286,
+          1321,
+          13914,
+          1278,
+          3067,
+          1307,
+          1794,
+          4129,
+          57652,
+          1394,
+          1278,
+          82155,
+          3257,
+          1046,
+          1531,
+          2362,
+          1046
+        ],
+        "exact_full_sequence_match": true,
+        "normalized_text_required_content_tokens": 79,
+        "offset_mapping": [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            10,
+            15
+          ],
+          [
+            15,
+            17
+          ],
+          [
+            17,
+            22
+          ],
+          [
+            22,
+            23
+          ],
+          [
+            23,
+            25
+          ],
+          [
+            25,
+            31
+          ],
+          [
+            31,
+            38
+          ],
+          [
+            38,
+            42
+          ],
+          [
+            42,
+            46
+          ],
+          [
+            46,
+            49
+          ],
+          [
+            49,
+            54
+          ],
+          [
+            54,
+            56
+          ],
+          [
+            56,
+            61
+          ],
+          [
+            61,
+            64
+          ],
+          [
+            64,
+            65
+          ],
+          [
+            65,
+            68
+          ],
+          [
+            68,
+            77
+          ],
+          [
+            77,
+            85
+          ],
+          [
+            85,
+            93
+          ],
+          [
+            93,
+            97
+          ],
+          [
+            97,
+            107
+          ],
+          [
+            107,
+            108
+          ],
+          [
+            108,
+            112
+          ],
+          [
+            112,
+            116
+          ],
+          [
+            116,
+            121
+          ],
+          [
+            121,
+            124
+          ],
+          [
+            124,
+            128
+          ],
+          [
+            128,
+            133
+          ],
+          [
+            133,
+            136
+          ],
+          [
+            136,
+            141
+          ],
+          [
+            141,
+            142
+          ],
+          [
+            142,
+            150
+          ],
+          [
+            150,
+            151
+          ],
+          [
+            151,
+            154
+          ],
+          [
+            154,
+            158
+          ],
+          [
+            158,
+            160
+          ],
+          [
+            160,
+            166
+          ],
+          [
+            166,
+            169
+          ],
+          [
+            169,
+            175
+          ],
+          [
+            175,
+            178
+          ],
+          [
+            178,
+            182
+          ],
+          [
+            182,
+            191
+          ],
+          [
+            191,
+            192
+          ],
+          [
+            192,
+            195
+          ],
+          [
+            195,
+            199
+          ],
+          [
+            199,
+            201
+          ],
+          [
+            201,
+            209
+          ],
+          [
+            209,
+            214
+          ],
+          [
+            214,
+            217
+          ],
+          [
+            217,
+            226
+          ],
+          [
+            226,
+            229
+          ],
+          [
+            229,
+            231
+          ],
+          [
+            231,
+            236
+          ],
+          [
+            236,
+            237
+          ],
+          [
+            237,
+            241
+          ],
+          [
+            241,
+            248
+          ],
+          [
+            248,
+            252
+          ],
+          [
+            252,
+            257
+          ],
+          [
+            257,
+            260
+          ],
+          [
+            260,
+            262
+          ],
+          [
+            262,
+            266
+          ],
+          [
+            266,
+            272
+          ],
+          [
+            272,
+            276
+          ],
+          [
+            276,
+            281
+          ],
+          [
+            281,
+            284
+          ],
+          [
+            284,
+            288
+          ],
+          [
+            288,
+            293
+          ],
+          [
+            293,
+            300
+          ],
+          [
+            300,
+            304
+          ],
+          [
+            304,
+            308
+          ],
+          [
+            308,
+            313
+          ],
+          [
+            313,
+            316
+          ],
+          [
+            316,
+            317
+          ],
+          [
+            317,
+            321
+          ],
+          [
+            321,
+            325
+          ],
+          [
+            325,
+            326
+          ]
+        ],
+        "reported_text_required_content_tokens": 79,
+        "reported_text_sequence_exact": false,
+        "reported_text_token_ids": [
+          43086,
+          1033,
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          35463,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          1486,
+          5132,
+          1317,
+          3081,
+          1046,
+          15513,
+          1044,
+          1514,
+          7455,
+          1261,
+          18276,
+          1307,
+          4558,
+          1294,
+          1278,
+          7786,
+          1046,
+          2157,
+          1486,
+          1261,
+          49995,
+          82155,
+          3257,
+          15866,
+          1408,
+          1261,
+          33839,
+          1046,
+          1531,
+          71566,
+          1486,
+          2136,
+          11727,
+          1286,
+          1321,
+          13914,
+          1278,
+          3067,
+          1307,
+          1794,
+          4129,
+          57652,
+          1394,
+          1278,
+          82155,
+          3257,
+          1046,
+          1531,
+          2362,
+          1046
+        ],
+        "required_content_tokens": 79,
+        "required_token_ids": [
+          69957,
+          1033,
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          61804,
+          71566,
+          2016,
+          1848,
+          1317,
+          3081,
+          1261,
+          82155,
+          3257,
+          1046,
+          2182,
+          42608,
+          2645,
+          42943,
+          1321,
+          35463,
+          1044,
+          1809,
+          1278,
+          82155,
+          3257,
+          1486,
+          5132,
+          1317,
+          3081,
+          1046,
+          15513,
+          1044,
+          1514,
+          7455,
+          1261,
+          18276,
+          1307,
+          4558,
+          1294,
+          1278,
+          7786,
+          1046,
+          2157,
+          1486,
+          1261,
+          49995,
+          82155,
+          3257,
+          15866,
+          1408,
+          1261,
+          33839,
+          1046,
+          1531,
+          71566,
+          1486,
+          2136,
+          11727,
+          1286,
+          1321,
+          13914,
+          1278,
+          3067,
+          1307,
+          1794,
+          4129,
+          57652,
+          1394,
+          1278,
+          82155,
+          3257,
+          1046,
+          1531,
+          2362,
+          1046
+        ]
+      }
+    },
+    {
+      "all_subword_masks_true": true,
+      "asr_text": "Sure, once upon a time a magical unicorn named Luna lived in a land of colors. She had a beautiful silver horn that could heal plants and animals. Every morning Luna would fly over the meadow and sprinkle her horn dust to make the flowers grow. One day a sick tree called out for help. Loonie used her horn to heal the tree and it bloomed with vibrant colors from then on Luna was known as the healing unicorn and her story spread far and wide.",
+      "asr_word_count": 86,
+      "attempt": 2,
+      "capture_run": "7-1787167262004070899",
+      "delivery_timing": {
+        "audible_continuation_frames_to_last_audible": 242,
+        "final_silence_onset_frame": 837,
+        "frame_ms": 80.0,
+        "frames_from_last_content_to_final_silence_onset": 243,
+        "last_audible_pcm_frame_after_content": 836,
+        "last_content_increment_frame": 594,
+        "pad_counter_before_onset": 242,
+        "pad_frames_before_final_silence_onset": 242,
+        "pad_started_immediately_after_last_content": true,
+        "pcm_audible_frames_after_last_content": 223,
+        "terminal_eos_frame": 845,
+        "terminal_pad_end_frame": 844,
+        "terminal_pad_start_frame": 595
+      },
+      "generated_text": " Sure! Once upon a time, a magical unicorn named Luna lived in a land of colors. She had a beautiful silver horn that could heal plants and animals. Every morning, Luna would fly over the meadow and sprinkle her horn dust to make the flowers grow. One day, a sick tree called out for help. Luna used her horn to heal the tree, and it bloomed with vibrant colors. From then on, Luna was known as the Healing Unicorn, and her story spread far and wide.",
+      "generated_word_count": 86,
+      "missing_suffix": null,
+      "name": "extended-a2-r3-complete-control",
+      "normalized_generated_text": "Sure! Once upon a time, a magical unicorn named Luna lived in a land of colors. She had a beautiful silver horn that could heal plants and animals. Every morning, Luna would fly over the meadow and sprinkle her horn dust to make the flowers grow. One day, a sick tree called out for help. Luna used her horn to heal the tree, and it bloomed with vibrant colors. From then on, Luna was known as the Healing Unicorn, and her story spread far and wide.",
+      "ratio_guard": {
+        "armed": true,
+        "captured_eos_positions": 1,
+        "captured_response_positions_upper_bound": 356,
+        "could_have_fired_within_capture": false,
+        "force_eos_threshold_talking_frames": 1664,
+        "ratio_cap": 16,
+        "token_min": 5
+      },
+      "removed_leading_whitespace_for_channel_alignment": " ",
+      "response": 3,
+      "response_frames": {
+        "end": 845,
+        "positions": 356,
+        "start": 490
+      },
+      "role": "complete_control",
+      "session_id": "5e3ed5ce-5533-4b42-aa2e-930185ccdac9",
+      "termination_reason": "max_response_wall_time",
+      "tokenization": {
+        "counter_final": 104,
+        "decoded_delivered_text": "Sure! Once upon a time, a magical unicorn named Luna lived in a land of colors. She had a beautiful silver horn that could heal plants and animals. Every morning, Luna would fly over the meadow and sprinkle her horn dust to make the flowers grow. One day, a sick tree called out for help. Luna used her horn to heal the tree, and it bloomed with vibrant colors. From then on, Luna was known as the Healing Unicorn, and her story spread far and wide.",
+        "delivered_content_tokens": 104,
+        "delivered_token_ids": [
+          69957,
+          1033,
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          49995,
+          82155,
+          3257,
+          8876,
+          44202,
+          16491,
+          1294,
+          1261,
+          5471,
+          1307,
+          18666,
+          1046,
+          3264,
+          1880,
+          1261,
+          15568,
+          18990,
+          31907,
+          1455,
+          2481,
+          59649,
+          12474,
+          1321,
+          11115,
+          1046,
+          14632,
+          11828,
+          1044,
+          44202,
+          2168,
+          16223,
+          2136,
+          1278,
+          106305,
+          1321,
+          95228,
+          1282,
+          1853,
+          31907,
+          26493,
+          1317,
+          3180,
+          1278,
+          32152,
+          4492,
+          1046,
+          5661,
+          3950,
+          1044,
+          1261,
+          23534,
+          9917,
+          4418,
+          1848,
+          1394,
+          3508,
+          1046,
+          44202,
+          2434,
+          1853,
+          31907,
+          1317,
+          59649,
+          1278,
+          9917,
+          1044,
+          1321,
+          1494,
+          17744,
+          35974,
+          1454,
+          95612,
+          18666,
+          1046,
+          8956,
+          2430,
+          1408,
+          1044,
+          44202,
+          1486,
+          4629,
+          1435,
+          1278,
+          2182,
+          8110,
+          2159,
+          118586,
+          1044,
+          1321,
+          1853,
+          8303,
+          11244,
+          4955,
+          1321,
+          9924,
+          1046
+        ],
+        "exact_full_sequence_match": true,
+        "normalized_text_required_content_tokens": 104,
+        "offset_mapping": [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            10,
+            15
+          ],
+          [
+            15,
+            17
+          ],
+          [
+            17,
+            22
+          ],
+          [
+            22,
+            23
+          ],
+          [
+            23,
+            25
+          ],
+          [
+            25,
+            33
+          ],
+          [
+            33,
+            38
+          ],
+          [
+            38,
+            41
+          ],
+          [
+            41,
+            47
+          ],
+          [
+            47,
+            52
+          ],
+          [
+            52,
+            58
+          ],
+          [
+            58,
+            61
+          ],
+          [
+            61,
+            63
+          ],
+          [
+            63,
+            68
+          ],
+          [
+            68,
+            71
+          ],
+          [
+            71,
+            78
+          ],
+          [
+            78,
+            79
+          ],
+          [
+            79,
+            83
+          ],
+          [
+            83,
+            87
+          ],
+          [
+            87,
+            89
+          ],
+          [
+            89,
+            99
+          ],
+          [
+            99,
+            106
+          ],
+          [
+            106,
+            111
+          ],
+          [
+            111,
+            116
+          ],
+          [
+            116,
+            122
+          ],
+          [
+            122,
+            127
+          ],
+          [
+            127,
+            134
+          ],
+          [
+            134,
+            138
+          ],
+          [
+            138,
+            146
+          ],
+          [
+            146,
+            147
+          ],
+          [
+            147,
+            153
+          ],
+          [
+            153,
+            161
+          ],
+          [
+            161,
+            162
+          ],
+          [
+            162,
+            167
+          ],
+          [
+            167,
+            173
+          ],
+          [
+            173,
+            177
+          ],
+          [
+            177,
+            182
+          ],
+          [
+            182,
+            186
+          ],
+          [
+            186,
+            193
+          ],
+          [
+            193,
+            197
+          ],
+          [
+            197,
+            204
+          ],
+          [
+            204,
+            206
+          ],
+          [
+            206,
+            210
+          ],
+          [
+            210,
+            215
+          ],
+          [
+            215,
+            220
+          ],
+          [
+            220,
+            223
+          ],
+          [
+            223,
+            228
+          ],
+          [
+            228,
+            232
+          ],
+          [
+            232,
+            240
+          ],
+          [
+            240,
+            245
+          ],
+          [
+            245,
+            246
+          ],
+          [
+            246,
+            250
+          ],
+          [
+            250,
+            254
+          ],
+          [
+            254,
+            255
+          ],
+          [
+            255,
+            257
+          ],
+          [
+            257,
+            262
+          ],
+          [
+            262,
+            267
+          ],
+          [
+            267,
+            274
+          ],
+          [
+            274,
+            278
+          ],
+          [
+            278,
+            282
+          ],
+          [
+            282,
+            287
+          ],
+          [
+            287,
+            288
+          ],
+          [
+            288,
+            293
+          ],
+          [
+            293,
+            298
+          ],
+          [
+            298,
+            302
+          ],
+          [
+            302,
+            307
+          ],
+          [
+            307,
+            310
+          ],
+          [
+            310,
+            315
+          ],
+          [
+            315,
+            319
+          ],
+          [
+            319,
+            324
+          ],
+          [
+            324,
+            325
+          ],
+          [
+            325,
+            329
+          ],
+          [
+            329,
+            332
+          ],
+          [
+            332,
+            336
+          ],
+          [
+            336,
+            340
+          ],
+          [
+            340,
+            345
+          ],
+          [
+            345,
+            353
+          ],
+          [
+            353,
+            360
+          ],
+          [
+            360,
+            361
+          ],
+          [
+            361,
+            366
+          ],
+          [
+            366,
+            371
+          ],
+          [
+            371,
+            374
+          ],
+          [
+            374,
+            375
+          ],
+          [
+            375,
+            380
+          ],
+          [
+            380,
+            384
+          ],
+          [
+            384,
+            390
+          ],
+          [
+            390,
+            393
+          ],
+          [
+            393,
+            397
+          ],
+          [
+            397,
+            400
+          ],
+          [
+            400,
+            405
+          ],
+          [
+            405,
+            408
+          ],
+          [
+            408,
+            413
+          ],
+          [
+            413,
+            414
+          ],
+          [
+            414,
+            418
+          ],
+          [
+            418,
+            422
+          ],
+          [
+            422,
+            428
+          ],
+          [
+            428,
+            435
+          ],
+          [
+            435,
+            439
+          ],
+          [
+            439,
+            443
+          ],
+          [
+            443,
+            448
+          ],
+          [
+            448,
+            449
+          ]
+        ],
+        "reported_text_required_content_tokens": 104,
+        "reported_text_sequence_exact": false,
+        "reported_text_token_ids": [
+          43086,
+          1033,
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          49995,
+          82155,
+          3257,
+          8876,
+          44202,
+          16491,
+          1294,
+          1261,
+          5471,
+          1307,
+          18666,
+          1046,
+          3264,
+          1880,
+          1261,
+          15568,
+          18990,
+          31907,
+          1455,
+          2481,
+          59649,
+          12474,
+          1321,
+          11115,
+          1046,
+          14632,
+          11828,
+          1044,
+          44202,
+          2168,
+          16223,
+          2136,
+          1278,
+          106305,
+          1321,
+          95228,
+          1282,
+          1853,
+          31907,
+          26493,
+          1317,
+          3180,
+          1278,
+          32152,
+          4492,
+          1046,
+          5661,
+          3950,
+          1044,
+          1261,
+          23534,
+          9917,
+          4418,
+          1848,
+          1394,
+          3508,
+          1046,
+          44202,
+          2434,
+          1853,
+          31907,
+          1317,
+          59649,
+          1278,
+          9917,
+          1044,
+          1321,
+          1494,
+          17744,
+          35974,
+          1454,
+          95612,
+          18666,
+          1046,
+          8956,
+          2430,
+          1408,
+          1044,
+          44202,
+          1486,
+          4629,
+          1435,
+          1278,
+          2182,
+          8110,
+          2159,
+          118586,
+          1044,
+          1321,
+          1853,
+          8303,
+          11244,
+          4955,
+          1321,
+          9924,
+          1046
+        ],
+        "required_content_tokens": 104,
+        "required_token_ids": [
+          69957,
+          1033,
+          15685,
+          6610,
+          1261,
+          2142,
+          1044,
+          1261,
+          49995,
+          82155,
+          3257,
+          8876,
+          44202,
+          16491,
+          1294,
+          1261,
+          5471,
+          1307,
+          18666,
+          1046,
+          3264,
+          1880,
+          1261,
+          15568,
+          18990,
+          31907,
+          1455,
+          2481,
+          59649,
+          12474,
+          1321,
+          11115,
+          1046,
+          14632,
+          11828,
+          1044,
+          44202,
+          2168,
+          16223,
+          2136,
+          1278,
+          106305,
+          1321,
+          95228,
+          1282,
+          1853,
+          31907,
+          26493,
+          1317,
+          3180,
+          1278,
+          32152,
+          4492,
+          1046,
+          5661,
+          3950,
+          1044,
+          1261,
+          23534,
+          9917,
+          4418,
+          1848,
+          1394,
+          3508,
+          1046,
+          44202,
+          2434,
+          1853,
+          31907,
+          1317,
+          59649,
+          1278,
+          9917,
+          1044,
+          1321,
+          1494,
+          17744,
+          35974,
+          1454,
+          95612,
+          18666,
+          1046,
+          8956,
+          2430,
+          1408,
+          1044,
+          44202,
+          1486,
+          4629,
+          1435,
+          1278,
+          2182,
+          8110,
+          2159,
+          118586,
+          1044,
+          1321,
+          1853,
+          8303,
+          11244,
+          4955,
+          1321,
+          9924,
+          1046
+        ]
+      }
+    }
+  ],
+  "schema": "eartts-text-feed-analysis-v1",
+  "tokenizer": {
+    "bos_token_id": 1,
+    "class": "PreTrainedTokenizerFast",
+    "eos_token_id": 12,
+    "path": "/tokenizer",
+    "tokenizer_config_sha256": "a3e4d48a0f8b4ce6fd746464199299cbdefe6ee202e34048940da2d9838a9aa6",
+    "tokenizer_json_sha256": "3277c00fe5fb3963b3cb7c07b7f183722d2af4d775a4aea7cfb3684d7cccbc2f",
+    "vocab_size": 131072
+  },
+  "verdict": "B_full_text_delivered_eartts_pad_continuation_became_silent"
+}

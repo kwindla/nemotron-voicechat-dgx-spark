@@ -7,6 +7,8 @@ import os
 import signal
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
@@ -20,6 +22,7 @@ RUNTIME_ROOT = REPO_ROOT / "src" / "nemotron_voicechat_runtime"
 from nemotron_voicechat_runtime.protocol import RealtimeProtocolSession, protocol_capabilities
 from nemotron_voicechat_runtime.provenance import RUNTIME_SOURCE_PATHS
 from nemotron_voicechat_runtime.server import (
+    FRAME_SAMPLES,
     PINNED_COMMIT,
     PUBLIC_VLLM_MANIFEST_KINDS,
     AcousticResponseBoundary,
@@ -28,6 +31,7 @@ from nemotron_voicechat_runtime.server import (
     FunctionCallBudget,
     GatePrerollBuffer,
     PcmFrameBuffer,
+    ResponseWallClockDeadline,
     SessionTrace,
     TransportModelGate,
     UserEouSettlement,
@@ -41,6 +45,7 @@ from nemotron_voicechat_runtime.server import (
     clean_display_text,
     clear_stale_agent_eos_latch,
     configure_fc_async_thread_dump,
+    configured_response_wall_seconds,
     create_app,
     env_bool,
     fc_async_heartbeat_snapshot,
@@ -55,6 +60,7 @@ from nemotron_voicechat_runtime.server import (
     render_tool_system_prompt,
     response_audio_is_deliverable,
     session_position_limit_event,
+    split_fence_eligible_pcm,
     step9_capture_fallback_status,
     validate_function_output,
     validate_manifested_model,
@@ -66,6 +72,111 @@ from nemotron_voicechat_runtime.server import (
 
 
 class RealtimeWebServerTest(unittest.TestCase):
+    def test_response_wall_deadline_forces_eos_once_and_never_redirects(self) -> None:
+        now = [10.0]
+        timers = []
+        eos_requests = []
+        redirects: list[int] = []
+
+        class FakeTimer:
+            daemon = False
+
+            def __init__(self, seconds, callback):
+                self.seconds = seconds
+                self.callback = callback
+                self.cancelled = False
+                timers.append(self)
+
+            def start(self):
+                return None
+
+            def cancel(self):
+                self.cancelled = True
+
+            def fire(self):
+                self.callback()
+
+        deadline = ResponseWallClockDeadline(
+            0.25,
+            lambda: eos_requests.append(now[0]),
+            clock=lambda: now[0],
+            timer_factory=FakeTimer,
+        )
+        self.assertTrue(deadline.arm())
+        self.assertFalse(deadline.arm())
+        self.assertEqual(timers[0].seconds, 0.25)
+        self.assertEqual(eos_requests, [])
+        now[0] = 10.25
+        timers[0].fire()
+        timers[0].fire()
+        self.assertEqual(eos_requests, [10.25])
+        self.assertTrue(deadline.expired)
+        self.assertEqual(redirects, [])
+
+        boundary = AcousticResponseBoundary(required_silent_frames=1)
+        boundary.observe("agent_bos", -20.0, 1)
+        eos = boundary.observe(
+            "agent_eos",
+            -120.0,
+            2,
+            response_wall_deadline_expired=True,
+        )
+        self.assertEqual(eos["eos_reason"], "max_response_wall_time")
+        self.assertEqual(eos["event"], "end")
+        terminal = deadline.reset()
+        self.assertTrue(terminal["expired"])
+        self.assertFalse(deadline.active)
+
+        # A cancelled prior response timer cannot terminate the next response.
+        self.assertTrue(deadline.arm())
+        deadline.reset()
+        now[0] = 11.0
+        timers[1].fire()
+        self.assertEqual(eos_requests, [10.25])
+
+    def test_response_wall_deadline_config_is_strict_and_propagates_to_engine(self) -> None:
+        environment = {
+            "VOICECHAT_RUNTIME_CONTRACT": "production-hotfix-notext-watchdog-v1",
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC": "30",
+        }
+        self.assertEqual(configured_response_wall_seconds(environment), 30.0)
+        engine = VoiceChatEngine(SimpleNamespace(), max_agent_response_seconds=0.125)
+        self.assertEqual(engine.response_wall_deadline.seconds, 0.125)
+        for invalid in ("nan", "inf", "-1", "120"):
+            environment["VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC"] = invalid
+            with self.assertRaises(SystemExit):
+                configured_response_wall_seconds(environment)
+
+    def test_response_wall_deadline_diagnostic_override_is_experiment_gated(self) -> None:
+        environment = {
+            "VOICECHAT_RUNTIME_CONTRACT": "production-hotfix-notext-watchdog-v1",
+            "VOICECHAT_WEB_MAX_AGENT_RESPONSE_SEC": "30",
+            "VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC": "900",
+        }
+        with self.assertRaises(SystemExit):
+            configured_response_wall_seconds(environment)
+        environment["VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB"] = "1"
+        self.assertEqual(configured_response_wall_seconds(environment), 900.0)
+        environment.pop("VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB")
+        environment["S2S_EARTTS_ACOUSTIC_CAPTURE_DIR"] = "/capture"
+        self.assertEqual(configured_response_wall_seconds(environment), 900.0)
+        for invalid in ("nan", "30", "10"):
+            environment["VOICECHAT_DIAGNOSTIC_MAX_AGENT_RESPONSE_SEC"] = invalid
+            with self.assertRaises(SystemExit):
+                configured_response_wall_seconds(environment)
+
+    def test_response_wall_deadline_expires_on_real_wall_time_without_model_frames(self) -> None:
+        fired = threading.Event()
+        started = time.monotonic()
+        deadline = ResponseWallClockDeadline(0.03, fired.set)
+        self.assertTrue(deadline.arm())
+        self.assertTrue(fired.wait(0.3))
+        elapsed = time.monotonic() - started
+        self.assertGreaterEqual(elapsed, 0.025)
+        self.assertLess(elapsed, 0.3)
+        self.assertTrue(deadline.snapshot()["expired"])
+        deadline.reset()
+
     def test_step9_fallback_counter_is_persistent_and_reports_last_shape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "fallbacks.jsonl"
@@ -250,6 +361,101 @@ class RealtimeWebServerTest(unittest.TestCase):
             [step["audio_frame_index_after"] for step in evidence["steps"]],
             [1, 2, 3],
         )
+
+    def test_user_eou_settlement_retains_prearm_deficit_and_input_sources(self) -> None:
+        starting = self._settlement_result(2)
+        engine = SimpleNamespace(
+            audio_frame_index=2,
+            user_eou_settlement_blank_frames=lambda: 3,
+            rnnt_blank_count=lambda result: (
+                int(result.turn_state["rnnt"]["blank_count"]) if result else 0
+            ),
+        )
+        settlement = UserEouSettlement.begin(
+            engine,
+            starting,
+            expected_client_turn_id=7,
+            prearmed_blank_frames=2,
+            prearm_evidence={"client_turn_id": 7, "eligible_audio_frames": 2},
+            post_commit_steps=[
+                {
+                    "model_input_provenance": "commit_tail_padding",
+                    "blank_frames_advanced": 1,
+                }
+            ],
+        )
+        final = self._settlement_result(3)
+        settlement.observe(
+            engine,
+            final,
+            input_source="queued_microphone_audio",
+        )
+
+        evidence = settlement.evidence()
+        self.assertEqual(evidence["prearmed_blank_frames"], 2)
+        self.assertEqual(evidence["post_commit_blank_deficit"], 1)
+        self.assertEqual(evidence["prearm"]["client_turn_id"], 7)
+        self.assertEqual(
+            evidence["post_commit_steps"][0]["model_input_provenance"],
+            "commit_tail_padding",
+        )
+        self.assertEqual(evidence["real_audio_model_steps"], 1)
+        self.assertEqual(evidence["synthetic_model_steps"], 0)
+        self.assertEqual(
+            evidence["steps"][0]["settlement_input_source"],
+            "queued_microphone_audio",
+        )
+
+    def test_fence_audio_eligibility_stops_at_first_speech_frame(self) -> None:
+        quiet = np.zeros(FRAME_SAMPLES, dtype=np.float32)
+        speech = np.full(FRAME_SAMPLES, 0.1, dtype=np.float32)
+        partial = np.zeros(FRAME_SAMPLES // 2, dtype=np.float32)
+        payload = float32_to_pcm16_bytes(np.concatenate((quiet, speech, partial)))
+
+        eligible, remainder, blocked = split_fence_eligible_pcm(
+            payload,
+            threshold_dbfs=-40.0,
+        )
+
+        self.assertEqual(eligible, float32_to_pcm16_bytes(quiet))
+        self.assertEqual(remainder, float32_to_pcm16_bytes(np.concatenate((speech, partial))))
+        self.assertTrue(blocked)
+
+    def test_fence_audio_eligibility_is_strict_at_speech_gate(self) -> None:
+        amplitude = 10 ** (-40.0 / 20.0)
+        threshold_frame = np.full(FRAME_SAMPLES, amplitude, dtype=np.float32)
+        payload = float32_to_pcm16_bytes(threshold_frame)
+        exact_gate_dbfs = float(audio_stats(pcm16_bytes_to_float32(payload))["rms_dbfs"])
+        eligible, remainder, blocked = split_fence_eligible_pcm(
+            payload,
+            threshold_dbfs=exact_gate_dbfs,
+        )
+
+        self.assertEqual(eligible, b"")
+        self.assertTrue(remainder)
+        self.assertTrue(blocked)
+
+    def test_fence_audio_eligibility_preserves_every_partial_frame_size(self) -> None:
+        frame_bytes = FRAME_SAMPLES * 2
+        quiet_frame = b"\x00\x00" * FRAME_SAMPLES
+        for partial_samples in range(1, FRAME_SAMPLES):
+            partial = b"\x00\x00" * partial_samples
+
+            eligible, remainder, blocked = split_fence_eligible_pcm(
+                partial,
+                threshold_dbfs=-40.0,
+            )
+            self.assertEqual(eligible, b"", partial_samples)
+            self.assertEqual(remainder, partial, partial_samples)
+            self.assertFalse(blocked, partial_samples)
+
+            eligible, remainder, blocked = split_fence_eligible_pcm(
+                quiet_frame + partial,
+                threshold_dbfs=-40.0,
+            )
+            self.assertEqual(len(eligible), frame_bytes, partial_samples)
+            self.assertEqual(remainder, partial, partial_samples)
+            self.assertFalse(blocked, partial_samples)
 
     def test_user_eou_settlement_core_has_exact_twice_fence_bound(self) -> None:
         engine = SimpleNamespace(
@@ -1084,6 +1290,106 @@ class RealtimeWebServerTest(unittest.TestCase):
         self.assertEqual(state.output_asr_text_str, "")
         self.assertIsNone(state._last_sent_asr_text)
 
+    def test_committed_transcript_survives_reset_until_deferred_post_tool_bos(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = "set Pacific time and tell me the current time"
+        engine.user_text_prefix = "set Pacific time"
+        engine.user_text_segment = "and tell me the current time"
+        engine.last_rnnt_decoded_count = 9
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = None
+        engine.frame_index = 42
+        state = SimpleNamespace(
+            output_asr_text_str=engine.user_text,
+            _last_sent_asr_text=engine.user_text,
+        )
+        engine.pipeline = SimpleNamespace(get_or_create_state=lambda _stream_id: state)
+        engine.stream_id = 7
+
+        evidence = engine.bind_user_transcript_to_next_response(
+            source="microphone",
+            source_id=3,
+        )
+        engine.reset_user_transcript()
+        turn_state = {
+            "agent_control": "agent_bos",
+            "function_calling": {"post_fc_client_bos_forced_frame": 42},
+        }
+        bound = engine._bind_pending_transcript_at_bos(turn_state, "")
+
+        self.assertTrue(evidence["bound"])
+        self.assertEqual(bound, "set Pacific time and tell me the current time")
+        self.assertEqual(engine.user_text, "")
+        self.assertEqual(
+            turn_state["response_attribution"],
+            {
+                "kind": "user_turn",
+                "source": "microphone",
+                "source_id": 3,
+                "user_text_bound": bound,
+                "post_tool_continuation": True,
+            },
+        )
+        self.assertEqual(engine.pending_response_user_text, "")
+        self.assertIsNone(engine.pending_response_attribution)
+
+    def test_pending_transcript_binding_waits_for_bos_and_is_consumed_once(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = "what time is it"
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = None
+        engine.frame_index = 8
+        engine.bind_user_transcript_to_next_response(source="typed", source_id="job-1")
+
+        pad_state = {"agent_control": "pad", "function_calling": {}}
+        self.assertEqual(
+            engine._bind_pending_transcript_at_bos(pad_state, ""),
+            "",
+        )
+        self.assertEqual(engine.pending_response_user_text, "what time is it")
+
+        bos_state = {"agent_control": "agent_bos", "function_calling": {}}
+        self.assertEqual(
+            engine._bind_pending_transcript_at_bos(bos_state, "what time is it"),
+            "what time is it",
+        )
+        self.assertFalse(bos_state["response_attribution"]["post_tool_continuation"])
+        second_bos = {"agent_control": "agent_bos", "function_calling": {}}
+        self.assertEqual(engine._bind_pending_transcript_at_bos(second_bos, ""), "")
+        self.assertNotIn("response_attribution", second_bos)
+
+    def test_post_tool_continuation_is_explicit_when_no_user_turn_is_pending(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = ""
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = None
+        engine.frame_index = 23
+
+        engine.bind_post_tool_continuation_to_next_response(call_id="call-7")
+        turn_state = {"agent_control": "agent_bos", "function_calling": {}}
+
+        assert engine._bind_pending_transcript_at_bos(turn_state, "") == ""
+        assert turn_state["response_attribution"] == {
+            "kind": "post_tool_continuation",
+            "call_id": "call-7",
+        }
+        assert engine.pending_post_tool_continuation is None
+
+    def test_new_user_turn_supersedes_unopened_post_tool_continuation(self) -> None:
+        engine = VoiceChatEngine.__new__(VoiceChatEngine)
+        engine.user_text = "what time is it now"
+        engine.pending_response_user_text = ""
+        engine.pending_response_attribution = None
+        engine.pending_post_tool_continuation = {"kind": "post_tool_continuation"}
+
+        engine.bind_user_transcript_to_next_response(source="microphone", source_id=9)
+
+        assert engine.pending_response_user_text == "what time is it now"
+        assert engine.pending_post_tool_continuation is None
+
     def test_defensive_function_input_queue_is_fifo_and_byte_bounded(self) -> None:
         queue = DeferredClientInputQueue(max_bytes=10)
         first = {"type": "input_audio_buffer.turn_start"}
@@ -1644,6 +1950,52 @@ class RealtimeWebServerTest(unittest.TestCase):
         ):
             self.assertNotIn("exact_public_vllm_extraction", accepted_vllm_manifest_kinds())
 
+    def test_eartts_ab_manifest_is_accepted_only_with_diagnostic_attestation(self) -> None:
+        from unittest.mock import patch
+
+        kind = "exact_public_vllm_eartts_quantization_ab"
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertNotIn(kind, accepted_vllm_manifest_kinds())
+        with patch.dict(
+            "os.environ",
+            {
+                "VOICECHAT_DIAGNOSTIC_EARTTS_AB": "1",
+                "VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256": "attested",
+            },
+            clear=True,
+        ):
+            self.assertIn(kind, accepted_vllm_manifest_kinds())
+        with patch.dict(
+            "os.environ",
+            {"VOICECHAT_DIAGNOSTIC_EARTTS_AB": "1"},
+            clear=True,
+        ):
+            self.assertNotIn(kind, accepted_vllm_manifest_kinds())
+
+    def test_full_precision_ab_manifest_requires_both_component_attestations(self) -> None:
+        from unittest.mock import patch
+
+        kind = "exact_public_vllm_full_precision_ab"
+        with patch.dict(
+            "os.environ",
+            {
+                "VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB": "1",
+                "VOICECHAT_DIAGNOSTIC_NANO_CONFIG_SHA256": "nano",
+                "VOICECHAT_DIAGNOSTIC_EARTTS_CONFIG_SHA256": "eartts",
+            },
+            clear=True,
+        ):
+            self.assertIn(kind, accepted_vllm_manifest_kinds())
+        with patch.dict(
+            "os.environ",
+            {
+                "VOICECHAT_DIAGNOSTIC_FULL_PRECISION_AB": "1",
+                "VOICECHAT_DIAGNOSTIC_NANO_CONFIG_SHA256": "nano",
+            },
+            clear=True,
+        ):
+            self.assertNotIn(kind, accepted_vllm_manifest_kinds())
+
     def test_host_runtime_provenance_records_driver_and_kernel(self) -> None:
         banner = (
             "NVRM version: NVIDIA UNIX Open Kernel Module for aarch64  "
@@ -1714,7 +2066,8 @@ class RealtimeWebServerTest(unittest.TestCase):
                 [{"name": "get_random_number"}],
             )
         self.assertIn("NVIDIA tool template", rendered)
-        self.assertIn("explicitly include the exact returned result", rendered)
+        self.assertIn("exact MOST RECENT returned result", rendered)
+        self.assertIn("Never restate an older result", rendered)
         self.assertIn("If no advertised tool matches the request", rendered)
         self.assertNotIn("emergency services", rendered)
 
@@ -2963,20 +3316,55 @@ class RealtimeWebServerTest(unittest.TestCase):
         self.assertFalse(watchdog.observe("pad", "", -120.0))
         self.assertTrue(watchdog.observe("pad", "", -120.0))
 
-    def test_agent_silence_watchdog_terminates_zero_text_turn_from_bos(self) -> None:
+    def test_agent_no_text_watchdog_does_not_cut_live_decoded_audio(self) -> None:
         watchdog = AgentSilenceEosWatchdog(
             threshold_dbfs=-90.0,
-            required_frames=3,
+            required_frames=100,
+            no_text_required_frames=3,
+            no_audio_required_frames=100,
+        )
+
+        self.assertFalse(watchdog.observe("agent_bos", "answer", -40.0))
+        for _ in range(6):
+            self.assertFalse(watchdog.observe("pad", "", -40.0))
+        self.assertTrue(watchdog.text_seen)
+        self.assertTrue(watchdog.audible_seen)
+        self.assertEqual(watchdog.no_text_frames, 0)
+        self.assertFalse(watchdog.request_pending)
+
+    def test_agent_no_text_watchdog_terminates_bos_with_neither_text_nor_audio(
+        self,
+    ) -> None:
+        watchdog = AgentSilenceEosWatchdog(
+            threshold_dbfs=-90.0,
+            required_frames=100,
             no_text_required_frames=3,
             no_audio_required_frames=100,
         )
 
         self.assertFalse(watchdog.observe("agent_bos", "", -120.0))
-        self.assertFalse(watchdog.observe("pad", "", -40.0))
-        self.assertTrue(watchdog.observe("pad", "", -40.0))
+        self.assertFalse(watchdog.observe("pad", "", -120.0))
+        self.assertTrue(watchdog.observe("pad", "", -120.0))
         self.assertEqual(watchdog.request_reason, "no_text_since_bos_watchdog")
         self.assertEqual(watchdog.no_text_frames, 3)
         self.assertFalse(watchdog.observe("pad", "", -120.0))
+
+    def test_agent_audio_completion_is_closed_by_decoded_silence(self) -> None:
+        watchdog = AgentSilenceEosWatchdog(
+            threshold_dbfs=-90.0,
+            required_frames=3,
+            no_text_required_frames=30,
+            no_audio_required_frames=100,
+        )
+
+        self.assertFalse(watchdog.observe("agent_bos", "answer", -40.0))
+        for _ in range(35):
+            self.assertFalse(watchdog.observe("pad", "", -40.0))
+        self.assertEqual(watchdog.no_text_frames, 0)
+        self.assertFalse(watchdog.observe("pad", "", -120.0))
+        self.assertFalse(watchdog.observe("pad", "", -120.0))
+        self.assertTrue(watchdog.observe("pad", "", -120.0))
+        self.assertEqual(watchdog.request_reason, "decoded_silence_watchdog")
 
     def test_agent_silence_watchdog_covers_short_text_without_audio(self) -> None:
         watchdog = AgentSilenceEosWatchdog(

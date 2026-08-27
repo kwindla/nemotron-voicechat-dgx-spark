@@ -23,13 +23,27 @@ closed unless the result matches the committed pins
 ~10 minutes CPU. This proves the uploaded weights are exactly the committed
 transform of the release.
 
-## Runtime image
+## Runtime image (REQUIRED — the qualified behavior is in the source)
 
-The runtime image must be built from this branch (the tool-call watchdog and
-pre-EOU settlement recovery live in `src/nemotron_voicechat_runtime/`):
-`container/build-public-runtime.sh` per `docs/provenance.md`, then either use
-the tag directly in `start-production-fhw8-fixed.sh` (edit the image name) or
-overlay an existing runtime image with `Dockerfile.defect-fixes`.
+The qualified runtime code lives in `src/nemotron_voicechat_runtime/`: the
+tool-call repetition watchdog, the pre-EOU settlement recovery, and the
+fence-on-real-audio + early-arming settlement changes that eliminate
+conversational latency accumulation. Weights alone do NOT provide them.
+
+Build the image from the current checkout:
+
+```
+deploy/promotion-candidate/build-promotion-image.sh
+```
+
+It builds via `container/build-public-runtime.sh` (native vLLM base per
+`docs/provenance.md`), tags `pipecat-ai/nemotron-voicechat-dgx-spark:promotion-candidate`,
+and fails closed unless the built image's `server.py` hash equals the working
+tree's. Override the tag with `VOICECHAT_PROMOTION_IMAGE` (the start script
+honors the same variable).
+
+`Dockerfile.defect-fixes` remains as a fast overlay for iterating on an
+already-built runtime image; it is not the reproducible path.
 
 ## Launch
 
@@ -44,3 +58,23 @@ Note: `production-candidate-3.toml` pins the release; switching the managed
 `./voicechat up` flow to it requires the documented bootstrap-state swap and
 has not yet been end-to-end tested on a fresh machine — the scripts above are
 the qualified path used for promotion.
+
+## No-text watchdog runtime hotfix v1
+
+Candidate 1, candidate 2, and the published candidate-3 fhw8 recipe remain
+frozen. `config/production-hotfix-notext-watchdog-v1.toml` reuses candidate
+3's exact published artifact revision and release hash but assigns the changed
+runtime its own image and contract identity.
+
+`start-production-notext-watchdog-hotfix-v1.sh` is the only launcher for this
+contract. Before Docker starts it verifies `manifest.sha256` fail-closed,
+resolves the image to an immutable `sha256:<64 hex>` ID, and passes both image
+name and ID into retained session provenance.
+
+The response bound is 30 seconds of monotonic wall time from agent BOS through
+the whole response, including gaps where the upstream `agent_speaking` flag is
+false. The budget is 2.29 times the retained maximum valid response of 13.12
+seconds (16.88 seconds of headroom). At expiry the runtime latches agent EOS
+and stops client audio delivery; it never synthesizes redirect text. The
+upstream frame-count cap is disabled because it is neither wall time nor a
+whole-response measurement.

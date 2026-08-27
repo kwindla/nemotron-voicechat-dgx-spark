@@ -1,0 +1,708 @@
+{
+  "attempts": [
+    {
+      "responses": [
+        {
+          "audio_bytes": 215208,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-01/response_001.wav",
+          "audio_sha256": "ca706340a5f9a4d657f1f13b426ce98d18dff5418bc1f3e12e13c395b3493570",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_d288f43c-f1fb-48ea-adc5-442da5c3b29e_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_d288f43c-f1fb-48ea-adc5-442da5c3b29e_1"
+        },
+        {
+          "audio_bytes": 391608,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-01/response_002.wav",
+          "audio_sha256": "d18fdc6ffc4cba81a03c30d5b328a4cb995c8ac6b74b5fd145a0721a304d4c0f",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_d288f43c-f1fb-48ea-adc5-442da5c3b29e_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a text-to-speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to creative writing. What would you like to talk about?",
+          "turn_id": "turn_d288f43c-f1fb-48ea-adc5-442da5c3b29e_2"
+        },
+        {
+          "audio_bytes": 620928,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-01/response_003.wav",
+          "audio_sha256": "58aa14c89acd58d0521b8fb9ed61afca965eba417c0cffbfaa24b2a3f57f9677",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see can you tell me a story about a unicorn",
+          "response_id": "response_d288f43c-f1fb-48ea-adc5-442da5c3b29e_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and across rivers, but the unicorn remained elusive. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it but spent the rest of his life learning from the creature. They became friends, and the knight learned that true magic is not about capturing mythical beasts but about the bonds you build with them.",
+          "turn_id": "turn_d288f43c-f1fb-48ea-adc5-442da5c3b29e_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_d288f43c-f1fb-48ea-adc5-442da5c3b29e_1214",
+        "reason": "client_stop",
+        "session_id": "d288f43c-f1fb-48ea-adc5-442da5c3b29e",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "d288f43c-f1fb-48ea-adc5-442da5c3b29e",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 197568,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-02/response_001.wav",
+          "audio_sha256": "8d9256ef26eab22043ada198007e246ee6bbde65ba14eb133cfbd4aad885bdeb",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_02df7a35-cf09-4a1a-bb97-480459abd34e_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_02df7a35-cf09-4a1a-bb97-480459abd34e_1"
+        },
+        {
+          "audio_bytes": 518616,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-02/response_002.wav",
+          "audio_sha256": "9294e8103bf5a5777ea35adf0eabe524ff246d83a8eb033bbdeafae6af6b53c2",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_02df7a35-cf09-4a1a-bb97-480459abd34e_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a voice model, but I am not brand new. I have been learning and improving for a long time. I am glad we are having this conversation. How can I help you today?",
+          "turn_id": "turn_02df7a35-cf09-4a1a-bb97-480459abd34e_2"
+        },
+        {
+          "audio_bytes": 733824,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-02/response_003.wav",
+          "audio_sha256": "de9a3bf6eed4fe2f480e9c3664429d9d6b0b17fbce96e5c15694aed47a6d99a3",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see, can you tell me a story about a unicorn",
+          "response_id": "response_02df7a35-cf09-4a1a-bb97-480459abd34e_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a unicorn named Luna lived in a magical forest. She had a shimmering horn that could heal plants and animals. One day, Luna used her horn to help a sick tree grow new leaves. Since then, the forest has been healthy and vibrant.",
+          "turn_id": "turn_02df7a35-cf09-4a1a-bb97-480459abd34e_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_02df7a35-cf09-4a1a-bb97-480459abd34e_1305",
+        "reason": "client_stop",
+        "session_id": "02df7a35-cf09-4a1a-bb97-480459abd34e",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "02df7a35-cf09-4a1a-bb97-480459abd34e",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 208152,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-03/response_001.wav",
+          "audio_sha256": "c78da00f9acffbe26fb44fd07c804876b896ee18c5b31ff5969617f5da02cb3c",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_1a89fad5-7890-4a10-a600-ecb2930a7d98_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_1a89fad5-7890-4a10-a600-ecb2930a7d98_1"
+        },
+        {
+          "audio_bytes": 691488,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-03/response_002.wav",
+          "audio_sha256": "69696eb73c49a9e46d59f3ce47b33cbd7809153596eae7ab881afc160842db49",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_1a89fad5-7890-4a10-a600-ecb2930a7d98_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a text-to-speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to generating creative content. What would you like to talk about?",
+          "turn_id": "turn_1a89fad5-7890-4a10-a600-ecb2930a7d98_2"
+        },
+        {
+          "audio_bytes": 825552,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-03/response_003.wav",
+          "audio_sha256": "7779abfe69b355fcd08f004b68f279f0f6241ebff07685d2b014385d263ae844",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see, can you tell you a story about a unicorn",
+          "response_id": "response_1a89fad5-7890-4a10-a600-ecb2930a7d98_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he spent a day with it before it disappeared into the mist. And that is how the legend of the unicorn came to be.",
+          "turn_id": "turn_1a89fad5-7890-4a10-a600-ecb2930a7d98_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_1a89fad5-7890-4a10-a600-ecb2930a7d98_1513",
+        "reason": "client_stop",
+        "session_id": "1a89fad5-7890-4a10-a600-ecb2930a7d98",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "1a89fad5-7890-4a10-a600-ecb2930a7d98",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 197568,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-04/response_001.wav",
+          "audio_sha256": "14e86a4cf0ab9ceafb35ec75db43b52b50b9218c80fe160cc3fc38630910e30c",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_b3a10e7e-c7bd-4111-8921-c01e01a6a01f_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_b3a10e7e-c7bd-4111-8921-c01e01a6a01f_1"
+        },
+        {
+          "audio_bytes": 550368,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-04/response_002.wav",
+          "audio_sha256": "42d06ef933782dc96de8ceefb5b9f7c138e669da3b0a7b6de41334320c785f18",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_b3a10e7e-c7bd-4111-8921-c01e01a6a01f_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a voice model, but I am not brand new. I have been learning and improving for a long time. I am glad we are having this conversation. How can I help you today?",
+          "turn_id": "turn_b3a10e7e-c7bd-4111-8921-c01e01a6a01f_2"
+        },
+        {
+          "audio_bytes": 751464,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-04/response_003.wav",
+          "audio_sha256": "a4f4bc2945c1deb873129dc6a70d23ec1cc0d65d837fed6289a1e2d32191eded",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see can you tell me a story about a unicorn",
+          "response_id": "response_b3a10e7e-c7bd-4111-8921-c01e01a6a01f_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a unicorn named Luna lived in a magical forest. She had a beautiful silver horn that could heal plants. One day, Luna found a wounded tree and used her horn to help it grow back to life. Since then, Luna has been known as the Unicorn of the Forest.",
+          "turn_id": "turn_b3a10e7e-c7bd-4111-8921-c01e01a6a01f_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_b3a10e7e-c7bd-4111-8921-c01e01a6a01f_1349",
+        "reason": "client_stop",
+        "session_id": "b3a10e7e-c7bd-4111-8921-c01e01a6a01f",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "b3a10e7e-c7bd-4111-8921-c01e01a6a01f",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 225792,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-05/response_001.wav",
+          "audio_sha256": "0b136c6394f9d61c5a8fc8d1fc9eeb668226f5b8d8024b1c28db687d6fe3895b",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_dd373aff-6897-4a0e-a05b-2aba345f7470_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_dd373aff-6897-4a0e-a05b-2aba345f7470_1"
+        },
+        {
+          "audio_bytes": 631512,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-05/response_002.wav",
+          "audio_sha256": "3eeaf1f2f364eadfa62efd3ead779f43df6fbb9f19719e4d9f675cfa7b50a28e",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_dd373aff-6897-4a0e-a05b-2aba345f7470_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a text-to-speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to creative writing. What would you like to talk about?",
+          "turn_id": "turn_dd373aff-6897-4a0e-a05b-2aba345f7470_2"
+        },
+        {
+          "audio_bytes": 620928,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-05/response_003.wav",
+          "audio_sha256": "536f416895076f46c335efd5b4a434e993920436d4820d4353536a4b92af1480",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see, can you tell me a story about a unicorn",
+          "response_id": "response_dd373aff-6897-4a0e-a05b-2aba345f7470_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he learned the unicorn was not a mythical creature at all. It was just a rare animal that had been protected by the forest for centuries. The knight returned home with a new understanding of the world. The end.",
+          "turn_id": "turn_dd373aff-6897-4a0e-a05b-2aba345f7470_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_dd373aff-6897-4a0e-a05b-2aba345f7470_1378",
+        "reason": "client_stop",
+        "session_id": "dd373aff-6897-4a0e-a05b-2aba345f7470",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "dd373aff-6897-4a0e-a05b-2aba345f7470",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 211680,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-06/response_001.wav",
+          "audio_sha256": "95795582c62a69659c174728e831da0402df69febbd46b3b18a7cd479289d385",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_a53ea912-2d91-4575-b06f-8ba5c7d4ec84_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_a53ea912-2d91-4575-b06f-8ba5c7d4ec84_1"
+        },
+        {
+          "audio_bytes": 599760,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-06/response_002.wav",
+          "audio_sha256": "ce4d03d704ae7d9430feab55f6bd5c54d9573103bd78d03eec7abf62b752c56f",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_a53ea912-2d91-4575-b06f-8ba5c7d4ec84_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a text-to-speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to generating creative content. What would you like to talk about?",
+          "turn_id": "turn_a53ea912-2d91-4575-b06f-8ba5c7d4ec84_2"
+        },
+        {
+          "audio_bytes": 624456,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-06/response_003.wav",
+          "audio_sha256": "0705c5f319995459290132152dc464f4e5d6f665a3dec2d66ed0a63f0e1e50ff",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see can you tell me a story about a unicorn",
+          "response_id": "response_a53ea912-2d91-4575-b06f-8ba5c7d4ec84_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he spent a day with it before it disappeared into the mist. And that is how the legend of the unicorn came to be.",
+          "turn_id": "turn_a53ea912-2d91-4575-b06f-8ba5c7d4ec84_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_a53ea912-2d91-4575-b06f-8ba5c7d4ec84_1345",
+        "reason": "client_stop",
+        "session_id": "a53ea912-2d91-4575-b06f-8ba5c7d4ec84",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "a53ea912-2d91-4575-b06f-8ba5c7d4ec84",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 204624,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-07/response_001.wav",
+          "audio_sha256": "5686be52089ea5175733d1501ef9b5e9b9bab20a852f1906389cdcb97ce820a6",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_d92e3fe8-72c2-4c5d-a810-f998a42741dc_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_d92e3fe8-72c2-4c5d-a810-f998a42741dc_1"
+        },
+        {
+          "audio_bytes": 592704,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-07/response_002.wav",
+          "audio_sha256": "92bfe7ca1b97e761f9261bd22f18f7566cbc0509eb8da89a688854c67613bbbf",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_d92e3fe8-72c2-4c5d-a810-f998a42741dc_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a text-to-speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to generating creative content. What would you like to talk about?",
+          "turn_id": "turn_d92e3fe8-72c2-4c5d-a810-f998a42741dc_2"
+        },
+        {
+          "audio_bytes": 959616,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-07/response_003.wav",
+          "audio_sha256": "5b1f123ce8f5532b19290ecee46caa52073adee5863561a29eba5f00e5870c5c",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see, can you tell me a story about a unicorn",
+          "response_id": "response_d92e3fe8-72c2-4c5d-a810-f998a42741dc_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he spent a day with it before it disappeared into the mist. And that is how the legend of the unicorn came to be.",
+          "turn_id": "turn_d92e3fe8-72c2-4c5d-a810-f998a42741dc_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_d92e3fe8-72c2-4c5d-a810-f998a42741dc_1568",
+        "reason": "client_stop",
+        "session_id": "d92e3fe8-72c2-4c5d-a810-f998a42741dc",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "d92e3fe8-72c2-4c5d-a810-f998a42741dc",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 208152,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-08/response_001.wav",
+          "audio_sha256": "2fa7b7ba163db1d0fe7930a46db81fb9af287b5f23757abe6e57767de4899bd5",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_52fd033d-499b-47fe-8815-6543a4503f77_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_52fd033d-499b-47fe-8815-6543a4503f77_1"
+        },
+        {
+          "audio_bytes": 673848,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-08/response_002.wav",
+          "audio_sha256": "f914307cdd126739c124c89cb2c736d60217080b3c8467fd8cf689a775b4dd5f",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_52fd033d-499b-47fe-8815-6543a4503f77_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a text-to-speech model, but I love talking to voice models too. I am Nemotron, created by NVIDIA. I can help with anything from answering questions to generating creative content. What would you like to talk about?",
+          "turn_id": "turn_52fd033d-499b-47fe-8815-6543a4503f77_2"
+        },
+        {
+          "audio_bytes": 649152,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-08/response_003.wav",
+          "audio_sha256": "92d05b158769e387bc600eaaa5f2607416bbac874c1640563690498b1a44d4be",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see, can you tell me a story about a unicorn?",
+          "response_id": "response_52fd033d-499b-47fe-8815-6543a4503f77_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a brave knight set out to find a unicorn. He traveled through forests and mountains, but the unicorn was always just out of reach. One day, he found a magical forest where the unicorn grazed peacefully. The knight did not capture it, but he spent a day with it before it disappeared into the mist. And that is how the legend of the unicorn came to be.",
+          "turn_id": "turn_52fd033d-499b-47fe-8815-6543a4503f77_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_52fd033d-499b-47fe-8815-6543a4503f77_1413",
+        "reason": "client_stop",
+        "session_id": "52fd033d-499b-47fe-8815-6543a4503f77",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "52fd033d-499b-47fe-8815-6543a4503f77",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 190512,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-09/response_001.wav",
+          "audio_sha256": "11ad105ac16ddc0502533e49311f50816ffe03e0cc3923af30e689df477b8a1d",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_baa62686-7bdb-4482-bb35-6157a088e4ca_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_baa62686-7bdb-4482-bb35-6157a088e4ca_1"
+        },
+        {
+          "audio_bytes": 508032,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-09/response_002.wav",
+          "audio_sha256": "9fd0e49167bbff0ca74d8237856ad9092ba65453d87cab246929b19e7944975a",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_baa62686-7bdb-4482-bb35-6157a088e4ca_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a voice model, but I am not brand new. I have been learning and improving for a long time. I am glad we are having this conversation. How can I help you today?",
+          "turn_id": "turn_baa62686-7bdb-4482-bb35-6157a088e4ca_2"
+        },
+        {
+          "audio_bytes": 762048,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-09/response_003.wav",
+          "audio_sha256": "7d80303d25f60cb8ef92ee6a495bd4fbef040c17e64cf2d29eee278ac9a2d6fe",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see, can you tell me a story about a unicorn",
+          "response_id": "response_baa62686-7bdb-4482-bb35-6157a088e4ca_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a unicorn named Luna lived in a magical forest. She had a beautiful silver horn that could heal plants. One day, Luna found a wounded tree and used her horn to help it grow back to life. Since then, Luna has been known as the Unicorn of the Forest.",
+          "turn_id": "turn_baa62686-7bdb-4482-bb35-6157a088e4ca_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_baa62686-7bdb-4482-bb35-6157a088e4ca_1331",
+        "reason": "client_stop",
+        "session_id": "baa62686-7bdb-4482-bb35-6157a088e4ca",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "baa62686-7bdb-4482-bb35-6157a088e4ca",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    },
+    {
+      "responses": [
+        {
+          "audio_bytes": 197568,
+          "audio_packets": 182,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-10/response_001.wav",
+          "audio_sha256": "199b5a0864b5f42f421ed2c32f69d148e390682121529b6700fa2c377502265f",
+          "ordinal": 1,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "well hello it's nice to meet you",
+          "response_id": "response_0cb38174-3d4b-4c34-a720-19e0f9e1af4b_1",
+          "source_client_turn_id": 1,
+          "source_turn_commit_s": 44277.410192,
+          "source_turn_start_s": 44275.77484,
+          "source_window_start_s": 44273.713269,
+          "status": "completed",
+          "text": "Hi! it is great to meet you. How can I help you today?",
+          "turn_id": "turn_0cb38174-3d4b-4c34-a720-19e0f9e1af4b_1"
+        },
+        {
+          "audio_bytes": 511560,
+          "audio_packets": 241,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-10/response_002.wav",
+          "audio_sha256": "59378080a524b8ef7affd829dd7453ea0e7ebbc588b98b7ba8600f332ae6e3c1",
+          "ordinal": 2,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "I love talking to voice models in your brand new speech to speech model",
+          "response_id": "response_0cb38174-3d4b-4c34-a720-19e0f9e1af4b_2",
+          "source_client_turn_id": 2,
+          "source_turn_commit_s": 44287.541512,
+          "source_turn_start_s": 44283.692259,
+          "source_window_start_s": 44282.692259,
+          "status": "completed",
+          "text": " I am actually a voice model, but I am not brand new. I have been learning and improving for a long time. I am glad we are having this conversation. How can I help you today?",
+          "turn_id": "turn_0cb38174-3d4b-4c34-a720-19e0f9e1af4b_2"
+        },
+        {
+          "audio_bytes": 790272,
+          "audio_packets": 149,
+          "audio_path": "/home/khkramer/src/nemotron-voicechat-dgx-spark/reports/response-truncation/eartts-quantization-ab-r1/live/pair-01/fp32/replay/attempt-10/response_003.wav",
+          "audio_sha256": "954b2b0193fe2d18731db2da4fb731c96b7455929be35458d155012c307ba54e",
+          "ordinal": 3,
+          "reason": "decoded_silence_watchdog",
+          "recognized_input": "let's see, can you tell me a story about a unicorn",
+          "response_id": "response_0cb38174-3d4b-4c34-a720-19e0f9e1af4b_3",
+          "source_client_turn_id": 3,
+          "source_turn_commit_s": 44304.012419,
+          "source_turn_start_s": 44302.015973,
+          "source_window_start_s": 44301.015973,
+          "status": "completed",
+          "text": " Once upon a time, a unicorn named Luna lived in a magical forest. She had a beautiful silver horn that could heal plants. One day, Luna found a wounded tree and used her horn to help it grow back to life. Since then, Luna has been known as the Unicorn of the Forest.",
+          "turn_id": "turn_0cb38174-3d4b-4c34-a720-19e0f9e1af4b_3"
+        }
+      ],
+      "schema": "eartts-truncation-replay-attempt-v1",
+      "session_closed": {
+        "event_id": "evt_0cb38174-3d4b-4c34-a720-19e0f9e1af4b_1343",
+        "reason": "client_stop",
+        "session_id": "0cb38174-3d4b-4c34-a720-19e0f9e1af4b",
+        "status": "completed",
+        "type": "session.closed"
+      },
+      "session_id": "0cb38174-3d4b-4c34-a720-19e0f9e1af4b",
+      "source_turn_ids": [
+        1,
+        2,
+        3
+      ],
+      "url": "ws://127.0.0.1:8797/v1/realtime"
+    }
+  ],
+  "schema": "eartts-truncation-replay-campaign-v1",
+  "source_pcm_sha256": "e0cfde068241c098d1bc615202c11ecf037134cd1ba7fe889fb3d5eebd57395a",
+  "source_session_id": "431ac6df-573c-45af-8746-7cd9f66bd8c3",
+  "source_trace_dir": "/home/khkramer/.local/state/nemotron-voicechat/traces/model/431ac6df-573c-45af-8746-7cd9f66bd8c3"
+}

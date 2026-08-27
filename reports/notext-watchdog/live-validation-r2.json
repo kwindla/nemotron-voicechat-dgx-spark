@@ -1,0 +1,76 @@
+{
+  "schema": "nemotron_voicechat.notext_watchdog_live_validation.r2",
+  "generated_utc": "2026-08-17",
+  "runtime": {
+    "contract": "production-hotfix-notext-watchdog-v1",
+    "image": "pipecat-ai/nemotron-voicechat-dgx-spark:production-hotfix-notext-watchdog-v1",
+    "image_id": "sha256:b9004a53a22c0a1b5b54295221dbb35f552f13b6366a4ecf26899339312d84cb",
+    "server_sha256": "c88eaa3c06daf0b487aa85ec14e19c9983351f0b9dd2836b74546b9a34ad0ef2",
+    "production_values": {
+      "agent_no_text_frames": 30,
+      "agent_no_audio_frames": 30,
+      "decoded_silence_frames": 20,
+      "audible_threshold_dbfs": -90,
+      "max_response_wall_seconds": 30,
+      "qualification_override_used": false
+    }
+  },
+  "validation_root": "/tmp/notext-watchdog-fix2-validation-20260817T155200Z",
+  "rapid": [
+    {
+      "mode": "no-tool",
+      "session_id": "9549ed8a-22e6-4261-9bd0-21427e87ac3b",
+      "summary": "/tmp/notext-watchdog-fix2-validation-20260817T155200Z/rapid-no-tool/summary.json",
+      "summary_sha256": "86719ec298f927db682f036ad239e6bcdffeb88882df89e8ee07deaf695fa954",
+      "model_trace_sha256": "3d6a975d8ebd1c097fc601ee0222eb5ae0bc568939d4578081978d474ddc87ca",
+      "responses": 8,
+      "response_completion_gate_passed": true,
+      "runtime_provenance_passed": true,
+      "production_value_coverage_passed": true,
+      "passed": true
+    },
+    {
+      "mode": "with-tool",
+      "session_id": "1d188f45-a7bd-40e0-b039-0ef4d17c1c52",
+      "summary": "/tmp/notext-watchdog-fix2-validation-20260817T155200Z/rapid-with-tool/summary.json",
+      "summary_sha256": "4acb42102cd9a84e53851cc13500e309f2b4edf80fce633170230edc49dcf15f",
+      "model_trace_sha256": "ca008ac2680494584aae3591468e2bfa919c7460f07f183abb7ee75053c4d59d",
+      "responses": 8,
+      "tool_calls": 0,
+      "response_completion_gate_passed": true,
+      "runtime_provenance_passed": true,
+      "production_value_coverage_passed": true,
+      "passed": true
+    }
+  ],
+  "browser": {
+    "summary": "/tmp/notext-watchdog-fix2-validation-20260817T155200Z/browser-final3/driver/fixture-summary.json",
+    "summary_sha256": "01ff89e9a637e0c2a72b07fab4a36a967ead2869e7031a57acd448b6d8f8b054",
+    "capture_on": {
+      "session_id": "793f01ab-42b3-4644-821b-0d12e882f683",
+      "model_trace_sha256": "a3cab44ef71c6eef1e159c8b9a101696052fc829caf0dede055653566d9a9dfd",
+      "responses": 8,
+      "response_completion_gate_passed": true,
+      "runtime_provenance_passed": true
+    },
+    "capture_off": {
+      "session_id": "c203bca9-0f7c-4544-925a-f1d7cb9ab962",
+      "model_trace_sha256": "e64038de905ac59745459c86efe0fc96990d49d9f801acd9d7a83573a3b8a38e",
+      "responses": 1,
+      "response_completion_gate_passed": true,
+      "runtime_provenance_passed": true
+    },
+    "aggregate": {
+      "all_fixtures_completed": true,
+      "all_transcript_mismatches_classified": true,
+      "model_silence_truncations": 1,
+      "watchdog_truncations": 0,
+      "unclassified_transcript_mismatches": [],
+      "passed": true
+    }
+  },
+  "retained_unit_evidence": {
+    "response_wall_deadline": "reports/notext-watchdog/response-wall-deadline-evidence-v1.json",
+    "known_bad_and_repaired_completion_gate": "reports/notext-watchdog/completion-gate-evidence-r2.json"
+  }
+}
